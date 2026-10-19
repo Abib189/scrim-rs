@@ -1,0 +1,5103 @@
+{
+ "about": "Scrim layout guide cases (docs/transfer/specs/layout-guides.md). Every expectation was produced by running Scrim's own code.",
+ "generatedAt": "2026-10-19",
+ "scrimCommit": "f2b1bdb",
+ "sources": {
+  "geometry": "packages/engine/src/layoutGuides.ts: trackLayout(guide, length), guideShape(guide, frame), guideSnapTargets(guides, frame), drawLayoutGuides (count of fillRect calls at zoom 1, DPR 1, clip = frame)",
+  "validation": "packages/core/src/guides.ts guidesIssues, and applyPatch(updateNode(id, { guides })) on a frame \"Frame\" (id f), a box \"Box\" (id b) and a text \"Label\" (id t)",
+  "inspector": "apps/studio/src/editor/guideEdits.ts: switchType, parseGuideNumber, parseGuideColor, shownGuideNumber, addGuidePatch, readGuides, guidesPatch, guideFieldPatch"
+ },
+ "conventions": {
+  "frame": "the frame's measured border box in world px { x, y, width, height }",
+  "perGuide": "one entry per guide, in list order: track = trackLayout along the guide's axis (columns: width, rows: height) — start is relative to the frame's edge; bands / xs / ys = guideShape, in world px (xs are constant-x lines, ys constant-y lines)",
+  "snapTargets": "guideSnapTargets: zero-width rects (x lines, full frame height) then zero-height rects (y lines, full frame width), each de-duplicated in first-seen order; only visible guides; only lines inside the frame (±1e-6)",
+  "drawnAtZoom1": "how many rectangles drawLayoutGuides fills for this frame at zoom 1, DPR 1, camera at the origin, clip = frame",
+  "numbers": "rounded to 6 decimals in this file",
+  "expect": "validation: \"accept\" | { refuse: \"<verbatim PatchError message>\" }; stored = what the document holds afterwards when it differs from the input"
+ },
+ "drawRules": {
+  "MIN_GRID_CELL_PX": 4,
+  "grid size 50 at zoom 0.07 (3.5 screen px cells): rects drawn": 0
+ },
+ "geometry": [
+  {
+   "name": "Paper default column guide (+) on a 1440 × 1024 frame",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1440,
+    "height": 1024
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 120.666667,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 241.333333,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 362,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 482.666667,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 603.333333,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 724,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 844.666667,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 965.333333,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 1086,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 1206.666667,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      },
+      {
+       "x": 1327.333333,
+       "y": 0,
+       "width": 112.666667,
+       "height": 1024
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 112.666667,
+      "step": 120.666667
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 112.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 120.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 233.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 241.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 354,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 362,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 474.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 482.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 595.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 603.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 716,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 724,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 836.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 844.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 957.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 965.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1078,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1086,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1198.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1206.666667,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1319.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1327.333333,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1440,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    }
+   ],
+   "drawnAtZoom1": 12
+  },
+  {
+   "name": "Paper default row guide on a 1440 × 1024 frame",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1440,
+    "height": 1024
+   },
+   "guides": [
+    {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 86,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 172,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 258,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 344,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 430,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 516,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 602,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 688,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 774,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 860,
+       "width": 1440,
+       "height": 78
+      },
+      {
+       "x": 0,
+       "y": 946,
+       "width": 1440,
+       "height": 78
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 78,
+      "step": 86
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 78,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 86,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 164,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 172,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 250,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 258,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 336,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 344,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 422,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 430,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 508,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 516,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 594,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 602,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 680,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 688,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 766,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 774,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 852,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 860,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 938,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 946,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 1024,
+     "width": 1440,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 12
+  },
+  {
+   "name": "Paper default grid guide (50) on a 1440 × 1024 frame",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1440,
+    "height": 1024
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      50,
+      100,
+      150,
+      200,
+      250,
+      300,
+      350,
+      400,
+      450,
+      500,
+      550,
+      600,
+      650,
+      700,
+      750,
+      800,
+      850,
+      900,
+      950,
+      1000,
+      1050,
+      1100,
+      1150,
+      1200,
+      1250,
+      1300,
+      1350,
+      1400
+     ],
+     "ys": [
+      50,
+      100,
+      150,
+      200,
+      250,
+      300,
+      350,
+      400,
+      450,
+      500,
+      550,
+      600,
+      650,
+      700,
+      750,
+      800,
+      850,
+      900,
+      950,
+      1000
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 50,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 150,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 200,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 250,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 300,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 350,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 400,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 450,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 500,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 550,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 600,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 650,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 700,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 750,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 800,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 850,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 900,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 950,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1000,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1050,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1100,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1150,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1200,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1250,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1300,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1350,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 1400,
+     "y": 0,
+     "width": 0,
+     "height": 1024
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 100,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 150,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 200,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 250,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 300,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 350,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 400,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 450,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 500,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 550,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 600,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 650,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 700,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 750,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 800,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 850,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 900,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 950,
+     "width": 1440,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 1000,
+     "width": 1440,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 48
+  },
+  {
+   "name": "stretch with a margin: (1000 − 2·20 − 11·8) / 12; size ignored",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 999,
+     "count": 12,
+     "margin": 20,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 20,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 100.666667,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 181.333333,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 262,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 342.666667,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 423.333333,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 504,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 584.666667,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 665.333333,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 746,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 826.666667,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      },
+      {
+       "x": 907.333333,
+       "y": 0,
+       "width": 72.666667,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 20,
+      "size": 72.666667,
+      "step": 80.666667
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 20,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 92.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 100.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 173.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 181.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 254,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 262,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 334.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 342.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 415.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 423.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 496,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 504,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 576.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 584.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 657.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 665.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 738,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 746,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 818.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 826.666667,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 899.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 907.333333,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 980,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 12
+  },
+  {
+   "name": "start (Left): first column at the margin, each size px",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "start",
+     "size": 40,
+     "count": 4,
+     "margin": 24,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 24,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 72,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 120,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 168,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 24,
+      "size": 40,
+      "step": 48
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 24,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 64,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 72,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 112,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 120,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 160,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 168,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 208,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "end (Right): last column ends at width − margin",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "end",
+     "size": 40,
+     "count": 4,
+     "margin": 24,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 792,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 840,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 888,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 936,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 792,
+      "size": 40,
+      "step": 48
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 792,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 832,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 840,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 880,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 888,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 928,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 936,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 976,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "center: the block is centred; margin ignored",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "center",
+     "size": 40,
+     "count": 4,
+     "margin": 500,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 408,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 456,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 504,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 552,
+       "y": 0,
+       "width": 40,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 408,
+      "size": 40,
+      "step": 48
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 408,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 448,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 456,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 496,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 504,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 544,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 552,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 592,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "center with an odd remainder (fractional start)",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1001,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "center",
+     "size": 100,
+     "count": 3,
+     "margin": 0,
+     "gutter": 10,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 340.5,
+       "y": 0,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 450.5,
+       "y": 0,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 560.5,
+       "y": 0,
+       "width": 100,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 340.5,
+      "size": 100,
+      "step": 110
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 340.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 440.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 450.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 550.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 560.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 660.5,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 3
+  },
+  {
+   "name": "frame not at the origin: bands are in world coordinates",
+   "frame": {
+    "x": 100,
+    "y": 50,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "start",
+     "size": 40,
+     "count": 2,
+     "margin": 10,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 110,
+       "y": 50,
+       "width": 40,
+       "height": 600
+      },
+      {
+       "x": 158,
+       "y": 50,
+       "width": 40,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 10,
+      "size": 40,
+      "step": 48
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 110,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 150,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 158,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 198,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 2
+  },
+  {
+   "name": "row start on an offset frame: full-width bands",
+   "frame": {
+    "x": 100,
+    "y": 50,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "row",
+     "align": "start",
+     "size": 40,
+     "count": 1,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 100,
+       "y": 50,
+       "width": 1000,
+       "height": 40
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 40,
+      "step": 48
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 100,
+     "y": 50,
+     "width": 1000,
+     "height": 0
+    },
+    {
+     "x": 100,
+     "y": 90,
+     "width": 1000,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 1
+  },
+  {
+   "name": "row end (Bottom) with margin and gutter",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 400,
+    "height": 800
+   },
+   "guides": [
+    {
+     "type": "row",
+     "align": "end",
+     "size": 100,
+     "count": 3,
+     "margin": 16,
+     "gutter": 24,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 436,
+       "width": 400,
+       "height": 100
+      },
+      {
+       "x": 0,
+       "y": 560,
+       "width": 400,
+       "height": 100
+      },
+      {
+       "x": 0,
+       "y": 684,
+       "width": 400,
+       "height": 100
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 436,
+      "size": 100,
+      "step": 124
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 436,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 536,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 560,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 660,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 684,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 784,
+     "width": 400,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 3
+  },
+  {
+   "name": "row center",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 400,
+    "height": 800
+   },
+   "guides": [
+    {
+     "type": "row",
+     "align": "center",
+     "size": 120,
+     "count": 2,
+     "margin": 0,
+     "gutter": 40,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 260,
+       "width": 400,
+       "height": 120
+      },
+      {
+       "x": 0,
+       "y": 420,
+       "width": 400,
+       "height": 120
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 260,
+      "size": 120,
+      "step": 160
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 260,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 380,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 420,
+     "width": 400,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 540,
+     "width": 400,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 2
+  },
+  {
+   "name": "gutter 0: band edges become lines (no bands)",
+   "frame": {
+    "x": 100,
+    "y": 50,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 4,
+     "margin": 0,
+     "gutter": 0,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      100,
+      350,
+      600,
+      850,
+      1100
+     ],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 250,
+      "step": 250
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 100,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 350,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 600,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 850,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 1100,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "gutter 0 rows, start aligned",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 300,
+    "height": 300
+   },
+   "guides": [
+    {
+     "type": "row",
+     "align": "start",
+     "size": 50,
+     "count": 3,
+     "margin": 0,
+     "gutter": 0,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [],
+     "ys": [
+      0,
+      50,
+      100,
+      150
+     ],
+     "track": {
+      "start": 0,
+      "size": 50,
+      "step": 50
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 300,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 300,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 100,
+     "width": 300,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 150,
+     "width": 300,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "count 1 stretch with margins",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 360,
+    "height": 640
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 1,
+     "margin": 16,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 16,
+       "y": 0,
+       "width": 328,
+       "height": 640
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 16,
+      "size": 328,
+      "step": 336
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 16,
+     "y": 0,
+     "width": 0,
+     "height": 640
+    },
+    {
+     "x": 344,
+     "y": 0,
+     "width": 0,
+     "height": 640
+    }
+   ],
+   "drawnAtZoom1": 1
+  },
+  {
+   "name": "stretch with no room left: no bands, no lines",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 600,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 600,
+      "size": 0,
+      "step": 8
+     }
+    }
+   ],
+   "snapTargets": [],
+   "drawnAtZoom1": 0
+  },
+  {
+   "name": "stretch exactly filled by margins and gutters: size 0, nothing drawn",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 100,
+    "height": 100
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 3,
+     "margin": 10,
+     "gutter": 40,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 10,
+      "size": 0,
+      "step": 40
+     }
+    }
+   ],
+   "snapTargets": [],
+   "drawnAtZoom1": 0
+  },
+  {
+   "name": "fixed columns past the frame: bands run outside (drawn clipped), snap lines outside are dropped",
+   "frame": {
+    "x": 100,
+    "y": 50,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "start",
+     "size": 100,
+     "count": 12,
+     "margin": 0,
+     "gutter": 10,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 100,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 210,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 320,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 430,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 540,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 650,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 760,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 870,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 980,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 1090,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 1200,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 1310,
+       "y": 50,
+       "width": 100,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 100,
+      "step": 110
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 100,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 200,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 210,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 310,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 320,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 420,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 430,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 530,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 540,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 640,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 650,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 750,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 760,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 860,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 870,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 970,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 980,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 1080,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 1090,
+     "y": 50,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 10
+  },
+  {
+   "name": "end alignment wider than the frame: start goes negative",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 200,
+    "height": 200
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "end",
+     "size": 100,
+     "count": 3,
+     "margin": 0,
+     "gutter": 10,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": -120,
+       "y": 0,
+       "width": 100,
+       "height": 200
+      },
+      {
+       "x": -10,
+       "y": 0,
+       "width": 100,
+       "height": 200
+      },
+      {
+       "x": 100,
+       "y": 0,
+       "width": 100,
+       "height": 200
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": -120,
+      "size": 100,
+      "step": 110
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 90,
+     "y": 0,
+     "width": 0,
+     "height": 200
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 200
+    },
+    {
+     "x": 200,
+     "y": 0,
+     "width": 0,
+     "height": 200
+    }
+   ],
+   "drawnAtZoom1": 2
+  },
+  {
+   "name": "square grid: interior lines only (frame edges not repeated)",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 160,
+    "height": 100
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      50,
+      100,
+      150
+     ],
+     "ys": [
+      50
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 50,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 150,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 160,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "square grid on an offset frame",
+   "frame": {
+    "x": 100,
+    "y": 50,
+    "width": 160,
+    "height": 100
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      150,
+      200,
+      250
+     ],
+     "ys": [
+      100
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 150,
+     "y": 50,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 200,
+     "y": 50,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 250,
+     "y": 50,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 100,
+     "y": 100,
+     "width": 160,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "square grid whose size divides the frame exactly (no line on the far edge)",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 150,
+    "height": 100
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      50,
+      100
+     ],
+     "ys": [
+      50
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 50,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 150,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 3
+  },
+  {
+   "name": "square grid bigger than the frame: nothing",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 40,
+    "height": 40
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [],
+     "ys": []
+    }
+   ],
+   "snapTargets": [],
+   "drawnAtZoom1": 0
+  },
+  {
+   "name": "8 px grid on a 64 × 24 frame",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 64,
+    "height": 24
+   },
+   "guides": [
+    {
+     "type": "grid",
+     "size": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56
+     ],
+     "ys": [
+      8,
+      16
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 8,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 16,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 24,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 32,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 40,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 48,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 56,
+     "y": 0,
+     "width": 0,
+     "height": 24
+    },
+    {
+     "x": 0,
+     "y": 8,
+     "width": 64,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 16,
+     "width": 64,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 9
+  },
+  {
+   "name": "fractional frame and stretch columns",
+   "frame": {
+    "x": 10.5,
+    "y": 0,
+    "width": 375.5,
+    "height": 812
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 4,
+     "margin": 16,
+     "gutter": 16,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 26.5,
+       "y": 0,
+       "width": 73.875,
+       "height": 812
+      },
+      {
+       "x": 116.375,
+       "y": 0,
+       "width": 73.875,
+       "height": 812
+      },
+      {
+       "x": 206.25,
+       "y": 0,
+       "width": 73.875,
+       "height": 812
+      },
+      {
+       "x": 296.125,
+       "y": 0,
+       "width": 73.875,
+       "height": 812
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 16,
+      "size": 73.875,
+      "step": 89.875
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 26.5,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 100.375,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 116.375,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 190.25,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 206.25,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 280.125,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 296.125,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    },
+    {
+     "x": 370,
+     "y": 0,
+     "width": 0,
+     "height": 812
+    }
+   ],
+   "drawnAtZoom1": 4
+  },
+  {
+   "name": "a hidden guide still has a shape, but no snap lines and is not drawn",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 4,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": false
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 244,
+       "height": 600
+      },
+      {
+       "x": 252,
+       "y": 0,
+       "width": 244,
+       "height": 600
+      },
+      {
+       "x": 504,
+       "y": 0,
+       "width": 244,
+       "height": 600
+      },
+      {
+       "x": 756,
+       "y": 0,
+       "width": 244,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 244,
+      "step": 252
+     }
+    }
+   ],
+   "snapTargets": [],
+   "drawnAtZoom1": 0
+  },
+  {
+   "name": "zero opacity: snaps (visible) but is not drawn",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 1000,
+    "height": 600
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "start",
+     "size": 100,
+     "count": 2,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 100,
+       "height": 600
+      },
+      {
+       "x": 108,
+       "y": 0,
+       "width": 100,
+       "height": 600
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 100,
+      "step": 108
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 108,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    },
+    {
+     "x": 208,
+     "y": 0,
+     "width": 0,
+     "height": 600
+    }
+   ],
+   "drawnAtZoom1": 0
+  },
+  {
+   "name": "several guides on one frame: snap lines are the de-duplicated union (columns, rows and a grid)",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 200,
+    "height": 100
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "start",
+     "size": 50,
+     "count": 2,
+     "margin": 0,
+     "gutter": 0,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "row",
+     "align": "start",
+     "size": 50,
+     "count": 1,
+     "margin": 0,
+     "gutter": 10,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [],
+     "xs": [
+      0,
+      50,
+      100
+     ],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 50,
+      "step": 50
+     }
+    },
+    {
+     "bands": [],
+     "xs": [
+      50,
+      100,
+      150
+     ],
+     "ys": [
+      50
+     ]
+    },
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 200,
+       "height": 50
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 50,
+      "step": 60
+     }
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 50,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 150,
+     "y": 0,
+     "width": 0,
+     "height": 100
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 200,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 0,
+     "width": 200,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 8
+  },
+  {
+   "name": "Paper defaults stacked (12 columns, 12 rows, a 50 px grid) on a mobile frame",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "width": 390,
+    "height": 844
+   },
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "perGuide": [
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 33.166667,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 66.333333,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 99.5,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 132.666667,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 165.833333,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 199,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 232.166667,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 265.333333,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 298.5,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 331.666667,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      },
+      {
+       "x": 364.833333,
+       "y": 0,
+       "width": 25.166667,
+       "height": 844
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 25.166667,
+      "step": 33.166667
+     }
+    },
+    {
+     "bands": [
+      {
+       "x": 0,
+       "y": 0,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 71,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 142,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 213,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 284,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 355,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 426,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 497,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 568,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 639,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 710,
+       "width": 390,
+       "height": 63
+      },
+      {
+       "x": 0,
+       "y": 781,
+       "width": 390,
+       "height": 63
+      }
+     ],
+     "xs": [],
+     "ys": [],
+     "track": {
+      "start": 0,
+      "size": 63,
+      "step": 71
+     }
+    },
+    {
+     "bands": [],
+     "xs": [
+      50,
+      100,
+      150,
+      200,
+      250,
+      300,
+      350
+     ],
+     "ys": [
+      50,
+      100,
+      150,
+      200,
+      250,
+      300,
+      350,
+      400,
+      450,
+      500,
+      550,
+      600,
+      650,
+      700,
+      750,
+      800
+     ]
+    }
+   ],
+   "snapTargets": [
+    {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 25.166667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 33.166667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 58.333333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 66.333333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 91.5,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 99.5,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 124.666667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 132.666667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 157.833333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 165.833333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 191,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 199,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 224.166667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 232.166667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 257.333333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 265.333333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 290.5,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 298.5,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 323.666667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 331.666667,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 356.833333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 364.833333,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 390,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 50,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 100,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 150,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 200,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 250,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 300,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 350,
+     "y": 0,
+     "width": 0,
+     "height": 844
+    },
+    {
+     "x": 0,
+     "y": 0,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 63,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 71,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 134,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 142,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 205,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 213,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 276,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 284,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 347,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 355,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 418,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 426,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 489,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 497,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 560,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 568,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 631,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 639,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 702,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 710,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 773,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 781,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 844,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 50,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 100,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 150,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 200,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 250,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 300,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 350,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 400,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 450,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 500,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 550,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 600,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 650,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 700,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 750,
+     "width": 390,
+     "height": 0
+    },
+    {
+     "x": 0,
+     "y": 800,
+     "width": 390,
+     "height": 0
+    }
+   ],
+   "drawnAtZoom1": 47
+  }
+ ],
+ "validation": [
+  {
+   "name": "the Paper defaults, one of each type",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "an empty list (stored as absent)",
+   "guides": [],
+   "expect": "accept",
+   "stored": "(absent)"
+  },
+  {
+   "name": "null (clears the field)",
+   "guides": null,
+   "expect": "accept",
+   "stored": "(absent)"
+  },
+  {
+   "name": "boundary values: size 1, count 100, margin and gutter 0 and 100000, opacity 0 and 1",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 1,
+     "count": 100,
+     "margin": 0,
+     "gutter": 100000,
+     "color": "#003880",
+     "opacity": 0,
+     "visible": true
+    },
+    {
+     "type": "row",
+     "align": "stretch",
+     "size": 100000,
+     "count": 1,
+     "margin": 100000,
+     "gutter": 0,
+     "color": "#003880",
+     "opacity": 1,
+     "visible": true
+    }
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "a fractional size, margin and gutter are allowed",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40.5,
+     "count": 12,
+     "margin": 12.25,
+     "gutter": 7.75,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "upper-case hex is allowed",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#AA0033",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "20 guides (the cap)",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "on a box",
+   "nodeId": "b",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "only frames hold guides (this is a box)"
+   ],
+   "expect": {
+    "refuse": "Box: only frames hold guides (this is a box)"
+   }
+  },
+  {
+   "name": "on a text node",
+   "nodeId": "t",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "only frames hold guides (this is a text)"
+   ],
+   "expect": {
+    "refuse": "Label: only frames hold guides (this is a text)"
+   }
+  },
+  {
+   "name": "not a list",
+   "guides": {
+    "type": "grid"
+   },
+   "issues": [
+    "guides must be a list"
+   ],
+   "expect": {
+    "refuse": "Frame: guides must be a list"
+   }
+  },
+  {
+   "name": "21 guides",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "a frame holds at most 20 guides (got 21)"
+   ],
+   "expect": {
+    "refuse": "Frame: a frame holds at most 20 guides (got 21)"
+   }
+  },
+  {
+   "name": "a guide that is not an object",
+   "guides": [
+    "grid"
+   ],
+   "issues": [
+    "guides[0] must be an object"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0] must be an object"
+   }
+  },
+  {
+   "name": "an unknown type",
+   "guides": [
+    {
+     "type": "ruler",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].type must be one of column, row, grid"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].type must be one of column, row, grid"
+   }
+  },
+  {
+   "name": "Figma spelling of the type (COLUMNS)",
+   "guides": [
+    {
+     "type": "COLUMNS",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].type must be one of column, row, grid"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].type must be one of column, row, grid"
+   }
+  },
+  {
+   "name": "a grid with a count",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true,
+     "count": 3
+    }
+   ],
+   "issues": [
+    "guides[0]: a grid guide has no \"count\" (it takes type, color, opacity, visible, size)"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0]: a grid guide has no \"count\" (it takes type, color, opacity, visible, size)"
+   }
+  },
+  {
+   "name": "a column with an offset (Scrim has no offset)",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true,
+     "offset": 10
+    }
+   ],
+   "issues": [
+    "guides[0]: a column guide has no \"offset\" (it takes type, color, opacity, visible, align, size, count, margin, gutter)"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0]: a column guide has no \"offset\" (it takes type, color, opacity, visible, align, size, count, margin, gutter)"
+   }
+  },
+  {
+   "name": "a 3-digit colour",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#038",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].color must be a 6-digit hex colour like #003880"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].color must be a 6-digit hex colour like #003880"
+   }
+  },
+  {
+   "name": "an 8-digit colour with alpha",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#00388019",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].color must be a 6-digit hex colour like #003880"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].color must be a 6-digit hex colour like #003880"
+   }
+  },
+  {
+   "name": "an rgba() colour",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "rgba(0,56,128,0.1)",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].color must be a 6-digit hex colour like #003880"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].color must be a 6-digit hex colour like #003880"
+   }
+  },
+  {
+   "name": "opacity over 1 (a percent typed as a number)",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 10,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].opacity must be a number from 0 to 1"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].opacity must be a number from 0 to 1"
+   }
+  },
+  {
+   "name": "visible as a string",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": "true"
+    }
+   ],
+   "issues": [
+    "guides[0].visible must be true or false"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].visible must be true or false"
+   }
+  },
+  {
+   "name": "a missing visible",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 0.1
+    }
+   ],
+   "issues": [
+    "guides[0].visible must be true or false"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].visible must be true or false"
+   }
+  },
+  {
+   "name": "a zero grid size",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 0,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].size must be a number of px from 1 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].size must be a number of px from 1 to 100000"
+   }
+  },
+  {
+   "name": "a size over 100000",
+   "guides": [
+    {
+     "type": "grid",
+     "size": 100001,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].size must be a number of px from 1 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].size must be a number of px from 1 to 100000"
+   }
+  },
+  {
+   "name": "a fractional count",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 2.5,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].count must be a whole number from 1 to 100"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].count must be a whole number from 1 to 100"
+   }
+  },
+  {
+   "name": "count 0",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 0,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].count must be a whole number from 1 to 100"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].count must be a whole number from 1 to 100"
+   }
+  },
+  {
+   "name": "101 columns",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 101,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].count must be a whole number from 1 to 100"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].count must be a whole number from 1 to 100"
+   }
+  },
+  {
+   "name": "a negative gutter",
+   "guides": [
+    {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": -1,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].gutter must be a number of px from 0 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].gutter must be a number of px from 0 to 100000"
+   }
+  },
+  {
+   "name": "a margin over 100000",
+   "guides": [
+    {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 100001,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].margin must be a number of px from 0 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].margin must be a number of px from 0 to 100000"
+   }
+  },
+  {
+   "name": "alignment left (the UI word, not the stored value)",
+   "guides": [
+    {
+     "type": "column",
+     "align": "left",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].align must be one of stretch, start, center, end"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].align must be one of stretch, start, center, end"
+   }
+  },
+  {
+   "name": "Figma alignment MIN",
+   "guides": [
+    {
+     "type": "column",
+     "align": "MIN",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].align must be one of stretch, start, center, end"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].align must be one of stretch, start, center, end"
+   }
+  },
+  {
+   "name": "a column guide missing align, count, margin and gutter",
+   "guides": [
+    {
+     "type": "column",
+     "size": 40,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   ],
+   "issues": [
+    "guides[0].align must be one of stretch, start, center, end",
+    "guides[0].count must be a whole number from 1 to 100",
+    "guides[0].margin must be a number of px from 0 to 100000",
+    "guides[0].gutter must be a number of px from 0 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].align must be one of stretch, start, center, end; guides[0].count must be a whole number from 1 to 100; guides[0].margin must be a number of px from 0 to 100000; guides[0].gutter must be a number of px from 0 to 100000"
+   }
+  },
+  {
+   "name": "a grid guide (bare object)",
+   "guides": [
+    {
+     "type": "grid"
+    }
+   ],
+   "issues": [
+    "guides[0].color must be a 6-digit hex colour like #003880",
+    "guides[0].opacity must be a number from 0 to 1",
+    "guides[0].visible must be true or false",
+    "guides[0].size must be a number of px from 1 to 100000"
+   ],
+   "expect": {
+    "refuse": "Frame: guides[0].color must be a 6-digit hex colour like #003880; guides[0].opacity must be a number from 0 to 1; guides[0].visible must be true or false; guides[0].size must be a number of px from 1 to 100000"
+   }
+  }
+ ],
+ "inspector": {
+  "defaults": {
+   "column": {
+    "type": "column",
+    "align": "stretch",
+    "size": 40,
+    "count": 12,
+    "margin": 0,
+    "gutter": 8,
+    "color": "#003880",
+    "opacity": 0.1,
+    "visible": true
+   },
+   "row": {
+    "type": "row",
+    "align": "stretch",
+    "size": 40,
+    "count": 12,
+    "margin": 0,
+    "gutter": 8,
+    "color": "#003880",
+    "opacity": 0.1,
+    "visible": true
+   },
+   "grid": {
+    "type": "grid",
+    "size": 50,
+    "color": "#003880",
+    "opacity": 0.1,
+    "visible": true
+   }
+  },
+  "alignWords": {
+   "column": {
+    "stretch": "stretch",
+    "start": "left",
+    "center": "center",
+    "end": "right"
+   },
+   "row": {
+    "stretch": "stretch",
+    "start": "top",
+    "center": "center",
+    "end": "bottom"
+   }
+  },
+  "readOnlyReason": "Guides on a component instance follow its master: edit them on the master (or detach the instance).",
+  "typeSwitch": [
+   {
+    "from": {
+     "type": "column",
+     "align": "end",
+     "size": 64,
+     "count": 6,
+     "margin": 24,
+     "gutter": 20,
+     "color": "#aa0033",
+     "opacity": 0.25,
+     "visible": false
+    },
+    "to": "row",
+    "result": {
+     "type": "row",
+     "align": "end",
+     "size": 64,
+     "count": 6,
+     "margin": 24,
+     "gutter": 20,
+     "color": "#aa0033",
+     "opacity": 0.25,
+     "visible": false
+    }
+   },
+   {
+    "from": {
+     "type": "column",
+     "align": "end",
+     "size": 64,
+     "count": 6,
+     "margin": 24,
+     "gutter": 20,
+     "color": "#aa0033",
+     "opacity": 0.25,
+     "visible": false
+    },
+    "to": "grid",
+    "result": {
+     "type": "grid",
+     "size": 64,
+     "color": "#aa0033",
+     "opacity": 0.25,
+     "visible": false
+    }
+   },
+   {
+    "from": {
+     "type": "grid",
+     "size": 24,
+     "color": "#aa0033",
+     "opacity": 0.3,
+     "visible": true
+    },
+    "to": "column",
+    "result": {
+     "type": "column",
+     "align": "stretch",
+     "size": 24,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#aa0033",
+     "opacity": 0.3,
+     "visible": true
+    }
+   },
+   {
+    "from": {
+     "type": "grid",
+     "size": 24,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    "to": "row",
+    "result": {
+     "type": "row",
+     "align": "stretch",
+     "size": 24,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   },
+   {
+    "from": {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 3,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    "to": "row",
+    "result": {
+     "type": "row",
+     "align": "stretch",
+     "size": 40,
+     "count": 3,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    }
+   }
+  ],
+  "numberInputs": [
+   {
+    "field": "opacity",
+    "raw": "10",
+    "value": 0.1
+   },
+   {
+    "field": "opacity",
+    "raw": "10%",
+    "value": 0.1
+   },
+   {
+    "field": "opacity",
+    "raw": "12.34",
+    "value": 0.123
+   },
+   {
+    "field": "opacity",
+    "raw": "101",
+    "value": null
+   },
+   {
+    "field": "opacity",
+    "raw": "-1",
+    "value": null
+   },
+   {
+    "field": "count",
+    "raw": "12",
+    "value": 12
+   },
+   {
+    "field": "count",
+    "raw": "2.5",
+    "value": null
+   },
+   {
+    "field": "count",
+    "raw": "0",
+    "value": null
+   },
+   {
+    "field": "count",
+    "raw": "101",
+    "value": null
+   },
+   {
+    "field": "size",
+    "raw": "0",
+    "value": null
+   },
+   {
+    "field": "size",
+    "raw": "1",
+    "value": 1
+   },
+   {
+    "field": "size",
+    "raw": "40.555",
+    "value": 40.56
+   },
+   {
+    "field": "size",
+    "raw": "40px",
+    "value": 40
+   },
+   {
+    "field": "size",
+    "raw": "100001",
+    "value": null
+   },
+   {
+    "field": "margin",
+    "raw": "0",
+    "value": 0
+   },
+   {
+    "field": "margin",
+    "raw": "-4",
+    "value": null
+   },
+   {
+    "field": "gutter",
+    "raw": "8",
+    "value": 8
+   },
+   {
+    "field": "gutter",
+    "raw": "abc",
+    "value": null
+   },
+   {
+    "field": "gutter",
+    "raw": " 16 ",
+    "value": 16
+   },
+   {
+    "field": "gutter",
+    "raw": "1e3",
+    "value": null
+   }
+  ],
+  "colorInputs": [
+   {
+    "raw": "#AA0033",
+    "result": {
+     "color": "#aa0033"
+    }
+   },
+   {
+    "raw": "aa0033",
+    "result": {
+     "color": "#aa0033"
+    }
+   },
+   {
+    "raw": "#a03",
+    "result": {
+     "color": "#aa0033"
+    }
+   },
+   {
+    "raw": "rgba(170, 0, 51, 0.5)",
+    "result": {
+     "color": "#aa0033",
+     "opacity": 0.5
+    }
+   },
+   {
+    "raw": "red",
+    "result": null
+   },
+   {
+    "raw": "nonsense",
+    "result": null
+   },
+   {
+    "raw": "hsl(0 100% 50%)",
+    "result": {
+     "color": "#ff0000"
+    }
+   }
+  ],
+  "shown": [
+   {
+    "guide": {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.1,
+     "visible": true
+    },
+    "opacity": "10",
+    "size": "40"
+   },
+   {
+    "guide": {
+     "type": "column",
+     "align": "stretch",
+     "size": 40,
+     "count": 12,
+     "margin": 0,
+     "gutter": 8,
+     "color": "#003880",
+     "opacity": 0.125,
+     "visible": true
+    },
+    "opacity": "12.5",
+    "size": "40"
+   },
+   {
+    "guide": {
+     "type": "grid",
+     "size": 50,
+     "color": "#003880",
+     "opacity": 1,
+     "visible": true
+    },
+    "opacity": "100",
+    "size": "50"
+   }
+  ],
+  "patches": {
+   "addGuidePatch on frame f with no guides": [
+    {
+     "type": "update_node",
+     "id": "f",
+     "set": {
+      "guides": [
+       {
+        "type": "column",
+        "align": "stretch",
+        "size": 40,
+        "count": 12,
+        "margin": 0,
+        "gutter": 8,
+        "color": "#003880",
+        "opacity": 0.1,
+        "visible": true
+       }
+      ]
+     }
+    }
+   ],
+   "addGuidePatch on frames f (none) and g ([grid]): each keeps its own list": [
+    {
+     "type": "update_node",
+     "id": "f",
+     "set": {
+      "guides": [
+       {
+        "type": "column",
+        "align": "stretch",
+        "size": 40,
+        "count": 12,
+        "margin": 0,
+        "gutter": 8,
+        "color": "#003880",
+        "opacity": 0.1,
+        "visible": true
+       }
+      ]
+     }
+    },
+    {
+     "type": "update_node",
+     "id": "g",
+     "set": {
+      "guides": [
+       {
+        "type": "grid",
+        "size": 50,
+        "color": "#003880",
+        "opacity": 0.1,
+        "visible": true
+       },
+       {
+        "type": "column",
+        "align": "stretch",
+        "size": 40,
+        "count": 12,
+        "margin": 0,
+        "gutter": 8,
+        "color": "#003880",
+        "opacity": 0.1,
+        "visible": true
+       }
+      ]
+     }
+    }
+   ],
+   "readGuides on f and g (lists differ: Mixed)": {
+    "list": null,
+    "editable": true
+   },
+   "readGuides on box b (section does not apply)": null,
+   "guidesPatch writing [] to g (clears: guides null)": [
+    {
+     "type": "update_node",
+     "id": "g",
+     "set": {
+      "guides": null
+     }
+    }
+   ],
+   "guidesPatch writing g its own list again (no change: null patch)": null,
+   "guideFieldPatch count \"6\" on g's grid (a grid has no count: null)": null,
+   "guideFieldPatch size \"24\" on g's grid": [
+    {
+     "type": "update_node",
+     "id": "g",
+     "set": {
+      "guides": [
+       {
+        "type": "grid",
+        "size": 24,
+        "color": "#003880",
+        "opacity": 0.1,
+        "visible": true
+       }
+      ]
+     }
+    }
+   ]
+  }
+ }
+}

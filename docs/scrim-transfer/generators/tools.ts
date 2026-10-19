@@ -1,0 +1,11 @@
+import { Client } from '../../../packages/cli/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import { InMemoryTransport } from '../../../packages/cli/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import { createScrimServer, DocStore } from '../../../packages/mcp/dist/index.js';
+import { createDocument } from '../../../packages/core/dist/index.js';
+const server = createScrimServer(new DocStore(createDocument({ id: 'x', name: 'X' })));
+const [a, b] = InMemoryTransport.createLinkedPair();
+const client = new Client({ name: 't', version: '0' });
+await Promise.all([server.connect(b), client.connect(a)]);
+const { tools } = await client.listTools();
+console.log(JSON.stringify(tools.find((t) => t.name === 'query_nodes'), null, 2));
+await client.close(); await server.close();

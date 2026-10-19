@@ -1,0 +1,4734 @@
+{
+ "about": "Scrim SVG allow-list cases (docs/transfer/specs/svg-allowlist.md). Every expectation was produced by running Scrim's own code, not written by hand.",
+ "generatedAt": "2026-10-19",
+ "scrimCommit": "f2b1bdb",
+ "sources": {
+  "inline": "packages/core/src/svg.ts svgContentIssues via applyPatch(addNode(box \"Icon\" id \"v\" with svg)) (core patch.ts checkSvg); markup = svgMarkup(svgTree(svg, \"svg-v\"))",
+  "file": "packages/mcp/src/assets/sniff.ts sniffImage(bytes) (the import gate for .svg files); svgRefusal(text) shown separately",
+  "pathEdit": "packages/core/src/vector/path.ts parsePath(d) then serializePath(segs); writeIssues = svgContentIssues of a one-path svg with that d",
+  "editRefusal": "packages/core/src/vector/box.ts vectorEditRefusal(svg)"
+ },
+ "conventions": {
+  "layer": "\"inline\": structured vector data on a node (JSON; the svg field). \"file\": the text (or bytes) of an imported .svg file. \"pathEdit\": path data parsed for path edit mode. \"editRefusal\": whether path edit mode can open the vector.",
+  "expect": "\"accept\" | { refuse: \"<verbatim message>\" } | { normalised: \"<verbatim output>\" }. inline refuse = the PatchError message (node name \"Icon\" prefixed, at most 5 issues joined by \"; \", then \" (and N more)\"); file refuse = the AssetError message; pathEdit refuse is the literal \"parsePath: null\" (the parser returns null and shows no message); pathEdit normalised = serializePath output; inline normalised = the generated markup.",
+  "issues": "inline only: every issue svgContentIssues returns, unprefixed (the first 20 when there are more).",
+  "nodeType": "inline only: the node type the svg is written on (default \"box\").",
+  "markup": "inline accept only (small cases): the markup Scrim generates for that svg on node id \"v\".",
+  "code": "file refuse only: the AssetError code.",
+  "bytes": "file only: the byte length of the materialised input.",
+  "sniffed": "file accept only: { ext, width, height, orientation } as sniffImage reports.",
+  "svgRefusal": "file only: svgRefusal(text) — the bare reason before \": Scrim imports only self-contained SVGs\" is appended (null: nothing found).",
+  "writeIssues": "pathEdit only: what the write-time check says about a one-path svg with this d (empty: accepted on write).",
+  "generate": {
+   "what": "Large inputs are stored as a generator; materialise them before running. target is a dot path into svg (\"\" = svg itself; \"children.0.d\" = svg.children[0].d).",
+   "repeat-string": "set target to prefix + unit repeated count times + suffix",
+   "repeat-element": "set target to an array of count deep copies of element; with elementString, each copy's elementString.target is first set to its prefix + unit×count + suffix",
+   "nest": "set target to prefix + open×count + inner + close×count + suffix",
+   "nest-g": "set target to [ g ] nested depth times around [ leaf ]: depth 1 = [{ tag: \"g\", children: [leaf] }]"
+  },
+  "file svg as bytes": "a file case whose svg is { bytes: [...] } is raw bytes (not valid UTF-8)."
+ },
+ "cases": [
+  {
+   "name": "inline: gradient icon with a group, transform and evenodd fill (core test fixture)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 24,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#ff0000"
+       },
+       {
+        "offset": 1,
+        "color": "rgba(0, 0, 255, 0.5)",
+        "opacity": 0.8
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M12 0C18.6 0 24 5.4 24 12S18.6 24 12 24 0 18.6 0 12 5.4 0 12 0Z",
+      "fill": "url(#g)",
+      "fillRule": "evenodd"
+     },
+     {
+      "tag": "g",
+      "opacity": 0.5,
+      "transform": [
+       1,
+       0,
+       0,
+       1,
+       2,
+       2
+      ],
+      "children": [
+       {
+        "tag": "rect",
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4,
+        "rx": 1,
+        "fill": "#00ff00"
+       },
+       {
+        "tag": "circle",
+        "cx": 2,
+        "cy": 2,
+        "r": 1,
+        "stroke": "#000",
+        "strokeWidth": 0.5,
+        "fill": "none"
+       }
+      ]
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <defs>\n    <linearGradient id=\"svg-v-g\" x1=\"0\" y1=\"0\" x2=\"24\" y2=\"0\" gradientUnits=\"userSpaceOnUse\">\n      <stop offset=\"0\" stop-color=\"#ff0000\"/>\n      <stop offset=\"1\" stop-color=\"rgba(0, 0, 255, 0.5)\" stop-opacity=\"0.8\"/>\n    </linearGradient>\n  </defs>\n  <path d=\"M12 0C18.6 0 24 5.4 24 12S18.6 24 12 24 0 18.6 0 12 5.4 0 12 0Z\" fill=\"url(#svg-v-g)\" fill-rule=\"evenodd\"/>\n  <g opacity=\"0.5\" transform=\"matrix(1 0 0 1 2 2)\">\n    <rect x=\"0\" y=\"0\" width=\"4\" height=\"4\" rx=\"1\" fill=\"#00ff00\"/>\n    <circle cx=\"2\" cy=\"2\" r=\"1\" fill=\"none\" stroke=\"#000\" stroke-width=\"0.5\"/>\n  </g>\n</svg>"
+  },
+  {
+   "name": "inline: Lucide \"circle-check\" as structured data (stroke currentColor, relative m)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "g",
+      "fill": "none",
+      "stroke": "currentColor",
+      "strokeWidth": 2,
+      "strokeLinecap": "round",
+      "strokeLinejoin": "round",
+      "children": [
+       {
+        "tag": "circle",
+        "cx": 12,
+        "cy": 12,
+        "r": 10
+       },
+       {
+        "tag": "path",
+        "d": "m9 12 2 2 4-4"
+       }
+      ]
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <g fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n    <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n    <path d=\"m9 12 2 2 4-4\"/>\n  </g>\n</svg>"
+  },
+  {
+   "name": "inline: Heroicons solid \"check-circle\" (compact arc flags, evenodd)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "fill": "currentColor",
+      "fillRule": "evenodd",
+      "d": "M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <path d=\"M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z\" fill=\"currentColor\" fill-rule=\"evenodd\"/>\n</svg>"
+  },
+  {
+   "name": "inline: a Line-tool line (vectorEffect non-scaling-stroke, dashed)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     121,
+     1
+    ],
+    "children": [
+     {
+      "tag": "line",
+      "x1": 0.5,
+      "y1": 0.5,
+      "x2": 120.5,
+      "y2": 0.5,
+      "stroke": "#000000",
+      "strokeWidth": 1,
+      "fill": "none",
+      "vectorEffect": "non-scaling-stroke",
+      "strokeDasharray": [
+       4,
+       2
+      ]
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 121 1\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <line x1=\"0.5\" y1=\"0.5\" x2=\"120.5\" y2=\"0.5\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1\" stroke-dasharray=\"4 2\" vector-effect=\"non-scaling-stroke\"/>\n</svg>"
+  },
+  {
+   "name": "inline: clipPath, mask and a radial gradient with focus, units and transform",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     100,
+     100
+    ],
+    "defs": [
+     {
+      "tag": "radialGradient",
+      "id": "r",
+      "cx": 0.5,
+      "cy": 0.5,
+      "r": 0.5,
+      "fx": 0.3,
+      "fy": 0.3,
+      "units": "objectBoundingBox",
+      "transform": [
+       1,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#ffffff"
+       },
+       {
+        "offset": 1,
+        "color": "#000000",
+        "opacity": 0
+       }
+      ]
+     },
+     {
+      "tag": "clipPath",
+      "id": "c",
+      "children": [
+       {
+        "tag": "circle",
+        "cx": 50,
+        "cy": 50,
+        "r": 40
+       }
+      ]
+     },
+     {
+      "tag": "mask",
+      "id": "m",
+      "children": [
+       {
+        "tag": "rect",
+        "x": 0,
+        "y": 0,
+        "width": 100,
+        "height": 100,
+        "fill": "#ffffff"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 100,
+      "height": 100,
+      "fill": "url(#r)",
+      "clipPath": "c",
+      "mask": "m"
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <defs>\n    <radialGradient id=\"svg-v-r\" cx=\"0.5\" cy=\"0.5\" r=\"0.5\" fx=\"0.3\" fy=\"0.3\" gradientUnits=\"objectBoundingBox\" gradientTransform=\"matrix(1 0 0 1 0 0)\">\n      <stop offset=\"0\" stop-color=\"#ffffff\"/>\n      <stop offset=\"1\" stop-color=\"#000000\" stop-opacity=\"0\"/>\n    </radialGradient>\n    <clipPath id=\"svg-v-c\">\n      <circle cx=\"50\" cy=\"50\" r=\"40\"/>\n    </clipPath>\n    <mask id=\"svg-v-m\">\n      <rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#ffffff\"/>\n    </mask>\n  </defs>\n  <rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"url(#svg-v-r)\" clip-path=\"url(#svg-v-c)\" mask=\"url(#svg-v-m)\"/>\n</svg>"
+  },
+  {
+   "name": "inline: every colour form the allow-list takes (#rgb, #rgba, #rrggbb, #rrggbbaa, rgb(), rgba(), none, currentColor, transparent)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     9,
+     1
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "#f00"
+     },
+     {
+      "tag": "rect",
+      "x": 1,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "#f008"
+     },
+     {
+      "tag": "rect",
+      "x": 2,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "#ff0000"
+     },
+     {
+      "tag": "rect",
+      "x": 3,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "#ff000080"
+     },
+     {
+      "tag": "rect",
+      "x": 4,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "rgb(255, 0, 0)"
+     },
+     {
+      "tag": "rect",
+      "x": 5,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "rgba(255,0,0,.5)"
+     },
+     {
+      "tag": "rect",
+      "x": 6,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "none"
+     },
+     {
+      "tag": "rect",
+      "x": 7,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "currentColor"
+     },
+     {
+      "tag": "rect",
+      "x": 8,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "transparent"
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 9 1\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <rect x=\"0\" y=\"0\" width=\"1\" height=\"1\" fill=\"#f00\"/>\n  <rect x=\"1\" y=\"0\" width=\"1\" height=\"1\" fill=\"#f008\"/>\n  <rect x=\"2\" y=\"0\" width=\"1\" height=\"1\" fill=\"#ff0000\"/>\n  <rect x=\"3\" y=\"0\" width=\"1\" height=\"1\" fill=\"#ff000080\"/>\n  <rect x=\"4\" y=\"0\" width=\"1\" height=\"1\" fill=\"rgb(255, 0, 0)\"/>\n  <rect x=\"5\" y=\"0\" width=\"1\" height=\"1\" fill=\"rgba(255,0,0,.5)\"/>\n  <rect x=\"6\" y=\"0\" width=\"1\" height=\"1\" fill=\"none\"/>\n  <rect x=\"7\" y=\"0\" width=\"1\" height=\"1\" fill=\"currentColor\"/>\n  <rect x=\"8\" y=\"0\" width=\"1\" height=\"1\" fill=\"transparent\"/>\n</svg>"
+  },
+  {
+   "name": "inline: a number exactly at the cap (10^7) is accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 10000000,
+      "height": 1
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <rect x=\"0\" y=\"0\" width=\"10000000\" height=\"1\"/>\n</svg>"
+  },
+  {
+   "name": "inline: a negative radius is accepted (only finiteness and ±10^7 are checked)",
+   "layer": "inline",
+   "note": "Behaviour, not a recommendation: the checks never test geometry signs except strokeWidth and viewBox size.",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "circle",
+      "cx": 0,
+      "cy": 0,
+      "r": -5
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <circle cx=\"0\" cy=\"0\" r=\"-5\"/>\n</svg>"
+  },
+  {
+   "name": "inline: path data the write check accepts but the editor parser rejects (odd argument count)",
+   "layer": "inline",
+   "note": "Write-time path validation is a character class plus number-shape regexes, not a parser; see the pathEdit case with the same d.",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0 1"
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <path d=\"M0 0 1\"/>\n</svg>"
+  },
+  {
+   "name": "inline: a path exactly 200000 characters long is accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": ""
+     }
+    ]
+   },
+   "generate": {
+    "kind": "repeat-string",
+    "target": "children.0.d",
+    "prefix": "M0 0",
+    "unit": "L1 1",
+    "count": 49999,
+    "suffix": ""
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "inline: 5 paths of 200000 characters (1000000 in total, the cap) are accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "repeat-element",
+    "target": "children",
+    "count": 5,
+    "element": {
+     "tag": "path",
+     "d": ""
+    },
+    "elementString": {
+     "target": "d",
+     "prefix": "M0 0",
+     "unit": "L1 1",
+     "count": 49999,
+     "suffix": ""
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "inline: 5000 elements (the cap) are accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "repeat-element",
+    "target": "children",
+    "count": 5000,
+    "element": {
+     "tag": "circle",
+     "cx": 0,
+     "cy": 0,
+     "r": 1
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "inline: groups nested 16 deep (the cap) are accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "nest-g",
+    "target": "children",
+    "depth": 16,
+    "leaf": {
+     "tag": "circle",
+     "cx": 0,
+     "cy": 0,
+     "r": 1
+    }
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <g>\n    <g>\n      <g>\n        <g>\n          <g>\n            <g>\n              <g>\n                <g>\n                  <g>\n                    <g>\n                      <g>\n                        <g>\n                          <g>\n                            <g>\n                              <g>\n                                <g>\n                                  <circle cx=\"0\" cy=\"0\" r=\"1\"/>\n                                </g>\n                              </g>\n                            </g>\n                          </g>\n                        </g>\n                      </g>\n                    </g>\n                  </g>\n                </g>\n              </g>\n            </g>\n          </g>\n        </g>\n      </g>\n    </g>\n  </g>\n</svg>"
+  },
+  {
+   "name": "inline: 64 gradient stops (the cap) are accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.015873015873015872,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.031746031746031744,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.047619047619047616,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.06349206349206349,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.07936507936507936,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.09523809523809523,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.1111111111111111,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.12698412698412698,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.14285714285714285,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.15873015873015872,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.1746031746031746,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.19047619047619047,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.20634920634920634,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.2222222222222222,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.23809523809523808,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.25396825396825395,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.2698412698412698,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.2857142857142857,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.30158730158730157,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.31746031746031744,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.3333333333333333,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.3492063492063492,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.36507936507936506,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.38095238095238093,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.3968253968253968,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.4126984126984127,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.42857142857142855,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.4444444444444444,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.4603174603174603,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.47619047619047616,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.49206349206349204,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5079365079365079,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5238095238095238,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5396825396825397,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5555555555555556,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5714285714285714,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.5873015873015873,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6031746031746031,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6190476190476191,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6349206349206349,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6507936507936508,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6666666666666666,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6825396825396826,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.6984126984126984,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.7142857142857143,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.7301587301587301,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.746031746031746,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.7619047619047619,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.7777777777777778,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.7936507936507936,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.8095238095238095,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.8253968253968254,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.8412698412698413,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.8571428571428571,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.873015873015873,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.8888888888888888,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9047619047619048,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9206349206349206,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9365079365079365,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9523809523809523,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9682539682539683,
+        "color": "#000000"
+       },
+       {
+        "offset": 0.9841269841269841,
+        "color": "#000000"
+       },
+       {
+        "offset": 1,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <defs>\n    <linearGradient id=\"svg-v-g\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\" gradientUnits=\"userSpaceOnUse\">\n      <stop offset=\"0\" stop-color=\"#000000\"/>\n      <stop offset=\"0.016\" stop-color=\"#000000\"/>\n      <stop offset=\"0.032\" stop-color=\"#000000\"/>\n      <stop offset=\"0.048\" stop-color=\"#000000\"/>\n      <stop offset=\"0.063\" stop-color=\"#000000\"/>\n      <stop offset=\"0.079\" stop-color=\"#000000\"/>\n      <stop offset=\"0.095\" stop-color=\"#000000\"/>\n      <stop offset=\"0.111\" stop-color=\"#000000\"/>\n      <stop offset=\"0.127\" stop-color=\"#000000\"/>\n      <stop offset=\"0.143\" stop-color=\"#000000\"/>\n      <stop offset=\"0.159\" stop-color=\"#000000\"/>\n      <stop offset=\"0.175\" stop-color=\"#000000\"/>\n      <stop offset=\"0.19\" stop-color=\"#000000\"/>\n      <stop offset=\"0.206\" stop-color=\"#000000\"/>\n      <stop offset=\"0.222\" stop-color=\"#000000\"/>\n      <stop offset=\"0.238\" stop-color=\"#000000\"/>\n      <stop offset=\"0.254\" stop-color=\"#000000\"/>\n      <stop offset=\"0.27\" stop-color=\"#000000\"/>\n      <stop offset=\"0.286\" stop-color=\"#000000\"/>\n      <stop offset=\"0.302\" stop-color=\"#000000\"/>\n      <stop offset=\"0.317\" stop-color=\"#000000\"/>\n      <stop offset=\"0.333\" stop-color=\"#000000\"/>\n      <stop offset=\"0.349\" stop-color=\"#000000\"/>\n      <stop offset=\"0.365\" stop-color=\"#000000\"/>\n      <stop offset=\"0.381\" stop-color=\"#000000\"/>\n      <stop offset=\"0.397\" stop-color=\"#000000\"/>\n      <stop offset=\"0.413\" stop-color=\"#000000\"/>\n      <stop offset=\"0.429\" stop-color=\"#000000\"/>\n      <stop offset=\"0.444\" stop-color=\"#000000\"/>\n      <stop offset=\"0.46\" stop-color=\"#000000\"/>\n      <stop offset=\"0.476\" stop-color=\"#000000\"/>\n      <stop offset=\"0.492\" stop-color=\"#000000\"/>\n      <stop offset=\"0.508\" stop-color=\"#000000\"/>\n      <stop offset=\"0.524\" stop-color=\"#000000\"/>\n      <stop offset=\"0.54\" stop-color=\"#000000\"/>\n      <stop offset=\"0.556\" stop-color=\"#000000\"/>\n      <stop offset=\"0.571\" stop-color=\"#000000\"/>\n      <stop offset=\"0.587\" stop-color=\"#000000\"/>\n      <stop offset=\"0.603\" stop-color=\"#000000\"/>\n      <stop offset=\"0.619\" stop-color=\"#000000\"/>\n      <stop offset=\"0.635\" stop-color=\"#000000\"/>\n      <stop offset=\"0.651\" stop-color=\"#000000\"/>\n      <stop offset=\"0.667\" stop-color=\"#000000\"/>\n      <stop offset=\"0.683\" stop-color=\"#000000\"/>\n      <stop offset=\"0.698\" stop-color=\"#000000\"/>\n      <stop offset=\"0.714\" stop-color=\"#000000\"/>\n      <stop offset=\"0.73\" stop-color=\"#000000\"/>\n      <stop offset=\"0.746\" stop-color=\"#000000\"/>\n      <stop offset=\"0.762\" stop-color=\"#000000\"/>\n      <stop offset=\"0.778\" stop-color=\"#000000\"/>\n      <stop offset=\"0.794\" stop-color=\"#000000\"/>\n      <stop offset=\"0.81\" stop-color=\"#000000\"/>\n      <stop offset=\"0.825\" stop-color=\"#000000\"/>\n      <stop offset=\"0.841\" stop-color=\"#000000\"/>\n      <stop offset=\"0.857\" stop-color=\"#000000\"/>\n      <stop offset=\"0.873\" stop-color=\"#000000\"/>\n      <stop offset=\"0.889\" stop-color=\"#000000\"/>\n      <stop offset=\"0.905\" stop-color=\"#000000\"/>\n      <stop offset=\"0.921\" stop-color=\"#000000\"/>\n      <stop offset=\"0.937\" stop-color=\"#000000\"/>\n      <stop offset=\"0.952\" stop-color=\"#000000\"/>\n      <stop offset=\"0.968\" stop-color=\"#000000\"/>\n      <stop offset=\"0.984\" stop-color=\"#000000\"/>\n      <stop offset=\"1\" stop-color=\"#000000\"/>\n    </linearGradient>\n  </defs>\n  <rect x=\"0\" y=\"0\" width=\"24\" height=\"24\" fill=\"#000000\"/>\n</svg>"
+  },
+  {
+   "name": "inline: 16 dash values (the cap) are accepted",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeDasharray": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    ]
+   },
+   "expect": "accept",
+   "markup": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <path d=\"M0 0L24 24\" stroke=\"#000000\" stroke-dasharray=\"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1\"/>\n</svg>"
+  },
+  {
+   "name": "inline: whitespace around a paint and around path data is trimmed in the generated markup",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "  M0 0L10 10  ",
+      "fill": "  #FF0000  "
+     }
+    ]
+   },
+   "expect": {
+    "normalised": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <path d=\"M0 0L10 10\" fill=\"#FF0000\"/>\n</svg>"
+   }
+  },
+  {
+   "name": "inline: numbers print to at most 3 decimals; local ids are scoped to the node",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     3,
+     3
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "shine",
+      "x1": 0.33333,
+      "y1": 0,
+      "x2": 2.6666666,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0.123456,
+        "color": "#ffffff"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "circle",
+      "cx": 1.00049,
+      "cy": 1.0005,
+      "r": 0.66666,
+      "fill": "url(#shine)",
+      "strokeWidth": 0.0004
+     }
+    ]
+   },
+   "expect": {
+    "normalised": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 3 3\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" overflow=\"visible\" style=\"display:block\">\n  <defs>\n    <linearGradient id=\"svg-v-shine\" x1=\"0.333\" y1=\"0\" x2=\"2.667\" y2=\"0\" gradientUnits=\"userSpaceOnUse\">\n      <stop offset=\"0.123\" stop-color=\"#ffffff\"/>\n    </linearGradient>\n  </defs>\n  <circle cx=\"1\" cy=\"1.001\" r=\"0.667\" fill=\"url(#svg-v-shine)\" stroke-width=\"0\"/>\n</svg>"
+   }
+  },
+  {
+   "name": "inline: a script element",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "script",
+      "d": "M0 0"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"script\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"script\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: foreignObject",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "foreignObject"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"foreignObject\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"foreignObject\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: use (even with an internal href)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "use",
+      "href": "#g"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"use\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"use\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: image with a data URI",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "image",
+      "href": "data:image/png;base64,AAAA"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"image\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"image\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: text",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "text",
+      "x": 0,
+      "y": 0
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"text\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"text\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: a style element",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "style"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"style\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"style\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: an anchor (a)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "a",
+      "href": "javascript:alert(1)",
+      "children": []
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"a\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"a\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: polyline (real-world icons must be converted to path)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "polyline",
+      "points": "0,0 1,1"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"polyline\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"polyline\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: animate / set",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "set",
+      "attributeName": "href",
+      "to": "javascript:alert(1)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"set\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"set\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: a nested svg element",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "svg",
+      "children": []
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].tag \"svg\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   },
+   "issues": [
+    "svg.children[0].tag \"svg\" is not allowed: an svg holds path, rect, ellipse, circle, line and g"
+   ]
+  },
+  {
+   "name": "inline: a def that is not a gradient, clipPath or mask (filter)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "filter",
+      "id": "f"
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].tag must be linearGradient, radialGradient, clipPath or mask"
+   },
+   "issues": [
+    "svg.defs[0].tag must be linearGradient, radialGradient, clipPath or mask"
+   ]
+  },
+  {
+   "name": "inline: a def that is a pattern",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "pattern",
+      "id": "p",
+      "children": []
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].tag must be linearGradient, radialGradient, clipPath or mask"
+   },
+   "issues": [
+    "svg.defs[0].tag must be linearGradient, radialGradient, clipPath or mask"
+   ]
+  },
+  {
+   "name": "inline: an onload handler key on a path",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "onload": "alert(1)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"onload\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"onload\""
+   ]
+  },
+  {
+   "name": "inline: an onclick key on the top level",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 24,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#ff0000"
+       },
+       {
+        "offset": 1,
+        "color": "rgba(0, 0, 255, 0.5)",
+        "opacity": 0.8
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M12 0C18.6 0 24 5.4 24 12S18.6 24 12 24 0 18.6 0 12 5.4 0 12 0Z",
+      "fill": "url(#g)",
+      "fillRule": "evenodd"
+     },
+     {
+      "tag": "g",
+      "opacity": 0.5,
+      "transform": [
+       1,
+       0,
+       0,
+       1,
+       2,
+       2
+      ],
+      "children": [
+       {
+        "tag": "rect",
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4,
+        "rx": 1,
+        "fill": "#00ff00"
+       },
+       {
+        "tag": "circle",
+        "cx": 2,
+        "cy": 2,
+        "r": 1,
+        "stroke": "#000",
+        "strokeWidth": 0.5,
+        "fill": "none"
+       }
+      ]
+     }
+    ],
+    "onclick": "x"
+   },
+   "expect": {
+    "refuse": "Icon: svg has no \"onclick\" (it takes viewBox, children, defs)"
+   },
+   "issues": [
+    "svg has no \"onclick\" (it takes viewBox, children, defs)"
+   ]
+  },
+  {
+   "name": "inline: an href key on a path",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "href": "https://x.test/a.svg"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"href\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"href\""
+   ]
+  },
+  {
+   "name": "inline: an xlinkHref key on a path",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "xlinkHref": "https://x.test/a.svg"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"xlinkHref\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"xlinkHref\""
+   ]
+  },
+  {
+   "name": "inline: a style key",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "style": "fill:url(https://evil.example/p.svg#g)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"style\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"style\""
+   ]
+  },
+  {
+   "name": "inline: a class key",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "class": "icon"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"class\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"class\""
+   ]
+  },
+  {
+   "name": "inline: an id key on a shape (only defs carry ids)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "id": "p1"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"id\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"id\""
+   ]
+  },
+  {
+   "name": "inline: kebab-case attribute names are not the data spelling (stroke-width)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "stroke-width": 2
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"stroke-width\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"stroke-width\""
+   ]
+  },
+  {
+   "name": "inline: a __proto__ key (an own JSON property)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0",
+      "__proto__": {
+       "polluted": true
+      }
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a path has no \"__proto__\""
+   },
+   "issues": [
+    "svg.children[0]: a path has no \"__proto__\""
+   ]
+  },
+  {
+   "name": "inline: an extra key on a gradient (href)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ],
+      "href": "#other"
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0]: a linearGradient has no \"href\""
+   },
+   "issues": [
+    "svg.defs[0]: a linearGradient has no \"href\""
+   ]
+  },
+  {
+   "name": "inline: an extra key on a stop (href)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000",
+        "href": "x"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].stops[0] is { offset, color, opacity? }"
+   },
+   "issues": [
+    "svg.defs[0].stops[0] is { offset, color, opacity? }"
+   ]
+  },
+  {
+   "name": "inline: a top-level width key",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "circle",
+      "cx": 1,
+      "cy": 1,
+      "r": 1
+     }
+    ],
+    "width": 24
+   },
+   "expect": {
+    "refuse": "Icon: svg has no \"width\" (it takes viewBox, children, defs)"
+   },
+   "issues": [
+    "svg has no \"width\" (it takes viewBox, children, defs)"
+   ]
+  },
+  {
+   "name": "inline: a javascript: paint",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "javascript:alert(1)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"javascript:alert(1)\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"javascript:alert(1)\")"
+   ]
+  },
+  {
+   "name": "inline: an external url() paint",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "url(https://x.test/p.svg#g)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"url(https://x.test/p.svg#g)\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"url(https://x.test/p.svg#g)\")"
+   ]
+  },
+  {
+   "name": "inline: a quoted local url() paint (only the bare form is allowed)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "url('#g')"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"url('#g')\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"url('#g')\")"
+   ]
+  },
+  {
+   "name": "inline: a paint referring to a missing gradient",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "url(#nope)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill refers to \"nope\", which is not a gradient defined in this svg"
+   },
+   "issues": [
+    "svg.children[0].fill refers to \"nope\", which is not a gradient defined in this svg"
+   ]
+  },
+  {
+   "name": "inline: a paint referring to a clipPath instead of a gradient",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "clipPath",
+      "id": "c",
+      "children": []
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "fill": "url(#c)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill refers to \"c\", which is not a gradient defined in this svg"
+   },
+   "issues": [
+    "svg.children[0].fill refers to \"c\", which is not a gradient defined in this svg"
+   ]
+  },
+  {
+   "name": "inline: a clipPath reference that names a gradient",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "clipPath": "g"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].clipPath must be the id of a clipPath defined in this svg"
+   },
+   "issues": [
+    "svg.children[0].clipPath must be the id of a clipPath defined in this svg"
+   ]
+  },
+  {
+   "name": "inline: a mask reference in url() form (it takes the bare id)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "mask",
+      "id": "m",
+      "children": []
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "mask": "url(#m)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].mask must be the id of a mask defined in this svg"
+   },
+   "issues": [
+    "svg.children[0].mask must be the id of a mask defined in this svg"
+   ]
+  },
+  {
+   "name": "inline: a named colour (red)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "red"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"red\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"red\")"
+   ]
+  },
+  {
+   "name": "inline: a CSS variable paint",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "var(--stroke)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"var(--stroke)\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"var(--stroke)\")"
+   ]
+  },
+  {
+   "name": "inline: an hsl() paint",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "hsl(0, 100%, 50%)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"hsl(0, 100%, 50%)\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"hsl(0, 100%, 50%)\")"
+   ]
+  },
+  {
+   "name": "inline: an rgb() paint with percentages",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "rgb(100%, 0%, 0%)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"rgb(100%, 0%, 0%)\")"
+   },
+   "issues": [
+    "svg.children[0].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"rgb(100%, 0%, 0%)\")"
+   ]
+  },
+  {
+   "name": "inline: a stop colour that is a url()",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "url(#g)"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].stops[0].color must be a colour"
+   },
+   "issues": [
+    "svg.defs[0].stops[0].color must be a colour"
+   ]
+  },
+  {
+   "name": "inline: a paint that is not a string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": 16711680
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fill must be a colour, none or url(#id)"
+   },
+   "issues": [
+    "svg.children[0].fill must be a colour, none or url(#id)"
+   ]
+  },
+  {
+   "name": "inline: markup smuggled into path data",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0\"/><script>alert(1)</script>"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   },
+   "issues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ]
+  },
+  {
+   "name": "inline: path data not starting with M",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "L0 0"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   },
+   "issues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ]
+  },
+  {
+   "name": "inline: an exponent with no digits (1e)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L1e 2"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d has a malformed number"
+   },
+   "issues": [
+    "svg.children[0].d has a malformed number"
+   ]
+  },
+  {
+   "name": "inline: a doubled exponent (1ee2)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L1ee2 2"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d has a malformed number"
+   },
+   "issues": [
+    "svg.children[0].d has a malformed number"
+   ]
+  },
+  {
+   "name": "inline: a doubled sign (--1)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L--1 2"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d has a malformed number"
+   },
+   "issues": [
+    "svg.children[0].d has a malformed number"
+   ]
+  },
+  {
+   "name": "inline: a sign followed by a space",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L- 1 2"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d has a malformed number"
+   },
+   "issues": [
+    "svg.children[0].d has a malformed number"
+   ]
+  },
+  {
+   "name": "inline: path data that is not a string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": [
+       "M",
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   },
+   "issues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ]
+  },
+  {
+   "name": "inline: empty path data",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": ""
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   },
+   "issues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ]
+  },
+  {
+   "name": "inline: a path one character over 200000",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": ""
+     }
+    ]
+   },
+   "generate": {
+    "kind": "repeat-string",
+    "target": "children.0.d",
+    "prefix": "M0 0",
+    "unit": "L1 1",
+    "count": 49999,
+    "suffix": " "
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].d is longer than 200000 characters"
+   },
+   "issues": [
+    "svg.children[0].d is longer than 200000 characters"
+   ]
+  },
+  {
+   "name": "inline: path data over 1000000 characters in total (6 paths of 200000)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "repeat-element",
+    "target": "children",
+    "count": 6,
+    "element": {
+     "tag": "path",
+     "d": ""
+    },
+    "elementString": {
+     "target": "d",
+     "prefix": "M0 0",
+     "unit": "L1 1",
+     "count": 49999,
+     "suffix": ""
+    }
+   },
+   "expect": {
+    "refuse": "Icon: svg path data totals more than 1000000 characters"
+   },
+   "issues": [
+    "svg path data totals more than 1000000 characters"
+   ]
+  },
+  {
+   "name": "inline: a viewBox with a zero width",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     0,
+     24
+    ],
+    "children": []
+   },
+   "expect": {
+    "refuse": "Icon: svg.viewBox must be [x, y, width, height] with a positive width and height"
+   },
+   "issues": [
+    "svg.viewBox must be [x, y, width, height] with a positive width and height"
+   ]
+  },
+  {
+   "name": "inline: a viewBox of three numbers",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24
+    ],
+    "children": []
+   },
+   "expect": {
+    "refuse": "Icon: svg.viewBox must be [x, y, width, height] with a positive width and height"
+   },
+   "issues": [
+    "svg.viewBox must be [x, y, width, height] with a positive width and height"
+   ]
+  },
+  {
+   "name": "inline: a viewBox given as a string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": "0 0 24 24",
+    "children": []
+   },
+   "expect": {
+    "refuse": "Icon: svg.viewBox must be [x, y, width, height] with a positive width and height"
+   },
+   "issues": [
+    "svg.viewBox must be [x, y, width, height] with a positive width and height"
+   ]
+  },
+  {
+   "name": "inline: a number one over the cap (10^7 + 1)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 10000001,
+      "height": 1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].width must be a finite number"
+   },
+   "issues": [
+    "svg.children[0].width must be a finite number"
+   ]
+  },
+  {
+   "name": "inline: a huge number (1e12)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1000000000000,
+      "height": 1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].width must be a finite number"
+   },
+   "issues": [
+    "svg.children[0].width must be a finite number"
+   ]
+  },
+  {
+   "name": "inline: a number given as a string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": "4",
+      "height": 4
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].width must be a finite number"
+   },
+   "issues": [
+    "svg.children[0].width must be a finite number"
+   ]
+  },
+  {
+   "name": "inline: a rect missing its height",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 4
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a rect needs height"
+   },
+   "issues": [
+    "svg.children[0]: a rect needs height"
+   ]
+  },
+  {
+   "name": "inline: opacity over 1",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "opacity": 1.5
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].opacity must be a number from 0 to 1"
+   },
+   "issues": [
+    "svg.children[0].opacity must be a number from 0 to 1"
+   ]
+  },
+  {
+   "name": "inline: a negative stroke width",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeWidth": -1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].strokeWidth must be a number from 0"
+   },
+   "issues": [
+    "svg.children[0].strokeWidth must be a number from 0"
+   ]
+  },
+  {
+   "name": "inline: fillRule inherit",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "fillRule": "inherit"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].fillRule must be nonzero or evenodd"
+   },
+   "issues": [
+    "svg.children[0].fillRule must be nonzero or evenodd"
+   ]
+  },
+  {
+   "name": "inline: strokeLinejoin arcs (an SVG 2 value not on the list)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeLinejoin": "arcs"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].strokeLinejoin must be miter, round or bevel"
+   },
+   "issues": [
+    "svg.children[0].strokeLinejoin must be miter, round or bevel"
+   ]
+  },
+  {
+   "name": "inline: a dash array of all zeros",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeDasharray": [
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   },
+   "issues": [
+    "svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   ]
+  },
+  {
+   "name": "inline: 17 dash values",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeDasharray": [
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   },
+   "issues": [
+    "svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   ]
+  },
+  {
+   "name": "inline: a dash array given as a string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "strokeDasharray": "4 2"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   },
+   "issues": [
+    "svg.children[0].strokeDasharray must be 1 to 16 numbers from 0, not all 0"
+   ]
+  },
+  {
+   "name": "inline: vectorEffect with another value",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "vectorEffect": "non-scaling-size"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].vectorEffect must be non-scaling-stroke"
+   },
+   "issues": [
+    "svg.children[0].vectorEffect must be non-scaling-stroke"
+   ]
+  },
+  {
+   "name": "inline: a transform of five numbers",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "transform": [
+       1,
+       0,
+       0,
+       1,
+       0
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].transform must be six numbers [a, b, c, d, e, f]"
+   },
+   "issues": [
+    "svg.children[0].transform must be six numbers [a, b, c, d, e, f]"
+   ]
+  },
+  {
+   "name": "inline: a transform given as a CSS string",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L24 24",
+      "stroke": "#000000",
+      "transform": "rotate(45)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].transform must be six numbers [a, b, c, d, e, f]"
+   },
+   "issues": [
+    "svg.children[0].transform must be six numbers [a, b, c, d, e, f]"
+   ]
+  },
+  {
+   "name": "inline: a group without children",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "g"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0]: a g needs children; svg.children[0].children must be a list"
+   },
+   "issues": [
+    "svg.children[0]: a g needs children",
+    "svg.children[0].children must be a list"
+   ]
+  },
+  {
+   "name": "inline: groups nested 17 deep (one over the cap)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "nest-g",
+    "target": "children",
+    "depth": 17,
+    "leaf": {
+     "tag": "circle",
+     "cx": 0,
+     "cy": 0,
+     "r": 1
+    }
+   },
+   "expect": {
+    "refuse": "Icon: svg.children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children: groups nest deeper than 16"
+   },
+   "issues": [
+    "svg.children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children[0].children: groups nest deeper than 16"
+   ]
+  },
+  {
+   "name": "inline: 5001 elements (one over the cap)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": []
+   },
+   "generate": {
+    "kind": "repeat-element",
+    "target": "children",
+    "count": 5001,
+    "element": {
+     "tag": "circle",
+     "cx": 0,
+     "cy": 0,
+     "r": 1
+    }
+   },
+   "expect": {
+    "refuse": "Icon: svg has more than 5000 elements"
+   },
+   "issues": [
+    "svg has more than 5000 elements"
+   ]
+  },
+  {
+   "name": "inline: 65 gradient stops (one over the cap)",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       },
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].stops must be a list of 1 to 64 stops"
+   },
+   "issues": [
+    "svg.defs[0].stops must be a list of 1 to 64 stops"
+   ]
+  },
+  {
+   "name": "inline: a stop offset over 1",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 2,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].stops[0].offset must be a number from 0 to 1"
+   },
+   "issues": [
+    "svg.defs[0].stops[0].offset must be a number from 0 to 1"
+   ]
+  },
+  {
+   "name": "inline: a gradient without stops",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": []
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].stops must be a list of 1 to 64 stops"
+   },
+   "issues": [
+    "svg.defs[0].stops must be a list of 1 to 64 stops"
+   ]
+  },
+  {
+   "name": "inline: a gradient missing x1",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0]: a linearGradient needs x1"
+   },
+   "issues": [
+    "svg.defs[0]: a linearGradient needs x1"
+   ]
+  },
+  {
+   "name": "inline: gradient units not on the list",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ],
+      "units": "strokeWidth"
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].units must be userSpaceOnUse or objectBoundingBox"
+   },
+   "issues": [
+    "svg.defs[0].units must be userSpaceOnUse or objectBoundingBox"
+   ]
+  },
+  {
+   "name": "inline: a def id carrying markup",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g\"><script>",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   },
+   "issues": [
+    "svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   ]
+  },
+  {
+   "name": "inline: a def id starting with a digit",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "1g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   },
+   "issues": [
+    "svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   ]
+  },
+  {
+   "name": "inline: a def id of 65 characters",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   },
+   "issues": [
+    "svg.defs[0].id must be a letter then letters, digits, _ or - (at most 64)"
+   ]
+  },
+  {
+   "name": "inline: a def id used twice",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     },
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 24,
+      "fill": "#000000"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg.defs[1]: the id \"g\" is used twice"
+   },
+   "issues": [
+    "svg.defs[1]: the id \"g\" is used twice"
+   ]
+  },
+  {
+   "name": "inline: markup instead of data",
+   "layer": "inline",
+   "svg": "<svg onload=\"alert(1)\"></svg>",
+   "expect": {
+    "refuse": "Icon: svg must be an object { viewBox, children, defs? }"
+   },
+   "issues": [
+    "svg must be an object { viewBox, children, defs? }"
+   ]
+  },
+  {
+   "name": "inline: a list instead of an object",
+   "layer": "inline",
+   "svg": [],
+   "expect": {
+    "refuse": "Icon: svg must be an object { viewBox, children, defs? }"
+   },
+   "issues": [
+    "svg must be an object { viewBox, children, defs? }"
+   ]
+  },
+  {
+   "name": "inline: null on add (a write of null through update_node clears instead)",
+   "layer": "inline",
+   "svg": null,
+   "expect": {
+    "refuse": "Icon: svg must be an object { viewBox, children, defs? }"
+   },
+   "issues": [
+    "svg must be an object { viewBox, children, defs? }"
+   ]
+  },
+  {
+   "name": "inline: svg content on a frame",
+   "layer": "inline",
+   "nodeType": "frame",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "circle",
+      "cx": 1,
+      "cy": 1,
+      "r": 1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: only a box (or an instance of one) holds svg content (this is a frame)"
+   },
+   "issues": [
+    "only a box (or an instance of one) holds svg content (this is a frame)"
+   ]
+  },
+  {
+   "name": "inline: svg content on a text node",
+   "layer": "inline",
+   "nodeType": "text",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "circle",
+      "cx": 1,
+      "cy": 1,
+      "r": 1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: only a box (or an instance of one) holds svg content (this is a text)"
+   },
+   "issues": [
+    "only a box (or an instance of one) holds svg content (this is a text)"
+   ]
+  },
+  {
+   "name": "inline: seven problems at once: the message names five and counts the rest",
+   "layer": "inline",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "style": "x",
+    "children": [
+     {
+      "tag": "script"
+     },
+     {
+      "tag": "path",
+      "d": "L0",
+      "onload": "x",
+      "fill": "red",
+      "opacity": 2
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Icon: svg has no \"style\" (it takes viewBox, children, defs); svg.viewBox must be [x, y, width, height] with a positive width and height; svg.children[0].tag \"script\" is not allowed: an svg holds path, rect, ellipse, circle, line and g; svg.children[1]: a path has no \"onload\"; svg.children[1].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M (and 2 more)"
+   },
+   "issues": [
+    "svg has no \"style\" (it takes viewBox, children, defs)",
+    "svg.viewBox must be [x, y, width, height] with a positive width and height",
+    "svg.children[0].tag \"script\" is not allowed: an svg holds path, rect, ellipse, circle, line and g",
+    "svg.children[1]: a path has no \"onload\"",
+    "svg.children[1].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M",
+    "svg.children[1].fill must be a hex or rgb() colour, none, currentColor or url(#id) (got \"red\")",
+    "svg.children[1].opacity must be a number from 0 to 1"
+   ]
+  },
+  {
+   "name": "file: minimal self-contained SVG",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect/></svg>",
+   "bytes": 53,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: Lucide icon as shipped (width/height 24, stroke attributes)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-circle-check\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>",
+   "bytes": 279,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 24,
+    "height": 24,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: Material icon (viewBox only)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\" width=\"24px\" fill=\"#1f1f1f\"><path d=\"M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z\"/></svg>",
+   "bytes": 178,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 24,
+    "height": 24,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: XML prolog, a comment and a public DOCTYPE (with an http URL) before the root",
+   "layer": "file",
+   "svg": "<?xml version=\"1.0\"?>\n<!-- logo -->\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 120 80\"><rect width=\"120\" height=\"80\"/></svg>",
+   "bytes": 276,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 120,
+    "height": 80,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: a BOM, percentage sizes and a viewBox (size from the viewBox)",
+   "layer": "file",
+   "svg": "﻿<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"100%\" height=\"100%\" viewBox=\"0 0 10 20\"/>",
+   "bytes": 134,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 10,
+    "height": 20,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: width in pt (48pt = 64 px)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48pt\" height=\"24\"/>",
+   "bytes": 66,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 64,
+    "height": 24,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: width only, height from the viewBox ratio (comma-separated viewBox)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" viewBox=\"0,0,120,80\"></svg>",
+   "bytes": 79,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 300,
+    "height": 200,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: em sizes are unknown (0 × 0; the studio measures by decoding)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"2em\"/>",
+   "bytes": 67,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: internal references (url(#g) and use href=\"#g\") are fine",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><defs><linearGradient id=\"g\"/></defs><rect fill=\"url(#g)\"/><use href=\"#g\"/><use xlink:href=\"#g\"/></svg>",
+   "bytes": 186,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: a style element without @import or external url()",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a{fill:#f00}</style><rect class=\"a\" width=\"1\" height=\"1\"/></svg>",
+   "bytes": 112,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: an embedded data: URI image is accepted (self-contained)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image href=\"data:image/png;base64,iVBORw0KGgo=\" width=\"1\" height=\"1\"/></svg>",
+   "bytes": 160,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: SMIL animation without handlers or external references",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"><circle cx=\"5\" cy=\"5\" r=\"4\"><animate attributeName=\"r\" values=\"4;2;4\" dur=\"1s\" repeatCount=\"indefinite\"/></circle></svg>",
+   "bytes": 180,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 10,
+    "height": 10,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file: a script element",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script></svg>",
+   "bytes": 71,
+   "expect": {
+    "refuse": "SVG contains a script element: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG contains a script element"
+  },
+  {
+   "name": "file: a namespaced script element (svg:script)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><svg:script href=\"x.js\"/></svg>",
+   "bytes": 71,
+   "expect": {
+    "refuse": "SVG contains a script element: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG contains a script element"
+  },
+  {
+   "name": "file: an upper-case SCRIPT element",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><SCRIPT>alert(1)</SCRIPT></svg>",
+   "bytes": 71,
+   "expect": {
+    "refuse": "SVG contains a script element: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG contains a script element"
+  },
+  {
+   "name": "file: a script element inside a comment (refused: no parsing, a text match)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><!-- <script> --><rect/></svg>",
+   "bytes": 70,
+   "expect": {
+    "refuse": "SVG contains a script element: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG contains a script element"
+  },
+  {
+   "name": "file: an onload handler on the root",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"><rect/></svg>",
+   "bytes": 71,
+   "expect": {
+    "refuse": "SVG has an event handler attribute: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG has an event handler attribute"
+  },
+  {
+   "name": "file: an ONCLICK handler with spaces around =",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect ONCLICK = \"x()\"/></svg>",
+   "bytes": 69,
+   "expect": {
+    "refuse": "SVG has an event handler attribute: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG has an event handler attribute"
+  },
+  {
+   "name": "file: an onbegin handler on an animation",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect><animate attributeName=\"x\" onbegin=\"alert(1)\"/></rect></svg>",
+   "bytes": 106,
+   "expect": {
+    "refuse": "SVG has an event handler attribute: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG has an event handler attribute"
+  },
+  {
+   "name": "file: an https image href",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image href=\"https://evil.example/a.png\"/></svg>",
+   "bytes": 131,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: an http xlink:href",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image xlink:href=\"http://evil.example/a.png\"/></svg>",
+   "bytes": 136,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: use pointing at a file: URL",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><use href=\"file:///etc/passwd#x\"/></svg>",
+   "bytes": 123,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: use pointing at an external https SVG",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><use href=\"https://evil.example/sprite.svg#icon\"/></svg>",
+   "bytes": 139,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: a protocol-relative href (//host)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><use href=\"//evil.example/s.svg#i\"/></svg>",
+   "bytes": 125,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: a javascript: link",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><a href=\"javascript:alert(1)\"><rect/></a></svg>",
+   "bytes": 130,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: an unquoted javascript: href with a leading space inside",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><a xlink:href = ' JavaScript:alert(1)'><rect/></a></svg>",
+   "bytes": 139,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: an iframe src inside foreignObject",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject width=\"10\" height=\"10\"><iframe xmlns=\"http://www.w3.org/1999/xhtml\" src=\"https://evil.example/\"/></foreignObject></svg>",
+   "bytes": 174,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: an external url() in a style attribute",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect style=\"fill:url(https://evil.example/p.svg#g)\"/></svg>",
+   "bytes": 100,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: a javascript: url() in a style element",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>rect{fill:url( 'javascript:alert(1)')}</style><rect/></svg>",
+   "bytes": 106,
+   "expect": {
+    "refuse": "SVG references an external file: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG references an external file"
+  },
+  {
+   "name": "file: a CSS @import",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@import \"x.css\";</style></svg>",
+   "bytes": 77,
+   "expect": {
+    "refuse": "SVG imports a stylesheet: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG imports a stylesheet"
+  },
+  {
+   "name": "file: a CSS @import of a font URL",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@IMPORT url(https://fonts.example/x.css);</style></svg>",
+   "bytes": 102,
+   "expect": {
+    "refuse": "SVG imports a stylesheet: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG imports a stylesheet"
+  },
+  {
+   "name": "file: an internal entity (billion-laughs shape)",
+   "layer": "file",
+   "svg": "<!DOCTYPE svg [<!ENTITY a \"aaaaaaaaaa\"><!ENTITY b \"&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;\">]><svg xmlns=\"http://www.w3.org/2000/svg\"><text>&b;</text></svg>",
+   "bytes": 147,
+   "expect": {
+    "refuse": "SVG declares entities: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG declares entities"
+  },
+  {
+   "name": "file: an external entity (XXE)",
+   "layer": "file",
+   "svg": "<?xml version=\"1.0\"?><!DOCTYPE svg [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><svg xmlns=\"http://www.w3.org/2000/svg\"><text>&xxe;</text></svg>",
+   "bytes": 143,
+   "expect": {
+    "refuse": "SVG declares entities: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG declares entities"
+  },
+  {
+   "name": "file: a parameter entity",
+   "layer": "file",
+   "svg": "<!DOCTYPE svg [<!ENTITY % p SYSTEM \"https://evil.example/x.dtd\"> %p;]><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 111,
+   "expect": {
+    "refuse": "SVG declares entities: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG declares entities"
+  },
+  {
+   "name": "file: a DOCTYPE internal subset with ATTLIST defaults (root not found: unsupported, not unsafe)",
+   "layer": "file",
+   "svg": "<!DOCTYPE svg [<!ATTLIST svg onload CDATA \"alert(1)\">]><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 96,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: declared width 40000 (over 16384 a side)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40000\" height=\"10\"/>",
+   "bytes": 67,
+   "expect": {
+    "refuse": "The image is 40000 × 10 px: the limit is 16384 px a side and 100 megapixels"
+   },
+   "code": "too_many_pixels",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: a viewBox of 20000 × 20000 with no width/height",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20000 20000\"/>",
+   "bytes": 67,
+   "expect": {
+    "refuse": "The image is 20000 × 20000 px: the limit is 16384 px a side and 100 megapixels"
+   },
+   "code": "too_many_pixels",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: 10001 × 10001 (over 100 megapixels, each side under 16384)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10001\" height=\"10001\"/>",
+   "bytes": 70,
+   "expect": {
+    "refuse": "The image is 10001 × 10001 px: the limit is 16384 px a side and 100 megapixels"
+   },
+   "code": "too_many_pixels",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: width 1e9 in exponent notation",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1e9\" height=\"1\"/>",
+   "bytes": 64,
+   "expect": {
+    "refuse": "The image is 1000000000 × 1 px: the limit is 16384 px a side and 100 megapixels"
+   },
+   "code": "too_many_pixels",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: over 25 MB",
+   "layer": "file",
+   "svg": "",
+   "generate": {
+    "kind": "repeat-string",
+    "target": "",
+    "prefix": "<svg xmlns=\"http://www.w3.org/2000/svg\">",
+    "unit": "<rect width=\"1\" height=\"1\"/>",
+    "count": 1000000,
+    "suffix": "</svg>"
+   },
+   "bytes": 28000046,
+   "expect": {
+    "refuse": "Images are limited to 25 MB (this one is 26.7 MB)"
+   },
+   "code": "too_large",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: an Adobe Illustrator export with its usual namespace entities (a real-world file, refused)",
+   "layer": "file",
+   "svg": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" [\n\t<!ENTITY ns_extend \"http://ns.adobe.com/Extensibility/1.0/\">\n\t<!ENTITY ns_svg \"http://www.w3.org/2000/svg\">\n]>\n<svg version=\"1.1\" xmlns=\"&ns_svg;\" width=\"32px\" height=\"32px\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\"/></svg>",
+   "bytes": 465,
+   "expect": {
+    "refuse": "SVG declares entities: Scrim imports only self-contained SVGs"
+   },
+   "code": "unsafe_svg",
+   "svgRefusal": "SVG declares entities"
+  },
+  {
+   "name": "file: an HTML document containing an svg (the root must be svg)",
+   "layer": "file",
+   "svg": "<html><svg xmlns=\"http://www.w3.org/2000/svg\"></svg></html>",
+   "bytes": 59,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: text before the root",
+   "layer": "file",
+   "svg": "hello <svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 47,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: a NUL byte in the first 1024 bytes",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\">\u0000</svg>",
+   "bytes": 47,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported",
+   "svgRefusal": null
+  },
+  {
+   "name": "file: invalid UTF-8",
+   "layer": "file",
+   "svg": {
+    "bytes": [
+     60,
+     115,
+     118,
+     103,
+     32,
+     120,
+     109,
+     108,
+     110,
+     115,
+     61,
+     34,
+     104,
+     116,
+     116,
+     112,
+     58,
+     47,
+     47,
+     119,
+     119,
+     119,
+     46,
+     119,
+     51,
+     46,
+     111,
+     114,
+     103,
+     47,
+     50,
+     48,
+     48,
+     48,
+     47,
+     115,
+     118,
+     103,
+     34,
+     62,
+     255,
+     254,
+     60,
+     47,
+     115,
+     118,
+     103,
+     62
+    ]
+   },
+   "bytes": 48,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported"
+  },
+  {
+   "name": "file: an unterminated comment before the root",
+   "layer": "file",
+   "svg": "<!-- never closed <svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 59,
+   "expect": {
+    "refuse": "Not a supported image: Scrim imports PNG, JPEG, WebP, GIF, AVIF and SVG"
+   },
+   "code": "unsupported",
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): deep nesting has no cap (50000 nested g)",
+   "layer": "file",
+   "svg": "",
+   "generate": {
+    "kind": "nest",
+    "target": "",
+    "prefix": "<svg xmlns=\"http://www.w3.org/2000/svg\">",
+    "open": "<g>",
+    "close": "</g>",
+    "count": 50000,
+    "inner": "<rect/>",
+    "suffix": "</svg>"
+   },
+   "bytes": 350053,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): an xml-stylesheet processing instruction with an https URL",
+   "layer": "file",
+   "svg": "<?xml-stylesheet href=\"https://evil.example/x.css\"?><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 93,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a SYSTEM DOCTYPE pointing at an https DTD",
+   "layer": "file",
+   "svg": "<!DOCTYPE svg SYSTEM \"https://evil.example/x.dtd\"><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+   "bytes": 91,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a character-reference-encoded javascript: href",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><a href=\"&#106;avascript:alert(1)\"><rect/></a></svg>",
+   "bytes": 135,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a character-reference-encoded https href",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image href=\"&#x68;ttps://evil.example/a.png\"/></svg>",
+   "bytes": 136,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): SMIL set writing a javascript: href",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><a><set attributeName=\"href\" to=\"javascript:alert(1)\"/><rect/></a></svg>",
+   "bytes": 155,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a relative external reference (use href=\"other.svg#a\")",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><use href=\"other.svg#a\"/></svg>",
+   "bytes": 114,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a relative url() in CSS",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect style=\"fill:url(other.svg#g)\"/></svg>",
+   "bytes": 83,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): foreignObject with XHTML content (no script, no URL)",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject width=\"10\" height=\"10\"><div xmlns=\"http://www.w3.org/1999/xhtml\">hi</div></foreignObject></svg>",
+   "bytes": 150,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): an iframe srcdoc inside foreignObject",
+   "layer": "file",
+   "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject width=\"10\" height=\"10\"><iframe xmlns=\"http://www.w3.org/1999/xhtml\" srcdoc=\"&lt;script&gt;alert(1)&lt;/script&gt;\"/></foreignObject></svg>",
+   "bytes": 193,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "file (gap): a handler after a slash (<svg/onload=…>, malformed XML)",
+   "layer": "file",
+   "svg": "<svg/onload=alert(1)>",
+   "bytes": 21,
+   "expect": "accept",
+   "sniffed": {
+    "ext": "svg",
+    "width": 0,
+    "height": 0,
+    "orientation": 1
+   },
+   "svgRefusal": null
+  },
+  {
+   "name": "pathEdit: absolute M L C Q Z round-trips unchanged",
+   "layer": "pathEdit",
+   "svg": "M10 20L30 40C1 2 3 4 5 6Q7 8 9 10Z",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M10 20L30 40C1 2 3 4 5 6Q7 8 9 10Z"
+   },
+   "arcs": 0,
+   "segments": 5
+  },
+  {
+   "name": "pathEdit: relative commands become absolute, H / V become L",
+   "layer": "pathEdit",
+   "svg": "m10 10 l5 0 h5 v5 H0 V0 z",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M10 10L15 10L20 10L20 15L0 15L0 0Z"
+   },
+   "arcs": 0,
+   "segments": 7
+  },
+  {
+   "name": "pathEdit: implicit lines after M (absolute and relative)",
+   "layer": "pathEdit",
+   "svg": "m1 1 2 2",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M1 1L3 3"
+   },
+   "arcs": 0,
+   "segments": 2
+  },
+  {
+   "name": "pathEdit: S and T reflect the previous control point",
+   "layer": "pathEdit",
+   "svg": "M0 0C0 10 10 10 10 0S20 -10 20 0",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 0C0 10 10 10 10 0C10 -10 20 -10 20 0"
+   },
+   "arcs": 0,
+   "segments": 3
+  },
+  {
+   "name": "pathEdit: T after Q",
+   "layer": "pathEdit",
+   "svg": "M0 0Q5 10 10 0T20 0",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 0Q5 10 10 0Q15 -10 20 0"
+   },
+   "arcs": 0,
+   "segments": 3
+  },
+  {
+   "name": "pathEdit: compact numbers (signs and dots separate; exponents)",
+   "layer": "pathEdit",
+   "svg": "M.5.5L-1-1L1e2 2E-1",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0.5 0.5L-1 -1L100 0.2"
+   },
+   "arcs": 0,
+   "segments": 3
+  },
+  {
+   "name": "pathEdit: a half-circle arc becomes 2 cubics",
+   "layer": "pathEdit",
+   "svg": "M0 50A50 50 0 0 1 100 50",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 50C0 22.39 22.39 0 50 0C77.61 0 100 22.39 100 50"
+   },
+   "arcs": 1,
+   "segments": 3
+  },
+  {
+   "name": "pathEdit: compact arc flags (\"a1 1 0 011 1\")",
+   "layer": "pathEdit",
+   "svg": "M0 0a1 1 0 011 1",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 0C0.55 0 1 0.45 1 1"
+   },
+   "arcs": 1,
+   "segments": 2
+  },
+  {
+   "name": "pathEdit: an arc with a zero radius is a line",
+   "layer": "pathEdit",
+   "svg": "M0 0A0 5 0 0 1 10 0",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 0L10 0"
+   },
+   "arcs": 1,
+   "segments": 2
+  },
+  {
+   "name": "pathEdit: an arc to its own start point vanishes",
+   "layer": "pathEdit",
+   "svg": "M5 5A3 3 0 0 1 5 5",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M5 5"
+   },
+   "arcs": 1,
+   "segments": 1
+  },
+  {
+   "name": "pathEdit: numbers serialise to 0.01",
+   "layer": "pathEdit",
+   "svg": "M0.004 1.235L3.33333 -0.004",
+   "writeIssues": [],
+   "expect": {
+    "normalised": "M0 1.24L3.33 0"
+   },
+   "arcs": 0,
+   "segments": 2
+  },
+  {
+   "name": "pathEdit: an odd argument count is refused, never repaired",
+   "layer": "pathEdit",
+   "svg": "M0 0 1",
+   "writeIssues": [],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "pathEdit: a dangling command is refused",
+   "layer": "pathEdit",
+   "svg": "M1 1 L",
+   "writeIssues": [],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "pathEdit: an arc flag other than 0 or 1 is refused",
+   "layer": "pathEdit",
+   "svg": "M0 0A1 1 0 2 1 5 5",
+   "writeIssues": [],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "pathEdit: an unknown command letter is refused",
+   "layer": "pathEdit",
+   "svg": "M1 1 X2 2",
+   "writeIssues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "pathEdit: Z alone is refused",
+   "layer": "pathEdit",
+   "svg": "Z",
+   "writeIssues": [
+    "svg.children[0].d must be path data (M, L, H, V, C, S, Q, T, A, Z and numbers), starting with M"
+   ],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "pathEdit: numbers after Z are refused",
+   "layer": "pathEdit",
+   "svg": "M0 0L1 1Z 2 2",
+   "writeIssues": [],
+   "expect": {
+    "refuse": "parsePath: null"
+   }
+  },
+  {
+   "name": "editRefusal: one path is editable",
+   "layer": "editRefusal",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L1 1"
+     }
+    ]
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "editRefusal: two shapes",
+   "layer": "editRefusal",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0"
+     },
+     {
+      "tag": "path",
+      "d": "M1 1"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Only a single path can be edited (this vector has 2 shapes)"
+   }
+  },
+  {
+   "name": "editRefusal: a rect",
+   "layer": "editRefusal",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "rect",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Only a path or a line can be edited (this is a rect)"
+   }
+  },
+  {
+   "name": "editRefusal: a path with a transform",
+   "layer": "editRefusal",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L1 1",
+      "transform": [
+       1,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Only a plain path can be edited (this one has a transform, a clip, a mask or definitions)"
+   }
+  },
+  {
+   "name": "editRefusal: a path with defs",
+   "layer": "editRefusal",
+   "svg": {
+    "viewBox": [
+     0,
+     0,
+     24,
+     24
+    ],
+    "defs": [
+     {
+      "tag": "linearGradient",
+      "id": "g",
+      "x1": 0,
+      "y1": 0,
+      "x2": 1,
+      "y2": 0,
+      "stops": [
+       {
+        "offset": 0,
+        "color": "#000000"
+       }
+      ]
+     }
+    ],
+    "children": [
+     {
+      "tag": "path",
+      "d": "M0 0L1 1",
+      "fill": "url(#g)"
+     }
+    ]
+   },
+   "expect": {
+    "refuse": "Only a plain path can be edited (this one has a transform, a clip, a mask or definitions)"
+   }
+  }
+ ]
+}
