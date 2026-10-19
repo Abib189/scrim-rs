@@ -18,7 +18,7 @@ fn initialize_negotiates_versions() {
         let mut s = Server::headless();
         let r = reply(&mut s, &json!({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": asked}}).to_string());
         assert_eq!(r["result"]["protocolVersion"], want);
-        assert_eq!(r["result"]["serverInfo"]["name"], "figcraft");
+        assert_eq!(r["result"]["serverInfo"]["name"], "scrim");
         let caps = &r["result"]["capabilities"];
         assert!(caps["tools"].is_object() && caps["resources"].is_object() && caps["prompts"].is_object());
         let ins = r["result"]["instructions"].as_str().unwrap();

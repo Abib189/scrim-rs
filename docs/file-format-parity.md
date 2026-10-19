@@ -61,7 +61,7 @@ export limit, not a native document nesting limit.
 ### Export to `.fig` (experimental)
 
 `file.export {format: "fig"}` (or a `path` ending in `.fig`), File ▸ Export… ▸ .fig (experimental),
-`figcraft-cli export <file> -o <out>.fig` (and `convert`) and MCP's `export {format: "fig"}` write
+`scrim export <file> -o <out>.fig` (and `convert`) and MCP's `export {format: "fig"}` write
 the whole document; so do File ▸ Save as… and `file.save` / `file.saveAs` with a `.fig` path, as a
 copy: the document keeps its `.figcraft` path, unsaved changes and version preview, and a file an
 earlier build saved under a `.fig` name is never overwritten by Save (`save_format_tests`,

@@ -71,7 +71,7 @@ language also needs its script in `cjk::language`.
 1. Copy `crates/ui-egui/locales/es.toml` to `<code>.toml` (a BCP 47 code: `fr`, `pt-BR`, `ja`) and
    set `[meta] name` and `status = "draft — needs native review"`.
 2. Translate every value; keep the keys. Keep `{placeholders}` exactly, "…" where English has it,
-   brand names and keyboard glyphs. English labels of commands: `figcraft-cli commands`.
+   brand names and keyboard glyphs. English labels of commands: `scrim commands`.
 3. Plurals: give `one` only if the language has a singular form (Japanese, Korean and Chinese give
    only `other`). `other` is required; `one`, `few` and `many` are optional. `trn` picks `one` for
    1 (also 0 in French and Brazilian Portuguese). Russian uses `one` for 1, 21, 31… except 11;

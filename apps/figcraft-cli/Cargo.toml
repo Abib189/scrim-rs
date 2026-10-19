@@ -4,11 +4,17 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
-description = "FigCraft command line: info, export, convert, render, scripted commands, MCP server, perf"
+description = "Scrim command line (`scrim`): info, export, convert, render, query, lint, scripted commands, MCP server, perf"
+
+# `scrim` is the command people type; `figcraft-cli` is its old name, kept as a thin alias that says
+# so and runs `scrim` (docs/design/rebrand.md, A3).
+[[bin]]
+name = "scrim"
+path = "src/main.rs"
 
 [[bin]]
 name = "figcraft-cli"
-path = "src/main.rs"
+path = "src/alias.rs"
 
 [lints]
 workspace = true

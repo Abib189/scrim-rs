@@ -38,7 +38,9 @@ modules:
     buildsystem: simple
     build-commands:
       - install -Dm755 bin/figcraft /app/bin/figcraft
-      # The headless CLI, in tarballs built with apps/figcraft-cli.
+      # The headless CLI, scrim, and its old name figcraft-cli (an alias), in tarballs built with
+      # apps/figcraft-cli.
+      - if [ -x bin/scrim ]; then install -Dm755 bin/scrim /app/bin/scrim; fi
       - if [ -x bin/figcraft-cli ]; then install -Dm755 bin/figcraft-cli /app/bin/figcraft-cli; fi
       - install -Dm644 share/applications/design.scrim.app.desktop /app/share/applications/design.scrim.app.desktop
       # .figcraft; the runtime's shared-mime-info already knows SVG, PNG and JPEG.

@@ -14,8 +14,8 @@ The server lives in `crates/mcp` (`figcraft-mcp`) and is started by the CLI:
 
 | Command | Backend |
 |---|---|
-| `figcraft-cli mcp` | **Headless**: an in-process engine session with one untitled document. No window; renders with the CPU renderer. |
-| `figcraft-cli mcp --attach <port>` | **Attached**: drives a running Scrim app through its control channel (`figcraft --control <port>`). The user sees every change live. |
+| `scrim mcp` | **Headless**: an in-process engine session with one untitled document. No window; renders with the CPU renderer. |
+| `scrim mcp --attach <port>` | **Attached**: drives a running Scrim app through its control channel (`figcraft --control <port>`). The user sees every change live. |
 
 `--attach` also takes `host:port`. The control channel only listens on 127.0.0.1.
 
@@ -35,11 +35,11 @@ of the window itself (`screenshot` with `window`) needs it on screen: it is then
 ### Confining file access
 
 ```sh
-figcraft-cli mcp --automation-read-root /work/project --automation-write-root /work/project/out
+scrim mcp --automation-read-root /work/project --automation-write-root /work/project/out
 ```
 
 ```json
-{"mcpServers": {"figcraft": {"command": "/path/to/figcraft-cli",
+{"mcpServers": {"scrim": {"command": "/path/to/scrim",
   "args": ["mcp", "--automation-read-root", "/work/project", "--automation-write-root", "/work/project/out"]}}}
 ```
 
@@ -94,24 +94,29 @@ The headless server lays text out with the same fonts as the app: the fonts buil
 plus the installed system fonts, indexed once, the first time text is laid out (a session that
 never touches text never pays for it). So text sizes, auto layout and exports match what users see
 in the app. For renders that come out the same on every machine (CI), start it with
-`figcraft-cli mcp --no-system-fonts` or set `FIGCRAFT_NO_SYSTEM_FONTS=1`: text then uses only the
+`scrim mcp --no-system-fonts` or set `FIGCRAFT_NO_SYSTEM_FONTS=1`: text then uses only the
 built-in fonts. Attached, the app's own fonts apply. The browser build has no system fonts.
 
 ## Configure a client
 
-Build the CLI first (`cargo build --release -p figcraft-cli`) and use the absolute path to
-`target/release/figcraft-cli`.
+The CLI is **`scrim`** (it was `scrim`, which still works as an alias that prints a one-line
+note and runs `scrim`). Put it on your `PATH`, or use its absolute path. From source:
+`cargo build --release -p figcraft-cli` builds `target/release/scrim`.
 
-The Linux AppImage bundles the CLI: `Scrim.AppImage cli <args>` runs `figcraft-cli <args>`, so
-`/path/to/Scrim.AppImage cli mcp` works wherever `/path/to/figcraft-cli mcp` appears below.
+The Linux AppImage bundles the CLI: `Scrim.AppImage cli <args>` runs `scrim <args>`, so
+`/path/to/Scrim.AppImage cli mcp` works wherever `scrim mcp` appears below.
+
+The server announces itself as `scrim` (MCP `serverInfo`). Tool names and parameters are unchanged.
 
 ### Claude Code
 
+The same commands the app's AI tab offers to copy:
+
 ```sh
 # headless
-claude mcp add figcraft -- /path/to/figcraft-cli mcp
+claude mcp add scrim -- scrim mcp
 # drive the running app (start it with: figcraft --control 7979)
-claude mcp add figcraft-app -- /path/to/figcraft-cli mcp --attach 7979
+claude mcp add scrim-app -- scrim mcp --attach 7979
 ```
 
 Or in a project's `.mcp.json`:
@@ -119,7 +124,7 @@ Or in a project's `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "figcraft": { "command": "/path/to/figcraft-cli", "args": ["mcp"] }
+    "scrim": { "command": "scrim", "args": ["mcp"] }
   }
 }
 ```
@@ -131,11 +136,19 @@ Or in a project's `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "figcraft": { "command": "/path/to/figcraft-cli", "args": ["mcp"] },
-    "figcraft-app": { "command": "/path/to/figcraft-cli", "args": ["mcp", "--attach", "7979"] }
+    "scrim": { "command": "/path/to/scrim", "args": ["mcp"] },
+    "scrim-app": { "command": "/path/to/scrim", "args": ["mcp", "--attach", "7979"] }
   }
 }
 ```
+
+### Moving from FigCraft's names
+
+An existing configuration keeps working: `scrim` runs `scrim`. To move to the new names, in
+each client's configuration change the command `scrim` (or its path) to `scrim`, and,
+optionally, the server's key `figcraft` / `figcraft-app` to `scrim` / `scrim-app` (the key is only
+a label; Claude Code: `claude mcp remove figcraft`, then the `claude mcp add` lines above). Tool
+names and parameters didn't change, so prompts and scripts need no edits.
 
 ## Conventions agents must know
 
@@ -200,7 +213,7 @@ Or in a project's `.mcp.json`:
   else on the selection. New layers become the selection.
 - Colours are `"#RRGGBB"` or `"#RRGGBBAA"`. Inside fills and strokes, `color` may also be a hex
   string and gradients can be written `{"type": "linearGradient", "stops": ["#7048E8", "#1098AD"]}`;
-  the engine reads them as its paint JSON, so `run_command`, `figcraft-cli run` and the control
+  the engine reads them as its paint JSON, so `run_command`, `scrim run` and the control
   channel take them too. Effects passed through the MCP tools may use hex `color` strings as well.
 - **Blend modes**: `blend` on a layer (`node.set`) or a paint (`fill.set` / `stroke.set`) is a
   menu label or CSS keyword (`"Normal"`, `"pass through"`, `"multiply"`, `"plusDarker"`, ...;

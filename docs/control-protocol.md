@@ -1,6 +1,6 @@
 # Scrim control protocol
 
-The desktop app can be driven by other programs (tests, scripts, `figcraft-cli mcp --attach`,
+The desktop app can be driven by other programs (tests, scripts, `scrim mcp --attach`,
 sibling Crafting Apps) through a loopback socket:
 
 ```sh
@@ -69,7 +69,7 @@ figcraft --control 7979 --automation-read-root /work/project --automation-write-
 ```
 
 `--automation-read-root <dir>` and `--automation-write-root <dir>` (each repeatable, `--flag=<dir>`
-works too; the same flags as `figcraft-cli mcp`) confine the files the app reads and writes for
+works too; the same flags as `scrim mcp`) confine the files the app reads and writes for
 whoever asks: every control request (`engine.execute`, `ui.render`, `ui.screenshot`, `window.new`,
 `ui.key`, `ui.menu.invoke`…) and every frame of every window, so input injected with `ui.input`
 and what a person does in the window are held to the same folders. Files are read only inside a
@@ -83,7 +83,7 @@ them and confine nothing.
 
 Not confined: opening the files given on the command line when the app starts and the documents
 the system hands over (Finder, Open With; saving them later is confined like any write), and the
-app's own folders (preferences, recovery copies, plugins installed from a plugin directory). Run `figcraft-cli mcp --attach PORT` without the flags against
+app's own folders (preferences, recovery copies, plugins installed from a plugin directory). Run `scrim mcp --attach PORT` without the flags against
 such an app (it refuses them: the app does the confining). `ui.screenshot` and `ui.render` without a
 `path` return the PNG as data, which is how the attached MCP server takes them, so it writes no
 temporary files.
@@ -353,5 +353,5 @@ echo '{"id":2,"method":"ui.screenshot","params":{"path":"/tmp/figcraft.png"}}' >
 read -r reply <&3; echo "$reply"
 ```
 
-For agents, prefer the MCP server (`figcraft-cli mcp --attach 7979`, see `docs/mcp.md`): it wraps
+For agents, prefer the MCP server (`scrim mcp --attach 7979`, see `docs/mcp.md`): it wraps
 these methods in documented tools and returns images inline.

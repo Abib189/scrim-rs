@@ -694,7 +694,7 @@ resuming with its offline edits, and leaving the session going back to snapshot 
 - **Links** name the server's endpoint: `figcraft://join?host=<host:port>&file=…&token=…` for a
   plain `ws://` endpoint at `/`, `figcraft://join?server=<ws(s)://host[:port][/path]>&file=…&token=…`
   for any endpoint (TLS, a path behind a proxy), or `ws(s)://…?file=…&token=…`. The desktop app,
-  `figcraft-cli` and the browser all open `wss://`: natively through rustls (ring, Mozilla's root
+  `scrim` and the browser all open `wss://`: natively through rustls (ring, Mozilla's root
   certificates compiled in, plus any authority in the PEM file `FIGCRAFT_CA_FILE` names), always
   verifying the certificate; the browser through its own WebSocket.
 - **Managing files.** A connection that opens with `Manage {key}` instead of `Hello` sends
@@ -875,12 +875,12 @@ Everything stays a command: `collab.share`, `collab.host`, `collab.join`, `colla
 `collab.forgetFile` and `collab.manageFile` are ordinary commands, so the CLI, the control channel and MCP can
 host, publish and join sessions and manage the files they put online; an agent can be a participant with its own cursor.
 
-*Built*: the desktop app (control channel) and the MCP server's headless session (`figcraft-cli
+*Built*: the desktop app (control channel) and the MCP server's headless session (`scrim
 mcp`) both have the network link installed; `collab.join` returns at once with status
 `"connecting"` and `collab.peers` tells when it is live (or why it failed) and who is typing in
 which text layer. Sessions are per document there too: the commands are about the active
 document's session (`doc.switch` changes it) and `sessions` in `collab.peers` lists them all. An agent's pointer is `collab.cursor {x, y}`; it can chat next to it
-(`collab.cursorChat {text}`) and spotlight (`collab.spotlight`). The one-shot CLI (`figcraft-cli run`) has no link: there the commands say
+(`collab.cursorChat {text}`) and spotlight (`collab.spotlight`). The one-shot CLI (`scrim run`) has no link: there the commands say
 live sessions aren't available.
 
 ## Security

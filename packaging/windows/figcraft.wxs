@@ -11,7 +11,7 @@
   (Program Files\Scrim by default, remembered for upgrades), Ready, a progress page, and a
   Finish page with a ticked "Launch Scrim" box. Installs a Start Menu shortcut, makes
   Scrim the owner of `.figcraft`, and offers it under "Open with" for SVG, PNG and JPEG
-  (without taking over the user's default app for them), plus figcraft-cli when HasCli=1.
+  (without taking over the user's default app for them), plus the CLI (scrim, and figcraft-cli, its old name) when HasCli=1.
   `msiexec /qn` still installs silently.
 
   UpgradeCode is fixed for Scrim forever (generated once; never reuse another app's).
@@ -117,6 +117,10 @@
       </Component>
 
 <?if $(var.HasCli) = 1 ?>
+      <!-- The CLI, scrim, and figcraft-cli: its old name, a thin alias that runs scrim. -->
+      <Component Id="ScrimCli">
+        <File Id="ScrimCliExe" Source="$(var.BinDir)\scrim.exe" KeyPath="yes" />
+      </Component>
       <Component Id="FigcraftCli">
         <File Id="FigcraftCliExe" Source="$(var.BinDir)\figcraft-cli.exe" KeyPath="yes" />
       </Component>

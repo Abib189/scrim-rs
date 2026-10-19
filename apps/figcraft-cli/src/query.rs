@@ -20,7 +20,7 @@ fn load_and_query(file: &str, query: &str, limit: Option<f64>) -> Result<QueryOu
     if meta.len() > MAX_FILE {
         return Err(CliFail::new(
             "too_large",
-            format!("\u{201c}{base}\u{201d} is {} MB: figcraft-cli queries files up to 200 MB", meta.len() / (1024 * 1024)),
+            format!("\u{201c}{base}\u{201d} is {} MB: scrim queries files up to 200 MB", meta.len() / (1024 * 1024)),
         ));
     }
     let doc = figcraft_engine::cmd::file::load(file).map_err(|e| CliFail::new("invalid_document", format!("{base}: {e}")))?.0;
@@ -29,7 +29,7 @@ fn load_and_query(file: &str, query: &str, limit: Option<f64>) -> Result<QueryOu
 
 /// Run `query` or `find` with the arguments after the command name.
 pub fn run(cmd: &str, args: &[String]) -> ExitCode {
-    let out = run_cli("figcraft-cli", &FIGCRAFT, cmd, args, load_and_query);
+    let out = run_cli("scrim", &FIGCRAFT, cmd, args, load_and_query);
     print!("{}", out.stdout);
     eprint!("{}", out.stderr);
     ExitCode::from(out.exit as u8)

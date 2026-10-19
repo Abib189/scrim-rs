@@ -5,7 +5,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 fn bin() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_figcraft-cli"))
+    Command::new(env!("CARGO_BIN_EXE_scrim"))
 }
 
 fn tmp(name: &str) -> std::path::PathBuf {
@@ -171,4 +171,20 @@ fn commands_json_lists_everything() {
     let out = bin().args(["commands", "--json"]).output().unwrap();
     let v: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
     assert!(v.as_array().unwrap().len() > 200);
+}
+
+/// `scrim` is the command (A3); `figcraft-cli` is a thin alias: one note on stderr, then `scrim`
+/// with the same arguments, output and exit status.
+#[test]
+fn scrim_is_the_command_and_figcraft_cli_an_alias() {
+    let scrim = std::process::Command::new(env!("CARGO_BIN_EXE_scrim")).arg("--version").output().unwrap();
+    let version = String::from_utf8(scrim.stdout).unwrap();
+    assert!(version.starts_with("scrim "), "{version}");
+    let alias = std::process::Command::new(env!("CARGO_BIN_EXE_figcraft-cli")).arg("--version").output().unwrap();
+    assert_eq!(String::from_utf8(alias.stdout).unwrap(), version, "the alias's stdout is scrim's");
+    let note = String::from_utf8(alias.stderr).unwrap();
+    assert_eq!(note.lines().count(), 1, "{note}");
+    assert!(note.contains("figcraft-cli is now called `scrim`"), "{note}");
+    let bad = std::process::Command::new(env!("CARGO_BIN_EXE_figcraft-cli")).arg("no-such-subcommand").output().unwrap();
+    assert_eq!(bad.status.code(), Some(2), "the alias passes scrim's exit status through");
 }

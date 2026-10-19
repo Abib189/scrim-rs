@@ -1,4 +1,4 @@
-//! `figcraft-cli`: FigCraft without a window. Inspect, export, convert and render documents, run
+//! `scrim` (formerly `figcraft-cli`): Scrim without a window. Inspect, export, convert and render documents, run
 //! command scripts, list commands, serve MCP on stdio, publish plugins to a server's plugin
 //! directory and measure performance.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -15,24 +15,24 @@ use std::process::ExitCode;
 use args::Args;
 use serde_json::{Value, json};
 
-pub const USAGE: &str = "figcraft-cli — Scrim without a window
+pub const USAGE: &str = "scrim — Scrim without a window
 
 USAGE:
-  figcraft-cli info <file> [--json]
-  figcraft-cli query <file> '<query>' [--limit N] [--json]
-  figcraft-cli find <file> [--type T] [--name TEXT] [--limit N] [--json]
-  figcraft-cli lint <file> [--id ID] [--profile ui|expressive]
-  figcraft-cli analyze <file> [--id ID]
-  figcraft-cli export <file> -o <out> [--format png|jpg|svg|webp|pdf|fig] [--scale N] [--page NAME] [--node ID|NAME]
+  scrim info <file> [--json]
+  scrim query <file> '<query>' [--limit N] [--json]
+  scrim find <file> [--type T] [--name TEXT] [--limit N] [--json]
+  scrim lint <file> [--id ID] [--profile ui|expressive]
+  scrim analyze <file> [--id ID]
+  scrim export <file> -o <out> [--format png|jpg|svg|webp|pdf|fig] [--scale N] [--page NAME] [--node ID|NAME]
                       [--bleed LENGTH] [--crop-marks] [--bleed-marks] [--cmyk]
-  figcraft-cli convert <in> <out>
-  figcraft-cli render <file> -o <out.png> [--scale N] [--page NAME]
-  figcraft-cli run <script.json|script.jsonl> [--in <file>] [--out <file>]
-  figcraft-cli commands [--json] [--filter TEXT]
-  figcraft-cli mcp [--attach PORT] [--automation-read-root DIR]... [--automation-write-root DIR]...
-  figcraft-cli plugin publish <folder> --server ws://host:port/[?key=KEY]
-  figcraft-cli perf [--layers N[,N...]] [--instances N[,N...]]
-  figcraft-cli help | --help | --version
+  scrim convert <in> <out>
+  scrim render <file> -o <out.png> [--scale N] [--page NAME]
+  scrim run <script.json|script.jsonl> [--in <file>] [--out <file>]
+  scrim commands [--json] [--filter TEXT]
+  scrim mcp [--attach PORT] [--automation-read-root DIR]... [--automation-write-root DIR]...
+  scrim plugin publish <folder> --server ws://host:port/[?key=KEY]
+  scrim perf [--layers N[,N...]] [--instances N[,N...]]
+  scrim help | --help | --version
 
 Every subcommand takes --no-system-fonts (or set FIGCRAFT_NO_SYSTEM_FONTS=1): text uses only the
 fonts built into Scrim, for renders that match on every machine. Otherwise installed fonts are
@@ -104,7 +104,7 @@ fn run(argv: &[String]) -> CliResult<ExitCode> {
             Ok(ExitCode::SUCCESS)
         }
         "--version" | "-V" | "version" => {
-            println!("figcraft-cli {}", env!("CARGO_PKG_VERSION"));
+            println!("scrim {}", env!("CARGO_PKG_VERSION"));
             Ok(ExitCode::SUCCESS)
         }
         "query" | "find" => Ok(query::run(cmd, rest)),

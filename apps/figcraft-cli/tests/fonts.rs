@@ -13,7 +13,7 @@ fn run_one(name: &str, step: Value, args: &[&str], opt_out: bool) -> Value {
     std::fs::create_dir_all(&d).unwrap();
     let script = d.join(format!("{name}.json"));
     std::fs::write(&script, json!([step]).to_string()).unwrap();
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_figcraft-cli"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_scrim"));
     cmd.arg("run").arg(&script).args(args);
     if opt_out {
         cmd.env("FIGCRAFT_NO_SYSTEM_FONTS", "1");
@@ -54,7 +54,7 @@ fn info_lists_the_fonts_a_file_uses_that_are_missing() {
     let text =
         |family: &str| json!({"command": "text.create", "params": {"text": "Hamburgefonstiv", "x": 0, "y": 0, "props": {"fontFamily": family}}});
     std::fs::write(&script, json!([text("FigCraft Missing CLI"), text("FigCraft Missing CLI")]).to_string()).unwrap();
-    let cli = || Command::new(env!("CARGO_BIN_EXE_figcraft-cli"));
+    let cli = || Command::new(env!("CARGO_BIN_EXE_scrim"));
     let made = cli().arg("run").arg(&script).arg("--out").arg(&file).output().unwrap();
     assert!(made.status.success(), "{}", String::from_utf8_lossy(&made.stderr));
 

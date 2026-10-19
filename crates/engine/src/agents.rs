@@ -230,6 +230,16 @@ pub fn specs() -> Vec<CommandSpec> {
     )]
 }
 
+/// The command that connects Claude Code to Scrim through MCP: headless (`None`), or attached to the
+/// app's control channel on `port`. The app offers it to copy, and `docs/mcp.md` shows the same text
+/// (a test checks they agree). `scrim` is the CLI (formerly `figcraft-cli`).
+pub fn connect_command(port: Option<u16>) -> String {
+    match port {
+        None => "claude mcp add scrim -- scrim mcp".to_string(),
+        Some(p) => format!("claude mcp add scrim-app -- scrim mcp --attach {p}"),
+    }
+}
+
 #[cfg(test)]
 #[path = "agents_tests.rs"]
 mod tests;

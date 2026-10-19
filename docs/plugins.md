@@ -2,7 +2,7 @@
 
 A Scrim plugin is a WebAssembly module with a small JSON manifest. It acts on the document only
 through Scrim's commands, the same ones the menus, the CLI, the control channel and the MCP
-server run (`figcraft-cli commands` lists them), so a plugin can do what a script can do, within the
+server run (`scrim commands` lists them), so a plugin can do what a script can do, within the
 permissions its manifest asks for, and nothing more.
 
 - **Sandboxed.** Plugins run in [wasmi](https://github.com/wasmi-labs/wasmi), a pure-Rust
@@ -117,7 +117,7 @@ From scripts, the CLI and MCP the same commands apply, panels included:
 {"command": "widget.click", "params": {"id": 12, "target": "increment"}}
 ```
 
-`figcraft-cli run script.jsonl --in design.figcraft --out tidy.figcraft` runs that headless; over
+`scrim run script.jsonl --in design.figcraft --out tidy.figcraft` runs that headless; over
 MCP, `run_command` takes the same ids. A session started by the CLI or the MCP server starts with no
 plugins: import them in the script.
 
@@ -176,7 +176,7 @@ you like, an `assets/` folder of up to 32 plain files (an icon, a licence) that 
 it. Publish it with the server's key:
 
 ```sh
-FIGCRAFT_SERVER_KEY=<key> figcraft-cli plugin publish target/plugins/dist/counter --server ws://host:47900/
+FIGCRAFT_SERVER_KEY=<key> scrim plugin publish target/plugins/dist/counter --server ws://host:47900/
 ```
 
 (the key may also be in the address, `?key=…`, but the environment keeps it out of your shell

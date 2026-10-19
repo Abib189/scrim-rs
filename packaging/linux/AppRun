@@ -9,7 +9,7 @@
 # hicolor icons into $XDG_DATA_HOME, then launch. Every failure here must leave
 # the launch untouched. Opt out with FIGCRAFT_NO_DESKTOP_INTEGRATION=1.
 #
-# `Scrim.AppImage cli <args>` runs the bundled headless figcraft-cli with <args>
+# `Scrim.AppImage cli <args>` runs the bundled headless CLI, scrim, with <args>
 # (e.g. `cli mcp`) instead of the app, without touching the desktop.
 
 set -u
@@ -75,9 +75,9 @@ integrate() {
 # desktop integration, straight to the binary.
 if [ "${1:-}" = cli ]; then
   shift
-  cli="$APPDIR/usr/bin/figcraft-cli"
+  cli="$APPDIR/usr/bin/scrim"
   if [ ! -x "$cli" ]; then
-    echo "figcraft: this AppImage was built without figcraft-cli" >&2
+    echo "scrim: this AppImage was built without the CLI (scrim)" >&2
     exit 127
   fi
   exec "$cli" "$@"

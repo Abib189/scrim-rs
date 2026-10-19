@@ -25,7 +25,7 @@ fn export_depth_cli_refuses_partial_files_and_accepts_an_inner_root() {
         let path = dir.join(format!("previous.{ext}"));
         std::fs::write(&path, b"previous export").unwrap();
         for verb in ["convert", "export"] {
-            let mut command = Command::new(env!("CARGO_BIN_EXE_figcraft-cli"));
+            let mut command = Command::new(env!("CARGO_BIN_EXE_scrim"));
             command.arg(verb).arg(&input);
             if verb == "export" {
                 command.arg("-o");
@@ -38,7 +38,7 @@ fn export_depth_cli_refuses_partial_files_and_accepts_an_inner_root() {
             assert_eq!(std::fs::read(&path).unwrap(), b"previous export");
         }
         let inner = dir.join(format!("inner.{ext}"));
-        let output = Command::new(env!("CARGO_BIN_EXE_figcraft-cli"))
+        let output = Command::new(env!("CARGO_BIN_EXE_scrim"))
             .arg("export")
             .arg(&input)
             .arg("-o")

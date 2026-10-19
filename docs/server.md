@@ -228,7 +228,7 @@ port as everything else; no other service is involved.
   are no publisher accounts, so give it only to people you trust to put code on your team's
   machines. A plugin's author is shown as the publisher typed it in the manifest; nothing verifies
   it.
-- **Publishing.** `figcraft-cli plugin publish FOLDER --server ws://host:47900/` with the key in
+- **Publishing.** `scrim plugin publish FOLDER --server ws://host:47900/` with the key in
   `FIGCRAFT_SERVER_KEY` (or `?key=` in the address), or `plugin.directory.publish` from the app's
   scripts and MCP. Each version must be newer than the last (`1.0.0` → `1.0.1`); the server keeps
   every version until it is unpublished, and lists the latest.
@@ -388,7 +388,7 @@ gives people `wss://` links (and browsers the `wss://` they need on an `https://
 - Tokens never travel in the WebSocket request (the client sends them inside its first message),
   so the proxy's access logs don't record them.
 
-The desktop app, `figcraft-cli` (and so agents through MCP) and the browser build all open
+The desktop app, `scrim` (and so agents through MCP) and the browser build all open
 `wss://` links. The desktop app and the CLI check the certificate against Mozilla's list of root
 authorities built into them (not the operating system's store), so a certificate from a public
 authority such as Let's Encrypt just works. For a certificate from a private authority (or a

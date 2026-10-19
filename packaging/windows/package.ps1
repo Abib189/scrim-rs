@@ -5,9 +5,9 @@
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
     scrim-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    scrim-<version>-windows-<arch>-portable.zip   figcraft.exe (+ figcraft-cli.exe) and the licences
+    scrim-<version>-windows-<arch>-portable.zip   figcraft.exe (+ scrim.exe, figcraft-cli.exe) and the licences
 
-  figcraft-cli.exe is built and shipped once apps/figcraft-cli exists in the workspace.
+  scrim.exe (the CLI) and figcraft-cli.exe (its old name) ship once apps/figcraft-cli exists.
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
@@ -56,9 +56,11 @@ New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 if (-not $env:FIGCRAFT_BUILD_SHA) { $env:FIGCRAFT_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
 if (-not $env:FIGCRAFT_BUILD_DATE) { $env:FIGCRAFT_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
-# The headless CLI ships next to the app once apps/figcraft-cli exists.
+# The headless CLI ships next to the app once apps/figcraft-cli exists: scrim, and figcraft-cli (its
+# old name, a thin alias). Both come from the figcraft-cli package.
 $HasCli = Test-Path (Join-Path $Root 'apps\figcraft-cli\Cargo.toml')
-$Bins = @('figcraft'); if ($HasCli) { $Bins += 'figcraft-cli' }
+$Bins = @('figcraft'); if ($HasCli) { $Bins += @('scrim', 'figcraft-cli') }
+$Pkgs = @('figcraft'); if ($HasCli) { $Pkgs += 'figcraft-cli' }
 
 Write-Output "Scrim $Version for Windows $Arch ($Target): $($Bins -join ', ')"
 
@@ -67,8 +69,8 @@ if (-not $SkipBuild) {
   # proc-macros are unaffected.
   $flagVar = 'CARGO_TARGET_' + ($Target.ToUpper() -replace '-', '_') + '_RUSTFLAGS'
   [Environment]::SetEnvironmentVariable($flagVar, '-C target-feature=+crt-static')
-  $pkgs = @(); foreach ($b in $Bins) { $pkgs += @('-p', $b) }
-  Invoke-Native "cargo build ($Target)" { cargo build --release --locked @pkgs --target $Target }
+  $cargoArgs = @(); foreach ($p in $Pkgs) { $cargoArgs += @('-p', $p) }
+  Invoke-Native "cargo build ($Target)" { cargo build --release --locked @cargoArgs --target $Target }
 }
 
 $Bin = Join-Path $TargetDir "$Target\release"
@@ -83,7 +85,7 @@ function Get-PeHeader([string] $Path) {
   return @{ Machine = [BitConverter]::ToUInt16($bytes, $pe + 4); Subsystem = [BitConverter]::ToUInt16($bytes, $pe + 0x5C) }
 }
 $Machine = switch ($Arch) { 'x64' { 0x8664 } 'x86' { 0x14C } 'arm64' { 0xAA64 } }
-$checks = @(, @('figcraft.exe', 2)); if ($HasCli) { $checks += , @('figcraft-cli.exe', 3) }
+$checks = @(, @('figcraft.exe', 2)); if ($HasCli) { $checks += , @('scrim.exe', 3); $checks += , @('figcraft-cli.exe', 3) }
 foreach ($check in $checks) {
   $h = Get-PeHeader (Join-Path $Bin $check[0])
   if ($h.Machine -ne $Machine) { throw "$($check[0]) is for machine 0x$('{0:X}' -f $h.Machine), expected 0x$('{0:X}' -f $Machine) ($Arch)" }
@@ -178,7 +180,7 @@ Compress-Archive -Path $Portable -DestinationPath $Zip
 # Smoke-test the CLI when this machine can run it. An ARM64 build made on an x64 runner can't run
 # here; .github/workflows/windows-arm64.yml installs and runs it on ARM64 instead.
 $HostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
-$Smoke = if ($HasCli) { 'figcraft-cli.exe' } else { 'figcraft.exe' }
+$Smoke = if ($HasCli) { 'scrim.exe' } else { 'figcraft.exe' }
 if ($Arch -ne 'arm64' -or $HostArch -eq 'arm64') {
   # figcraft.exe is a GUI-subsystem exe: pipe it so PowerShell waits and shows its --version output.
   Invoke-Native "$Smoke --version" { & (Join-Path $Stage $Smoke) --version | Out-Host }

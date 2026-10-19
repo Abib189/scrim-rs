@@ -79,6 +79,9 @@ contents:
   - src: ${STAGE}/usr/bin/figcraft
     dst: /usr/bin/figcraft
     file_info: { mode: 0755 }
+  - src: ${STAGE}/usr/bin/scrim #cli
+    dst: /usr/bin/scrim #cli
+    file_info: { mode: 0755 } #cli
   - src: ${STAGE}/usr/bin/figcraft-cli #cli
     dst: /usr/bin/figcraft-cli #cli
     file_info: { mode: 0755 } #cli

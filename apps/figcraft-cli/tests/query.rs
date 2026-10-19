@@ -8,7 +8,7 @@ use std::process::Command;
 fn cli(args: &[&str]) -> (i32, String, String) {
     let fixture = concat!(env!("CARGO_MANIFEST_DIR"), "/../../docs/scrim-transfer/fixtures/fig/stage-b.fig");
     let args: Vec<&str> = args.iter().map(|a| if *a == "<file>" { fixture } else { a }).collect();
-    let out = Command::new(env!("CARGO_BIN_EXE_figcraft-cli")).arg("--no-system-fonts").args(&args).output().unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_scrim")).arg("--no-system-fonts").args(&args).output().unwrap();
     (out.status.code().unwrap(), String::from_utf8(out.stdout).unwrap(), String::from_utf8(out.stderr).unwrap())
 }
 
@@ -30,13 +30,10 @@ fn query_and_find_print_the_matches() {
 fn errors_exit_by_kind() {
     let (code, _, err) = cli(&["query", "<file>", "//TEXT/.."]);
     assert_eq!(code, 1);
-    assert_eq!(
-        err,
-        "figcraft-cli: invalid query: '..' (parent) is not supported: queries walk down from the document with / and // (at character 8)\n"
-    );
+    assert_eq!(err, "scrim: invalid query: '..' (parent) is not supported: queries walk down from the document with / and // (at character 8)\n");
     let (code, _, err) = cli(&["find", "<file>", "--type", "BOX"]);
     assert_eq!(code, 2);
-    assert!(err.starts_with("figcraft-cli: --type is one of FRAME, GROUP, SECTION"), "{err}");
+    assert!(err.starts_with("scrim: --type is one of FRAME, GROUP, SECTION"), "{err}");
     let (code, out, _) = cli(&["query", "no-such.fig", "//*", "--json"]);
     assert_eq!(code, 3);
     assert!(out.contains("\"code\": \"not_found\""), "{out}");

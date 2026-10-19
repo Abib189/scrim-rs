@@ -2,7 +2,8 @@
 # Build, sign and (optionally) notarize the macOS release artifacts:
 #
 #   $DIST/scrim-<version>-macos-<arch>.dmg          Scrim.app on a drag-to-Applications DMG
-#   $DIST/figcraft-cli-<version>-macos-<arch>.zip      the headless CLI (when apps/figcraft-cli exists)
+#   $DIST/scrim-cli-<version>-macos-<arch>.zip         the headless CLI, scrim, and its old name
+#                                                       figcraft-cli (when apps/figcraft-cli exists)
 #
 # Usage: packaging/macos/package.sh [--arch universal|aarch64|x86_64] [--skip-build]
 #
@@ -41,7 +42,7 @@ SHORT_VERSION="${VERSION%%-*}"
 WORK="$CARGO_TARGET_DIR/macos-package"
 APP="$WORK/Scrim.app"
 DMG="$DIST/scrim-$VERSION-macos-$ARCH.dmg"
-CLI_ZIP="$DIST/figcraft-cli-$VERSION-macos-$ARCH.zip"
+CLI_ZIP="$DIST/scrim-cli-$VERSION-macos-$ARCH.zip"
 
 NOTARIZE=0
 if [ "$IDENTITY" = "-" ]; then
@@ -164,20 +165,22 @@ fi
 # ---- CLI ---------------------------------------------------------------------------------------
 if [ "$HAS_CLI" = 1 ]; then
   echo "==> building $CLI_ZIP"
-  CLI_DIR="$WORK/figcraft-cli-$VERSION-macos-$ARCH"
+  CLI_DIR="$WORK/scrim-cli-$VERSION-macos-$ARCH"
   mkdir -p "$CLI_DIR"
-  cp "$WORK/bin/figcraft-cli" "$CLI_DIR/"
+  cp "$WORK/bin/scrim" "$WORK/bin/figcraft-cli" "$CLI_DIR/"
   copy_docs "$CLI_DIR"
-  # Same Developer ID and hardened runtime as the app, with an explicit reverse-DNS identifier
-  # (codesign would otherwise use the bare file name).
-  sign --options runtime --identifier ai.storyteller.figcraft-cli "$CLI_DIR/figcraft-cli"
+  # Same Developer ID and hardened runtime as the app, with explicit reverse-DNS identifiers
+  # (codesign would otherwise use the bare file names). figcraft-cli is scrim's old name, an alias.
+  sign --options runtime --identifier design.scrim.app.cli "$CLI_DIR/scrim"
+  sign --options runtime --identifier design.scrim.app.cli-alias "$CLI_DIR/figcraft-cli"
+  codesign --verify --strict --verbose=2 "$CLI_DIR/scrim"
   codesign --verify --strict --verbose=2 "$CLI_DIR/figcraft-cli"
   rm -f "$CLI_ZIP"
   ditto -c -k --keepParent "$CLI_DIR" "$CLI_ZIP"
   # notarytool accepts a zip of the bare binary. A bare Mach-O can't carry a stapled ticket, so
   # Gatekeeper looks the notarization up online when a quarantined copy first runs.
   if [ "$NOTARIZE" = 1 ]; then notarize "$CLI_ZIP"; fi
-  "$WORK/bin/figcraft-cli" --version
+  "$WORK/bin/scrim" --version
 else
   warn "apps/figcraft-cli is not in this workspace: no CLI zip"
   rm -f "$CLI_ZIP"
@@ -185,4 +188,4 @@ fi
 
 "$WORK/bin/figcraft" --version
 echo "==> done (check the artifacts as shipped with packaging/macos/verify.sh --arch $ARCH)"
-ls -lh "$DIST"/figcraft*-"$VERSION"-macos-"$ARCH".*
+ls -lh "$DIST"/scrim*-"$VERSION"-macos-"$ARCH".*
