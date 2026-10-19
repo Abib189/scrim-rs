@@ -96,7 +96,10 @@ fn a_colour_field_opens_the_colour_picker_and_two_panels_show_side_by_side() {
     u.frame(vec![]);
     let nodes = |u: &mut Ui| u.frame_output(vec![]).platform_output.accesskit_update.unwrap().nodes;
     // The swatch beside a colour field opens the colour picker on it.
-    let swatch = nodes(&mut u).iter().map(|(_, n)| n).find(|n| n.label() == Some("Color")).and_then(|n| n.bounds()).unwrap();
+    // (The one on the plugin's Accent field's row: the page's background has a "Color" swatch too.)
+    let all = nodes(&mut u);
+    let field = all.iter().map(|(_, n)| n).find(|n| n.label() == Some("Accent")).and_then(|n| n.bounds()).unwrap();
+    let swatch = all.iter().map(|(_, n)| n).filter(|n| n.label() == Some("Color")).filter_map(|n| n.bounds()).find(|b| b.y0 == field.y0).unwrap();
     let at = Pos2::new(((swatch.x0 + swatch.x1) / 2.0) as f32, ((swatch.y0 + swatch.y1) / 2.0) as f32);
     u.button(at, true);
     u.button(at, false);

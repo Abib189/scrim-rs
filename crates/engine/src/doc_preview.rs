@@ -2,9 +2,30 @@
 
 use std::sync::Arc;
 
-use figcraft_doc::Document;
+use figcraft_doc::{Document, NodeId};
 
-use crate::{DocState, VersionPreview};
+use crate::DocState;
+
+/// A version shown on the canvas in place of the document: read-only until it's restored or the
+/// preview ends, which puts the document back as it was.
+#[derive(Clone, Debug)]
+pub struct VersionPreview {
+    pub id: String,
+    pub name: String,
+    /// When the version was saved (Unix seconds).
+    pub time: u64,
+    pub(crate) doc: Arc<Document>,
+    pub(crate) selection: Vec<NodeId>,
+    pub(crate) page: NodeId,
+}
+
+/// Why edits are refused while a version is shown.
+pub const PREVIEW_READ_ONLY: &str = "you're viewing an earlier version: restore it or go back to the current version to edit";
+
+/// Commands that first end a version preview: they act on the document itself. Saving does so
+/// only with a native destination; export copies and pending format choices keep the preview.
+pub(crate) const ENDS_PREVIEW: &[&str] =
+    &["file.save", "file.saveAs", "file.close", "file.revert", "file.saveVersion", "file.duplicate", "version.restore"];
 
 impl DocState {
     /// Show `version` in place of the document (or switch to it from another preview).

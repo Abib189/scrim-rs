@@ -1,0 +1,25 @@
+//! The right panel's mode and tabs are commands, so agents switch them over MCP (`run_command`)
+//! as the person does in the app (`docs/design/panel-redesign.md`, B1). Headless there is no panel
+//! to draw; the commands answer the choice they keep, and never touch the document.
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+mod common;
+
+use common::Client;
+use serde_json::json;
+
+#[test]
+fn the_panel_commands_are_reachable_over_mcp() {
+    let mut c = Client::new();
+    let before = c.doc();
+    for tab in ["design", "prototype", "code", "ai"] {
+        assert_eq!(c.run(&format!("panel.tab.{tab}"), json!({})), json!({"mode": "design", "tab": tab}));
+    }
+    assert_eq!(c.run("panel.mode.animate", json!({})), json!({"mode": "animate", "tab": "ai"}));
+    assert_eq!(c.run("panel.mode.design", json!({})), json!({"mode": "design", "tab": "ai"}));
+    assert_eq!(c.doc(), before, "switching the panel is never an edit");
+    let commands = c.ok("list_commands", json!({}));
+    for id in ["panel.mode.design", "panel.mode.animate", "panel.tab.design", "panel.tab.prototype", "panel.tab.code", "panel.tab.ai"] {
+        assert!(commands.to_string().contains(id), "{id} is listed for agents");
+    }
+}

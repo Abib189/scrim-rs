@@ -8,6 +8,14 @@
 name = "English"
 
 [ui]
+"Design mode" = "Design mode"
+"Animate mode" = "Animate mode"
+"Animate" = "Animate"
+"AI" = "AI"
+"Back to Design" = "Back to Design"
+"Select a layer to see its code" = "Select a layer to see its code"
+"Animation comes in a later stage. This mode is a placeholder: nothing here changes your file." = "Animation comes in a later stage. This mode is a placeholder: nothing here changes your file."
+"The agents working on this file, their changes and the design lint's findings appear here." = "The agents working on this file, their changes and the design lint's findings appear here."
 "Use this server" = "Use this server"
 "To share online, enter the address of a server you trust (wss://…), or share on the local network. Nothing is uploaded until you choose a server." = "To share online, enter the address of a server you trust (wss://…), or share on the local network. Nothing is uploaded until you choose a server."
 "Back to the default: no server, unless this build names one" = "Back to the default: no server, unless this build names one"

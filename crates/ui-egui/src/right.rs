@@ -120,79 +120,7 @@ pub fn right_panel(app: &mut FigApp, ui: &mut Ui) {
             ui.close();
         }
     });
-    // Tabs row.
-    let (tabs, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
-    ui.painter().line_segment([tabs.left_top(), tabs.right_top()], Stroke::new(1.0, t.border));
-    let mut x = tabs.min.x + 8.0;
-    for (tab, label) in [(RightTab::Design, tr("Design")), (RightTab::Prototype, tr("Prototype"))] {
-        let galley = ui.painter().layout_no_wrap(label.into(), semibold(11.0), t.text);
-        let r = Rect::from_min_size(pos2(x, tabs.center().y - 12.0), vec2(galley.size().x + 16.0, 24.0));
-        let resp = ui.interact(r, ui.id().with(("rtab", label)), Sense::click());
-        let active = app.ui.right_tab == tab;
-        a11y::tab(&resp, label, active);
-        if active {
-            ui.painter().rect_filled(r, CornerRadius::same(5), t.hover);
-        }
-        ui.painter().galley(pos2(r.min.x + 8.0, r.center().y - galley.size().y / 2.0), galley, if active { t.text } else { t.text_secondary });
-        if resp.clicked() {
-            if app.ui.right_tab != tab {
-                crate::proto_panel::open_editor(ui.ctx(), None);
-            }
-            app.ui.right_tab = tab;
-        }
-        x = r.max.x + 2.0;
-    }
-    // Zoom menu.
-    let zoom = app.session.ds().map(|d| d.view.zoom).unwrap_or(1.0);
-    let zr = Rect::from_min_size(pos2(tabs.max.x - 64.0, tabs.center().y - 12.0), vec2(56.0, 24.0));
-    let zresp = ui.interact(zr, ui.id().with("zoommenu"), Sense::click());
-    // The value is only spelled out while a screen reader reads the tree.
-    let value = if a11y::active(&zresp.ctx) { format!("{}%", (zoom * 100.0).round()) } else { String::new() };
-    a11y::combo(&zresp, tr("Zoom"), &value, a11y::menu_open(&zresp));
-    if zresp.hovered() {
-        ui.painter().rect_filled(zr, CornerRadius::same(5), t.hover);
-    }
-    ui.painter().text(pos2(zr.min.x + 6.0, zr.center().y), Align2::LEFT_CENTER, format!("{}%", (zoom * 100.0).round()), regular(11.0), t.text);
-    icons::paint(ui.painter(), Rect::from_center_size(pos2(zr.max.x - 9.0, zr.center().y), vec2(10.0, 10.0)), Icon::Chevron, t.icon_secondary);
-    menu_popup(&zresp).width(200.0).show(|ui| {
-        for (label, cmd) in [
-            (tr("Zoom in"), "view.zoomIn"),
-            (tr("Zoom out"), "view.zoomOut"),
-            (tr("Zoom to fit"), "view.zoomFit"),
-            (tr("Zoom to 50%"), "view.zoom50"),
-            (tr("Zoom to 100%"), "view.zoom100"),
-            (tr("Zoom to 200%"), "view.zoom200"),
-            (tr("Zoom to selection"), "view.zoomSelection"),
-        ] {
-            if menu_item(ui, label, crate::shortcuts::shortcut(cmd).unwrap_or("")) {
-                app.run(cmd, json!({}));
-                ui.close();
-            }
-        }
-        ui.separator();
-        let Ok(v) = app.session.ds().map(|d| d.view.clone()) else { return };
-        for (label, scale) in [(tr("Pixel preview 1x"), 1u8), (tr("Pixel preview 2x"), 2)] {
-            let on = v.pixel_preview && v.pixel_scale == scale;
-            if menu_check(ui, on, label, "") {
-                app.run("view.pixelPreview", json!({"on": !on, "scale": scale}));
-                ui.close();
-            }
-        }
-        let toggles: [(&str, &str, bool); 5] = [
-            (tr("Pixel grid"), "view.pixelGrid", v.pixel_grid),
-            (tr("Snap to pixel grid"), "view.snapPixel", v.snap_pixel),
-            (tr("Layout grids"), "view.layoutGrids", v.layout_grids),
-            (tr("Rulers"), "view.rulers", v.rulers),
-            (tr("Outlines"), "view.outlines", v.outlines),
-        ];
-        for (label, cmd, on) in toggles {
-            if menu_check(ui, on, label, crate::shortcuts::shortcut(cmd).unwrap_or("")) {
-                app.run(cmd, json!({}));
-                ui.close();
-            }
-        }
-    });
-    ui.painter().line_segment([tabs.left_bottom(), tabs.right_bottom()], Stroke::new(1.0, t.border));
+    crate::panel_view::header(app, ui, w);
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         ui.spacing_mut().item_spacing = vec2(8.0, 0.0);
         if app.session.tool.tool == figcraft_engine::ToolId::Comment {
@@ -200,12 +128,15 @@ pub fn right_panel(app: &mut FigApp, ui: &mut Ui) {
             ui.add_space(80.0);
             return;
         }
+        let shown = crate::panel_view::content(app, ui);
         match app.ui.right_tab {
+            _ if shown => {}
             // The Frame tool shows the frame presets.
             RightTab::Design if app.session.tool.tool == figcraft_engine::ToolId::Frame => crate::frame_presets::panel(app, ui),
             RightTab::Design => design(app, ui),
             RightTab::Prototype => crate::proto_panel::prototype(app, ui),
             RightTab::Inspect => inspect(app, ui),
+            RightTab::Code | RightTab::Ai => {}
         }
         ui.add_space(80.0);
         a11y::scroll_focus(&mut app.ui.nav, ui);
@@ -2269,58 +2200,7 @@ fn inspect(app: &mut FigApp, ui: &mut Ui) {
         inspect_section(app, ui, &s);
     }
     inspect_assets(app, ui, &figcraft_engine::devinspect::assets(&doc, &sel));
-    use figcraft_engine::codegen::CodeLang;
-    let lang_id = Id::new("inspect_lang");
-    let lang = ui.data(|d| d.get_temp::<usize>(lang_id)).and_then(|i| CodeLang::ALL.get(i).copied()).unwrap_or_default();
-    // A component tried with other property values: its code replaces the layer's below.
-    let played = crate::dev_mode::playground_section(app, ui, &doc, first, lang);
-    widgets::separator(ui);
-    let copy = widgets::section_header(ui, tr("Code"), &[(Icon::Export, tr("Copy"))], false).is_some();
-    // Pixels or rem (of a 16 px root) for the web languages.
-    let rem_id = Id::new("inspect_rem");
-    let web = lang.is_web();
-    let rem = web && ui.data(|d| d.get_temp::<bool>(rem_id)).unwrap_or(false);
-    row(ui, 32.0, |ui| {
-        let resp = widgets::dropdown(ui, lang.label(), 120.0, Some(Icon::Code));
-        menu_popup(&resp).show(|ui| {
-            for (i, l) in CodeLang::ALL.iter().enumerate() {
-                if menu_item(ui, l.label(), "") {
-                    ui.data_mut(|d| d.insert_temp(lang_id, i));
-                    ui.close();
-                }
-            }
-        });
-        if web {
-            let resp = widgets::dropdown(ui, if rem { "rem" } else { "px" }, 56.0, None);
-            menu_popup(&resp).show(|ui| {
-                for (on, label) in [(false, "px"), (true, "rem")] {
-                    if menu_item(ui, label, "") {
-                        ui.data_mut(|d| d.insert_temp(rem_id, on));
-                        ui.close();
-                    }
-                }
-            });
-        }
-    });
-    let code = played.unwrap_or_else(|| crate::dev_mode::code(app, ui, first, lang));
-    let code = if rem { figcraft_engine::codegen::px_to_rem(&code, 16.0) } else { code };
-    egui::Frame::NONE
-        .fill(t.field)
-        .corner_radius(CornerRadius::same(6))
-        .inner_margin(egui::Margin::same(10))
-        .outer_margin(egui::Margin::symmetric(16, 0))
-        .show(ui, |ui| {
-            ui.label(egui::RichText::new(&code).monospace().color(t.text));
-        });
-    ui.add_space(8.0);
-    let mut copy_clicked = copy;
-    row(ui, 32.0, |ui| {
-        copy_clicked |= ui.button(trf("Copy {value}", &[("value", &lang.label())])).clicked();
-    });
-    if copy_clicked {
-        app.services.clipboard_set_text(&code);
-        app.toast(trf("Copied {value}", &[("value", &lang.label())]));
-    }
+    let lang = crate::code_tab::section(app, ui, &doc, first);
     crate::dev_mode::connect_section(app, ui, &doc, first, lang);
     crate::dev_mode::plugins_section(app, ui);
 }

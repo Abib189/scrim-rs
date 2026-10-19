@@ -426,6 +426,8 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
                 app.ui.right_tab = match t {
                     "prototype" => crate::RightTab::Prototype,
                     "inspect" => crate::RightTab::Inspect,
+                    "code" => crate::RightTab::Code,
+                    "ai" => crate::RightTab::Ai,
                     _ => crate::RightTab::Design,
                 };
             }

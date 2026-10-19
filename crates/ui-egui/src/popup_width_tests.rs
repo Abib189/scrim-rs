@@ -79,11 +79,12 @@ fn right_panel_dropdown_menus_fit_the_panel() {
         frame(&mut app, vec![]);
     }
     // With nothing selected, Inspect lists the frames ready for dev under a filter dropdown, the
-    // only control on that panel: click down the panel until it opens.
+    // only control in that panel's content: click down the content (below the header, the mode row
+    // with the zoom menu and the tabs row) until it opens.
     let panel_left = SCREEN.x - app.ui.right_width;
     let x = panel_left + app.ui.right_width / 2.0;
     let mut menu = None;
-    for y in (140..600).step_by(6) {
+    for y in (180..600).step_by(6) {
         let at = pos2(x, y as f32);
         frame(&mut app, press(at, true));
         frame(&mut app, press(at, false));

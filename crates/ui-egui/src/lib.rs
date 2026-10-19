@@ -11,6 +11,7 @@ pub mod bidi;
 pub mod branch_ui;
 pub mod canvas;
 pub mod cjk;
+pub mod code_tab;
 pub mod colorpicker;
 pub mod comments;
 pub mod component_panel;
@@ -42,6 +43,7 @@ pub mod measure_overlay;
 pub mod menus;
 pub mod missing_fonts;
 pub mod online;
+pub mod panel_view;
 pub mod pending_open;
 pub mod plugins_ui;
 pub mod present;
@@ -343,6 +345,8 @@ pub enum RightTab {
     Design,
     Prototype,
     Inspect,
+    Code,
+    Ai,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
@@ -427,6 +431,8 @@ pub struct UiState {
     pub left_width: f32,
     pub right_width: f32,
     pub right_tab: RightTab,
+    /// The right panel is in Animate mode (a placeholder: `panel_view`).
+    pub panel_animate: bool,
     /// The tab of the previous frame, to see the right panel change mode.
     pub last_right_tab: RightTab,
     pub left_tab: LeftTab,
@@ -592,6 +598,7 @@ impl Default for UiState {
             left_width: PANEL_DEFAULT,
             right_width: PANEL_DEFAULT,
             right_tab: RightTab::Design,
+            panel_animate: false,
             last_right_tab: RightTab::Design,
             left_tab: LeftTab::File,
             pages_open: true,
@@ -735,7 +742,7 @@ impl FigApp {
         let (left_width, right_width) = session.prefs.panel_widths;
         let pages_height = session.prefs.pages_height;
         Self {
-            ui: UiState { left_width, right_width, pages_height, ..UiState::default() },
+            ui: UiState { left_width, right_width, pages_height, ..panel_view::restored(&session.prefs) },
             session,
             canvas: canvas::CanvasState::default(),
             services,
@@ -890,14 +897,7 @@ impl FigApp {
                 "dialog.missingFonts" => missing_fonts::request(self),
                 "panel.shortcuts" => self.ui.shortcuts_panel = !self.ui.shortcuts_panel,
                 "palette.actions" => menus::toggle_palette(&mut self.ui),
-                "panel.design" => self.ui.right_tab = RightTab::Design,
-                "panel.prototype" => self.ui.right_tab = RightTab::Prototype,
-                "panel.designPrototype" => {
-                    self.ui.right_tab = if self.ui.right_tab == RightTab::Prototype { RightTab::Design } else { RightTab::Prototype };
-                }
-                "panel.devMode" => {
-                    self.ui.right_tab = if self.ui.right_tab == RightTab::Inspect { RightTab::Design } else { RightTab::Inspect };
-                }
+                kind if panel_view::request(self, kind, &r.data) => {}
                 "panel.leftSidebar" => self.ui.left_collapsed = !self.ui.left_collapsed,
                 "panel.widths" => {
                     let width = |k: &str| r.data.get(k).and_then(Value::as_f64).map(|w| w as f32);
@@ -1505,11 +1505,7 @@ impl FigApp {
                 .exact_size(right_w)
                 .frame(egui::Frame::NONE.fill(t.panel).stroke(egui::Stroke::new(1.0, t.border)))
                 .show(ui, |ui| {
-                    let label = match self.ui.right_tab {
-                        RightTab::Design => i18n::tr("Design"),
-                        RightTab::Prototype => i18n::tr("Prototype"),
-                        RightTab::Inspect => i18n::tr("Dev Mode"),
-                    };
+                    let label = panel_view::region_label(&self.ui);
                     a11y::region(&mut self.ui.nav, ui, a11y::Region::Properties, egui::accesskit::Role::Pane, label);
                     right::right_panel(self, ui)
                 });
@@ -1679,6 +1675,7 @@ impl FigApp {
             "importReport": self.ui.import_report.as_ref().map(import_report::Report::inspect),
         });
         state["homeSearch"] = json!(self.ui.home_view.file_query);
+        state["panelMode"] = json!(if self.ui.panel_animate { "animate" } else { "design" });
         state["pendingOpens"] = json!(self.ui.pending_opens.len());
         state["missingFonts"] = json!(self.ui.missing_fonts.as_ref().map(missing_fonts::Shown::inspect));
         state

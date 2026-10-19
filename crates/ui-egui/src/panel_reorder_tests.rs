@@ -73,6 +73,24 @@ fn escape_cancels_a_row_drag() {
     assert_eq!(u.app.session.ds().unwrap().selection, [r], "the Escape only cancels the drag");
 }
 
+/// Scroll the right panel down by `steps` wheel steps of `by` points (the pointer moves over it first).
+fn scroll_panel(u: &mut Ui, steps: usize, by: f32) {
+    let wheel = Event::MouseWheel {
+        unit: egui::MouseWheelUnit::Point,
+        delta: egui::vec2(0.0, -by),
+        phase: egui::TouchPhase::Move,
+        modifiers: Default::default(),
+    };
+    u.frame(vec![Event::PointerMoved(Pos2::new(1300.0, 500.0))]);
+    for _ in 0..steps {
+        u.frame(vec![Event::PointerMoved(Pos2::new(1300.0, 500.0)), wheel.clone()]);
+    }
+    // egui animates a wheel scroll: let it finish.
+    for _ in 0..30 {
+        u.frame(vec![]);
+    }
+}
+
 #[test]
 fn effects_and_grids_drag_too_and_mixed_lists_dont() {
     let (mut u, r) = setup();
@@ -86,22 +104,16 @@ fn effects_and_grids_drag_too_and_mixed_lists_dont() {
     for _ in 0..2 {
         u.frame(vec![]);
     }
+    // The effects sit at the fold under the panel's mode and tab rows: scroll them into view.
+    scroll_panel(&mut u, 1, 200.0);
     let (a, b) = (grip(&u, "effects", 0).unwrap(), grip(&u, "effects", 1).unwrap());
+    assert!(a.y < 880.0, "{a:?}");
     drag(&mut u, a, b - egui::vec2(0.0, 12.0));
     u.button(b - egui::vec2(0.0, 12.0), false);
     let kinds: Vec<&str> = u.app.session.doc().unwrap().node(f).unwrap().effects.iter().map(|e| e.label()).collect();
     assert_eq!(kinds, ["Layer blur", "Drop shadow"]);
-    // The layout grid section is below the fold: scroll the panel.
-    let wheel = Event::MouseWheel {
-        unit: egui::MouseWheelUnit::Point,
-        delta: egui::vec2(0.0, -400.0),
-        phase: egui::TouchPhase::Move,
-        modifiers: Default::default(),
-    };
-    for _ in 0..4 {
-        u.frame(vec![Event::PointerMoved(Pos2::new(1300.0, 500.0)), wheel.clone()]);
-    }
-    u.frame(vec![]);
+    // The layout grid section is further below the fold: scroll the panel to its end.
+    scroll_panel(&mut u, 4, 400.0);
     let (a, b) = (grip(&u, "grids", 0).unwrap(), grip(&u, "grids", 1).unwrap());
     assert!(b.y < 880.0, "{b:?}");
     drag(&mut u, a, b - egui::vec2(0.0, 12.0));

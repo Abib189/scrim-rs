@@ -28,6 +28,8 @@ pub mod devcompare;
 pub mod devinspect;
 pub mod distance;
 mod doc_preview;
+use doc_preview::ENDS_PREVIEW;
+pub use doc_preview::{PREVIEW_READ_ONLY, VersionPreview};
 pub mod doc_urls;
 pub mod drop;
 pub mod file_access;
@@ -385,26 +387,6 @@ pub struct DocState {
     pub(crate) last_duplicate: Option<cmd::edit::Duplicated>,
 }
 
-/// A version shown on the canvas in place of the document: read-only until it's restored or the
-/// preview ends, which puts the document back as it was.
-#[derive(Clone, Debug)]
-pub struct VersionPreview {
-    pub id: String,
-    pub name: String,
-    /// When the version was saved (Unix seconds).
-    pub time: u64,
-    doc: Arc<Document>,
-    selection: Vec<NodeId>,
-    page: NodeId,
-}
-
-/// Why edits are refused while a version is shown.
-pub const PREVIEW_READ_ONLY: &str = "you're viewing an earlier version: restore it or go back to the current version to edit";
-
-/// Commands that first end a version preview: they act on the document itself. Saving does so
-/// only with a native destination; export copies and pending format choices keep the preview.
-const ENDS_PREVIEW: &[&str] = &["file.save", "file.saveAs", "file.close", "file.revert", "file.saveVersion", "file.duplicate", "version.restore"];
-
 static NEXT_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 impl DocState {
@@ -616,6 +598,8 @@ pub struct Prefs {
     /// suggests it too): `wss://host/`, never with a key. [`live::DEFAULT_SERVER`] unless the user
     /// chose another; empty: online sharing is off (saved as empty, so it stays off).
     pub publish_server: String,
+    /// The right panel's mode and tab chosen last (`panel.mode.*`, `panel.tab.*`).
+    pub panel: cmd::panel::PanelView,
     /// Recently opened or saved files, newest first (File ▸ Open recent; at most
     /// [`cmd::file::MAX_RECENT`]).
     pub recent_files: Vec<String>,
@@ -670,6 +654,7 @@ impl Default for Prefs {
             plugin_settings: BTreeMap::new(),
             plugin_directory: None,
             publish_server: live::DEFAULT_SERVER.into(),
+            panel: Default::default(),
             recent_files: Vec::new(),
             online_files: Vec::new(),
             getting_started_dismissed: false,

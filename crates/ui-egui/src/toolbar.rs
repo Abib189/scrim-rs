@@ -164,6 +164,9 @@ fn main_toolbar(app: &mut FigApp, ui: &mut Ui, canvas: Rect, t: &Tokens) {
     // Mode switcher: Draw · Design · Prototype · Inspect (code).
     let modes = [(Icon::Pencil, tr("Draw")), (Icon::Frame, tr("Design")), (Icon::Prototype, tr("Prototype")), (Icon::Code, tr("Inspect"))];
     let active = match app.ui.right_tab {
+        // Animate mode, and the Code and AI tabs, are none of these modes.
+        _ if app.ui.panel_animate => usize::MAX,
+        crate::RightTab::Code | crate::RightTab::Ai => usize::MAX,
         crate::RightTab::Design if app.session.tool.tool == ToolId::Pencil => 0,
         crate::RightTab::Design => 1,
         crate::RightTab::Prototype => 2,
@@ -183,19 +186,25 @@ fn main_toolbar(app: &mut FigApp, ui: &mut Ui, canvas: Rect, t: &Tokens) {
         }
         icons::paint(ui.painter(), r.shrink(9.0), *icon, if i == active { t.accent_text } else { t.icon_secondary });
         if resp.clicked() {
+            // Through the panel's commands, as an agent switches it (`panel_view`).
             match i {
                 0 => {
-                    app.ui.right_tab = crate::RightTab::Design;
+                    app.run("panel.tab.design", json!({}));
                     app.run("tool.set", json!({"tool": "pencil"}));
                 }
                 1 => {
-                    app.ui.right_tab = crate::RightTab::Design;
+                    app.run("panel.tab.design", json!({}));
                     if app.session.tool.tool == ToolId::Pencil {
                         app.run("tool.set", json!({"tool": "move"}));
                     }
                 }
-                2 => app.ui.right_tab = crate::RightTab::Prototype,
-                _ => app.ui.right_tab = crate::RightTab::Inspect,
+                2 => {
+                    app.run("panel.tab.prototype", json!({}));
+                }
+                _ if app.ui.right_tab != crate::RightTab::Inspect => {
+                    app.run("view.devMode", json!({}));
+                }
+                _ => {}
             }
         }
     }
