@@ -1,6 +1,11 @@
 //! The settings directory is Scrim's now (`docs/design/rebrand.md` › group 3). The first time Scrim
 //! starts, when its directory doesn't exist yet and FigCraft's does, FigCraft's preferences, recent
-//! files, recovery copies and installed plugins are **copied** into a new Scrim directory. FigCraft's
+//! files, recovery copies and installed plugins are **copied** into a new Scrim directory.
+//!
+//! That directory is named by the app id, `design.scrim.app`, not `Scrim`: a directory called
+//! `Scrim` is the earlier TypeScript Scrim's (Electron names its data directory after the product),
+//! and sharing it would mix the two apps' files and skip this copy. That directory is never read or
+//! written here. FigCraft's
 //! is never moved, changed or deleted, so a FigCraft install keeps working beside Scrim.
 //!
 //! One setting is not carried over: FigCraft's built-in share server (`UPSTREAM_SERVER`), which
@@ -14,8 +19,11 @@
 use std::io;
 use std::path::Path;
 
-/// The settings directory's name under the platform's base directory.
-pub const NEW: &str = "Scrim";
+/// The settings directory's name under the platform's base directory: the app id (see above).
+pub const NEW: &str = "design.scrim.app";
+/// The TypeScript Scrim's data directory, which this app leaves alone.
+#[cfg(test)]
+pub const ELECTRON: &str = "Scrim";
 /// FigCraft's, copied from once.
 pub const OLD: &str = "FigCraft";
 
@@ -37,7 +45,7 @@ pub enum Migration {
     Failed(String),
 }
 
-/// Copy `base/FigCraft` to `base/Scrim` when only the first exists.
+/// Copy `base/FigCraft` to `base/design.scrim.app` when only the first exists.
 pub fn migrate(base: &Path) -> Migration {
     let (new, old) = (base.join(NEW), base.join(OLD));
     if new.exists() {

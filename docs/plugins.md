@@ -163,8 +163,8 @@ asset names) before anything is written. A plugin installed this way runs in the
 with the same limits and its manifest's permissions, as any other.
 
 The desktop app keeps such plugins per user, beside its settings (`Plugins/` in Scrim's settings
-folder: `%APPDATA%\Scrim` on Windows, `~/Library/Application Support/Scrim` on macOS,
-`~/.config/Scrim` elsewhere), each in a folder of its own named by a hash of its id, with its
+folder: `%APPDATA%\design.scrim.app` on Windows, `~/Library/Application Support/design.scrim.app`
+on macOS, `~/.config/design.scrim.app` elsewhere), each in a folder of its own named by a hash of its id, with its
 module and its assets. The CLI and the MCP server install for the session only.
 
 **Updating.** When the directory has a newer version than the one installed, the plugin's row

@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::migrate::{Migration, NEW, OLD, UPSTREAM_SERVER, migrate};
+use super::migrate::{ELECTRON, Migration, NEW, OLD, UPSTREAM_SERVER, migrate};
 
 fn temp(tag: &str) -> PathBuf {
     let d = std::env::temp_dir().join(format!("scrim-migrate-{tag}-{}-{:?}", std::process::id(), std::thread::current().id()));
@@ -52,6 +52,21 @@ fn with_both_directories_scrims_wins_and_nothing_is_copied() {
     assert_eq!(migrate(&base), Migration::AlreadyThere);
     assert_eq!(std::fs::read_to_string(base.join(NEW).join("state.json")).unwrap(), "scrim");
     assert_eq!(std::fs::read_to_string(base.join(OLD).join("state.json")).unwrap(), "figcraft");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+/// The TypeScript Scrim's data directory (`Scrim`, Electron's) neither stops the copy nor is touched.
+#[test]
+fn the_typescript_scrims_directory_is_left_alone() {
+    let base = temp("electron");
+    write(&base.join(ELECTRON).join("working.scrim"), "electron");
+    write(&base.join(OLD).join("state.json"), "{}");
+    assert_ne!(NEW, ELECTRON);
+    assert_eq!(migrate(&base), Migration::Copied { files: 1 });
+    assert!(base.join(NEW).join("state.json").exists());
+    let electron: Vec<_> = std::fs::read_dir(base.join(ELECTRON)).unwrap().map(|e| e.unwrap().file_name()).collect();
+    assert_eq!(electron, ["working.scrim"], "nothing written beside the other app's files");
+    assert_eq!(std::fs::read_to_string(base.join(ELECTRON).join("working.scrim")).unwrap(), "electron");
     let _ = std::fs::remove_dir_all(&base);
 }
 

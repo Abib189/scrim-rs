@@ -16,7 +16,7 @@ the app binary keep FigCraft's names for now (cheap upstream merges); see the ta
 |---|---|
 | Display name | Scrim (macOS `Scrim.app`; the bundle's executable `Scrim`) |
 | Packages / binaries | Cargo packages `figcraft` (app; installed as `figcraft` on Linux and FreeBSD, `figcraft.exe` on Windows: renamed later), `figcraft-cli` (headless CLI), `figcraft-web` (browser). deb and rpm: `scrim` (conflicts with `figcraft`) |
-| Bundle / app id | `design.scrim.app` (Wayland app_id, X11 class, desktop entry, Flatpak, AppStream). CLI signing identifier: `ai.storyteller.figcraft-cli` until the CLI is renamed (A3) |
+| Bundle / app id | `design.scrim.app` (Wayland app_id, X11 class, desktop entry, Flatpak, AppStream). CLI signing identifiers: `design.scrim.app.cli` (`scrim`) and `design.scrim.app.cli-alias` (`figcraft-cli`) |
 | Native document | `.figcraft`, MIME `application/x-figcraft`, UTI `ai.storyteller.figcraft.document` (kept so files stay exchangeable with FigCraft; macOS imports the declaration) |
 | Also opens | `.svg`, `.png`, `.jpg`/`.jpeg` ("Open with", never the default app) |
 | WiX UpgradeCode | `FA07D3AB-4037-4826-BA91-B6E37FFAFC4E` (Scrim's own, fixed forever; FigCraft's is different), ProgId `Scrim.Document` |
