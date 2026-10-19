@@ -39,6 +39,18 @@ fn a_locked_layer_refuses_an_agent_but_not_the_person() {
     s.execute("fill.set", &json!({"ids": [r], "color": "#00FF00"})).unwrap();
 }
 
+/// An agent locking a layer is refused for what it is, not as if the layer were already locked.
+#[test]
+fn an_agent_locking_a_layer_is_told_locking_is_the_persons() {
+    let mut s = Session::new();
+    let (_, r) = scene(&mut s);
+    let before = s.doc().unwrap().clone();
+    let e = s.execute_as(agent(), None, "object.toggleLock", &json!({"ids": [r]})).unwrap_err().to_string();
+    assert!(e.contains("an agent can't lock \"Swatch\": locking layers is the person's"), "{e}");
+    assert!(!e.contains("is locked"), "it wasn't locked: {e}");
+    assert_eq!(*s.doc().unwrap(), before, "rolled back");
+}
+
 #[test]
 fn a_locked_frame_holds_what_is_inside_it() {
     let mut s = Session::new();

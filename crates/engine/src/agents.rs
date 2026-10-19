@@ -131,20 +131,28 @@ impl Session {
         }
         let ids = changed_ids(bdoc, &ds.doc);
         for &id in &ids {
-            // A layer is held by a lock before the edit, or by where the edit put it.
-            let held = if bdoc.node(id).is_some() { lock_of(bdoc, id) } else { None }.or_else(|| ds.doc.node(id).and_then(|_| lock_of(&ds.doc, id)));
-            if let Some(lock) = held {
-                let why = if lock == id {
+            // A layer is held by a lock it had before the edit, or by one the edit would give it:
+            // the agent locking it, or putting it inside a locked layer.
+            let before = if bdoc.node(id).is_some() { lock_of(bdoc, id) } else { None };
+            let after = ds.doc.node(id).and_then(|_| lock_of(&ds.doc, id));
+            let why = match (before, after) {
+                (Some(lock), _) if lock == id => {
                     format!("{} is locked: an agent can't change a locked layer (the person can unlock it)", name(bdoc, id))
-                } else {
-                    format!(
-                        "{} is inside {}, which is locked: an agent can't change a locked layer or anything in it",
-                        name(bdoc, id),
-                        name(bdoc, lock)
-                    )
-                };
-                return Err(EngineError::Disabled(cmd.to_string(), why));
-            }
+                }
+                (Some(lock), _) => format!(
+                    "{} is inside {}, which is locked: an agent can't change a locked layer or anything in it",
+                    name(bdoc, id),
+                    name(bdoc, lock)
+                ),
+                (None, Some(lock)) if lock == id => {
+                    format!("an agent can't lock {}: locking layers is the person's (they can lock it themselves)", name(bdoc, id))
+                }
+                (None, Some(lock)) => {
+                    format!("an agent can't put {} inside {}, which is locked (the person can unlock it)", name(&ds.doc, id), name(&ds.doc, lock))
+                }
+                (None, None) => continue,
+            };
+            return Err(EngineError::Disabled(cmd.to_string(), why));
         }
         if let Some(since) = self.agents.since {
             let touched: BTreeSet<NodeId> = ids.iter().copied().collect();

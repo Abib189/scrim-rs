@@ -10,3 +10,4 @@
 | Every edit is in the change feed with its author; `get_changes` returns the current revision | Make edits as the person and as an agent; call `get_changes` | `agents_tests.rs` › `every_edit_is_logged_with_its_author`; `agent_safety.rs` › `get_changes_names_the_person_and_the_agent` |
 | An agent's undo steps read "Agent: …" | Undo menu after an agent edit | `agents_tests.rs` › `an_agents_undo_step_says_so` |
 | Plugins run as agents ("agent (plugin <name>)") | Run a plugin on a locked layer | manual only: no plugin route test yet (`crates/engine/src/plugins.rs`) |
+| An agent trying to lock an unlocked layer is told locking is the person's, not that the layer "is locked"; one moving a layer into a locked frame is told so | `run_command {command: "object.toggleLock"}` over MCP on an unlocked layer | `crates/engine/src/agents_tests.rs` › `an_agent_locking_a_layer_is_told_locking_is_the_persons` |
