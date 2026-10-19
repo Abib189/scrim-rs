@@ -898,15 +898,15 @@ fn feature_row(ui: &mut Ui, tag: &str, label: &str, on: Option<bool>, supported:
     let b = Rect::from_min_size(pos2(rect.min.x + 4.0, rect.center().y - 7.0), vec2(14.0, 14.0));
     match on {
         Some(true) => {
-            ui.painter().rect_filled(b, CornerRadius::same(3), t.accent);
-            icons::paint(ui.painter(), b.shrink(1.5), Icon::Check, Color32::WHITE);
+            ui.painter().rect_filled(b, CornerRadius::same(3), t.accent_fill);
+            icons::paint(ui.painter(), b.shrink(1.5), Icon::Check, t.accent_on);
         }
         Some(false) => {
             ui.painter().rect_stroke(b, CornerRadius::same(3), Stroke::new(1.0, t.border_strong), StrokeKind::Inside);
         }
         None => {
-            ui.painter().rect_filled(b, CornerRadius::same(3), t.accent);
-            ui.painter().line_segment([pos2(b.min.x + 3.5, b.center().y), pos2(b.max.x - 3.5, b.center().y)], Stroke::new(1.5, Color32::WHITE));
+            ui.painter().rect_filled(b, CornerRadius::same(3), t.accent_fill);
+            ui.painter().line_segment([pos2(b.min.x + 3.5, b.center().y), pos2(b.max.x - 3.5, b.center().y)], Stroke::new(1.5, t.accent_on));
         }
     }
     let col = if supported { t.text } else { t.text_tertiary };
@@ -1272,9 +1272,9 @@ pub(crate) fn font_picker(ui: &mut Ui, current: Option<&str>, just_opened: bool)
                 PickRow::Family(f) => {
                     let hovered = resp.hovered() || hi == Some(i);
                     if hovered {
-                        ui.painter().rect_filled(rect, CornerRadius::same(5), t.accent);
+                        ui.painter().rect_filled(rect, CornerRadius::same(5), t.accent_fill);
                     }
-                    let col = if hovered { Color32::WHITE } else { t.text };
+                    let col = if hovered { t.accent_on } else { t.text };
                     if current.is_some_and(|c| c.eq_ignore_ascii_case(f)) {
                         icons::paint(
                             ui.painter(),

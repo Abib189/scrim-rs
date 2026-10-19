@@ -142,8 +142,8 @@ fn arrow(painter: &egui::Painter, pts: &[Pos2; 4], col: Color32) {
 fn plus_handle(painter: &egui::Painter, c: Pos2, hot: bool) {
     painter.circle_filled(c, HANDLE_R + if hot { 1.0 } else { 0.0 }, ACCENT);
     painter.circle_stroke(c, HANDLE_R + if hot { 1.0 } else { 0.0 }, Stroke::new(1.5, Color32::WHITE));
-    painter.line_segment([c - vec2(3.5, 0.0), c + vec2(3.5, 0.0)], Stroke::new(1.5, Color32::WHITE));
-    painter.line_segment([c - vec2(0.0, 3.5), c + vec2(0.0, 3.5)], Stroke::new(1.5, Color32::WHITE));
+    painter.line_segment([c - vec2(3.5, 0.0), c + vec2(3.5, 0.0)], Stroke::new(1.5, crate::theme::ACCENT_ON));
+    painter.line_segment([c - vec2(0.0, 3.5), c + vec2(0.0, 3.5)], Stroke::new(1.5, crate::theme::ACCENT_ON));
 }
 
 /// Draw connections, handles and a connection being dragged.

@@ -3,7 +3,7 @@
 
 use std::path::Path;
 
-use egui::{Align2, Color32, Context, CornerRadius, RichText, Sense, Stroke, vec2};
+use egui::{Align2, Context, CornerRadius, RichText, Sense, Stroke, vec2};
 use figcraft_color::ColorProfile;
 use figcraft_doc::{ExportFormat, ExportSetting, ExportSize, NodeId};
 use figcraft_engine::cmd::file::{export_jobs, exportable_layers};
@@ -123,7 +123,7 @@ fn about_body(ui: &mut egui::Ui, t: &Tokens) {
     ui.horizontal(|ui| {
         let (r, _) = ui.allocate_exact_size(vec2(48.0, 48.0), Sense::hover());
         ui.painter().rect_filled(r, CornerRadius::same(10), ACCENT);
-        icons::paint(ui.painter(), r.shrink(10.0), Icon::Logo, Color32::WHITE);
+        icons::paint(ui.painter(), r.shrink(10.0), Icon::Logo, crate::theme::ACCENT_ON);
         ui.vertical(|ui| {
             ui.label(RichText::new("Scrim").font(semibold(18.0)));
             ui.label(RichText::new(trf("Version {version}", &[("version", &VERSION)])).color(t.text_secondary));

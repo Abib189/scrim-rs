@@ -1015,7 +1015,7 @@ fn saved_preset_row(ui: &mut Ui, name: &str) -> Option<PresetAction> {
     if hot {
         ui.painter().rect_filled(r, CornerRadius::same(5), crate::theme::ACCENT);
     }
-    let col = if hot { Color32::WHITE } else { t.text };
+    let col = if hot { crate::theme::ACCENT_ON } else { t.text };
     ui.painter().text(pos2(r.min.x + 8.0, r.center().y), Align2::LEFT_CENTER, name, regular(11.5), col);
     if hot {
         icons::paint(ui.painter(), del.shrink(4.0), Icon::Close, col);

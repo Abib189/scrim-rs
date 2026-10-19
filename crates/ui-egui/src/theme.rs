@@ -1,8 +1,18 @@
-//! Design tokens (UI3 light and dark) and fonts.
+//! Design tokens and fonts: Scrim's UI system (`docs/scrim-transfer/ui/`), dark and light, one
+//! accent derived per theme for contrast ([`accent`]).
 
 use std::sync::Arc;
 
 use egui::{Color32, Context, FontData, FontDefinitions, FontFamily, FontId, Stroke, TextStyle, Visuals};
+
+#[path = "accent.rs"]
+pub mod accent;
+#[cfg(test)]
+#[path = "accent_tests.rs"]
+mod accent_tests;
+#[cfg(test)]
+#[path = "theme_tokens_tests.rs"]
+mod theme_tokens_tests;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Tokens {
@@ -21,8 +31,16 @@ pub struct Tokens {
     pub pressed: Color32,
     pub field: Color32,
     pub field_hover_border: Color32,
+    /// The accent's mark: icons, the selected edge, the focus ring, coloured text. 4.5:1 on the
+    /// panels and fields.
     pub accent: Color32,
+    /// The accent's fill (primary buttons, checked boxes, chips) and its hover.
+    pub accent_fill: Color32,
     pub accent_hover: Color32,
+    /// The label on the accent fill: 4.5:1.
+    pub accent_on: Color32,
+    /// A wash of the mark, for drop targets and highlights.
+    pub accent_tint: Color32,
     pub accent_text: Color32,
     pub selected_row: Color32,
     pub selected_row_child: Color32,
@@ -44,90 +62,105 @@ pub struct Tokens {
     pub focus: Color32,
 }
 
-pub const ACCENT: Color32 = Color32::from_rgb(0x0D, 0x99, 0xFF);
+/// Scrim's default accent fill (orange), the same in both themes; its label is [`ACCENT_ON`]. Where
+/// the tokens are at hand, use `t.accent_fill` / `t.accent_on` (and `t.accent` for marks).
+pub const ACCENT: Color32 = accent::DEFAULT_ACCENT;
+/// The label on [`ACCENT`]: near-black, 4.5:1 or better (white on this orange is about 3:1).
+pub const ACCENT_ON: Color32 = accent::INK;
 pub const COMPONENT: Color32 = Color32::from_rgb(0x97, 0x47, 0xFF);
 /// Handoff status badges (white text on these, in both themes).
 pub const DEV_READY: Color32 = Color32::from_rgb(0x14, 0xAE, 0x5C);
 pub const DEV_CHANGED: Color32 = Color32::from_rgb(0xD9, 0x7A, 0x06);
 pub const DEV_COMPLETED: Color32 = Color32::from_rgb(0x6E, 0x6E, 0x73);
 
+const fn hex(v: u32) -> Color32 {
+    Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8)
+}
+
 impl Tokens {
+    /// Scrim's light ramp (`ui/tokens.json › color.light`).
     pub fn light() -> Self {
         Self {
             dark: false,
-            bg: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            panel: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            canvas: Color32::from_rgb(0xF5, 0xF5, 0xF5),
-            border: Color32::from_rgb(0xE6, 0xE6, 0xE6),
-            border_strong: Color32::from_rgb(0xD9, 0xD9, 0xD9),
-            text: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            // 4.7:1 on fields and hovered rows (#F5F5F5), 4.6:1 on selected rows: WCAG AA.
-            text_secondary: Color32::from_rgb(0x6E, 0x6E, 0x6E),
-            text_tertiary: Color32::from_rgb(0xB3, 0xB3, 0xB3),
-            icon: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            icon_secondary: Color32::from_rgb(0x75, 0x75, 0x75),
-            hover: Color32::from_rgb(0xF5, 0xF5, 0xF5),
-            pressed: Color32::from_rgb(0xE6, 0xE6, 0xE6),
-            field: Color32::from_rgb(0xF5, 0xF5, 0xF5),
-            field_hover_border: Color32::from_rgb(0xE6, 0xE6, 0xE6),
-            accent: ACCENT,
-            accent_hover: Color32::from_rgb(0x00, 0x7B, 0xE5),
-            // 5.2:1 on white, 4.6:1 on selected rows: WCAG AA for text.
-            accent_text: Color32::from_rgb(0x00, 0x6B, 0xD1),
-            selected_row: Color32::from_rgb(0xE5, 0xF4, 0xFF),
-            selected_row_child: Color32::from_rgb(0xF2, 0xF9, 0xFF),
+            bg: hex(0xFFFFFF),
+            panel: hex(0xFFFFFF),
+            canvas: hex(0xECECEA),
+            border: hex(0xE8E8E6),
+            border_strong: hex(0xD4D4D1),
+            text: hex(0x18191B),
+            text_secondary: hex(0x44474C),
+            text_tertiary: hex(0x5F6268),
+            icon: hex(0x44474C),
+            icon_secondary: hex(0x5F6268),
+            hover: hex(0xF4F4F3),
+            pressed: hex(0xEBEBEA),
+            field: hex(0xF4F4F3),
+            field_hover_border: hex(0xD4D4D1),
+            // The accent derived for this ramp (`accent::derive`; checked by theme_tokens_tests).
+            accent: hex(0xC53400),
+            accent_fill: ACCENT,
+            accent_hover: hex(0xEB531D),
+            accent_on: ACCENT_ON,
+            accent_tint: Color32::from_rgba_unmultiplied(0xC5, 0x34, 0x00, 31),
+            accent_text: hex(0xC53400),
+            selected_row: hex(0xE1E1DF),
+            selected_row_child: hex(0xF4F4F3),
             component: COMPONENT,
-            component_row: Color32::from_rgb(0xF1, 0xE9, 0xFF),
-            danger: Color32::from_rgb(0xF2, 0x48, 0x22),
-            success: Color32::from_rgb(0x14, 0xAE, 0x5C),
-            warning: Color32::from_rgb(0xFF, 0xCD, 0x29),
-            guide: Color32::from_rgb(0xF2, 0x48, 0x22),
-            tab_bar: Color32::from_rgb(0xE8, 0xE8, 0xE8),
-            tab_active: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            shadow: Color32::from_black_alpha(40),
-            menu: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            menu_text: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            menu_hover: ACCENT,
-            menu_dim: Color32::from_rgb(0x9A, 0x9A, 0x9A),
-            focus: Color32::from_rgb(0x00, 0x6B, 0xD1),
+            component_row: hex(0xF1E9FF),
+            danger: hex(0xCF2A2A),
+            success: hex(0x14AE5C),
+            warning: hex(0x985F08),
+            guide: hex(0xD61F69),
+            tab_bar: hex(0xECECEA),
+            tab_active: hex(0xFFFFFF),
+            shadow: Color32::from_black_alpha(0x1A),
+            menu: hex(0xFFFFFF),
+            menu_text: hex(0x18191B),
+            menu_hover: hex(0xEBEBEA),
+            menu_dim: hex(0x5F6268),
+            focus: hex(0xC53400),
         }
     }
 
+    /// Scrim's dark ramp (`ui/tokens.json › color.dark`).
     pub fn dark() -> Self {
         Self {
             dark: true,
-            bg: Color32::from_rgb(0x2C, 0x2C, 0x2C),
-            panel: Color32::from_rgb(0x2C, 0x2C, 0x2C),
-            canvas: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            border: Color32::from_rgb(0x44, 0x44, 0x44),
-            border_strong: Color32::from_rgb(0x55, 0x55, 0x55),
-            text: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            text_secondary: Color32::from_rgb(0xB3, 0xB3, 0xB3),
-            text_tertiary: Color32::from_rgb(0x75, 0x75, 0x75),
-            icon: Color32::from_rgb(0xF5, 0xF5, 0xF5),
-            icon_secondary: Color32::from_rgb(0xB3, 0xB3, 0xB3),
-            hover: Color32::from_rgb(0x38, 0x38, 0x38),
-            pressed: Color32::from_rgb(0x44, 0x44, 0x44),
-            field: Color32::from_rgb(0x38, 0x38, 0x38),
-            field_hover_border: Color32::from_rgb(0x4D, 0x4D, 0x4D),
+            bg: hex(0x111214),
+            panel: hex(0x111214),
+            canvas: hex(0x17181A),
+            border: hex(0x232428),
+            border_strong: hex(0x313338),
+            text: hex(0xECECEE),
+            text_secondary: hex(0xA7AAB0),
+            text_tertiary: hex(0x91959C),
+            icon: hex(0xA7AAB0),
+            icon_secondary: hex(0x91959C),
+            hover: hex(0x1B1C1F),
+            pressed: hex(0x232428),
+            field: hex(0x1B1C1F),
+            field_hover_border: hex(0x313338),
             accent: ACCENT,
-            accent_hover: Color32::from_rgb(0x3D, 0xAD, 0xFF),
-            accent_text: Color32::from_rgb(0x7C, 0xC4, 0xF8),
-            selected_row: Color32::from_rgb(0x2A, 0x45, 0x5C),
-            selected_row_child: Color32::from_rgb(0x2D, 0x37, 0x41),
-            component: Color32::from_rgb(0xD2, 0x7C, 0xFF),
-            component_row: Color32::from_rgb(0x3E, 0x30, 0x52),
-            danger: Color32::from_rgb(0xF2, 0x48, 0x22),
-            success: Color32::from_rgb(0x14, 0xAE, 0x5C),
-            warning: Color32::from_rgb(0xFF, 0xCD, 0x29),
-            guide: Color32::from_rgb(0xF2, 0x48, 0x22),
-            tab_bar: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            tab_active: Color32::from_rgb(0x2C, 0x2C, 0x2C),
-            shadow: Color32::from_black_alpha(90),
-            menu: Color32::from_rgb(0x1E, 0x1E, 0x1E),
-            menu_text: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-            menu_hover: ACCENT,
-            menu_dim: Color32::from_rgb(0x9A, 0x9A, 0x9A),
+            accent_fill: ACCENT,
+            accent_hover: hex(0xEB531D),
+            accent_on: ACCENT_ON,
+            accent_tint: Color32::from_rgba_unmultiplied(0xFF, 0x5A, 0x1F, 41),
+            accent_text: ACCENT,
+            selected_row: hex(0x2C2D32),
+            selected_row_child: hex(0x1B1C1F),
+            component: hex(0xD27CFF),
+            component_row: hex(0x3E3052),
+            danger: hex(0xFF5C5C),
+            success: hex(0x14AE5C),
+            warning: hex(0xE6A23A),
+            guide: hex(0xFF4D94),
+            tab_bar: hex(0x17181A),
+            tab_active: hex(0x111214),
+            shadow: Color32::from_black_alpha(0x66),
+            menu: hex(0x232428),
+            menu_text: hex(0xECECEE),
+            menu_hover: hex(0x2C2D32),
+            menu_dim: hex(0x91959C),
             focus: ACCENT,
         }
     }
@@ -141,8 +174,8 @@ fn tokens_id() -> egui::Id {
     egui::Id::new("figcraft_tokens")
 }
 
-/// egui's default for how long hover fades and openings animate.
-const ANIMATION_TIME: f32 = 0.2;
+/// Scrim's one motion duration (120 ms; `ui/tokens.json › motion`).
+const ANIMATION_TIME: f32 = 0.12;
 
 /// Install tokens and egui visuals.
 pub fn apply(ctx: &Context, t: Tokens) {
@@ -155,17 +188,19 @@ pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
     ctx.data_mut(|d| d.insert_temp(tokens_id(), t));
     ctx.set_visuals(visuals(t));
     ctx.global_style_mut(|s| {
-        s.spacing.item_spacing = egui::vec2(8.0, 6.0);
+        // Scrim's rhythm: 24 px controls and a 4 px gap make 28 px rows (`ui/README.md` §6).
+        s.spacing.item_spacing = egui::vec2(8.0, 4.0);
         s.spacing.button_padding = egui::vec2(8.0, 4.0);
         s.spacing.interact_size = egui::vec2(24.0, 24.0);
-        s.spacing.menu_margin = egui::Margin::same(8);
+        s.spacing.menu_margin = egui::Margin::same(4);
         s.spacing.window_margin = egui::Margin::same(12);
         s.text_styles = [
-            (TextStyle::Small, FontId::new(10.0, FontFamily::Proportional)),
-            (TextStyle::Body, FontId::new(11.0, FontFamily::Proportional)),
-            (TextStyle::Button, FontId::new(11.0, FontFamily::Proportional)),
+            // Scrim's type scale: small 11, body 12, title 13 (`ui/tokens.json › typography`).
+            (TextStyle::Small, FontId::new(11.0, FontFamily::Proportional)),
+            (TextStyle::Body, FontId::new(12.0, FontFamily::Proportional)),
+            (TextStyle::Button, FontId::new(12.0, FontFamily::Proportional)),
             (TextStyle::Heading, FontId::new(13.0, FontFamily::Name("semibold".into()))),
-            (TextStyle::Monospace, FontId::new(11.0, FontFamily::Monospace)),
+            (TextStyle::Monospace, FontId::new(12.0, FontFamily::Monospace)),
         ]
         .into();
         s.interaction.tooltip_delay = 0.4;
@@ -178,34 +213,39 @@ pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
 fn visuals(t: Tokens) -> Visuals {
     let mut v = if t.dark { Visuals::dark() } else { Visuals::light() };
     v.panel_fill = t.panel;
-    v.window_fill = t.panel;
+    // Menus, popovers, dialogs and tooltips share the floating surface (`ui/README.md` §7).
+    v.window_fill = t.menu;
     v.extreme_bg_color = t.field;
     v.faint_bg_color = t.hover;
     v.override_text_color = Some(t.text);
-    v.window_stroke = Stroke::new(1.0, t.border);
-    v.window_corner_radius = egui::CornerRadius::same(13);
-    v.menu_corner_radius = egui::CornerRadius::same(13);
-    v.selection.bg_fill = t.accent.gamma_multiply(0.3);
-    v.selection.stroke = Stroke::new(1.0, t.accent);
-    v.hyperlink_color = t.accent_text;
+    v.window_stroke = Stroke::new(1.0, t.border_strong);
+    v.window_corner_radius = egui::CornerRadius::same(8);
+    v.menu_corner_radius = egui::CornerRadius::same(8);
+    // Selection is neutral; the accent is only an edge or a mark (`ui/README.md` §4).
+    v.selection.bg_fill = t.selected_row;
+    v.selection.stroke = Stroke::new(1.0, t.text);
+    v.hyperlink_color = t.text_secondary;
+    v.warn_fg_color = t.warning;
+    v.error_fg_color = t.danger;
     for w in [&mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open, &mut v.widgets.noninteractive] {
-        w.corner_radius = egui::CornerRadius::same(5);
+        w.corner_radius = egui::CornerRadius::same(4);
+        w.expansion = 0.0;
         w.fg_stroke = Stroke::new(1.0, t.text);
     }
     v.widgets.noninteractive.bg_stroke = Stroke::new(1.0, t.border);
     v.widgets.noninteractive.bg_fill = t.panel;
     v.widgets.inactive.bg_fill = t.field;
-    v.widgets.inactive.weak_bg_fill = Color32::TRANSPARENT;
+    v.widgets.inactive.weak_bg_fill = t.field;
     v.widgets.inactive.bg_stroke = Stroke::NONE;
-    v.widgets.hovered.bg_fill = t.hover;
-    v.widgets.hovered.weak_bg_fill = t.hover;
+    v.widgets.hovered.bg_fill = t.pressed;
+    v.widgets.hovered.weak_bg_fill = t.pressed;
     v.widgets.hovered.bg_stroke = Stroke::new(1.0, t.field_hover_border);
     v.widgets.active.bg_fill = t.pressed;
-    v.widgets.active.weak_bg_fill = t.pressed;
+    v.widgets.active.weak_bg_fill = t.selected_row;
     v.widgets.active.bg_stroke = Stroke::new(1.0, t.accent);
-    v.popup_shadow = egui::Shadow { offset: [0, 4], blur: 16, spread: 0, color: t.shadow };
+    v.popup_shadow = egui::Shadow { offset: [0, 8], blur: 24, spread: 0, color: t.shadow };
     v.window_shadow = egui::Shadow { offset: [0, 8], blur: 24, spread: 0, color: t.shadow };
-    v.text_cursor.stroke = Stroke::new(1.0, t.accent);
+    v.text_cursor.stroke = Stroke::new(1.5, t.text);
     v
 }
 

@@ -1050,7 +1050,7 @@ fn animation_rows(app: &mut FigApp, ui: &mut Ui, node: NodeId, k: usize, it: &In
                     if rr.hovered() {
                         ui.painter().rect_filled(r, CornerRadius::same(5), ACCENT);
                     }
-                    let col = if rr.hovered() { Color32::WHITE } else { t.text };
+                    let col = if rr.hovered() { crate::theme::ACCENT_ON } else { t.text };
                     curve(ui.painter(), Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 4.0), vec2(28.0, 18.0)), *e, col, None);
                     ui.painter().text(pos2(r.min.x + 42.0, r.center().y), Align2::LEFT_CENTER, tr(e.label()), regular(11.5), col);
                     if rr.clicked() {

@@ -113,7 +113,7 @@ pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: Nod
         // Section titles are pills inside the top-left; a section hiding its contents shows an
         // eye in its pill and says so in the middle.
         let hidden = n.hides_contents();
-        let fg = if selected { Color32::WHITE } else { t.text };
+        let fg = if selected { crate::theme::ACCENT_ON } else { t.text };
         let eye = if hidden { 16.0 } else { 0.0 };
         let galley = crate::bidi::name_galley(painter, &n.name, semibold(11.0), fg, (edge.len - 16.0 - eye).clamp(20.0, 480.0));
         let r = Rect::from_min_size(tl, galley.size() + vec2(16.0 + eye, 8.0));

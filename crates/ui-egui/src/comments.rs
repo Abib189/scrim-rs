@@ -355,10 +355,10 @@ fn paint_pin(painter: &egui::Painter, r: Rect, p: &Pin, hot: bool) {
     painter.rect_stroke(r, BUBBLE, Stroke::new(1.0, Color32::from_black_alpha(30)), StrokeKind::Inside);
     let fill = if p.resolved { Color32::from_gray(150) } else { author_color(&p.author) };
     painter.circle_filled(r.center(), 11.0, fill);
-    painter.text(r.center(), Align2::CENTER_CENTER, figcraft_engine::live::initials(&p.author), semibold(9.0), Color32::WHITE);
+    painter.text(r.center(), Align2::CENTER_CENTER, figcraft_engine::live::initials(&p.author), semibold(9.0), crate::theme::ACCENT_ON);
     if p.unread {
         let c = r.right_top() + vec2(-2.0, 2.0);
-        painter.circle_filled(c, 4.5, Color32::WHITE);
+        painter.circle_filled(c, 4.5, crate::theme::ACCENT_ON);
         painter.circle_filled(c, 3.5, ACCENT);
     }
     if p.resolved {
@@ -378,7 +378,7 @@ fn paint_cluster(painter: &egui::Painter, at: Pos2, n: usize, hot: bool) {
     painter.rect_stroke(r, BUBBLE, edge, StrokeKind::Inside);
     let inner = r.shrink(3.0);
     painter.rect_filled(inner, CornerRadius::same(11), Color32::from_gray(44));
-    painter.text(inner.center(), Align2::CENTER_CENTER, n.to_string(), semibold(11.0), Color32::WHITE);
+    painter.text(inner.center(), Align2::CENTER_CENTER, n.to_string(), semibold(11.0), crate::theme::ACCENT_ON);
 }
 
 /// Draw the pins, clusters and the draft pin.
@@ -400,7 +400,7 @@ pub fn draw(app: &FigApp, painter: &egui::Painter) {
     if let Some((x, y, _)) = &app.ui.comments.draft {
         let r = pin_rect(app.to_screen(*x, *y));
         painter.rect_filled(r, BUBBLE, ACCENT);
-        painter.circle_filled(r.center(), 3.0, Color32::WHITE);
+        painter.circle_filled(r.center(), 3.0, crate::theme::ACCENT_ON);
     }
 }
 
@@ -543,7 +543,7 @@ fn composer(ui: &mut Ui, id: Id, text: &mut String, hint: &str, people: &[String
             let ready = !text.trim().is_empty();
             ui.painter().circle_filled(br.center(), 12.0, if ready { ACCENT } else { t.hover });
             let c = br.center();
-            let col = if ready { Color32::WHITE } else { t.icon_secondary };
+            let col = if ready { crate::theme::ACCENT_ON } else { t.icon_secondary };
             ui.painter().line_segment([c + vec2(0.0, 5.0), c + vec2(0.0, -5.0)], Stroke::new(1.6, col));
             ui.painter().line_segment([c + vec2(-4.0, -1.0), c + vec2(0.0, -5.0)], Stroke::new(1.6, col));
             ui.painter().line_segment([c + vec2(4.0, -1.0), c + vec2(0.0, -5.0)], Stroke::new(1.6, col));

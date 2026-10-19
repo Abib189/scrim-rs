@@ -84,12 +84,12 @@ pub fn right_panel(app: &mut FigApp, ui: &mut Ui) {
     // Top bar: people (you and the others in a live session), present, share.
     let (top, _) = ui.allocate_exact_size(vec2(w, 48.0), Sense::hover());
     // As wide as its label needs (longer in some languages).
-    let label = ui.painter().layout_no_wrap(tr("Share").to_string(), semibold(11.5), Color32::WHITE);
+    let label = ui.painter().layout_no_wrap(tr("Share").to_string(), semibold(11.5), crate::theme::ACCENT_ON);
     let sw = (label.size().x + 24.0).max(56.0);
     let share = Rect::from_min_size(pos2(top.max.x - 14.0 - sw, top.center().y - 16.0), vec2(sw, 32.0));
     let sresp = ui.interact(share, ui.id().with("share"), Sense::click()).tip(tr("Share: live session, export"));
     ui.painter().rect_filled(share, CornerRadius::same(6), if sresp.hovered() { t.accent_hover } else { ACCENT });
-    ui.painter().galley(share.center() - label.size() / 2.0, label, Color32::WHITE);
+    ui.painter().galley(share.center() - label.size() / 2.0, label, crate::theme::ACCENT_ON);
     crate::live::share_popover(app, &sresp);
     // Play presents; its chevron opens the play menu (present, or preview in a pane).
     let play = Rect::from_min_size(pos2(share.min.x - 50.0, top.center().y - 14.0), vec2(42.0, 28.0));
@@ -286,11 +286,11 @@ pub fn menu_row(ui: &mut Ui, label: &str, shortcut: &str, art_w: f32, art: impl 
     if hovered {
         ui.painter().rect_filled(r, CornerRadius::same(5), ACCENT);
     }
-    let col = if hovered { Color32::WHITE } else { t.text };
+    let col = if hovered { crate::theme::ACCENT_ON } else { t.text };
     ui.painter().galley(pos2(r.min.x + MENU_PAD, r.center().y - text.size().y / 2.0), text, col);
     if let Some(k) = keys {
         let at = pos2(r.max.x - MENU_PAD - k.size().x, r.center().y - k.size().y / 2.0);
-        ui.painter().galley(at, k, if hovered { Color32::WHITE } else { t.text_secondary });
+        ui.painter().galley(at, k, if hovered { crate::theme::ACCENT_ON } else { t.text_secondary });
     }
     art(ui.painter(), r, col);
     resp
