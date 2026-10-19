@@ -2,15 +2,15 @@
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-18 · **Change:** minor (macOS: quitting ends the process once everything is kept, avoiding the Touch Bar teardown crash (#781); Linux and BSD clipboard: images under Wayland, reads time out; minimised windows under Wayland; window controls on Wayland without server decorations; canvas textures on device pixels; copy and paste in the browser; Windows QA pass; Display P3: gamut warning and soft-proof (true P3 blocked upstream); several windows; pen pressure for the Pencil and brushes on Windows and from browser styluses) · **Target:** Figma Design (desktop app 126.10.7)
 
-How FigCraft uses hardware and which platforms it runs on, against Figma. Figma's desktop app is
+How Scrim uses hardware and which platforms it runs on, against Figma. Figma's desktop app is
 Electron with a GPU helper process; its canvas renders on the GPU (WebGL, with WebGPU rolling out
-since 2025). FigCraft renders the canvas on the CPU and presents it through wgpu.
+since 2025). Scrim renders the canvas on the CPU and presents it through wgpu.
 
 **Summary (estimated):** hardware ~60%, performance ~60%, platforms ~75%.
 
 ## Hardware
 
-| Feature | Figma | FigCraft (macOS / Windows / Linux / web) | Hours |
+| Feature | Figma | Scrim (macOS / Windows / Linux / web) | Hours |
 |---|---|---|---|
 | Canvas rendering | GPU | CPU (tiny-skia), banded across cores, retained (re-renders only what an edit or pan touches), levels of detail below 50% zoom; shown through wgpu (WebGPU or WebGL2 in the browser) | 30–60 for a GPU path |
 | Effects (blurs, glass, noise) | GPU | CPU | in the above |
@@ -24,7 +24,7 @@ since 2025). FigCraft renders the canvas on the CPU and presents it through wgpu
 
 ## Performance (measured by `cargo xtask bench`, synthetic files, owner's Mac)
 
-| Case | FigCraft | Figma |
+| Case | Scrim | Figma |
 |---|---|---|
 | 50k-layer page, zoomed out, full render | ~8 ms (levels of detail) | not timed side by side |
 | 10k layers: full 1440×900 render | 7–15 ms | not timed |
@@ -37,7 +37,7 @@ Nothing has been timed against Figma on the same document (needs `.fig` import).
 
 ## Platforms
 
-| Platform | Figma | FigCraft | Notes |
+| Platform | Figma | Scrim | Notes |
 |---|---|---|---|
 | macOS | desktop app (Intel and Apple silicon) | universal `.dmg`, signed and notarized (v0.2.0) | where nearly all QA happens. Quitting ends the process once the preferences, recovery copies and live sessions are taken care of: the window's teardown crashed on Macs with a Touch Bar (#781); Quit from the menu bar, which asks nothing, keeps unsaved files' recovery copies for the next start |
 | Windows x64 / arm64 | desktop app | `.msi` and portable zip for x64, x86 and arm64 | built in CI; Windows: QA pass done 2026-10-11, findings in PR |

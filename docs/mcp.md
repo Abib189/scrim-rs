@@ -1,6 +1,6 @@
-# FigCraft MCP server
+# Scrim MCP server
 
-FigCraft ships a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents can
+Scrim ships a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents can
 design with it: create and edit layers, run any menu command, inspect the result as JSON and look at
 it as a PNG. It speaks newline-delimited JSON-RPC 2.0 over stdio (MCP protocol `2025-06-18`;
 `2025-03-26` and `2024-11-05` clients are accepted too).
@@ -15,7 +15,7 @@ The server lives in `crates/mcp` (`figcraft-mcp`) and is started by the CLI:
 | Command | Backend |
 |---|---|
 | `figcraft-cli mcp` | **Headless**: an in-process engine session with one untitled document. No window; renders with the CPU renderer. |
-| `figcraft-cli mcp --attach <port>` | **Attached**: drives a running FigCraft app through its control channel (`figcraft --control <port>`). The user sees every change live. |
+| `figcraft-cli mcp --attach <port>` | **Attached**: drives a running Scrim app through its control channel (`figcraft --control <port>`). The user sees every change live. |
 
 `--attach` also takes `host:port`. The control channel only listens on 127.0.0.1.
 
@@ -90,7 +90,7 @@ Each may be given more than once, as `--flag DIR` or `--flag=DIR`:
 
 ### Fonts
 
-The headless server lays text out with the same fonts as the app: the fonts built into FigCraft
+The headless server lays text out with the same fonts as the app: the fonts built into Scrim
 plus the installed system fonts, indexed once, the first time text is laid out (a session that
 never touches text never pays for it). So text sizes, auto layout and exports match what users see
 in the app. For renders that come out the same on every machine (CI), start it with
@@ -102,8 +102,8 @@ built-in fonts. Attached, the app's own fonts apply. The browser build has no sy
 Build the CLI first (`cargo build --release -p figcraft-cli`) and use the absolute path to
 `target/release/figcraft-cli`.
 
-The Linux AppImage bundles the CLI: `FigCraft.AppImage cli <args>` runs `figcraft-cli <args>`, so
-`/path/to/FigCraft.AppImage cli mcp` works wherever `/path/to/figcraft-cli mcp` appears below.
+The Linux AppImage bundles the CLI: `Scrim.AppImage cli <args>` runs `figcraft-cli <args>`, so
+`/path/to/Scrim.AppImage cli mcp` works wherever `/path/to/figcraft-cli mcp` appears below.
 
 ### Claude Code
 
@@ -300,7 +300,7 @@ Or in a project's `.mcp.json`:
 | `select {ids}` | Replace the selection (`[]` deselects). |
 | `export {ids, format, scale \| size, path?, bleed?, cropMarks?, bleedMarks?, cmyk?, contentsOnly?, includeBoundingBox?, svgOutlineText?, svgIdAttribute?, svgSimplifyStroke?}` | png, jpg, svg, webp, pdf, or `fig`: the whole file as `.fig`, experimental (see Exporting `.fig` files below); `size` is `2x`, `512w` or `512h`. The image covers what the layers paint (shadows towards their offset, strokes, unclipped children, a mask group's mask; hidden layers take no room; a slice is its area with everything under it); `contentsOnly: false` also draws every other layer showing in that area, `includeBoundingBox` exports the layers' own boxes; SVG: `svgOutlineText: false` keeps `<text>`, `svgIdAttribute` writes unique ids from layer names, `svgSimplifyStroke: false` writes every stroke as an outline. The same options go in export settings (`export.add` / `export.update`). PDF: frames one page each (sized in points), anything else together on one page; print options: `bleed` (points or a length like `"3mm"`, `"0.125in"`), crop and bleed marks, CMYK colour (see Exports below), also taken by `file.export`, `file.exportLayers`, `file.exportFramesPdf` and stored per export setting by `export.add` / `export.update`; `run_command` `file.exportFramesPdf {page?, path?}` writes every top-level frame of a page. Without `path`, images come back as MCP image content, SVG as text. Layers' own export settings: `run_command` with `export.add` / `export.update {index, size?, suffix?, format?}` / `export.remove` and `file.exportLayers {ids?, dir?, assets?}` (every layer once per setting, named `<layer><suffix>.<format>`, a slash in a layer name making a folder; `assets: true` exports the Inspect tab's assets instead: icons as SVG, images as PNG). |
 | `screenshot {ids?, scale?, maxSize?, window?}` | PNG of the page (with background) or of layers, scaled to fit `maxSize` (default 1600). `window: true` captures the app window in front when attached, a window id (see Windows below) that window. |
-| `open_file {path, variables?}` / `save_file {path?}` | Open `.figcraft`, `.json` (FigCraft JSON or REST API file JSON with its variables, see below), `.fig` (best effort, see below), `.svg` (see Importing SVG below) or an image; save as `.figcraft`. `open_file` returns `opened` (for a file opened anew, a `summary` of `name`, `pages`, `layers` and `images`, and `warnings` or `repairs`; a file that was already open just gives its `index`) and the document's `document` outline. |
+| `open_file {path, variables?}` / `save_file {path?}` | Open `.figcraft`, `.json` (Scrim JSON or REST API file JSON with its variables, see below), `.fig` (best effort, see below), `.svg` (see Importing SVG below) or an image; save as `.figcraft`. `open_file` returns `opened` (for a file opened anew, a `summary` of `name`, `pages`, `layers` and `images`, and `warnings` or `repairs`; a file that was already open just gives its `index`) and the document's `document` outline. |
 | `undo` / `redo` | Step through history. |
 | `get_changes {since?}` | The edits after revision `since` (default 0), oldest first: `{revision, since, complete, changes: [{revision, author, agent, command, label, layers: [{id, name}]}]}`. `complete: false` means older edits have left the log (it keeps the last 2,000 per document). |
 | `query_nodes {query, limit?, page?}` | Find layers with an XPath-style query, read-only (Scrim's `query_nodes`; the grammar and every error message are in `docs/scrim-transfer/specs/query-nodes*.md`): `{query, total, returned, truncated, results: [{id, name, type, element, parentId, rect: {x, y, w, h}, stale}]}`, at most `limit` (default 100, max 1,000) in document order, `total` counting every match. `/X` is a top-level layer of a page, `//X` anywhere below. Node tests are the kinds by their Figma names (`FRAME`, `RECTANGLE`, `BOOLEAN_OPERATION` …), `IMAGE` (a visible image fill) and `*`. Predicates: `[@a]`, `=`, `!=`, `<`, `<=`, `>`, `>=` (numbers or px lengths), `contains()`, `starts-with()`, `and`, `or`, `not()`, `[n]` and `[last()]` among the matches under the same parent. Attributes: `@id @name @type @text @src @width @height @fill @color @background @layout @direction @position @children @component @componentId @hidden @locked` and `@style.<key>` for CSS properties (see `list_commands` › `node.query`). Anything outside the subset is an error saying what is supported. The engine command is `node.query`; the CLI's `query` and `find` run the same code. |
@@ -857,7 +857,7 @@ import uses: the layer tree, geometry, paints with image bytes, strokes, effects
 runs, vector networks, auto layout, constraints, components, sets, instances with their overrides
 and property values, variable collections with their modes, variables and bindings, shared styles
 with their layer links, and prototype interactions. `warnings` lists what was left out (comments,
-Dev Mode data, some bindings and settings and the like). Round trips through FigCraft's own
+Dev Mode data, some bindings and settings and the like). Round trips through Scrim's own
 importer are tested, and the example documents and small test files were opened in other software
 (`docs/file-format-parity.md` says what was checked); other apps may not open every file. Without
 `path` the file comes back as base64 `data`. Check one by opening it again:
@@ -898,7 +898,7 @@ per-side stroke weights, visibility, text, font properties, single solid fills a
 link to them, so switching a mode with `variable.setMode` restyles the layers (`mode: null` sets a
 frame back to Auto, inheriting its parent's mode).
 
-The same JSON carries variables between FigCraft files: `variable.export {collections?, format?,
+The same JSON carries variables between Scrim files: `variable.export {collections?, format?,
 path?}` writes this file's collections (default: all but library copies) as a local variables
 response (`format: "json"`, the default) or as CSS custom properties (`format: "css"`: the default
 mode on `:root`, each other mode on `[data-<collection>="<mode>"]`, aliases as `var(--name)`), and
@@ -1051,7 +1051,7 @@ only: a host stops hosting it, a guest leaves it.
 - `collab.share {via?, access?, server?, name?, port?, bind?}` shares the active document with a
   **join code**, the short way to do what `collab.publish` and `collab.host` do. `via: "online"`
   (the default) publishes it to the server in Preferences (`pref.publishServer {url?}`: the
-  FigCraft server unless changed; `{url: ""}` turns online sharing off, `{}` goes back to the
+  Scrim server unless changed; `{url: ""}` turns online sharing off, `{}` goes back to the
   built-in one; `server` names another for this call, with `?key=…` when it needs its key) and
   returns `status: "connecting"`; once `collab.peers` says `"live"`, `code` is the code to give
   others (`K7M-2QX-9TD`) and `share` is `{via, access, shared, editCode, viewCode, editLink,
@@ -1422,7 +1422,7 @@ through the outlines of its layers.
   gradient stops, images and rasterised effects) from sRGB with `K = 1 − max(R, G, B)`,
   `C = (1 − R − K) / (1 − K)` (M and Y alike), deterministic and profile-free: the file is
   DeviceCMYK without an output intent, because embedding one needs a CMYK ICC profile and none
-  ships with FigCraft. Soft masks stay RGB (they aren't printed) and transparency groups blend in
+  ships with Scrim. Soft masks stay RGB (they aren't printed) and transparency groups blend in
   RGB, as the PDF writer declares them.
 
 ### Brushes and pen pressure

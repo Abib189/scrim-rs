@@ -297,7 +297,7 @@ mod host {
         0
     }
     pub fn reply() -> Vec<u8> {
-        b"not running inside FigCraft".to_vec()
+        b"not running inside Scrim".to_vec()
     }
     pub fn log(_s: &[u8]) {}
     pub fn notify(_s: &[u8]) {}

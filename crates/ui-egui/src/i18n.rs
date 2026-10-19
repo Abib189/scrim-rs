@@ -241,3 +241,7 @@ fn label<'a>(menu: bool, id: &str, english: &'a str) -> Cow<'a, str> {
 #[cfg(test)]
 #[path = "i18n_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "i18n_brand_tests.rs"]
+mod brand_tests;

@@ -1,7 +1,7 @@
-# FigCraft plugins
+# Scrim plugins
 
-A FigCraft plugin is a WebAssembly module with a small JSON manifest. It acts on the document only
-through FigCraft's commands, the same ones the menus, the CLI, the control channel and the MCP
+A Scrim plugin is a WebAssembly module with a small JSON manifest. It acts on the document only
+through Scrim's commands, the same ones the menus, the CLI, the control channel and the MCP
 server run (`figcraft-cli commands` lists them), so a plugin can do what a script can do, within the
 permissions its manifest asks for, and nothing more.
 
@@ -13,14 +13,14 @@ permissions its manifest asks for, and nothing more.
   so is everything one callback from its panel does. When a run or a callback fails (the plugin
   returns an error, traps, panics or runs out of fuel or memory), the document, selection and page
   are put back as they were.
-- **Panels and settings (API 2).** A plugin can show a small panel of its own while it runs: FigCraft
+- **Panels and settings (API 2).** A plugin can show a small panel of its own while it runs: Scrim
   draws its fields and buttons with its own widgets and calls the plugin back when one is used. A
   plugin can also keep settings from one run to the next.
 - **Widgets (API 3).** A plugin can put a layer of its own on the canvas: it describes the layer
-  (frames with auto layout, text, shapes, images), FigCraft builds it, and a click on one of its
+  (frames with auto layout, text, shapes, images), Scrim builds it, and a click on one of its
   parts calls the plugin back to redraw it from its state, which is kept in the document.
 - **Permissions.** The manifest says whether the plugin only reads the document or may edit it, and
-  can narrow the commands it may call. FigCraft enforces both.
+  can narrow the commands it may call. Scrim enforces both.
 - **Distribution.** A team's own `figcraft-server` can keep a plugin directory: plugins are
   published to it with the server's key, browsed and installed from Plugins ▸ Manage plugins, and
   updated when a newer version is published (see [Plugin directories](#plugin-directories)). No
@@ -57,7 +57,7 @@ large data instead of logging it in full.
   killed app never loses them; it doesn't wait until it quits.
 - The installed plugins head the **Plugins** menu: a plugin with one command is an item, one with
   several a submenu. A command with parameters (an ellipsis after its name) first opens a small form
-  with a field per parameter, drawn with FigCraft's own widgets; **Run** runs it.
+  with a field per parameter, drawn with Scrim's own widgets; **Run** runs it.
 - **Plugins ▸ Run last plugin** (⌥⌘P on macOS, Ctrl+Alt+Shift+P on Windows and Linux, where
   Ctrl+Alt+P is Pixel preview) runs the last plugin command again with the same parameters.
 - **Plugins ▸ Manage plugins…** has two tabs. **Installed** lists the installed plugins (version,
@@ -71,8 +71,8 @@ A message the plugin shows (`notify`) appears as a toast; so does a text result.
 
 **Plugin panels.** A plugin written for API 2 can show a panel while it runs: a floating window,
 first placed beside the properties panel (drag its title bar to move it), with the plugin's notes,
-fields (text, number, checkbox, menu, list, colour) and buttons, drawn with FigCraft's own widgets
-and named for screen readers. A colour field's swatch opens FigCraft's colour picker (the plugin hears
+fields (text, number, checkbox, menu, list, colour) and buttons, drawn with Scrim's own widgets
+and named for screen readers. A colour field's swatch opens Scrim's colour picker (the plugin hears
 of the colour when a drag in the picker ends); its hex can also be typed. Pressing a button or
 changing a field calls the plugin back with every field's value; what that callback does is one
 undo step (none when it changes nothing), and the plugin can update the panel or close it. The
@@ -162,9 +162,9 @@ checked like an imported plugin (manifest, plugin API version, the module compil
 asset names) before anything is written. A plugin installed this way runs in the same sandbox,
 with the same limits and its manifest's permissions, as any other.
 
-The desktop app keeps such plugins per user, beside its settings (`Plugins/` in FigCraft's settings
-folder: `%APPDATA%\FigCraft` on Windows, `~/Library/Application Support/FigCraft` on macOS,
-`~/.config/FigCraft` elsewhere), each in a folder of its own named by a hash of its id, with its
+The desktop app keeps such plugins per user, beside its settings (`Plugins/` in Scrim's settings
+folder: `%APPDATA%\Scrim` on Windows, `~/Library/Application Support/Scrim` on macOS,
+`~/.config/Scrim` elsewhere), each in a folder of its own named by a hash of its id, with its
 module and its assets. The CLI and the MCP server install for the session only.
 
 **Updating.** When the directory has a newer version than the one installed, the plugin's row
@@ -224,7 +224,7 @@ plugin directory requests (`plugin.directory.*` says so). Import plugins with `p
 | `version`, `description` | Optional text. A plugin published to a [directory](#plugin-directories) needs a `version` of one to four numbers (`1.2.0`), each version newer than the last. |
 | `author` | Optional: who made it, as you type it (64 characters at most); plugin directories show it. |
 | `main` | Required. The module, a `.wasm` path relative to the manifest, inside its folder. |
-| `api` | The plugin API version the plugin was written for: `1` (the default), `2` (panels and settings) or `3` (widgets). A manifest asking for a newer one than FigCraft runs is refused, so a plugin that needs panels or widgets fails clearly on an older FigCraft. |
+| `api` | The plugin API version the plugin was written for: `1` (the default), `2` (panels and settings) or `3` (widgets). A manifest asking for a newer one than Scrim runs is refused, so a plugin that needs panels or widgets fails clearly on an older Scrim. |
 | `widget` | API 3: `true` when the plugin draws a widget (it's listed in Plugins ▸ Widgets). |
 | `permissions.access` | `read` (the default): commands that leave the document as it is; such plugins also run from Dev Mode's Inspect tab. `write`: edits too. |
 | `permissions.commands` | Optional allowlist: exact command ids or prefixes ending in `*` (`node.*`). Empty: any command the access allows. |
@@ -233,7 +233,7 @@ plugin directory requests (`plugin.directory.*` says so). Import plugins with `p
 
 ## What a plugin can't do
 
-Whatever its manifest says, FigCraft refuses these calls (the plugin gets the refusal as an error
+Whatever its manifest says, Scrim refuses these calls (the plugin gets the refusal as an error
 it can handle):
 
 - files and the app: `file.*`, `app.*`, `pref.*`, `help.*`, `library.add`, `libraries.*`,
@@ -307,7 +307,7 @@ included, is refused when the plugin is imported):
 | `selection` | `() -> len` | The reply becomes the selected layer ids, a JSON array. |
 | `reply_len` | `() -> len` | The reply's length in bytes. |
 | `reply_read` | `(ptr, len) -> copied` | Copies up to `len` bytes of the reply to `ptr`. |
-| `log` | `(ptr, len)` | A line of the run's log (returned in `logs`, and written to FigCraft's log). |
+| `log` | `(ptr, len)` | A line of the run's log (returned in `logs`, and written to Scrim's log). |
 | `notify` | `(ptr, len)` | A short message for the user (a toast in the app). |
 | `set_output` | `(ptr, len)` | The run's result (JSON or text), or its error message when it fails. |
 | `ui_show` | `(ptr, len) -> status` | API 2. Shows the plugin's panel, or replaces the one showing (the panel spec below, as JSON). `1`: the spec is invalid, the reply says why. |
@@ -340,7 +340,7 @@ plugin is removed.
 1,000 characters, no `name` needed), in order, each `name` unique. A field shows its `value`; a
 field without one keeps what the user entered before the panel was updated, so a plugin can update
 a note without resetting the other fields. Buttons next to each other share a row; the first button
-is the primary one. FigCraft checks the whole spec (sizes, kinds, options, bounds) and drops values
+is the primary one. Scrim checks the whole spec (sizes, kinds, options, bounds) and drops values
 that don't fit their field.
 
 ### Widget description
@@ -355,7 +355,7 @@ that don't fit their field.
 ```
 
 `state` is the widget's new state, a JSON object (left out: it keeps the one it has). `root` is the
-widget itself, a frame; FigCraft replaces everything inside it with the layers described and keeps
+widget itself, a frame; Scrim replaces everything inside it with the layers described and keeps
 the widget where it is (and its size, unless the description gives one). Every layer has a `type`
 (`frame`, `text`, `rectangle`, `ellipse`, `image`) and may have a `name`, a `target` (clicking it
 calls the plugin back with that name: letters, digits, `.`, `-`, `_`), `x` and `y` (in its frame,
@@ -366,7 +366,7 @@ layout) and `children`;
 with auto layout it hugs its contents on an axis without a size. A text has `text`, `size`,
 `color` and `bold` (with a `width` it wraps). An image has `data`, the image's bytes (PNG, JPEG…)
 as base64, usually carried in the module itself; without a size it takes the image's.
-FigCraft checks the whole description (kinds, sizes, numbers, colours, lengths, counts, depth,
+Scrim checks the whole description (kinds, sizes, numbers, colours, lengths, counts, depth,
 image sizes) and refuses it if anything is off.
 
 ## Writing a plugin in Rust

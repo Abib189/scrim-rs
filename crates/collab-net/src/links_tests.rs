@@ -41,7 +41,7 @@ fn registers_the_scheme_for_this_copy() {
     s.set(true).unwrap();
     assert!(s.registered());
     let reg = s.registry();
-    assert_eq!(reg.get(KEY, "").as_deref(), Some("URL:FigCraft invite link"));
+    assert_eq!(reg.get(KEY, "").as_deref(), Some("URL:Scrim invite link"));
     assert_eq!(reg.get(KEY, "URL Protocol").as_deref(), Some(""), "marks the key as a URL scheme");
     assert_eq!(reg.get(&format!(r"{KEY}\DefaultIcon"), "").as_deref(), Some(r#""C:\Apps\FigCraft\figcraft.exe",0"#));
     assert_eq!(reg.get(&format!(r"{KEY}\shell\open\command"), "").as_deref(), Some(r#""C:\Apps\FigCraft\figcraft.exe" "%1""#));

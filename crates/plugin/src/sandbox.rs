@@ -274,7 +274,7 @@ fn compile(engine: &Engine, bytes: &[u8], limits: &Limits) -> Result<Module, Plu
             }
             (None, _) => {
                 return Err(PluginError::InvalidModule(format!(
-                    "it imports `{}.{}`, which FigCraft doesn't provide (plugins get no file system, network or clock)",
+                    "it imports `{}.{}`, which Scrim doesn't provide (plugins get no file system, network or clock)",
                     imp.module(),
                     imp.name()
                 )));

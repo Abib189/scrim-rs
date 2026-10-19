@@ -6,6 +6,6 @@ The release playbook shared by every crafting app lives in craftrules:
 the canonical copy; don't duplicate it here. Cutting a release step by step:
 `craftrules/release/cut-a-release.md`.
 
-FigCraft copies PhotoCraft's reference implementation (`.github/workflows/release.yml`,
-`packaging/`, the `xtask version` command) with FigCraft's names. FigCraft-specific details are in
+Scrim copies PhotoCraft's reference implementation (`.github/workflows/release.yml`,
+`packaging/`, the `xtask version` command) with Scrim's names. Scrim-specific details are in
 [releasing.md](releasing.md).

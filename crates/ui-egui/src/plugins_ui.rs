@@ -451,11 +451,7 @@ fn confirm_window(app: &mut FigApp, ctx: &Context, t: &Tokens) {
             ui.add(egui::Label::new(RichText::new(format!("•  {a}")).font(regular(11.0)).color(t.text)).wrap());
         }
         ui.add_space(8.0);
-        widgets::label(
-            ui,
-            tr("Plugins run in FigCraft's sandbox, without files, network or clock. Install only plugins you trust."),
-            t.text_secondary,
-        );
+        widgets::label(ui, tr("Plugins run in Scrim's sandbox, without files, network or clock. Install only plugins you trust."), t.text_secondary);
         ui.add_space(4.0);
         widgets::label(ui, &trf("SHA-256: {sha}…", &[("sha", &e.sha256.get(..16).unwrap_or_default())]), t.text_secondary);
         ui.add_space(12.0);
