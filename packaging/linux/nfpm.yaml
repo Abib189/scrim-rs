@@ -4,7 +4,13 @@
 # NFPM_ARCH and FIGCRAFT_MAINTAINER.
 #
 #   nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/release/
-name: figcraft
+name: scrim
+# Installs /usr/bin/figcraft (the app binary keeps its name for now; docs/design/rebrand.md), so it
+# can't sit beside an upstream FigCraft package.
+conflicts:
+  - figcraft
+replaces:
+  - figcraft
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -14,7 +20,7 @@ release: 1
 section: graphics
 priority: optional
 maintainer: ${FIGCRAFT_MAINTAINER}
-vendor: Learning Machines LLC
+vendor: Scrim contributors
 homepage: https://github.com/Abib189/scrim-rs
 license: MIT OR Apache-2.0
 description: |-

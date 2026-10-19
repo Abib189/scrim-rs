@@ -23,6 +23,7 @@ mod gamepad;
 mod graphics;
 #[cfg(target_os = "linux")]
 mod linux_window;
+mod migrate;
 mod recovery;
 mod services;
 mod startup;
@@ -33,6 +34,8 @@ mod apple_events_tests;
 mod args_tests;
 #[cfg(test)]
 mod graphics_tests;
+#[cfg(test)]
+mod migrate_tests;
 #[cfg(test)]
 mod recovery_online_tests;
 #[cfg(test)]
@@ -172,6 +175,13 @@ fn main() -> eframe::Result {
         }
     }
     let opened: Vec<u64> = session.docs.iter().map(|d| d.uid).collect();
+    // FigCraft's settings come over once, as a copy (`migrate`).
+    if let Some(base) = services::base_dir() {
+        match migrate::migrate(&base) {
+            migrate::Migration::Failed(e) => log::warn!("couldn't copy FigCraft's settings: {e}"),
+            m => log::info!("settings: {m:?}"),
+        }
+    }
     // Documents a crashed or killed run left unsaved come back; this run keeps its own copies.
     let recovery_root = services::config_dir().map(|d| d.join("Recovery"));
     // The preferences first: they hold the online files a recovered document may be one of.
@@ -220,7 +230,7 @@ fn main() -> eframe::Result {
     // and StartupWMClass (FreeBSD's package matches the binary's name instead).
     let mut viewport = egui::ViewportBuilder::default()
         .with_title("Scrim")
-        .with_app_id("ai.storyteller.figcraft")
+        .with_app_id("design.scrim.app")
         .with_inner_size([1440.0, 900.0])
         .with_min_inner_size([800.0, 500.0])
         .with_drag_and_drop(true);
@@ -243,7 +253,7 @@ fn main() -> eframe::Result {
     #[cfg(target_os = "macos")]
     let apple_events = &apple_events;
     let result = eframe::run_native(
-        "FigCraft",
+        "Scrim",
         options,
         Box::new(move |_cc| {
             #[cfg(target_os = "linux")]

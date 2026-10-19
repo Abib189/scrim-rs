@@ -1,26 +1,28 @@
-# Releasing FigCraft
+# Releasing Scrim
 
 Every push to the `release` branch runs `.github/workflows/release.yml`. The workflow builds
 installers for macOS, Windows, Linux and the web, plus a FreeBSD tarball and the collaboration
-server for Linux, then creates or updates a **draft** GitHub Release named `FigCraft v<version>`.
+server for Linux, then creates or updates a **draft** GitHub Release named `Scrim v<version>`.
 Nobody sees a draft until a maintainer publishes it.
 
-This is FigCraft's copy of the shared [release playbook](release-playbook.md) (PhotoCraft is the
-reference implementation). User-facing names say **FigCraft**. Files, binaries and ids stay
-lowercase (`figcraft-<version>-<platform>-<arch>.<ext>`, `ai.storyteller.figcraft`). The
-operational runbook (secrets, the `release` ruleset, runner group, promoting the draft) is
-craftrules `release/cut-a-release.md`.
+This is Scrim's copy of FigCraft's release playbook ([release-playbook.md](release-playbook.md)).
+User-facing names say **Scrim** (`docs/design/rebrand.md`). Installers are
+`scrim-<version>-<platform>-<arch>.<ext>`; the app id is `design.scrim.app`. The Cargo packages and
+the app binary keep FigCraft's names for now (cheap upstream merges); see the table.
 
-## FigCraft's names
+## Scrim's names
 
 | Thing | Value |
 |---|---|
-| Display name | FigCraft |
-| Packages / binaries | `figcraft` (app), `figcraft-cli` (headless CLI), `figcraft-web` (browser) |
-| Bundle / app id | `ai.storyteller.figcraft` (CLI signing identifier `ai.storyteller.figcraft-cli`) |
-| Native document | `.figcraft`, MIME `application/x-figcraft`, UTI `ai.storyteller.figcraft.document` |
+| Display name | Scrim (macOS `Scrim.app`; the bundle's executable `Scrim`) |
+| Packages / binaries | Cargo packages `figcraft` (app; installed as `figcraft` on Linux and FreeBSD, `figcraft.exe` on Windows: renamed later), `figcraft-cli` (headless CLI), `figcraft-web` (browser). deb and rpm: `scrim` (conflicts with `figcraft`) |
+| Bundle / app id | `design.scrim.app` (Wayland app_id, X11 class, desktop entry, Flatpak, AppStream). CLI signing identifier: `ai.storyteller.figcraft-cli` until the CLI is renamed (A3) |
+| Native document | `.figcraft`, MIME `application/x-figcraft`, UTI `ai.storyteller.figcraft.document` (kept so files stay exchangeable with FigCraft; macOS imports the declaration) |
 | Also opens | `.svg`, `.png`, `.jpg`/`.jpeg` ("Open with", never the default app) |
-| WiX UpgradeCode | `7F8B9827-D065-41B7-A514-2A454B21F484` (fixed forever; never reuse it in another app) |
+| WiX UpgradeCode | `FA07D3AB-4037-4826-BA91-B6E37FFAFC4E` (Scrim's own, fixed forever; FigCraft's is different), ProgId `Scrim.Document` |
+| App icon | The **placeholder** in `assets/app-icon/scrim/` (`cargo xtask icon`), awaiting the owner's mark |
+| Settings | `Scrim` in the platform's settings directory; FigCraft's copied once on first start |
+| Maintainer (deb, rpm) | `FIGCRAFT_MAINTAINER`, defaulting to `Scrim maintainers <scrim-rs@users.noreply.github.com>`: set a real address before publishing |
 | Linux categories | `Graphics;2DGraphics;VectorGraphics;X-Design;` (`Design` isn't a registered freedesktop category, so `desktop-file-validate` rejects it) |
 
 ## Cutting a release
@@ -37,7 +39,7 @@ craftrules `release/cut-a-release.md`.
    alias.) Commit `Cargo.toml` + `Cargo.lock`.
 2. **Fast-forward `release` to `main`** and push (release managers only; the ruleset enforces it).
    The workflow starts by itself.
-3. **Wait for the draft** (`FigCraft v0.2.0`, tagged `v0.2.0` on the pushed commit) with every
+3. **Wait for the draft** (`Scrim v0.2.0`, tagged `v0.2.0` on the pushed commit) with every
    artifact and `SHA256SUMS.txt`. Notes are generated from the merged PRs.
 4. **Check it.** Any `::warning::` in the job summaries means a signing secret was missing and
    that artifact is unsigned: fix the secret and re-run, don't publish.
@@ -107,8 +109,8 @@ only Inter. Packages carry each embedded font's licence as `OFL-<family>.txt`
 ### macOS
 
 `packaging/macos/package.sh [--arch universal|aarch64|x86_64]` builds both Apple targets with
-`MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo` and assembles `FigCraft.app`
-(`Contents/MacOS/FigCraft`, `Contents/Resources/FigCraft.icns`, `Info.plist` from
+`MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo` and assembles `Scrim.app`
+(`Contents/MacOS/Scrim`, `Contents/Resources/Scrim.icns`, `Info.plist` from
 `Info.plist.in`). The `.icns` is generated at packaging time with `iconutil` from the committed
 `assets/app-icon/figcraft-<size>.png` (made by `cargo xtask icon`); it is never committed.
 Signing goes inside-out with the hardened runtime and a timestamp (empty entitlements), then the
@@ -143,15 +145,15 @@ Locally on Windows: `dotnet tool install -g wix --version 5.0.2`,
 ### Linux
 
 `packaging/linux/package.sh [--formats "appimage deb rpm tar"]` stages one FHS tree (binaries,
-`ai.storyteller.figcraft.desktop`, hicolor icons 16–512 px, AppStream metainfo, a
+`design.scrim.app.desktop`, hicolor icons 16–512 px, AppStream metainfo, a
 shared-mime-info file for `.figcraft`) and builds every format from it: `.tar.gz`; `.deb` and
 `.rpm` with [nfpm](https://nfpm.goreleaser.com/) (`nfpm.yaml` lists the dlopen'd runtime
 libraries as dependencies); and an `.AppImage` with update information and a `.zsync`, whose
 `AppRun` registers the desktop entry and icons on launch so Wayland docks show the right icon
 (`FIGCRAFT_NO_DESKTOP_INTEGRATION=1` opts out; covered by `apprun-test.sh`) and runs the bundled
-`figcraft-cli` for `FigCraft.AppImage cli <args>`.
+`figcraft-cli` for `Scrim.AppImage cli <args>`.
 `flatpak-bundle.sh` repackages the tarball into a `.flatpak` with
-`flatpak/ai.storyteller.figcraft.bundle.yml` (freedesktop 26.08). `flatpak/ai.storyteller.figcraft.yml`
+`flatpak/design.scrim.app.bundle.yml` (freedesktop 26.08). `flatpak/design.scrim.app.yml`
 is the from-source manifest for a Flathub submission (not built in CI; vendor crates with
 `flatpak-cargo-generator.py` first). Both manifests keep the same runtime and `finish-args`
 (packaging-lint checks). Binaries are built on Ubuntu 22.04 and need glibc ≥ 2.35.

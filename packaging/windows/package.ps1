@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  Build, sign and package FigCraft for Windows.
+  Build, sign and package Scrim for Windows.
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    figcraft-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    figcraft-<version>-windows-<arch>-portable.zip   figcraft.exe (+ figcraft-cli.exe) and the licences
+    scrim-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
+    scrim-<version>-windows-<arch>-portable.zip   figcraft.exe (+ figcraft-cli.exe) and the licences
 
   figcraft-cli.exe is built and shipped once apps/figcraft-cli exists in the workspace.
 
@@ -60,7 +60,7 @@ if (-not $env:FIGCRAFT_BUILD_DATE) { $env:FIGCRAFT_BUILD_DATE = (Get-Date).ToUni
 $HasCli = Test-Path (Join-Path $Root 'apps\figcraft-cli\Cargo.toml')
 $Bins = @('figcraft'); if ($HasCli) { $Bins += 'figcraft-cli' }
 
-Write-Output "FigCraft $Version for Windows $Arch ($Target): $($Bins -join ', ')"
+Write-Output "Scrim $Version for Windows $Arch ($Target): $($Bins -join ', ')"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
@@ -99,7 +99,7 @@ foreach ($exe in $Exes) { Copy-Item (Join-Path $Bin $exe) $Stage }
 & (Join-Path $PSScriptRoot 'sign.ps1') @($Exes | ForEach-Object { Join-Path $Stage $_ })
 
 # ---- MSI ---------------------------------------------------------------------------------------
-# The setup wizard's art, drawn here from the app icon so the MSI shows FigCraft rather than
+# The setup wizard's art, drawn here from the app icon so the MSI shows Scrim rather than
 # WiX's stock bitmaps: a 493x58 banner across the top of the inner pages (the page title is drawn
 # over its left side, so that stays white) and a 493x312 backdrop for the Welcome and Finish pages
 # (their text sits on the right; the left 164 px are ours). Both must be 24-bit BMPs.
@@ -134,15 +134,15 @@ function New-InstallerArt([string] $IconPng, [string] $BannerOut, [string] $Dial
 }
 $Banner = Join-Path $Stage 'installer-banner.bmp'
 $Dialog = Join-Path $Stage 'installer-dialog.bmp'
-New-InstallerArt (Join-Path $Root 'assets\app-icon\hicolor\256x256\apps\ai.storyteller.figcraft.png') $Banner $Dialog
+New-InstallerArt (Join-Path $Root 'assets\app-icon\scrim\hicolor\256x256\apps\design.scrim.app.png') $Banner $Dialog
 
-$Msi = Join-Path $Dist "figcraft-$Version-windows-$Arch.msi"
+$Msi = Join-Path $Dist "scrim-$Version-windows-$Arch.msi"
 & (Join-Path $PSScriptRoot 'check-icons.ps1')
 Invoke-Native 'wix build' {
   wix build (Join-Path $PSScriptRoot 'figcraft.wxs') -arch $Arch `
     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
     -culture en-US -loc (Join-Path $PSScriptRoot 'figcraft.en-us.wxl') `
-    -d "Version=$MsiVersion" -d "DisplayVersion=$Version" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\figcraft.ico')" `
+    -d "Version=$MsiVersion" -d "DisplayVersion=$Version" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\scrim\scrim.ico')" `
     -d "BannerBmp=$Banner" -d "DialogBmp=$Dialog" -d "HasCli=$([int]$HasCli)" `
     -o $Msi
 }
@@ -154,7 +154,7 @@ Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Ms
 & (Join-Path $PSScriptRoot 'sign.ps1') $Msi
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\figcraft-$Version-windows-$Arch-portable"
+$Portable = Join-Path $TargetDir "windows-package\scrim-$Version-windows-$Arch-portable"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -170,8 +170,8 @@ if ($env:CRAFT_FONTS_DIR) {
     if (Test-Path $lic) { Copy-Item $lic (Join-Path $Portable "OFL-$($_.Name).txt") }
   }
 }
-# files go to FigCraftData\ next to the exe instead of %APPDATA% (#228; see app_dirs.rs).
-$Zip = Join-Path $Dist "figcraft-$Version-windows-$Arch-portable.zip"
+# files go to ScrimData\ next to the exe instead of %APPDATA% (#228; see app_dirs.rs).
+$Zip = Join-Path $Dist "scrim-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 

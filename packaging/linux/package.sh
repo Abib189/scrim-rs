@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Build and package FigCraft for Linux (<arch> is x86_64 or aarch64, or riscv64 when cross-compiling):
+# Build and package Scrim for Linux (<arch> is x86_64 or aarch64, or riscv64 when cross-compiling):
 #
-#   $DIST/figcraft-<version>-linux-<arch>.AppImage  any distro with glibc >= the build host's
-#   $DIST/figcraft-<version>-linux-<arch>.AppImage.zsync  delta updates (needs zsyncmake)
-#   $DIST/figcraft-<version>-linux-<arch>.deb       Debian, Ubuntu, Mint, Pop!_OS, ...
-#   $DIST/figcraft-<version>-linux-<arch>.rpm       Fedora, openSUSE, RHEL, ...
-#   $DIST/figcraft-<version>-linux-<arch>.tar.gz    plain FHS-style tree (bin/, share/)
+#   $DIST/scrim-<version>-linux-<arch>.AppImage  any distro with glibc >= the build host's
+#   $DIST/scrim-<version>-linux-<arch>.AppImage.zsync  delta updates (needs zsyncmake)
+#   $DIST/scrim-<version>-linux-<arch>.deb       Debian, Ubuntu, Mint, Pop!_OS, ...
+#   $DIST/scrim-<version>-linux-<arch>.rpm       Fedora, openSUSE, RHEL, ...
+#   $DIST/scrim-<version>-linux-<arch>.tar.gz    plain FHS-style tree (bin/, share/)
 #
 # figcraft-cli is built and shipped next to figcraft once apps/figcraft-cli exists.
 #
@@ -23,7 +23,7 @@ set -euo pipefail
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 HERE="$ROOT/packaging/linux"
-APP_ID=ai.storyteller.figcraft
+APP_ID=design.scrim.app
 
 SKIP_BUILD=0
 FORMATS="appimage deb rpm tar"
@@ -43,10 +43,10 @@ case "$ARCH" in
   aarch64 | arm64) ARCH=aarch64; DEB_ARCH=arm64 ;;
   *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
 esac
-export FIGCRAFT_MAINTAINER="${FIGCRAFT_MAINTAINER:-FigCraft maintainers <figcraft@storyteller.ai>}"
-BASENAME="figcraft-$VERSION-linux-$ARCH"
+export FIGCRAFT_MAINTAINER="${FIGCRAFT_MAINTAINER:-Scrim maintainers <scrim-rs@users.noreply.github.com>}"
+BASENAME="scrim-$VERSION-linux-$ARCH"
 
-echo "==> FigCraft $VERSION for Linux $ARCH ($FORMATS; ${BINS[*]})"
+echo "==> Scrim $VERSION for Linux $ARCH ($FORMATS; ${BINS[*]})"
 
 if [ "$SKIP_BUILD" = 0 ]; then
   (cd "$ROOT" && cargo build --release --locked "${CARGO_PKGS[@]}" ${CROSS_TARGET:+--target "$CROSS_TARGET"})
@@ -67,7 +67,7 @@ mkdir -p "$STAGE/usr/share/metainfo"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$FIGCRAFT_BUILD_DATE/g" \
   "$HERE/$APP_ID.metainfo.xml.in" >"$STAGE/usr/share/metainfo/$APP_ID.metainfo.xml"
 mkdir -p "$STAGE/usr/share/icons"
-cp -R "$ROOT/assets/app-icon/hicolor" "$STAGE/usr/share/icons/"
+cp -R "$ROOT/assets/app-icon/scrim/hicolor" "$STAGE/usr/share/icons/"
 mkdir -p "$STAGE/usr/share/doc/figcraft"
 copy_docs "$STAGE/usr/share/doc/figcraft"
 
@@ -105,7 +105,7 @@ fi
 
 # ---- AppImage -----------------------------------------------------------------------------------
 if has appimage; then
-  APPDIR="$WORK/FigCraft.AppDir"
+  APPDIR="$WORK/Scrim.AppDir"
   cp -R "$STAGE" "$APPDIR"
   mv "$APPDIR/usr/share/doc" "$WORK/doc-unused"
   # AppRun is a script, not a symlink: it installs the .desktop entry and icons into
@@ -114,7 +114,7 @@ if has appimage; then
   # script header). Logic is covered by packaging/linux/apprun-test.sh.
   install -Dm755 "$HERE/AppRun" "$APPDIR/AppRun"
   cp "$HERE/$APP_ID.desktop" "$APPDIR/$APP_ID.desktop"
-  cp "$ROOT/assets/app-icon/hicolor/256x256/apps/$APP_ID.png" "$APPDIR/$APP_ID.png"
+  cp "$ROOT/assets/app-icon/scrim/hicolor/256x256/apps/$APP_ID.png" "$APPDIR/$APP_ID.png"
   ln -s "$APP_ID.png" "$APPDIR/.DirIcon"
 
   TOOL="${APPIMAGETOOL:-$(command -v appimagetool || true)}"

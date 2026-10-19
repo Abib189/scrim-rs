@@ -32,6 +32,12 @@
 | 10 | **Tests and fixtures** | tests asserting the old strings; fixture files (`examples/*.figcraft`, `docs/scrim-transfer/fixtures/`), test sample paths (`FIGCRAFT_FIG_SAMPLES`, `FIGCRAFT_PDF_SAMPLE`) | **Rename now:** assertions on user-visible text. **Keep:** fixture contents, and test-only environment variables. | Fixtures are data, and test-only variables don't reach users. |
 | 11 | **Other environment variables** (`FIGCRAFT_NO_SYSTEM_FONTS`, `_CONTROL_PORT`, `_SERVER_KEY`, `_CA_FILE`, `_BUILD_SHA`, `_EMBED_CJK`) | runtime and build configuration | **Rename later**, honouring both spellings | Scripts and CI set them. Except the share-server default, which A5 changes. |
 
+## What A2 left for later
+
+- **The app binary** keeps its name: `figcraft` on Linux and FreeBSD (the desktop entry's `Exec`, the Flatpak `command`), `figcraft.exe` on Windows. Only the macOS bundle's executable is `Scrim`. **Rename later**, together with the CLI's `scrim` (A3) so the two don't collide.
+- **The deb and rpm maintainer address** defaults to a placeholder (`Scrim maintainers <scrim-rs@users.noreply.github.com>`, `FIGCRAFT_MAINTAINER`): the owner sets a real one before publishing.
+- **The server's packaging** (`packaging/server/`, group 4b).
+
 ## The placeholder icon (A2)
 
 Scrim ships a **placeholder** app icon drawn in code: an original, simple mark, not FigCraft's chameleon and nothing of ArtCraft's. **It awaits the owner's real mark.** When it arrives, it replaces the placeholder in one place (the generator), and the packaged icons regenerate.

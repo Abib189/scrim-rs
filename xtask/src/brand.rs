@@ -25,7 +25,11 @@ pub fn check(root: &Path) -> bool {
             continue;
         }
         // This check and the fork's own notes quote what they forbid.
-        if rel == "xtask/src/brand.rs" || rel == "docs/FORK.md" || rel.starts_with("docs/scrim-transfer/") {
+        if rel == "xtask/src/brand.rs"
+            || rel == "crates/ui-egui/src/i18n_brand_tests.rs"
+            || rel == "docs/FORK.md"
+            || rel.starts_with("docs/scrim-transfer/")
+        {
             continue;
         }
         let Ok(text) = std::fs::read_to_string(root.join(&rel)) else { continue };

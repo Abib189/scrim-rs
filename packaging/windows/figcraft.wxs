@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  FigCraft MSI (WiX Toolset v5: `dotnet tool install -g wix`, plus the UI and Util extensions:
+  Scrim MSI (WiX Toolset v5: `dotnet tool install -g wix`, plus the UI and Util extensions:
   `wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2`). Built by package.ps1:
 
     wix build figcraft.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
@@ -8,29 +8,29 @@
       -d BinDir=... -d IconPath=... -d BannerBmp=... -d DialogBmp=... -d HasCli=1 -o out.msi
 
   Per-machine install with a setup wizard that names the version: Welcome, install folder
-  (Program Files\FigCraft by default, remembered for upgrades), Ready, a progress page, and a
-  Finish page with a ticked "Launch FigCraft" box. Installs a Start Menu shortcut, makes
-  FigCraft the owner of `.figcraft`, and offers it under "Open with" for SVG, PNG and JPEG
+  (Program Files\Scrim by default, remembered for upgrades), Ready, a progress page, and a
+  Finish page with a ticked "Launch Scrim" box. Installs a Start Menu shortcut, makes
+  Scrim the owner of `.figcraft`, and offers it under "Open with" for SVG, PNG and JPEG
   (without taking over the user's default app for them), plus figcraft-cli when HasCli=1.
   `msiexec /qn` still installs silently.
 
-  UpgradeCode is fixed for FigCraft forever (generated once; never reuse another app's).
+  UpgradeCode is fixed for Scrim forever (generated once; never reuse another app's).
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
-      Name="FigCraft"
-      Manufacturer="Learning Machines LLC"
+      Name="Scrim"
+      Manufacturer="Scrim contributors"
       Version="$(var.Version)"
-      UpgradeCode="7F8B9827-D065-41B7-A514-2A454B21F484"
+      UpgradeCode="FA07D3AB-4037-4826-BA91-B6E37FFAFC4E"
       Scope="perMachine"
       Compressed="yes"
       Language="1033">
-    <SummaryInformation Description="FigCraft interface design and prototyping tool" Manufacturer="Learning Machines LLC" />
+    <SummaryInformation Description="Scrim interface design and prototyping tool" Manufacturer="Scrim contributors" />
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
-        DowngradeErrorMessage="A newer version of FigCraft is already installed." />
+        DowngradeErrorMessage="A newer version of Scrim is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
     <!-- MSI caches this icon using its Id as the filename. Advertised shortcuts to an
@@ -42,16 +42,16 @@
     <Property Id="ARPHELPLINK" Value="https://github.com/Abib189/scrim-rs/issues" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="INSTALLFOLDER" Name="FigCraft" />
+      <Directory Id="INSTALLFOLDER" Name="Scrim" />
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
 
     <!-- An upgrade installs where the user put the previous version (written by FigcraftApp). -->
     <Property Id="INSTALLFOLDER">
-      <RegistrySearch Id="PreviousInstallFolder" Root="HKLM" Key="Software\FigCraft" Name="InstallDir" Type="raw" />
+      <RegistrySearch Id="PreviousInstallFolder" Root="HKLM" Key="Software\Scrim" Name="InstallDir" Type="raw" />
     </Property>
 
-    <Feature Id="Main" Title="FigCraft" Level="1">
+    <Feature Id="Main" Title="Scrim" Level="1">
       <ComponentGroupRef Id="FigcraftFiles" />
     </Feature>
 
@@ -73,8 +73,8 @@
     <Property Id="FigcraftVersion" Value="$(var.DisplayVersion)" />
 
     <!-- Finish page: say where to find the app, and offer to start it (ticked by default). -->
-    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="FigCraft $(var.DisplayVersion) is installed. You can start it any time from the Start menu." />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch FigCraft" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Scrim $(var.DisplayVersion) is installed. You can start it any time from the Start menu." />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Scrim" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
     <Property Id="WixShellExecTarget" Value="[#FigcraftExe]" />
     <!-- Runs in the wizard's own (unelevated) process, so the app starts as the user, not as admin. -->
@@ -85,13 +85,13 @@
     <ComponentGroup Id="FigcraftFiles" Directory="INSTALLFOLDER">
       <Component Id="FigcraftApp" Guid="238228C3-4C1D-4B33-8C5D-C31B65BC2DA4">
         <File Id="FigcraftExe" Source="$(var.BinDir)\figcraft.exe" KeyPath="yes">
-          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="FigCraft"
-              Description="FigCraft interface design and prototyping" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Scrim"
+              Description="Scrim interface design and prototyping" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="FigcraftIcon.exe" IconIndex="0" />
         </File>
 
-        <!-- .figcraft: FigCraft's own format; FigCraft is its default app. -->
-        <ProgId Id="Figcraft.Document" Description="FigCraft Document" Icon="FigcraftExe" IconIndex="0">
+        <!-- .figcraft: Scrim's own format; Scrim is its default app. -->
+        <ProgId Id="Scrim.Document" Description="Scrim Document" Icon="FigcraftExe" IconIndex="0">
           <Extension Id="figcraft" ContentType="application/x-figcraft">
             <Verb Id="open" Command="Open" TargetFile="FigcraftExe" Argument="&quot;%1&quot;" />
           </Extension>
@@ -105,7 +105,7 @@
         <RegistryValue Root="HKLM" Key="Software\Classes\.jpeg\OpenWithProgids" Name="Figcraft.Image" Value="" Type="string" />
 
         <!-- "Open with" app list and the Run dialog (Win+R "figcraft"). -->
-        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe" Name="FriendlyAppName" Value="FigCraft" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe" Name="FriendlyAppName" Value="Scrim" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\shell\open\command" Value="&quot;[#FigcraftExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".figcraft" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".svg" Value="" Type="string" />
@@ -113,7 +113,7 @@
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".jpg" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".jpeg" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\figcraft.exe" Value="[#FigcraftExe]" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\FigCraft" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Scrim" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
       </Component>
 
 <?if $(var.HasCli) = 1 ?>

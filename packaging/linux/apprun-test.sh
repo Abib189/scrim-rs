@@ -8,18 +8,18 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-APP_ID=ai.storyteller.figcraft
+APP_ID=design.scrim.app
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # Fake AppDir with the real AppRun, .desktop template, icons, and a stub binary.
-APPDIR="$TMP/FigCraft.AppDir"
+APPDIR="$TMP/Scrim.AppDir"
 mkdir -p "$APPDIR/usr/bin"
 install -Dm755 "$HERE/AppRun" "$APPDIR/AppRun"
 install -Dm644 "$HERE/$APP_ID.desktop" "$APPDIR/usr/share/applications/$APP_ID.desktop"
 mkdir -p "$APPDIR/usr/share/icons"
-cp -R "$ROOT/assets/app-icon/hicolor" "$APPDIR/usr/share/icons/"
+cp -R "$ROOT/assets/app-icon/scrim/hicolor" "$APPDIR/usr/share/icons/"
 printf '#!/bin/sh\necho "stub: $*"\n' >"$APPDIR/usr/bin/figcraft"
 chmod +x "$APPDIR/usr/bin/figcraft"
 

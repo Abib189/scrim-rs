@@ -9,7 +9,7 @@
 //! - `size`    no source file over 1,000 lines; longer files are frozen in xtask/size-allowlist.txt
 //! - `parity`  menu-catalog coverage → docs/parity-checklist.md
 //! - `version` print the version, or `version set X.Y.Z`
-//! - `icon`    regenerate the app icon PNGs/ICO from assets/app-icon/figcraft.svg (needs resvg)
+//! - `icon`    regenerate the placeholder app icon (assets/app-icon/scrim/; needs resvg or rsvg-convert)
 //! - `wasm`    check the core crates and web app for wasm32, and build the plugin SDK and examples
 //! - `plugins` format-check, lint, test and build the plugin SDK and example plugins (`plugins/`, a
 //!   workspace of its own) for wasm32: `<target>/plugins/dist/<example>/` holds each manifest and

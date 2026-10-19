@@ -2,17 +2,17 @@
 <!-- AppStream metadata (software centres, Flathub). Template: package.sh and the Flatpak
      manifest substitute @VERSION@ and @DATE@ from Cargo.toml and the build date. -->
 <component type="desktop-application">
-  <id>ai.storyteller.figcraft</id>
+  <id>design.scrim.app</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT OR Apache-2.0</project_license>
-  <name>FigCraft</name>
+  <name>Scrim</name>
   <summary>Design and prototype user interfaces</summary>
-  <developer id="ai.storyteller">
-    <name>Learning Machines LLC</name>
+  <developer id="design.scrim">
+    <name>Scrim contributors</name>
   </developer>
   <description>
     <p>
-      FigCraft is an open-source, native interface design and prototyping tool. Lay out screens
+      Scrim is an open-source, native interface design and prototyping tool. Lay out screens
       on an infinite canvas with frames, auto layout and constraints, build reusable components
       and variants, and link screens into clickable prototypes.
     </p>
@@ -25,12 +25,12 @@
       <li>Every action is a command, scriptable from a CLI, a JSON control channel and an MCP server</li>
     </ul>
   </description>
-  <launchable type="desktop-id">ai.storyteller.figcraft.desktop</launchable>
-  <icon type="stock">ai.storyteller.figcraft</icon>
+  <launchable type="desktop-id">design.scrim.app.desktop</launchable>
+  <icon type="stock">design.scrim.app</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
   <url type="homepage">https://github.com/Abib189/scrim-rs</url>
-  <url type="bugtracker">https://github.com/storytold/figcraft/issues</url>
-  <url type="help">https://github.com/storytold/figcraft</url>
+  <url type="bugtracker">https://github.com/Abib189/scrim-rs/issues</url>
+  <url type="help">https://github.com/Abib189/scrim-rs</url>
   <url type="contact">https://github.com/Abib189/scrim-rs/issues</url>
   <categories>
     <!-- Freedesktop registered categories only ("Design" isn't one; the .desktop file says X-Design). -->

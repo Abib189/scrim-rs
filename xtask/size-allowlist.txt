@@ -30,7 +30,7 @@
 1530 crates/ui-egui/src/canvas.rs
 1255 crates/ui-egui/src/colorpicker.rs
 1196 crates/ui-egui/src/comments.rs
-1229 crates/ui-egui/src/icons.rs
+1225 crates/ui-egui/src/icons.rs
 1051 crates/ui-egui/src/layers.rs
 1733 crates/ui-egui/src/lib.rs
 1299 crates/ui-egui/src/live.rs

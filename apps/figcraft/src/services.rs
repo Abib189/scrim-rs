@@ -22,14 +22,21 @@ pub struct Desktop {
     recovery: crate::recovery::Shared,
 }
 
+/// Where the settings live: `Scrim` under [`base_dir`] (FigCraft's are copied there once,
+/// `migrate`).
 pub fn config_dir() -> Option<PathBuf> {
+    base_dir().map(|b| b.join(crate::migrate::NEW))
+}
+
+/// The platform's directory for application settings.
+pub fn base_dir() -> Option<PathBuf> {
     #[cfg(target_os = "macos")]
     let base = std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support"));
     #[cfg(target_os = "windows")]
     let base = std::env::var_os("APPDATA").map(PathBuf::from);
     #[cfg(all(unix, not(target_os = "macos")))]
     let base = std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")));
-    base.map(|b| b.join("FigCraft"))
+    base
 }
 
 impl Desktop {
@@ -336,9 +343,9 @@ impl Services for Desktop {
 pub fn window_icon() -> Option<egui::IconData> {
     // macOS wants Apple's padded grid; the other platforms the rounded tile edge to edge.
     #[cfg(target_os = "macos")]
-    let bytes = include_bytes!("../../../assets/app-icon/figcraft-256.png");
+    let bytes = include_bytes!("../../../assets/app-icon/scrim/scrim-256.png");
     #[cfg(not(target_os = "macos"))]
-    let bytes = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.figcraft.png");
+    let bytes = include_bytes!("../../../assets/app-icon/scrim/hicolor/256x256/apps/design.scrim.app.png");
     let img = image::load_from_memory(bytes).ok()?.to_rgba8();
     let (w, h) = img.dimensions();
     Some(egui::IconData { rgba: img.into_raw(), width: w, height: h })
