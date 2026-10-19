@@ -1,4 +1,9 @@
-# FigCraft — instructions for agents
+# scrim-rs (a FigCraft fork) — instructions for agents
+
+> **This is scrim-rs, the next Scrim**, an independent fork of FigCraft (`docs/FORK.md`).
+> - Everything below applies, plus **Scrim's rules** in the section of that name.
+> - Scrim's knowledge is in `docs/scrim-transfer/` as specs, decisions, test cases and fixtures. Read `docs/scrim-transfer/README.md` and `decisions.md` before porting anything.
+> - FigCraft's sibling repos (`../../craftrules`, `../vectorcraft`, …) and its `plan/` folder are not part of this fork. Where the text below points at them, skip it.
 
 FigCraft is a clean-room, open-source, pure-Rust (egui) reimplementation of the Figma design workflow:
 interface design, auto layout, components and variants, styles and variables, prototyping and
@@ -88,6 +93,34 @@ code.
 `cargo xtask ci` (fmt, clippy -D warnings, tests, layers, assets, wasm). One task per commit with a
 milestone id in the message (`M2.1: auto layout wrap`). Commit after every landed arc of work; push
 to `main`.
+
+## Scrim's rules (scrim-rs)
+
+These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decisions.md`, which keeps Scrim's numbering). They come on top of the non-negotiables above.
+
+1. **Every gesture is a command with an MCP route and a parity test** (Scrim rules 11, 17).
+   - A canvas gesture (drag, nudge, resize, draw, reorder…) commits through **one** command id and is **one** undo step.
+   - That command is reachable from MCP (`run_command`, or a dedicated tool) and from the CLI.
+   - A parity test lists every gesture with its command, and fails for a gesture without one.
+2. **Previews never write to the document.**
+   - A gesture previews in UI state: the overlay, or a preview the renderer draws over the document.
+   - It writes once, on release, through `Session::execute`.
+   - Escape drops the preview and leaves no history entry. Agents never see a preview.
+3. **No source file over 1,000 lines.**
+   - Split by concern before crossing the limit. Tests, data and generated files are exempt.
+   - `cargo xtask size` (part of `ci`) enforces it.
+   - The files that were already longer at the fork point are frozen in `xtask/size-allowlist.txt` at their length then: they may shrink, never grow. Remove an entry once its file is under the limit.
+4. **Every capability has a test and a checklist row.** New behaviour lands with an automated test and with a row in `docs/checklists/<area>.md` that names the manual check and the test covering it. Without both, it isn't done.
+5. **Agents and people share one write path.**
+   - Every agent route (MCP, CLI, control channel, plugins) goes through the same commands as a person's.
+   - Every route respects locks and the stale-write guard (Port 3 in `docs/scrim-transfer/README.md`).
+   - Refusals say why, in plain words.
+6. **The export guarantee.** The HTML export renders like the canvas. Once `cargo xtask fidelity` exists (Port 2), it must not regress.
+7. **Port from specs, never code.** `docs/scrim-transfer/` holds specs, cases and fixtures. Scrim's TypeScript is never copied; re-implement it in Rust and run the exported cases as tests.
+8. **Process:**
+   - One scoped task per commit; `cargo xtask ci` green before every commit.
+   - Never use `--no-verify`, and never push a red tree.
+   - Label any timing measured under load or swap as INVALID.
 
 ## Running and looking at the app
 - `cargo run -p figcraft -- --control <port> [file.figcraft|file.svg|image]`. Pick a free port

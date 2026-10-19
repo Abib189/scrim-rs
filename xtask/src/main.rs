@@ -1,9 +1,10 @@
 //! Project tasks: `cargo xtask <task>`.
 //!
-//! - `ci`      fmt check, clippy -D warnings, tests, layers, assets, brand, wasm check
+//! - `ci`      fmt check, clippy -D warnings, tests, layers, assets, brand, size, wasm check
 //! - `layers`  crate dependency layering check
 //! - `assets`  every file under assets/ and docs/ has a row in ATTRIBUTION.md
 //! - `brand`   the ArtCraft marks stay out of this fork (docs/FORK.md)
+//! - `size`    no source file over 1,000 lines; longer files are frozen in xtask/size-allowlist.txt
 //! - `parity`  menu-catalog coverage → docs/parity-checklist.md
 //! - `version` print the version, or `version set X.Y.Z`
 //! - `icon`    regenerate the app icon PNGs/ICO from assets/app-icon/figcraft.svg (needs resvg)
@@ -17,6 +18,7 @@
 mod brand;
 mod icon;
 mod layers;
+mod size;
 
 use std::process::{Command, ExitCode};
 
@@ -41,6 +43,7 @@ fn main() -> ExitCode {
         "layers" => layers::check(&root()),
         "assets" => assets(),
         "brand" => brand::check(&root()),
+        "size" => size::check(&root()),
         "parity" => parity(),
         "version" => version(args.get(1).map(String::as_str), args.get(2).map(String::as_str)),
         "icon" => icon::generate(&root()),
@@ -48,7 +51,7 @@ fn main() -> ExitCode {
         "plugins" => plugins(),
         "bench" => bench(args.get(1).map_or("1000,10000,50000", String::as_str)),
         _ => {
-            eprintln!("tasks: ci, layers, assets, brand, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]");
+            eprintln!("tasks: ci, layers, assets, brand, size, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]");
             task == "help"
         }
     };
@@ -62,6 +65,7 @@ fn ci() -> bool {
         && layers::check(&root())
         && assets()
         && brand::check(&root())
+        && size::check(&root())
         && wasm()
 }
 
