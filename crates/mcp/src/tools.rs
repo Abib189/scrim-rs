@@ -80,6 +80,8 @@ fn tool(name: &str, title: &str, desc: &str, schema: Value, read_only: bool) -> 
     if GUARDED.contains(&name) {
         schema["properties"]["sinceRevision"] = json!({"type": "integer", "minimum": 0, "description": "The document revision you last read (get_changes returns it). If someone else changed a layer this call would change after that revision, nothing is changed and the error says what changed: read it again and retry."});
     }
+    // The content-writing tools end with the lint hint: a new session has no memory of the rules.
+    let desc = if GUARDED.contains(&name) { format!("{desc}{}", figcraft_engine::cmd::lint::write_hint()) } else { desc.to_string() };
     json!({
         "name": name,
         "title": title,
@@ -106,6 +108,10 @@ pub const TOOL_NAMES: &[&str] = &[
     "undo",
     "redo",
     "query_nodes",
+    "lint_design",
+    "set_lint_profile",
+    "ignore_lint",
+    "analyze_design",
     "get_changes",
     "pointer",
     "key",
@@ -277,6 +283,54 @@ pub fn tool_definitions() -> Vec<Value> {
                 }),
                 &["query"],
             ),
+            true,
+        ),
+        tool(
+            "lint_design",
+            "Lint design",
+            &figcraft_engine::cmd::lint::lint_description(),
+            obj(
+                json!({
+                    "id": id_schema("A layer: lint its subtree. Omit for the whole document"),
+                    "profile": {"type": "string", "enum": ["ui", "expressive"], "description": "override every artboard's stored profile for this run"},
+                }),
+                &[],
+            ),
+            true,
+        ),
+        tool(
+            "set_lint_profile",
+            "Set lint profile",
+            &figcraft_engine::cmd::lint::profile_description(),
+            obj(
+                json!({
+                    "ids": {"type": "array", "minItems": 1, "maxItems": 500, "description": "Top-level layer (artboard) ids", "items": {"anyOf": [{"type": "integer"}, {"type": "string"}]}},
+                    "profile": {"type": "string", "enum": ["ui", "expressive"]},
+                }),
+                &["ids", "profile"],
+            ),
+            false,
+        ),
+        tool(
+            "ignore_lint",
+            "Ignore a lint finding",
+            figcraft_engine::cmd::lint::IGNORE_DESCRIPTION,
+            obj(
+                json!({
+                    "ruleId": {"type": "string", "minLength": 1},
+                    "nodeId": id_schema("The layer it covers, and everything in it; omit for the whole document"),
+                    "reason": string("Why the finding is deliberate here"),
+                    "remove": boolean("Delete the ignore instead"),
+                }),
+                &["ruleId"],
+            ),
+            false,
+        ),
+        tool(
+            "analyze_design",
+            "Analyze design",
+            figcraft_engine::cmd::analyze::DESCRIPTION,
+            obj(json!({"id": id_schema("A layer: analyze its subtree. Omit for the whole document")}), &[]),
             true,
         ),
         tool(
@@ -470,6 +524,10 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
         "inspect_document" => inspect_document(b, &a),
         "get_node" => get_node(b, &a),
         "query_nodes" => exec(b, "node.query", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
+        "lint_design" => exec(b, "lint.run", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
+        "set_lint_profile" => exec(b, "lint.setProfile", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
+        "ignore_lint" => exec(b, "lint.ignore", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
+        "analyze_design" => exec(b, "design.analyze", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
         "select" => select(b, &a),
         "export" => export(b, &a),
         "screenshot" => screenshot(b, &a),

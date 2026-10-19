@@ -1,5 +1,6 @@
 //! The command registry. Each area module exposes `specs()`; [`all_commands`] collects them once.
 
+pub mod analyze;
 pub mod arrange;
 pub mod comment;
 pub mod component;
@@ -9,6 +10,7 @@ pub mod file;
 pub mod image;
 pub mod layout;
 pub mod library;
+pub mod lint;
 pub mod lists;
 pub mod page;
 pub mod props;
@@ -105,6 +107,8 @@ fn registry() -> &'static Registry {
         list.extend(crate::branches::specs());
         list.extend(crate::agents::specs());
         list.extend(query::specs());
+        list.extend(lint::specs());
+        list.extend(analyze::specs());
         list.extend(crate::plugins::specs());
         list.extend(crate::plugin_directory::specs());
         list.extend(crate::widgets::specs());

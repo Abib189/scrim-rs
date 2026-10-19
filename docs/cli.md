@@ -44,6 +44,12 @@ $ figcraft-cli find app.figcraft --type instance --name Button --limit 1
   INSTANCE  Button / Primary  (58)
 ```
 
+### `lint <file> [--id ID] [--profile ui|expressive]` and `analyze <file> [--id ID]`
+
+The design lint and the design analysis on a file, read-only. Each prints the JSON result of the
+matching MCP tool (`lint_design`, `analyze_design`; see [mcp.md](mcp.md)), for the whole document
+or the subtree of `--id`. `--profile` judges every artboard under one profile for this run.
+
 ### `info <file> [--json]`
 
 Pages, node counts, top-level frames (id, type, name, size), style/variable/image counts. Repairs

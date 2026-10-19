@@ -1,4 +1,4 @@
-//! `figcraft-cli query` and `find` (Port 5) end to end on a transfer fixture: the output, the
+//! `figcraft-cli query` and `find` (Port 5), `lint` and `analyze` (Port 6) end to end on a transfer fixture: the output, the
 //! JSON, and exit codes 1 (invalid query), 2 (usage) and 3 (the file). The argument rules are
 //! tested against Scrim's CLI cases in the engine (`cmd/query/scrim_cases_tests.rs`).
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -40,4 +40,16 @@ fn errors_exit_by_kind() {
     let (code, out, _) = cli(&["query", "no-such.fig", "//*", "--json"]);
     assert_eq!(code, 3);
     assert!(out.contains("\"code\": \"not_found\""), "{out}");
+}
+
+#[test]
+fn lint_and_analyze_print_the_tools_json() {
+    let (code, out, _) = cli(&["lint", "<file>"]);
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!((code, v["target"].as_str()), (0, Some("(document)")));
+    assert!(v["violationCount"].is_u64());
+    let (code, out, _) = cli(&["analyze", "<file>"]);
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!((code, v["scope"].as_str()), (0, Some("(document)")));
+    assert!(v["nodes"].as_u64().unwrap() > 10);
 }

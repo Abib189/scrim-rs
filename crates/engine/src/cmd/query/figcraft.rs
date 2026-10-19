@@ -8,6 +8,8 @@
 //!   the CLI and MCP. `@style.<key>` and `@layout.<key>` read a fixed table of CSS properties;
 //!   any other key is absent, as an undeclared property is in Scrim.
 
+use std::collections::HashMap;
+
 use figcraft_color::{Color, PaintKind};
 use figcraft_doc::{Document, LayoutMode, Node, NodeId, NodeKind, Sizing, TextAlignH};
 use serde_json::{Value, json};
@@ -57,13 +59,17 @@ pub const FIGCRAFT: Vocab = Vocab {
         "componentId",
         "hidden",
         "locked",
+        "lint",
+        "lintCount",
     ],
 };
 
-/// A FigCraft document, all pages or one.
+/// A FigCraft document, all pages or one, with the active lint findings when the query reads
+/// them.
 pub struct FigTree<'a> {
     pub doc: &'a Document,
     pub page: Option<NodeId>,
+    pub lint: Option<HashMap<NodeId, Vec<&'static str>>>,
 }
 
 fn css_color(c: Color) -> String {
@@ -229,6 +235,13 @@ impl Tree for FigTree<'_> {
             "componentId" => self.component(n).map(|c| Val::Num(c.id.0 as f64)),
             "hidden" => (!n.visible).then(|| Val::Str("true".into())),
             "locked" => n.locked.then(|| Val::Str("true".into())),
+            "lint" => {
+                let mut ids: Vec<&str> = self.lint.as_ref()?.get(&id).cloned().unwrap_or_default();
+                ids.sort_unstable();
+                ids.dedup();
+                (!ids.is_empty()).then(|| Val::Str(ids.join(",")))
+            }
+            "lintCount" => Some(Val::Num(self.lint.as_ref()?.get(&id).map_or(0, Vec::len) as f64)),
             _ => None,
         }
     }
@@ -257,7 +270,12 @@ fn query_cmd(s: &mut Session, p: &Value) -> Result<Value> {
 /// Run a query on a document: every page, or `page` only. `node.query` and the CLI both call it.
 pub fn query_doc(doc: &Document, text: &str, limit: Option<f64>, page: Option<NodeId>) -> std::result::Result<QueryOut, QueryError> {
     let q = parse(text, &FIGCRAFT)?;
-    let tree = FigTree { doc, page };
+    // The lint runs once per query, and only when the query reads it.
+    let lint = q.reads(super::LINT_ATTRS).then(|| {
+        let m = crate::cmd::lint::FigLint { doc };
+        crate::cmd::lint::active_by_node(&m, &m.config(), true)
+    });
+    let tree = FigTree { doc, page, lint };
     Ok(run(&tree, &q, limit, |id| tree.hit(id)))
 }
 
@@ -265,7 +283,7 @@ pub fn specs() -> Vec<CommandSpec> {
     vec![spec!(
         "node.query",
         "Find layers",
-        "{query (e.g. //FRAME[@layout=\"flex\"]//TEXT[contains(@name, \"Price\")]), limit? (1–1000, default 100), page? (a page id; default every page)} → {query, total, returned, truncated, results: [{id, name, type, element, parentId, rect: {x, y, w, h} (page space), stale}]} in document order. Read-only. Paths: /X is a top-level layer of a page, //X anywhere below. Node tests: FRAME GROUP SECTION RECTANGLE ELLIPSE POLYGON STAR LINE VECTOR TEXT BOOLEAN_OPERATION COMPONENT COMPONENT_SET INSTANCE SLICE, IMAGE (a visible image fill), *. Predicates: [@a], [@a=\"x\"], [@a!=\"x\"], [@a > 10], contains(@a,\"x\"), starts-with(@a,\"x\"), and, or, not(), [n], [last()]. Attributes: @id @name @type @text @src @width @height @fill @color @background @layout @direction @position @children @component @componentId @hidden @locked, and @style.<key> (width height display flexDirection flexWrap gap rowGap columnGap padding paddingTop/Right/Bottom/Left position flexGrow opacity borderRadius overflow color background backgroundColor fontSize fontFamily fontStyle textAlign)",
+        "{query (e.g. //FRAME[@layout=\"flex\"]//TEXT[contains(@name, \"Price\")]), limit? (1–1000, default 100), page? (a page id; default every page)} → {query, total, returned, truncated, results: [{id, name, type, element, parentId, rect: {x, y, w, h} (page space), stale}]} in document order. Read-only. Paths: /X is a top-level layer of a page, //X anywhere below. Node tests: FRAME GROUP SECTION RECTANGLE ELLIPSE POLYGON STAR LINE VECTOR TEXT BOOLEAN_OPERATION COMPONENT COMPONENT_SET INSTANCE SLICE, IMAGE (a visible image fill), *. Predicates: [@a], [@a=\"x\"], [@a!=\"x\"], [@a > 10], contains(@a,\"x\"), starts-with(@a,\"x\"), and, or, not(), [n], [last()]. Attributes: @id @name @type @text @src @width @height @fill @color @background @layout @direction @position @children @component @componentId @hidden @locked @lint (active lint rule ids, comma-joined) @lintCount, and @style.<key> (width height display flexDirection flexWrap gap rowGap columnGap padding paddingTop/Right/Bottom/Left position flexGrow opacity borderRadius overflow color background backgroundColor fontSize fontFamily fontStyle textAlign)",
         false,
         query_cmd
     )]

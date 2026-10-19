@@ -60,3 +60,12 @@ that commit (docs/FORK.md). It is based on FigCraft by the ArtCraft team and is 
 product. As FigCraft's brand terms require, the ArtCraft marks (formerly docs/brand/) are not
 included in this fork. Modifications are Copyright (c) 2026 the scrim-rs contributors, licensed
 under the same MIT OR Apache-2.0 terms.
+
+Impeccable design rules
+-----------------------
+crates/engine/src/cmd/lint/ includes design rules from Impeccable by Paul Bakaus
+(https://github.com/pbakaus/impeccable, v2.3.2, commit 1863a44b23bf), Copyright 2025
+Paul Bakaus, licensed under the Apache License, Version 2.0. A copy of that licence is in
+crates/engine/src/cmd/lint/design-rules/LICENSE. The rules were ported to TypeScript and
+modified by the Scrim project, then re-implemented in Rust and modified by this fork; the
+chain of changes is in crates/engine/src/cmd/lint/design-rules/NOTICE.md.

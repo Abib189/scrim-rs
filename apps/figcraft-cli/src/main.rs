@@ -4,6 +4,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 mod args;
+mod design;
 mod files;
 mod perf;
 mod query;
@@ -20,6 +21,8 @@ USAGE:
   figcraft-cli info <file> [--json]
   figcraft-cli query <file> '<query>' [--limit N] [--json]
   figcraft-cli find <file> [--type T] [--name TEXT] [--limit N] [--json]
+  figcraft-cli lint <file> [--id ID] [--profile ui|expressive]
+  figcraft-cli analyze <file> [--id ID]
   figcraft-cli export <file> -o <out> [--format png|jpg|svg|webp|pdf|fig] [--scale N] [--page NAME] [--node ID|NAME]
                       [--bleed LENGTH] [--crop-marks] [--bleed-marks] [--cmyk]
   figcraft-cli convert <in> <out>
@@ -42,7 +45,9 @@ is given (`fig`, or an <out> ending in .fig: the whole file as .fig, experimenta
 not open every file); PDFs take print options (a bleed like 3mm or 0.125in,
 crop and bleed marks, CMYK colour). `query` finds layers with an XPath-style query (//FRAME[@layout=\"flex\"]//TEXT[contains(@name, \"Price\")];
 the subset is in docs/mcp.md › query_nodes), `find` by type and name; both are read-only and exit 1 on an
-invalid query, 2 on usage, 3 on a file that can't be read. `run` executes a JSON array (or JSON lines) of
+invalid query, 2 on usage, 3 on a file that can't be read. `lint` runs the design lint (MCP's lint_design) and
+`analyze` reports the colours, type, spacing and repeated shapes a file uses against its tokens (MCP's
+analyze_design); both print JSON. `run` executes a JSON array (or JSON lines) of
 {\"command\": id, \"params\": {...}} in a headless session and prints one JSON result line per step.
 `plugin publish` sends a plugin folder (figcraft-plugin.json, its module, an optional assets/ folder)
 to a figcraft-server's plugin directory as a new version; the server's key comes from the address or
@@ -103,6 +108,16 @@ fn run(argv: &[String]) -> CliResult<ExitCode> {
             Ok(ExitCode::SUCCESS)
         }
         "query" | "find" => Ok(query::run(cmd, rest)),
+        "lint" => {
+            let a = Args::parse(rest, &["id", "profile"], &[])?;
+            let file = a.one_positional("lint <file>")?;
+            design::lint(&file, a.value("id"), a.value("profile"))
+        }
+        "analyze" => {
+            let a = Args::parse(rest, &["id"], &[])?;
+            let file = a.one_positional("analyze <file>")?;
+            design::analyze(&file, a.value("id"))
+        }
         "info" => {
             let a = Args::parse(rest, &[], &["json"])?;
             let file = a.one_positional("info <file>")?;

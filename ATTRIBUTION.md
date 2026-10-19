@@ -17,6 +17,12 @@ MIT OR Apache-2.0. No third-party icon sets are used.
 | `docs/scrim-ports/` (before/after screenshots of each port) | scrim-rs contributors | Screenshots of this app showing its own synthetic example documents (`examples/`) | MIT OR Apache-2.0 | Evidence for the Scrim ports (`docs/checklists/`) |
 | `examples/*.figcraft` | FigCraft contributors | Synthetic demo documents built through FigCraft's command API; invented copy, shapes and vectors drawn from scratch, no images or embedded fonts | MIT OR Apache-2.0 | Text uses Inter (OFL, from craft-fonts or the system); no third-party artwork |
 
+## Third-party code
+
+| Path | Author | Source | Licence | Notes |
+|---|---|---|---|---|
+| `crates/engine/src/cmd/lint/` (the rule catalog in `rules.rs` and the ported checks) | Paul Bakaus (Impeccable); modified by Scrim and scrim-rs contributors | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) v2.3.2, commit `1863a44b23bf`, through Scrim's TypeScript port (re-implemented in Rust, nothing copied) | Apache-2.0, [`crates/engine/src/cmd/lint/design-rules/LICENSE`](crates/engine/src/cmd/lint/design-rules/LICENSE) | The modifications are listed in [`design-rules/NOTICE.md`](crates/engine/src/cmd/lint/design-rules/NOTICE.md). Scrim's four own rules and `analyze_design` are MIT OR Apache-2.0 |
+
 ## Fonts (build input, not in this repository)
 
 Release builds embed fonts from the optional craft-fonts build input

@@ -2308,6 +2308,10 @@ status = "draft — needs native review"
 "window.new" = "Nueva ventana"
 "history.changes" = "Cambios desde una revisión"
 "node.query" = "Buscar capas"
+"lint.run" = "Revisar el diseño"
+"lint.setProfile" = "Definir el perfil de revisión"
+"lint.ignore" = "Ignorar un hallazgo de la revisión"
+"design.analyze" = "Analizar el diseño"
 "template.list" = "Listar plantillas"
 
 [menu]

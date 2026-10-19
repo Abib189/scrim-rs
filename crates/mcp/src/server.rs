@@ -201,7 +201,7 @@ impl Server {
                         "prompts": {"listChanged": false},
                     },
                     "serverInfo": {"name": "figcraft", "title": "FigCraft", "version": env!("CARGO_PKG_VERSION")},
-                    "instructions": format!("{INSTRUCTIONS} Backend: {}.{}", self.backend.describe(), self.roots_note()),
+                    "instructions": format!("{INSTRUCTIONS}{} Backend: {}.{}", figcraft_engine::cmd::lint::write_hint(), self.backend.describe(), self.roots_note()),
                 }))
             }
             "ping" => Ok(json!({})),

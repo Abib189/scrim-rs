@@ -119,6 +119,19 @@ impl<'a> Tree for ScrimDoc<'a> {
     }
 }
 
+/// Scrim's linter on a Scrim document, as the tool runs it (no editor, so no rects): the active
+/// rule ids per node, through this fork's port of it (`cmd/lint`).
+fn real_lint(doc: &Value) -> Value {
+    let m = crate::cmd::lint::scrim_cases_tests::ScrimDoc { doc, rects: None, order: None };
+    let cfg = crate::cmd::lint::scrim_cases_tests::config(&m);
+    let by = crate::cmd::lint::active_by_node(&m, &cfg, true);
+    let mut out = serde_json::Map::new();
+    for (id, rules) in by {
+        out.insert(id.to_string(), json!(rules));
+    }
+    Value::Object(out)
+}
+
 /// The core evaluator's answer: ids, or the error and its position.
 fn core(doc: &Value, query: &str, lint: Option<&Value>) -> Result<Vec<String>, (String, Option<usize>)> {
     let q = parse(query, &SCRIM).map_err(|e| (e.message, e.at))?;
@@ -154,16 +167,13 @@ fn every_core_case_matches_scrim() {
 }
 
 /// The MCP tool: the result JSON, or the tool-error text. Schema-rejected arguments (`limit` 0,
-/// 1001, 2.5; no `query`) are checked for refusal only; lint-dependent cases need Scrim's linter.
+/// 1001, 2.5; no `query`) are checked for refusal only.
 #[test]
 fn every_tool_case_matches_scrim() {
     let c = cases();
     let mut checked = 0;
     for case in c["toolCases"].as_array().unwrap() {
         let name = case["name"].as_str().unwrap();
-        if case["linterDependent"] == true {
-            continue;
-        }
         let doc = &c["documents"][case["doc"].as_str().unwrap()];
         let args = &case["args"];
         let want = &case["expect"];
@@ -174,7 +184,9 @@ fn every_tool_case_matches_scrim() {
             checked += 1;
             continue;
         }
-        let t = ScrimDoc::new(doc, Some(&json!({})));
+        // The linter-dependent case runs this fork's port of Scrim's linter (Port 6).
+        let lint = if case["linterDependent"] == true { real_lint(doc) } else { json!({}) };
+        let t = ScrimDoc::new(doc, Some(&lint));
         match parse(args["query"].as_str().unwrap(), &SCRIM) {
             Ok(q) => {
                 let out = run(&t, &q, limit, |id| t.hit(id));
@@ -189,26 +201,23 @@ fn every_tool_case_matches_scrim() {
         }
         checked += 1;
     }
-    assert!(checked >= 15, "{checked}");
+    assert_eq!(checked, 19);
 }
 
-/// The CLI: exit code, stdout and stderr, through the same argument rules. File errors and the
-/// linter-dependent case need Scrim's loader and linter, so they are skipped.
+/// The CLI: exit code, stdout and stderr, through the same argument rules.
 #[test]
 fn every_cli_case_matches_scrim() {
     let c = cases();
     let mut checked = 0;
     for case in c["cliCases"].as_array().unwrap() {
         let name = case["name"].as_str().unwrap();
-        if name.contains("@lint") {
-            continue;
-        }
         let doc = &c["documents"][case["doc"].as_str().unwrap()];
         let argv: Vec<String> = case["argv"].as_array().unwrap().iter().map(|a| a.as_str().unwrap().to_string()).collect();
         let Some((cmd, args)) = argv.split_first() else { continue };
         let got = run_cli("scrim", &SCRIM, cmd, args, |_, query, limit| {
             let q = parse(query, &SCRIM).map_err(|e| CliFail::new("invalid_query", format!("invalid query: {e}")))?;
-            let t = ScrimDoc::new(doc, Some(&json!({})));
+            let lint = real_lint(doc);
+            let t = ScrimDoc::new(doc, Some(&lint));
             Ok(run(&t, &q, limit, |id| t.hit(id)))
         });
         let want = &case["expect"];
@@ -217,5 +226,5 @@ fn every_cli_case_matches_scrim() {
         assert_eq!(json!(got.stderr), want["stderr"], "{name}");
         checked += 1;
     }
-    assert!(checked >= 20, "{checked}");
+    assert_eq!(checked, 25);
 }
