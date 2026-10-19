@@ -339,6 +339,8 @@ pub fn run_script(script: &str, input: Option<&str>, out: Option<&str>) -> CliRe
         }
         None => Session::new(),
     };
+    // A script is an agent's work: locks bind it and its edits are logged as the CLI's.
+    s.set_author(figcraft_engine::agents::Author::agent("cli"));
     // One undo step and all-or-nothing, the way the same commands behave through `command.batch`
     // (MCP, the control channel, plugins): `{"$step": n}` resolves against the steps before it, and
     // a step that fails takes the whole script back instead of leaving the earlier steps applied.
@@ -479,6 +481,25 @@ mod tests {
         let inner = doc.node(top[0]).unwrap().children.clone();
         assert_eq!(inner.len(), 1, "the rectangle went inside the frame");
         assert_eq!(doc.node(inner[0]).unwrap().name, "child");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    /// A script is an agent's work (Port 3): a layer the person locked refuses it, and the whole
+    /// script is rolled back with the reason.
+    #[test]
+    fn a_script_cant_change_a_layer_the_person_locked() {
+        let dir = temp_dir("run-locked");
+        let mut s = Session::new();
+        let r = s.execute("shape.rectangle", &json!({"x": 0, "y": 0, "width": 20, "height": 10})).unwrap()["id"].as_u64().unwrap();
+        s.execute("object.toggleLock", &json!({"ids": [r]})).unwrap();
+        let input = dir.join("locked.figcraft");
+        std::fs::write(&input, figcraft_engine::cmd::file::file_bytes(s.ds().unwrap()).unwrap()).unwrap();
+        let script = dir.join("script.json");
+        std::fs::write(&script, json!([{"command": "fill.set", "params": {"ids": [r], "color": "#FF0000"}}]).to_string()).unwrap();
+        let out = dir.join("out.figcraft");
+        let code = run_script(script.to_str().unwrap(), Some(input.to_str().unwrap()), Some(out.to_str().unwrap())).unwrap();
+        assert_eq!(code, ExitCode::from(1), "refused");
+        assert!(!out.exists(), "nothing written");
         std::fs::remove_dir_all(dir).unwrap();
     }
 

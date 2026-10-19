@@ -1,0 +1,12 @@
+# Agents and the person on one document (Port 3)
+
+**The rules:** `crates/engine/src/agents.rs`. **For agents:** `docs/mcp.md` › Conventions.
+
+| Check | How | Covered by |
+|---|---|---|
+| A layer the person locked (or a layer inside it) refuses an agent's edit on every route, with the layer and the reason; nothing changes | Lock a frame in the app; ask an agent over MCP to change a layer in it | `crates/engine/src/agents_tests.rs` › `a_locked_layer_refuses_an_agent_but_not_the_person`, `a_locked_frame_holds_what_is_inside_it`; MCP: `crates/mcp/tests/agent_safety.rs` › `a_layer_the_person_locked_refuses_the_agent`; control channel: `crates/ui-egui/src/control_agents_tests.rs` › `a_locked_layer_refuses_the_control_channel_but_not_the_person`; CLI: `apps/figcraft-cli/src/files.rs` › `a_script_cant_change_a_layer_the_person_locked` |
+| The person's own edits of a locked layer work as before | Select a locked layer in the layers panel and change its fill | `agents_tests.rs` › `a_locked_layer_refuses_an_agent_but_not_the_person` |
+| A write against an old revision is refused when someone else changed the layer since, and says what changed | Agent reads (`get_changes`); you resize a layer; the agent writes it with `sinceRevision` | `agents_tests.rs` › `a_stale_write_is_refused_and_says_what_changed`; `agent_safety.rs` › `a_write_against_an_old_revision_is_refused_when_the_person_changed_the_layer`; `control_agents_tests.rs` › `the_control_channel_is_logged_as_an_agent_and_guarded_by_since` |
+| Every edit is in the change feed with its author; `get_changes` returns the current revision | Make edits as the person and as an agent; call `get_changes` | `agents_tests.rs` › `every_edit_is_logged_with_its_author`; `agent_safety.rs` › `get_changes_names_the_person_and_the_agent` |
+| An agent's undo steps read "Agent: …" | Undo menu after an agent edit | `agents_tests.rs` › `an_agents_undo_step_says_so` |
+| Plugins run as agents ("agent (plugin <name>)") | Run a plugin on a locked layer | manual only: no plugin route test yet (`crates/engine/src/plugins.rs`) |

@@ -16,6 +16,11 @@ reply:    {"id": 1, "ok": true, "result": ...}
           {"id": 1, "ok": false, "error": "message"}
 ```
 
+**Requests run as an agent.** Every request through the control channel runs as an agent ("agent (control channel)" in `history.changes`).
+- **Locks:** a layer the person locked, or anything inside one, refuses it.
+- **Stale writes:** `engine.execute` takes an optional `"since": <revision>`. A command that would change a layer someone else changed after that revision is refused and says what changed.
+- **Unchanged:** the app's own input stays the person's.
+
 Requests are queued and run on the UI thread at the start of the next frame, so replies reflect the
 real UI state. A request that the UI doesn't answer within 60 s gets a timeout error. A line that is
 not JSON gets `{"id": null, "ok": false, "error": "bad JSON: …"}` and ends the connection (so an

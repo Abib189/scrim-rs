@@ -139,6 +139,12 @@ Or in a project's `.mcp.json`:
 
 ## Conventions agents must know
 
+- **You work alongside a person** (Scrim's rules, `docs/scrim-transfer/`).
+  - **You are an agent.** Every MCP call, CLI `run` script, control-channel request and plugin runs as an agent, and the change log names you so.
+  - **Locks bind agents.** A layer the person locked, or anything inside one, refuses your edits, including locking and unlocking. The error says which layer and why, and nothing changes.
+  - **Read the change feed.** `get_changes {since}` lists every edit after a revision, oldest first, with its author (`"person"` or `"agent (route)"`), command, label and layers. It also returns the current `revision`.
+  - **Guard your writes.** Pass the revision you last read as `sinceRevision` to `run_command`, `batch`, `create_node` or `set_properties`. If the person changed a layer your call would change after that revision, nothing changes and the error says what changed. Read it again and retry with the new revision.
+  - **Undo labels:** your undo steps read "Agent: …".
 - Coordinates are **page units** (1 unit = 1 px at 100% zoom), x right, **y down**.
 - `create_node` and `set_properties` take `x`/`y` **relative to the parent frame** (the page when
   there is none, so they are page coordinates then). Groups and boolean groups have no coordinate
@@ -296,6 +302,7 @@ Or in a project's `.mcp.json`:
 | `screenshot {ids?, scale?, maxSize?, window?}` | PNG of the page (with background) or of layers, scaled to fit `maxSize` (default 1600). `window: true` captures the app window in front when attached, a window id (see Windows below) that window. |
 | `open_file {path, variables?}` / `save_file {path?}` | Open `.figcraft`, `.json` (FigCraft JSON or REST API file JSON with its variables, see below), `.fig` (best effort, see below), `.svg` (see Importing SVG below) or an image; save as `.figcraft`. `open_file` returns `opened` (for a file opened anew, a `summary` of `name`, `pages`, `layers` and `images`, and `warnings` or `repairs`; a file that was already open just gives its `index`) and the document's `document` outline. |
 | `undo` / `redo` | Step through history. |
+| `get_changes {since?}` | The edits after revision `since` (default 0), oldest first: `{revision, since, complete, changes: [{revision, author, agent, command, label, layers: [{id, name}]}]}`. `complete: false` means older edits have left the log (it keeps the last 2,000 per document). |
 | `pointer {kind, x, y, to?, steps?, tool?, shift, alt, cmd, pressure?, pressureTo?}` | Mouse gestures in page coordinates with the current tool: `click`, `double`, `drag`, `down`, `move`, `up`, `hover`. A dragged layer drops into the frame or auto layout slot under the pointer, except one inside a group, a boolean group or an instance (outside its slots), which only moves. `pressure` (0–1) is pen pressure; a drag goes from `pressure` to `pressureTo` (see Brushes and pen pressure). |
 | `key {key, shift, alt, cmd}` | A shortcut or key as if typed on the canvas (every default shortcut, tool keys, Escape, Delete, arrows, number keys for opacity, arrows that pan the view when nothing is selected; while editing text, the text shortcuts and then text editing keys). Keys are names like `A`, `0`, `Enter`, `ArrowLeft`, `=`, `/`, or egui's (`Plus`, `Questionmark`); `cmd` is Cmd on macOS and Ctrl elsewhere. |
 | `type_text {text, id?}` | Type into the text being edited, or replace the contents of text layer `id`. |

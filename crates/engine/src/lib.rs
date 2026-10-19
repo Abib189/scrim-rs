@@ -9,6 +9,7 @@
 // Tests make and inspect files directly; shipped code goes through `file_access` (clippy.toml).
 #![cfg_attr(test, allow(clippy::disallowed_methods))]
 
+pub mod agents;
 pub mod al_keys;
 pub mod annotations;
 pub mod arc_handles;
@@ -26,6 +27,7 @@ pub mod dev_resources;
 pub mod devcompare;
 pub mod devinspect;
 pub mod distance;
+mod doc_preview;
 pub mod doc_urls;
 pub mod drop;
 pub mod file_access;
@@ -508,42 +510,6 @@ impl DocState {
         !Arc::ptr_eq(self.document_itself(), &self.saved_doc) || self.versions_changed
     }
 
-    /// Show `version` in place of the document (or switch to it from another preview).
-    pub fn start_preview(&mut self, id: &str, name: &str, time: u64, doc: Arc<Document>) {
-        self.end_preview();
-        self.preview = Some(VersionPreview {
-            id: id.to_string(),
-            name: name.to_string(),
-            time,
-            doc: std::mem::replace(&mut self.doc, doc),
-            selection: std::mem::take(&mut self.selection),
-            page: self.page,
-        });
-        self.page = Some(self.page)
-            .filter(|pg| self.doc.pages.contains(pg))
-            .or_else(|| self.doc.current_page.filter(|pg| self.doc.pages.contains(pg)))
-            .or_else(|| self.doc.first_page())
-            .unwrap_or(self.page);
-        self.text_edit = None;
-        self.vector_edit = None;
-        self.interaction = None;
-        self.revision += 1;
-    }
-
-    /// End a version preview, putting the document, selection and page back. False when none.
-    pub fn end_preview(&mut self) -> bool {
-        let Some(p) = self.preview.take() else { return false };
-        self.doc = p.doc;
-        self.selection = p.selection;
-        self.page = p.page;
-        self.text_edit = None;
-        self.vector_edit = None;
-        self.interaction = None;
-        self.clean_selection();
-        self.revision += 1;
-        true
-    }
-
     /// Shown as having unsaved changes until it is saved (a document recovered after a crash).
     pub fn unsaved(mut self) -> Self {
         self.saved_doc = Arc::new(Document::new(self.doc.name.clone()));
@@ -770,6 +736,7 @@ pub struct Session {
     pub live: live::Lives,
     /// Commands the UI runs without waiting on a server ([`Session::start_background`]).
     pub background: background::Background,
+    pub agents: agents::Agents,
 }
 
 impl Default for Session {
@@ -817,6 +784,7 @@ impl Session {
             plugins: plugins::Runtime::default(),
             live: live::Lives::default(),
             background: background::Background::default(),
+            agents: agents::Agents::default(),
         }
     }
 
@@ -934,10 +902,13 @@ impl Session {
             .and_then(|v| self.check_instance_structure(id, &before).map(|()| v))
             .and_then(|v| self.check_preview(id, &before).map(|()| v))
             .and_then(|v| self.check_live_access(id, &before).map(|()| v))
-            .and_then(|v| self.check_finite_geometry(id, &before).map(|()| v));
+            .and_then(|v| self.check_finite_geometry(id, &before).map(|()| v))
+            .and_then(|v| self.check_agent(id, &before).map(|()| v));
         match &result {
             Ok(_) => {
+                let logged = before.as_ref().map(|(d, _, _, uid)| (d.clone(), *uid));
                 self.after_command(spec, before);
+                self.note_change(spec, logged);
                 self.apply_view_prefs();
                 if spec.history && id != "edit.repeat" {
                     self.last_command = Some((id.to_string(), params.clone()));
@@ -1040,7 +1011,8 @@ impl Session {
         ds.clean_selection();
         ds.revision += 1;
         if edit {
-            self.record(uid, spec.history.then_some(spec.label), bdoc, bsel, bpage);
+            let label = self.agents.step_label(spec.label);
+            self.record(uid, spec.history.then_some(label.as_str()), bdoc, bsel, bpage);
         }
     }
 

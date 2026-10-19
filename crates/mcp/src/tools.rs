@@ -72,7 +72,14 @@ fn obj(props: Value, required: &[&str]) -> Value {
     o
 }
 
+/// The tools that write: they take `sinceRevision`, the stale-write guard.
+const GUARDED: &[&str] = &["run_command", "batch", "create_node", "set_properties"];
+
 fn tool(name: &str, title: &str, desc: &str, schema: Value, read_only: bool) -> Value {
+    let mut schema = schema;
+    if GUARDED.contains(&name) {
+        schema["properties"]["sinceRevision"] = json!({"type": "integer", "minimum": 0, "description": "The document revision you last read (get_changes returns it). If someone else changed a layer this call would change after that revision, nothing is changed and the error says what changed: read it again and retry."});
+    }
     json!({
         "name": name,
         "title": title,
@@ -98,6 +105,7 @@ pub const TOOL_NAMES: &[&str] = &[
     "save_file",
     "undo",
     "redo",
+    "get_changes",
     "pointer",
     "key",
     "type_text",
@@ -257,6 +265,13 @@ pub fn tool_definitions() -> Vec<Value> {
         tool("undo", "Undo", "Undo the last change (one command, batch or gesture). Returns {undone: bool}.", empty(), false),
         tool("redo", "Redo", "Redo the last undone change. Returns {redone: bool}.", empty(), false),
         tool(
+            "get_changes",
+            "Changes since a revision",
+            "What changed in the document after revision `since`, oldest first: each edit's revision, author (\"person\" for the person at the app, \"agent (route)\" for agents), command, label and layers ({id, name}). Returns the current `revision` too: pass it as `sinceRevision` to your next writes, and call get_changes with it later to see the person's edits since. Locked layers (and their contents) refuse agents' edits.",
+            obj(json!({"since": {"type": "integer", "minimum": 0, "description": "A revision; default 0 (everything the log keeps)"}}), &[]),
+            true,
+        ),
+        tool(
             "pointer",
             "Pointer gesture",
             "Drive the canvas with the mouse in page coordinates, exactly as a user would with the current tool: click to select, drag to move/resize/marquee, or draw with a shape tool (set `tool` first, e.g. {\"tool\":\"rectangle\",\"kind\":\"drag\",\"x\":0,\"y\":0,\"to\":[200,100]}). `double` on a text layer starts editing it. Returns the selection and tool.",
@@ -306,6 +321,28 @@ pub fn tool_definitions() -> Vec<Value> {
 }
 
 // ---------- helpers ----------
+
+/// A backend whose `engine.execute` calls carry `since` (the revision the agent last read).
+struct Guarded<'b> {
+    inner: &'b mut dyn Backend,
+    since: Option<u64>,
+}
+
+impl Backend for Guarded<'_> {
+    fn call(&mut self, method: &str, params: Value) -> Result<Value, String> {
+        let mut params = params;
+        if let (Some(since), "engine.execute") = (self.since, method) {
+            params["since"] = json!(since);
+        }
+        self.inner.call(method, params)
+    }
+    fn has_ui(&self) -> bool {
+        self.inner.has_ui()
+    }
+    fn describe(&self) -> String {
+        self.inner.describe()
+    }
+}
 
 fn exec(b: &mut dyn Backend, cmd: &str, params: Value) -> Result<Value, String> {
     b.call("engine.execute", json!({"command": cmd, "params": params}))
@@ -403,7 +440,13 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
         Ok(a) => a,
         Err(e) => return ToolResult::error(e),
     };
+    // The stale-write guard travels with every engine.execute this tool makes.
+    let mut guarded = Guarded { inner: b, since: a.get("sinceRevision").and_then(Value::as_u64) };
+    let b: &mut dyn Backend = &mut guarded;
     let r = match name {
+        "get_changes" => {
+            exec(b, "history.changes", json!({"since": a.get("since").and_then(Value::as_u64).unwrap_or(0)})).map(|v| ToolResult::json(&v))
+        }
         "list_commands" => list_commands(b, &a),
         "run_command" => run_command(b, &a),
         "batch" => batch(b, &a),

@@ -2306,6 +2306,7 @@ status = "draft — needs native review"
 "widget.list" = "Listar widgets"
 "window.focus" = "Traer la ventana al frente"
 "window.new" = "Nueva ventana"
+"history.changes" = "Cambios desde una revisión"
 "template.list" = "Listar plantillas"
 
 [menu]

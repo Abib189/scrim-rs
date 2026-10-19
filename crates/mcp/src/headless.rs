@@ -47,7 +47,9 @@ impl Headless {
 
     /// Wrap an existing session (it can host and join live sessions: an agent takes part with
     /// its own cursor, `collab.cursor`).
+    /// Its commands are an agent's: locks bind them and the change log names the agent.
     pub fn with_session(mut session: Session) -> Self {
+        session.set_author(figcraft_engine::agents::Author::agent("mcp"));
         if !session.live.available() {
             session.live.install(Box::new(figcraft_collab_net::NetLink::new(std::sync::Arc::new(|| {}))));
         }
@@ -243,7 +245,11 @@ impl Backend for Headless {
                     None | Some(Value::Null) => json!({}),
                     Some(v) => v.clone(),
                 };
-                self.execute(&cmd, &params)
+                // `since`: the revision the agent last read (the stale-write guard).
+                let since = self.session.set_since(p.get("since").and_then(Value::as_u64));
+                let r = self.execute(&cmd, &params);
+                self.session.set_since(since);
+                r
             }
             "engine.commands" => Ok(Value::Array(
                 figcraft_engine::all_commands().iter().map(|c| json!({"id": c.id, "label": c.label, "params": c.params, "menu": c.menu(), "shortcut": c.shortcut(), "undoable": c.history})).collect(),

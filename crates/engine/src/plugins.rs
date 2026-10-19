@@ -178,6 +178,8 @@ impl figcraft_plugin::Host for EngineHost<'_> {
         }
         let read_only = self.manifest.permissions.access == Access::Read;
         let ui_before = self.s.ui_requests.len();
+        // A plugin is an agent: locks bind it and its edits are logged under its name.
+        let author = self.s.set_author(crate::agents::Author::Agent(format!("plugin {}", self.manifest.name)));
         let r = self.s.grouped(command, |s| {
             let doc = s.ds()?.doc.clone();
             let v = s.execute(command, &params)?;
@@ -191,6 +193,7 @@ impl figcraft_plugin::Host for EngineHost<'_> {
             }
             Ok(v)
         });
+        self.s.set_author(author);
         r.map(|v| v.to_string()).map_err(|e| e.to_string())
     }
 

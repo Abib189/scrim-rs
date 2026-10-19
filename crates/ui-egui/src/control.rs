@@ -232,8 +232,20 @@ fn b(p: &Value, k: &str) -> bool {
     p.get(k).and_then(Value::as_bool).unwrap_or(false)
 }
 
-/// Handle one control method (also used by tests and the headless snapshot tool).
+/// Handle one control method (also used by tests and the headless snapshot tool). What comes
+/// through the control channel is an agent's (AGENTS.md › Scrim's rules 5): it runs as one, so
+/// locks bind it and its edits are logged as its own, and `since` (the revision it last read)
+/// guards its edits against changes made since by someone else.
 pub fn handle(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Result<Value, String> {
+    let author = app.session.set_author(figcraft_engine::agents::Author::agent("control channel"));
+    let since = app.session.set_since(p.get("since").and_then(Value::as_u64));
+    let r = handle_method(app, ctx, method, p);
+    app.session.set_author(author);
+    app.session.set_since(since);
+    r
+}
+
+fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Result<Value, String> {
     match method {
         "engine.execute" => {
             let cmd = p.get("command").and_then(Value::as_str).ok_or("`command` required")?;
@@ -758,3 +770,7 @@ fn pointer(app: &mut FigApp, p: &Value) -> Result<Value, String> {
 #[cfg(test)]
 #[path = "control_roots_tests.rs"]
 mod roots_tests;
+
+#[cfg(test)]
+#[path = "control_agents_tests.rs"]
+mod agents_tests;
