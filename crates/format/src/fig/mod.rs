@@ -26,6 +26,8 @@ pub mod kiwi;
 mod map;
 mod network;
 #[cfg(test)]
+mod security_tests;
+#[cfg(test)]
 mod slot_tests;
 #[cfg(test)]
 mod source_identity_tests;
@@ -53,6 +55,9 @@ use kiwi::{Kv, Schema};
 
 /// Largest `canvas.fig` member read, and largest decompressed chunk.
 const MAX_CANVAS: u64 = 256 * 1024 * 1024;
+/// The largest `.fig` file read, and the most zip entries in one (Scrim's caps).
+const MAX_FILE: u64 = 200 * 1024 * 1024;
+const MAX_ENTRIES: usize = 5000;
 const MAX_CHUNK: u64 = 512 * 1024 * 1024;
 /// Largest image member read.
 const MAX_IMAGE: u64 = 256 * 1024 * 1024;
@@ -88,6 +93,14 @@ pub fn try_import(bytes: &[u8], name: &str) -> Option<Result<(Document, Vec<Stri
 /// Build a document from a `.fig` file. Returns it with the warnings about what was skipped or
 /// approximated. `name`: the document name when the file doesn't carry one.
 pub fn import(bytes: &[u8], name: &str) -> Result<(Document, Vec<String>), FormatError> {
+    if bytes.len() as u64 > MAX_FILE {
+        let mb = |n: u64| n.div_ceil(1024 * 1024);
+        return Err(FormatError::Corrupt(format!(
+            "the file is {} MB: the importer reads .fig files up to {} MB",
+            mb(bytes.len() as u64),
+            mb(MAX_FILE)
+        )));
+    }
     let mut archive = Archive::open(bytes)?;
     // The budgets follow the compressed canvas, which the file itself bounds (its zip member may
     // inflate too).
@@ -97,6 +110,10 @@ pub fn import(bytes: &[u8], name: &str) -> Result<(Document, Vec<String>), Forma
     let (schema, message) = decode_canvas(&std::mem::take(&mut archive.canvas))?;
     let root = schema.find("Message").ok_or_else(|| corrupt("the schema has no Message definition"))?;
     let msg = schema.decode_message_within(root, &message, kiwi::value_budget(packed)).map_err(|e| corrupt(e.to_string()))?;
+    // A design file's message lists its layers; one without them is some other Kiwi data.
+    if msg.get("nodeChanges").map(Kv::list).is_none_or(<[Kv]>::is_empty) {
+        return Err(corrupt("not a design file: the message has no layers (nodeChanges)"));
+    }
     let max_nodes = layer_budget(packed);
     drop(message);
     let file_name = archive.file_name.as_deref().filter(|n| !n.trim().is_empty()).unwrap_or(name);
@@ -184,6 +201,15 @@ impl<'b> Archive<'b> {
             return Ok(Archive { canvas: bytes.to_vec(), file_name: None, zip: None });
         }
         let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| corrupt(e.to_string()))?;
+        // Every entry is checked, wanted or not, before any is read (Scrim's rules; nothing here
+        // ever becomes a path, but a name that would is a sign of a hostile archive).
+        if z.len() > MAX_ENTRIES {
+            return Err(corrupt(format!("the archive has {} entries — over the {MAX_ENTRIES} limit", z.len())));
+        }
+        if let Some(bad) = z.file_names().find(|n| !safe_entry_name(n)) {
+            let shown: String = bad.chars().take(80).collect();
+            return Err(corrupt(format!("the archive has an entry with an unsafe path ({shown:?}) — refused")));
+        }
         let canvas = crate::read_member(&mut z, "canvas.fig", MAX_CANVAS)?;
         let file_name = crate::read_member(&mut z, "meta.json", 1 << 20)
             .ok()
@@ -201,6 +227,18 @@ impl<'b> Archive<'b> {
         let mut z = self.zip.clone()?;
         crate::read_member(&mut z, &format!("images/{hash}"), MAX_IMAGE).ok()
     }
+}
+
+/// Whether a zip entry name is one an honest `.fig` archive would carry: non-empty, at most 512
+/// characters, relative (no leading `/`, no drive letter), no `\\` or NUL, no `.` or `..` part.
+fn safe_entry_name(n: &str) -> bool {
+    let drive = n.as_bytes().get(1) == Some(&b':') && n.as_bytes().first().is_some_and(u8::is_ascii_alphabetic);
+    !n.is_empty()
+        && n.chars().count() <= 512
+        && !n.starts_with('/')
+        && !drive
+        && !n.contains(['\\', '\0'])
+        && n.split('/').all(|part| part != "." && part != "..")
 }
 
 /// The schema and the raw message of a `canvas.fig`.

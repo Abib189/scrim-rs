@@ -300,7 +300,13 @@ impl Schema {
     /// [`Self::decode_message`] within `budget` values (see [`value_budget`]).
     pub fn decode_message_within<'s>(&'s self, root: usize, data: &[u8], budget: usize) -> Result<Kv<'s>, KiwiError> {
         let mut d = Decoder { schema: self, r: Reader { data, pos: 0 }, budget };
-        d.def(root, 0)
+        let v = d.def(root, 0)?;
+        // A message is the whole chunk: bytes after it mean a damaged or spliced file (Scrim's
+        // importer refuses them too; `docs/scrim-transfer/specs/fig-import-security.md`).
+        match data.len().saturating_sub(d.r.pos) {
+            0 => Ok(v),
+            n => err(format!("message: {n} bytes after the message")),
+        }
     }
 }
 

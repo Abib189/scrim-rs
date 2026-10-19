@@ -78,11 +78,11 @@ message Blob byte[] bytes
 message Message NodeChange[] nodeChanges, Blob[] blobs
 ";
 
-fn schema() -> Schema {
+pub(super) fn schema() -> Schema {
     Schema::parse(SCHEMA).unwrap()
 }
 
-fn o(fields: Vec<(&'static str, Kv<'static>)>) -> Kv<'static> {
+pub(super) fn o(fields: Vec<(&'static str, Kv<'static>)>) -> Kv<'static> {
     Kv::Object(fields)
 }
 fn f(x: f64) -> Kv<'static> {
@@ -100,10 +100,10 @@ fn s(x: &str) -> Kv<'static> {
 fn g(l: u64) -> Kv<'static> {
     o(vec![("sessionID", u(1)), ("localID", u(l))])
 }
-fn arr(v: Vec<Kv<'static>>) -> Kv<'static> {
+pub(super) fn arr(v: Vec<Kv<'static>>) -> Kv<'static> {
     Kv::Array(v)
 }
-fn xy(x: f64, y: f64) -> Kv<'static> {
+pub(super) fn xy(x: f64, y: f64) -> Kv<'static> {
     o(vec![("x", f(x)), ("y", f(y))])
 }
 fn at(x: f64, y: f64) -> Kv<'static> {
@@ -127,7 +127,7 @@ fn prop_ref(def: u64, field: &'static str) -> Kv<'static> {
 }
 
 /// A node: id (0: the document), parent (id, position), type, name and further fields.
-fn node(id: u64, par: Option<(u64, &str)>, ty: &'static str, name: &str, mut more: Vec<(&'static str, Kv<'static>)>) -> Kv<'static> {
+pub(super) fn node(id: u64, par: Option<(u64, &str)>, ty: &'static str, name: &str, mut more: Vec<(&'static str, Kv<'static>)>) -> Kv<'static> {
     let mut v = vec![("guid", if id == 0 { root_guid() } else { g(id) })];
     if let Some((p, pos)) = par {
         v.push(("parentIndex", o(vec![("guid", if p == 0 { root_guid() } else { g(p) }), ("position", s(pos))])));
@@ -928,8 +928,8 @@ fn hostile_input_is_refused() {
         out.extend_from_slice(&c[12 + 4 + chunks(&c).unwrap()[0].len()..]);
         out
     };
-    assert!(import(&c, "x").is_ok());
-    assert!(import(&renamed, "x").is_err());
+    assert!(import(&c, "x").unwrap_err().to_string().contains("no layers"));
+    assert!(import(&renamed, "x").unwrap_err().to_string().contains("no Message definition"));
 }
 
 #[test]
