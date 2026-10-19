@@ -1,6 +1,6 @@
-# scrim-rs: a fork of FigCraft
+# Scrim (scrim-rs): a fork of FigCraft
 
-**scrim-rs** is the next Scrim. It is a fork of **FigCraft** (github.com/storytold/figcraft) that carries over Scrim's ideas: an agent-first design tool where code export is a guarantee, not a hand-off. Scrim's earlier TypeScript editor (github.com/Abib189/scrim) is archived. Its knowledge is in [`docs/scrim-transfer/`](scrim-transfer/README.md) as specs, rules, test cases and fixtures, never as code.
+**Scrim is based on FigCraft by the ArtCraft team.** This repository, **scrim-rs**, is the next Scrim: a fork of **FigCraft** (github.com/storytold/figcraft) that carries over Scrim's ideas: an agent-first design tool where code export is a guarantee, not a hand-off. Scrim's earlier TypeScript editor (github.com/Abib189/scrim) is archived. Its knowledge is in [`docs/scrim-transfer/`](scrim-transfer/README.md) as specs, rules, test cases and fixtures, never as code.
 
 | | |
 |---|---|
@@ -20,16 +20,16 @@
 4. **Remove the ArtCraft marks** (`docs/brand/LICENSE-brand.txt`, which went with them). A published fork must remove the ArtCraft name, wordmark and logos, must not call itself ArtCraft or present itself as an ArtCraft product, and may say in plain text that it is "based on FigCraft by the ArtCraft team".
    - **Removed:** `docs/brand/`, the README's logos, badges and community links, the About box's ArtCraft wording and links, and the Windows `CompanyName`.
    - **Kept:** the copyright lines (legal attribution, not branding) and the plain-text "based on FigCraft by the ArtCraft team".
-5. **The app icon** (`assets/app-icon/`, the owner's chameleon drawing) is licensed MIT OR Apache-2.0 like the code (`assets/app-icon/LICENSE.txt`). It is not an ArtCraft mark, so it may stay until scrim-rs has its own icon.
-6. **Third-party material** keeps its own licence. In particular, the design lint rules ported from Scrim are derived from **Impeccable** (Apache-2.0, Copyright 2025 Paul Bakaus). When they land, ship that licence text, put a modification notice in each ported file and add an Impeccable section to `NOTICE` (see `docs/scrim-transfer/specs/lint.md` › Licence).
+5. **The app icon.** FigCraft's chameleon (`assets/app-icon/`, MIT OR Apache-2.0, `assets/app-icon/LICENSE.txt`) stays in the repository, but Scrim no longer ships it. Scrim ships a **placeholder** drawn in code (`assets/app-icon/scrim/`, `cargo xtask icon`) until the owner provides the real mark (`docs/design/rebrand.md`).
+6. **Third-party material** keeps its own licence. In particular, the design lint rules ported from Scrim are derived from **Impeccable** (Apache-2.0, Copyright 2025 Paul Bakaus): its licence text, the modification notices and the `NOTICE` section shipped with Port 6 (`crates/engine/src/cmd/lint/design-rules/`).
+7. **The name.** The product is **Scrim** everywhere a person looks (`docs/design/rebrand.md`). The About box, this file and the README say "Scrim is based on FigCraft by the ArtCraft team".
 
 **Not yet repointed** (FigCraft's infrastructure; each needs the owner's decision):
-- **The collab server:** the default host is `collab.craftapps.dev`, contacted only when a person starts or joins a live session. Repoint it or leave it empty.
+- **The collab server:** the default host is `collab.craftapps.dev`, contacted only when a person starts or joins a live session. Repoint it or leave it empty (the rebrand's step A5 empties it).
 - **The `craft-docpath` git dependency** (`storytold/craft-libs`) and the optional `craft-fonts` build input (`../craft-fonts`).
 - **The release workflow:** it uses the external `storytold/craft-common-actions@main`, so release builds don't run for this fork until it is replaced.
-- **The app id** `ai.storyteller.figcraft`, the product name "FigCraft" in window titles and menus, and the crate names `figcraft-*`.
-  - The crate names stay for now, so that upstream merges stay cheap.
-  - The visible product name moves to Scrim in its own step.
+- **Done in the rebrand (Stage A):** the product name, the app id (`design.scrim.app`), installers and packages, the settings directory (with a copying migration), the CLI (`scrim`) and the MCP server's name.
+- **Kept on purpose:** the crate names `figcraft-*`, the `.figcraft` extension and its type identifiers, the plugin API's module name, and the app binary's name (see `docs/design/rebrand.md` for each reason).
 
 ## Syncing with upstream
 

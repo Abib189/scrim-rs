@@ -1,14 +1,14 @@
-# scrim-rs (a FigCraft fork) — instructions for agents
+# Scrim (scrim-rs, a FigCraft fork) — instructions for agents
 
-> **This is scrim-rs, the next Scrim**, an independent fork of FigCraft (`docs/FORK.md`).
+> **This is Scrim** (repository `scrim-rs`), an independent fork of FigCraft: **Scrim is based on FigCraft by the ArtCraft team** (`docs/FORK.md`). The product is called Scrim everywhere a person looks; the crates keep `figcraft-*` names (`docs/design/rebrand.md`).
 > - Everything below applies, plus **Scrim's rules** in the section of that name.
 > - Scrim's knowledge is in `docs/scrim-transfer/` as specs, decisions, test cases and fixtures. Read `docs/scrim-transfer/README.md` and `decisions.md` before porting anything.
 > - FigCraft's sibling repos (`../../craftrules`, `../vectorcraft`, …) and its `plan/` folder are not part of this fork. Where the text below points at them, skip it.
 
-FigCraft is a clean-room, open-source, pure-Rust (egui) reimplementation of the Figma design workflow:
+Scrim is FigCraft's clean-room, open-source, pure-Rust (egui) reimplementation of the Figma design workflow:
 interface design, auto layout, components and variants, styles and variables, prototyping and
 inspection. It runs natively on macOS, Windows, Linux and FreeBSD, and in the browser via WASM.
-Siblings: `../vectorcraft` (Illustrator-class), `../photocraft` (Photoshop-class), `../designcraft`
+FigCraft's siblings: `../vectorcraft` (Illustrator-class), `../photocraft` (Photoshop-class), `../designcraft`
 (InDesign-class) and the other Crafting Apps; same conventions.
 
 Standards and learnings shared across the crafting apps live in `../../craftrules` (checked out
@@ -42,17 +42,18 @@ code.
   other product, or from any source whose licence doesn't allow it.** This includes "lookalike"
   redraws of their icons. Breaking this rule is the worst thing you can do in this repo.
 - Every image, icon, font or other asset must be one of:
-  - original work created for FigCraft by a contributor (licensed MIT OR Apache-2.0);
+  - original work created for Scrim or FigCraft by a contributor (licensed MIT OR Apache-2.0);
   - OSI open source;
   - public domain / CC0;
   - Creative Commons with redistribution allowed.
 - **Every asset file must have a row in [`ATTRIBUTION.md`](ATTRIBUTION.md)** (path, author, source,
   licence, notes). `cargo xtask assets` (part of `cargo xtask ci`) fails on any unlisted file under
   `assets/`, `docs/brand/` or `docs/images/`.
-- FigCraft's UI icons are drawn in code (`crates/ui-egui/src/icons.rs`) from simple primitives and
+- The UI icons (FigCraft's, and Scrim's additions) are drawn in code (`crates/ui-egui/src/icons.rs`) from simple primitives and
   are original. Keep it that way: new icons are new code, designed from scratch.
-- The app icon is the owner's chameleon drawing, vectorised (`assets/app-icon/README.md`); `cargo xtask icon`
-  renders the PNGs and `.ico` from `assets/app-icon/figcraft.svg`.
+- The app icon is Scrim's **placeholder**, drawn in code: `cargo xtask icon` writes `assets/app-icon/scrim/`
+  (and `Icon::Logo` draws the same mark in the interface). It awaits the owner's real mark. FigCraft's
+  chameleon in `assets/app-icon/` stays in the repository, unshipped.
 - **Fonts live in [storytold/craft-fonts](https://github.com/storytold/craft-fonts), never in this
   repo.** The app uses it only through the optional `CRAFT_FONTS_DIR` build input
   (`.cargo/config.toml` points it at `../craft-fonts` for local builds; `crates/text/build.rs`
@@ -132,8 +133,8 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
   in `crates/ui-egui/src/control.rs` and `docs/control-protocol.md`.
 - **For UI work, look at the result** (take a screenshot and read the PNG). Compare with the
   incumbent side by side where the owner allows (`plan/figma/`).
-- Headless: `figcraft-cli` (`info`, `export`, `run`, `commands`, `mcp`). MCP: `figcraft-cli mcp`
-  (see `docs/mcp.md`).
+- Headless: `scrim`, the CLI (`info`, `export`, `run`, `commands`, `query`, `lint`, `mcp`; `figcraft-cli` is its old
+  name, an alias). MCP: `scrim mcp` (see `docs/mcp.md`).
 - Shell gotcha on the owner's machine: `mv`/`cp` may be aliased interactive — use `/bin/mv -f`.
 - Parallel agents: separate `CARGO_TARGET_DIR` per agent, edit only the crates/files you own,
   write manifests atomically, delete your target dir when done (disk is limited).
