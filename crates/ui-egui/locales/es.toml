@@ -8,6 +8,9 @@ name = "Español"
 status = "draft — needs native review"
 
 [ui]
+"Copy standalone HTML" = "Copiar HTML independiente"
+"A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere" = "Una página web completa para esta capa: con sus estilos e imágenes dentro, sin descargar nada de otro sitio"
+"standalone HTML" = "HTML independiente"
 "Design mode" = "Modo diseño"
 "Animate mode" = "Modo animación"
 "Animate" = "Animar"
@@ -1749,6 +1752,9 @@ status = "draft — needs native review"
 "⌥ drag" = "⌥ arrastrar"
 
 [commands]
+"code.copy" = "Copiar código"
+"code.copyStandaloneHtml" = "Copiar HTML independiente"
+"code.setFormat" = "Formato de código"
 "panel.mode.animate" = "Modo animación"
 "panel.mode.design" = "Modo diseño"
 "panel.tab.ai" = "Pestaña IA"

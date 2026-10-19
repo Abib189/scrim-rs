@@ -23,3 +23,18 @@ fn the_panel_commands_are_reachable_over_mcp() {
         assert!(commands.to_string().contains(id), "{id} is listed for agents");
     }
 }
+
+#[test]
+fn the_code_tabs_commands_are_reachable_over_mcp() {
+    let mut c = Client::new();
+    let frame = c.run("frame.create", json!({"x": 0, "y": 0, "width": 120, "height": 80, "name": "Card"}));
+    let before = c.doc();
+    assert_eq!(c.run("code.setFormat", json!({"format": "html", "unit": "rem"})), json!({"format": "html", "unit": "rem"}));
+    let code = c.run("code.copy", json!({"id": frame["id"], "language": "css"}));
+    assert_eq!(code["language"], "css");
+    assert!(code["code"].as_str().unwrap().contains("width"), "{code}");
+    let page = c.run("code.copyStandaloneHtml", json!({"id": frame["id"]}));
+    let html = page["html"].as_str().unwrap();
+    assert!(html.starts_with("<!doctype html>") && html.contains("<title>Card</title>"), "{html}");
+    assert_eq!(c.doc(), before, "reading code is never an edit");
+}

@@ -2,6 +2,7 @@
 
 pub mod analyze;
 pub mod arrange;
+pub mod code;
 pub mod comment;
 pub mod component;
 pub mod create;
@@ -84,6 +85,7 @@ fn registry() -> &'static Registry {
         list.extend(page::specs());
         list.extend(view::specs());
         list.extend(panel::specs());
+        list.extend(code::specs());
         list.extend(text::specs());
         list.extend(crate::fonts::specs());
         list.extend(styles::specs());

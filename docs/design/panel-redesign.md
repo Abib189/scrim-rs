@@ -54,11 +54,13 @@ Screenshots are in `panel-redesign/before/`, taken from the packaged app at 9d7f
 
 - **From the existing generators** (`codegen::CodeLang`, `dev_mode::code`): a format dropdown with the six languages, px/rem for the web ones, the code, **Copy**, and **Copy standalone HTML**.
 - **Copy standalone HTML** copies a complete page (`<!doctype html>`, the stylesheet inline, no external requests) for the selection, built on the HTML exporter that Port 2's fidelity check measures.
+  - **As built (B2):** the page is for **one layer**, the first selected. Two exported fragments in one page could collide on class names. The stylesheet moves into the head, and the layer's name, escaped, is the title.
+  - **Nothing fetched:** the page carries `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:`. Images are already inlined by the export as `data:` URIs, so even a missing image's fallback `url(image.png)` fetches nothing.
 - **No selection:** the tab says so, and offers the current page's frames.
-- **Commands:**
-  - `code.setFormat {format}`, which also reports what is selected;
-  - `code.get {format?, ids?}`, which returns the code: an agent reads exactly what the person sees;
-  - `code.copy {format?}` and `code.copyStandaloneHtml {ids?}` (the clipboard is the UI's: headless they return the text).
+- **Commands** (as built, B2: `crates/engine/src/cmd/code.rs`):
+  - `code.setFormat {format, unit?}` switches what the Code and Inspect tabs show;
+  - **reading the code** is the existing `inspect.code {id?, language?, unit?}`, so no second getter: an agent reads exactly what the person sees;
+  - `code.copy` (`inspect.code`'s parameters and result) and `code.copyStandaloneHtml {id?}` ask the UI to put the text on the clipboard. Headless, they return the text.
 
   The same table rules apply: MCP route, parity entry, AccessKit names.
 - **Previews only.** Nothing here writes the document.

@@ -97,6 +97,9 @@ pub struct DevUi {
     focus_key: Option<(u64, u64)>,
     code: Option<((u64, u64, NodeId, CodeLang), String)>,
     playground: Playground,
+    /// The language and unit the Code and Inspect tabs show (`code.setFormat`).
+    pub code_lang: CodeLang,
+    pub code_rem: bool,
 }
 
 /// The component playground of the Inspect tab: the layer it is for, the property values tried

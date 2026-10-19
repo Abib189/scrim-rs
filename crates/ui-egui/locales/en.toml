@@ -8,6 +8,9 @@
 name = "English"
 
 [ui]
+"Copy standalone HTML" = "Copy standalone HTML"
+"A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere" = "A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere"
+"standalone HTML" = "standalone HTML"
 "Design mode" = "Design mode"
 "Animate mode" = "Animate mode"
 "Animate" = "Animate"
