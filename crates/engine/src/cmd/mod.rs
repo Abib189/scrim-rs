@@ -14,6 +14,7 @@ pub mod page;
 pub mod props;
 pub mod proto;
 pub mod proto_actions;
+pub mod query;
 pub mod section;
 pub mod structure;
 pub mod styles;
@@ -103,6 +104,7 @@ fn registry() -> &'static Registry {
         list.extend(crate::collab::specs());
         list.extend(crate::branches::specs());
         list.extend(crate::agents::specs());
+        list.extend(query::specs());
         list.extend(crate::plugins::specs());
         list.extend(crate::plugin_directory::specs());
         list.extend(crate::widgets::specs());

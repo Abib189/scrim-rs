@@ -2307,6 +2307,7 @@ status = "draft — needs native review"
 "window.focus" = "Traer la ventana al frente"
 "window.new" = "Nueva ventana"
 "history.changes" = "Cambios desde una revisión"
+"node.query" = "Buscar capas"
 "template.list" = "Listar plantillas"
 
 [menu]

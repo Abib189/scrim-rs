@@ -105,6 +105,7 @@ pub const TOOL_NAMES: &[&str] = &[
     "save_file",
     "undo",
     "redo",
+    "query_nodes",
     "get_changes",
     "pointer",
     "key",
@@ -264,6 +265,20 @@ pub fn tool_definitions() -> Vec<Value> {
         ),
         tool("undo", "Undo", "Undo the last change (one command, batch or gesture). Returns {undone: bool}.", empty(), false),
         tool("redo", "Redo", "Redo the last undone change. Returns {redone: bool}.", empty(), false),
+        tool(
+            "query_nodes",
+            "Find layers",
+            "Find layers with an XPath-style query and get back their ids, names, types, parent ids and boxes {x,y,w,h} (page space, from the document) — use it instead of walking inspect_document when you know what you are looking for. Read-only. Returns {query, total, returned, truncated, results}: at most `limit` results (default 100, max 1000) in document order; total counts every match. Paths: /X is a top-level layer of a page, //X anywhere below; steps chain with / (child) and // (descendant). Node tests: FRAME GROUP SECTION RECTANGLE ELLIPSE POLYGON STAR LINE VECTOR TEXT BOOLEAN_OPERATION COMPONENT COMPONENT_SET INSTANCE SLICE, IMAGE (a visible image fill), * (any). Predicates in [ ]: [@a] exists; [@a=\"x\"] / [@a!=\"x\"]; [@a > 10] (< <= > >= compare numbers or px lengths); contains(@a,\"x\"), starts-with(@a,\"x\"); and, or, not( ), ( ); [n] and [last()] are positions among the matches under the same parent. Attributes: @id @name @type @text @src @width @height @fill (first visible solid fill, #rrggbb) @color (text) @background (not text) @layout (flex or grid with auto layout) @direction (row or column) @position (absolute in auto layout) @children (count) @component @componentId @hidden @locked, and CSS properties as @style.<key> (fontSize, gap, padding, opacity, borderRadius … ; list_commands node.query lists them). Anything else (.., named axes, unions, other functions) is an error that says so. Example: //FRAME[@layout=\"flex\"]//TEXT[contains(@name,\"Price\")].",
+            obj(
+                json!({
+                    "query": string("e.g. //TEXT[@style.fontSize > 40] or /FRAME[@name=\"Pricing\"]//INSTANCE"),
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+                    "page": id_schema("Only this page (an id); default every page"),
+                }),
+                &["query"],
+            ),
+            true,
+        ),
         tool(
             "get_changes",
             "Changes since a revision",
@@ -454,6 +469,7 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
         "set_properties" => set_properties(b, &a),
         "inspect_document" => inspect_document(b, &a),
         "get_node" => get_node(b, &a),
+        "query_nodes" => exec(b, "node.query", Value::Object(a.clone())).map(|v| ToolResult::json(&v)),
         "select" => select(b, &a),
         "export" => export(b, &a),
         "screenshot" => screenshot(b, &a),

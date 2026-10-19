@@ -6,6 +6,7 @@
 mod args;
 mod files;
 mod perf;
+mod query;
 
 use std::io::Write;
 use std::process::ExitCode;
@@ -17,6 +18,8 @@ pub const USAGE: &str = "figcraft-cli — FigCraft without a window
 
 USAGE:
   figcraft-cli info <file> [--json]
+  figcraft-cli query <file> '<query>' [--limit N] [--json]
+  figcraft-cli find <file> [--type T] [--name TEXT] [--limit N] [--json]
   figcraft-cli export <file> -o <out> [--format png|jpg|svg|webp|pdf|fig] [--scale N] [--page NAME] [--node ID|NAME]
                       [--bleed LENGTH] [--crop-marks] [--bleed-marks] [--cmyk]
   figcraft-cli convert <in> <out>
@@ -37,7 +40,9 @@ wasn't imported), .svg, .png/.jpg/.webp/.gif/.bmp (open as an image layer). `exp
 per top-level frame into the <out> directory, or one file when <out> has an image extension or --node
 is given (`fig`, or an <out> ending in .fig: the whole file as .fig, experimental; other apps may
 not open every file); PDFs take print options (a bleed like 3mm or 0.125in,
-crop and bleed marks, CMYK colour). `run` executes a JSON array (or JSON lines) of
+crop and bleed marks, CMYK colour). `query` finds layers with an XPath-style query (//FRAME[@layout=\"flex\"]//TEXT[contains(@name, \"Price\")];
+the subset is in docs/mcp.md › query_nodes), `find` by type and name; both are read-only and exit 1 on an
+invalid query, 2 on usage, 3 on a file that can't be read. `run` executes a JSON array (or JSON lines) of
 {\"command\": id, \"params\": {...}} in a headless session and prints one JSON result line per step.
 `plugin publish` sends a plugin folder (figcraft-plugin.json, its module, an optional assets/ folder)
 to a figcraft-server's plugin directory as a new version; the server's key comes from the address or
@@ -97,6 +102,7 @@ fn run(argv: &[String]) -> CliResult<ExitCode> {
             println!("figcraft-cli {}", env!("CARGO_PKG_VERSION"));
             Ok(ExitCode::SUCCESS)
         }
+        "query" | "find" => Ok(query::run(cmd, rest)),
         "info" => {
             let a = Args::parse(rest, &[], &["json"])?;
             let file = a.one_positional("info <file>")?;

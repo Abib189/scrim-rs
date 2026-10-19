@@ -26,6 +26,24 @@ be open to the public: [server.md](server.md#running-a-public-server)). See [ser
 
 ## Subcommands
 
+### `query <file> '<query>' [--limit N] [--json]` and `find <file> [--type T] [--name TEXT] [--limit N] [--json]`
+
+Find layers with an XPath-style query, read-only: the same query as MCP's `query_nodes` (see
+[mcp.md](mcp.md)). `find` builds one from a node type and a part of a name
+(`//TEXT[contains(@name, "Title")]`). Each match is a line with its type, name and id; `--json`
+prints the tool's result. Exit codes: 1 for an invalid query (its message says what the subset
+supports), 2 for usage, 3 for a file that can't be read (over 200 MB is refused before reading).
+
+```text
+$ figcraft-cli query app.figcraft '//FRAME[@layout="flex"]//TEXT[@style.fontSize > 40]'
+2 matches
+  TEXT      Headline  (14)
+  TEXT      Price  (31)
+$ figcraft-cli find app.figcraft --type instance --name Button --limit 1
+1 of 12 matches (--limit for more)
+  INSTANCE  Button / Primary  (58)
+```
+
 ### `info <file> [--json]`
 
 Pages, node counts, top-level frames (id, type, name, size), style/variable/image counts. Repairs
