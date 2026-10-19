@@ -67,6 +67,9 @@ const LOG_LIMIT: usize = 2000;
 pub struct Agents {
     pub author: Author,
     pub since: Option<u64>,
+    /// The app's control channel port when it listens (`--control`): agents attach through it
+    /// (`ai.status`). `None`: headless, or the app runs without it.
+    pub control_port: Option<u16>,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 

@@ -49,6 +49,7 @@ pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
             app.services.clipboard_set_text(data["text"].as_str().unwrap_or_default());
             let what = match data["what"].as_str().unwrap_or_default() {
                 "standalone HTML" => tr("standalone HTML"),
+                "the connect command" => tr("the connect command"),
                 other => other,
             };
             app.toast(trf("Copied {value}", &[("value", &what)]));

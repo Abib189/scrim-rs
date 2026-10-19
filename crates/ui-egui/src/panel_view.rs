@@ -15,6 +15,9 @@ use crate::right::{menu_check, menu_item, menu_popup};
 use crate::theme::{Tokens, regular, semibold};
 use crate::{FigApp, RightTab, UiState, a11y, widgets};
 
+#[path = "ai_tab.rs"]
+mod ai_tab;
+
 /// The tab a [`Tab`] draws as.
 fn right_tab(tab: Tab) -> RightTab {
     match tab {
@@ -182,10 +185,7 @@ pub fn content(app: &mut FigApp, ui: &mut Ui) -> bool {
     }
     match app.ui.right_tab {
         RightTab::Code => crate::code_tab::tab(app, ui),
-        RightTab::Ai => {
-            widgets::section_header(ui, tr("AI"), &[], false);
-            widgets::note(ui, tr("The agents working on this file, their changes and the design lint's findings appear here."), t.text_secondary);
-        }
+        RightTab::Ai => ai_tab::tab(app, ui),
         _ => return false,
     }
     true

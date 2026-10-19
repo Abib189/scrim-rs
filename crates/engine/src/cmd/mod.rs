@@ -1,5 +1,6 @@
 //! The command registry. Each area module exposes `specs()`; [`all_commands`] collects them once.
 
+pub mod ai;
 pub mod analyze;
 pub mod arrange;
 pub mod code;
@@ -86,6 +87,7 @@ fn registry() -> &'static Registry {
         list.extend(view::specs());
         list.extend(panel::specs());
         list.extend(code::specs());
+        list.extend(ai::specs());
         list.extend(text::specs());
         list.extend(crate::fonts::specs());
         list.extend(styles::specs());

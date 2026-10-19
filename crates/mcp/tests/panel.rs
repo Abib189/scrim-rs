@@ -38,3 +38,20 @@ fn the_code_tabs_commands_are_reachable_over_mcp() {
     assert!(html.starts_with("<!doctype html>") && html.contains("<title>Card</title>"), "{html}");
     assert_eq!(c.doc(), before, "reading code is never an edit");
 }
+
+#[test]
+fn the_ai_tabs_commands_are_reachable_over_mcp() {
+    let mut c = Client::new();
+    let status = c.run("ai.status", json!({}));
+    assert_eq!((&status["channel"], &status["connectCommand"]), (&json!("off"), &json!("claude mcp add scrim -- scrim mcp")));
+    // An agent's own change, through MCP: in the feed, selectable, and undoable while it's the latest.
+    let r = c.run("shape.rectangle", json!({"x": 0, "y": 0, "width": 10, "height": 10}));
+    let feed = c.ok("get_changes", json!({}));
+    let last = feed["changes"].as_array().unwrap().last().unwrap().clone();
+    assert_eq!(last["agent"], true);
+    let picked = c.run("ai.selectChange", json!({"revision": last["revision"]}));
+    assert_eq!(picked["selected"], json!([r["id"]]));
+    assert_eq!(c.run("ai.undoChange", json!({"revision": last["revision"]}))["undone"], true);
+    let findings = c.run("ai.findings", json!({}));
+    assert!(findings["groups"].is_array() && findings["count"].is_number(), "{findings}");
+}

@@ -84,6 +84,20 @@ No chat, no API keys, no provider settings. The tab is about the agents already 
    - A document-wide "agents read-only" switch would be a new engine rule: listed under Later.
 6. **Commands:** `ai.refresh`, `ai.selectChange {revision}`, `ai.undoChange {revision}`, `ai.selectFinding {rule, index}`, and `ai.toggleLock`, besides the existing ones they call. Every badge and list is read from the same commands an agent can run.
 
+**As built (B3)** (`crates/engine/src/cmd/ai.rs`, `crates/ui-egui/src/ai_tab.rs`):
+- **The commands:**
+  - `ai.status`: the channel (on or off), the port, and the connect command;
+  - `ai.copyConnectCommand`;
+  - `ai.selectChange {revision}`: selects the layers that still exist, and reports the removed ones. Pages, and parents listed only because a child changed, are left out;
+  - `ai.undoChange {revision}`: an agent's change only, while it is the last entry in the log and the top undo step is its own ("Agent: …"); otherwise refused with the reason;
+  - `ai.findings`: `lint.run` grouped by rule, largest group first;
+  - `ai.selectFinding {rule, index?}`.
+- **Plan items dropped:**
+  - **`ai.refresh`:** the tab re-reads on every frame it draws. The findings are cached per document revision.
+  - **`ai.toggleLock`:** the tab runs the existing `object.toggleLock`, already a command.
+- **The port:** the app records its control port on the session (`agents.control_port`) when `--control` binds.
+- **Reads have no side effects.** The tab calls the read commands' functions directly, not through `Session::execute`. `execute` would end a live text preview and log every per-frame read in the command journal (`ai_tab_tests.rs` › `reading_the_tab_every_frame_leaves_no_trace`).
+
 ### Appearance in Preferences (B4)
 
 - **Extend what exists:**

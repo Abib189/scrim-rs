@@ -26,13 +26,14 @@ pub fn drain_queue(queue: &Queue, target: &mut Vec<ControlRequest>) {
     target.extend(queue.drain(..count));
 }
 
-pub fn start(port: u16, queue: Queue, ctx: CtxSlot) {
+/// Listen on 127.0.0.1:`port`; `false` when the port can't be bound.
+pub fn start(port: u16, queue: Queue, ctx: CtxSlot) -> bool {
     let listener = match TcpListener::bind(("127.0.0.1", port)) {
         Ok(l) => l,
         Err(e) => {
             log::error!("control server: can't bind 127.0.0.1:{port}: {e} (another app may own it; pick another port)");
             eprintln!("Scrim control server failed to bind port {port}: {e}");
-            return;
+            return false;
         }
     };
     eprintln!("Scrim control server listening on 127.0.0.1:{port}");
@@ -44,7 +45,9 @@ pub fn start(port: u16, queue: Queue, ctx: CtxSlot) {
     });
     if let Err(e) = spawned {
         log::error!("control server thread: {e}");
+        return false;
     }
+    true
 }
 
 fn spawn_connection(stream: TcpStream, queue: Queue, ctx: CtxSlot, workers: &mut Vec<std::thread::JoinHandle<()>>, timeout: Duration) {

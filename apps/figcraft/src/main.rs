@@ -222,8 +222,11 @@ fn main() -> eframe::Result {
         figcraft_ui_egui::live::open_invite(&mut fig, link);
     }
     let queue: Arc<Mutex<Vec<ControlRequest>>> = Arc::new(Mutex::new(Vec::new()));
-    if let Some(p) = port {
-        control_server::start(p, queue.clone(), ctx_slot.clone());
+    if let Some(p) = port
+        && control_server::start(p, queue.clone(), ctx_slot.clone())
+    {
+        // The AI tab says agents can attach here, with the command that does (`ai.status`).
+        fig.session.agents.control_port = Some(p);
     }
     let icon = services::window_icon();
     // The app id is the Wayland app_id and the X11 window class on Linux: the desktop entry's name
