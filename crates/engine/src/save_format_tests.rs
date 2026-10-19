@@ -15,8 +15,12 @@ struct SaveFiles {
 
 impl SaveFiles {
     fn new() -> Self {
+        // Tests run in parallel and macOS's clock is coarser than a nanosecond: two tests could read
+        // the same stamp, so a counter keeps their folders apart.
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
-        let dir = std::env::temp_dir().join(format!("figcraft-save-formats-{}-{stamp}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("figcraft-save-formats-{}-{stamp}-{n}", std::process::id()));
         std::fs::create_dir(&dir).unwrap();
         Self { dir, files: Vec::new() }
     }
