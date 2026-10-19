@@ -248,3 +248,7 @@ fn zoom_menu(app: &mut FigApp, ui: &mut Ui, t: &Tokens, row: Rect) {
 #[cfg(test)]
 #[path = "panel_view_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "offscreen_tests.rs"]
+mod offscreen;

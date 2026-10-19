@@ -156,3 +156,58 @@ No chat, no API keys, no provider settings. The tab is about the agents already 
 - Every new string goes into every locale catalog the completeness check requires (Spanish).
 - Files over 1,000 lines are frozen; new code goes in new modules, and `cargo xtask layers` holds.
 - No `unwrap`, `expect` or `panic` in shipped code. Previews never write to the document.
+
+## B5: verification (19 Oct 2026)
+
+**CI:** `cargo xtask ci`, the locale checks included (Spanish has every new string and command). The result is in the B5 commit message.
+
+**AccessKit names, by test:**
+- the mode toggles "Design mode" and "Animate mode";
+- the four tabs, with the selected one marked, and the panel region named after what it shows;
+- the AI tab's buttons (connect command, each feed entry, "Undo …"), its rule rows and its checkbox;
+- the six accent swatches ("Teal accent" and the others).
+
+The tests are `panel_view_tests.rs`, `ai_tab_tests.rs` and `appearance_prefs_tests.rs`. F6 still cycles toolbar → layers → canvas → properties (`a11y_tests.rs`, unchanged and passing).
+
+**AFTER screenshots** (`panel-redesign/after/`, 1440 × 900, light and dark):
+- the four BEFORE states: `none`, `frame`, `text`, `multiple`;
+- `prototype-frame`, `code-frame`, `ai`, `animate`;
+- Preferences with the teal accent (`preferences-teal`), and the Code tab in teal (`code-frame-teal`);
+- **three panel widths**, 240 (the default and the narrowest), 360 and 480: `width-*-frame` and `width-*-ai`.
+
+**How the screenshots were made.** The screen was locked for the whole of Stage B, so no window could draw (`CGSSessionScreenIsLocked`). The shots come from `crates/ui-egui/src/offscreen_tests.rs`: the app draws its frames headless, egui tessellates them, and the triangles are filled in software as the GPU fills them. Run it with `SCRIM_SHOTS_DIR=<dir> cargo test -p figcraft-ui-egui --lib offscreen -- --ignored`. It is close to the app, but not pixel-identical:
+- **Text inside the designs is missing:** tests don't index the system fonts.
+- **A glyph the bundled UI font lacks draws as a box,** such as the `▸` in "Share ▸ Online"; the app gets it from the system fonts.
+- **Edges differ slightly:** there is no MSAA.
+- **The window has an "Untitled" tab:** a new session starts with one.
+
+Retake the shots in the app once the screen is unlocked; the offscreen ones are for review, not a baseline.
+
+**Nothing else changed visually.**
+- **The method:** the same offscreen renderer drew the four BEFORE states from the tree before the redesign (5923921, in a temporary worktree). `compare_outside_the_right_panel` then counted the pixels that differ outside the right panel.
+- **The result:** 0 in all eight shots (four states × two themes).
+- **The check works:** given two different states, it reports 17,855 differing pixels.
+
+**Contrast:** `panel_view_tests.rs` › `the_new_panels_text_and_marks_read_at_aa` checks every text and mark the redesign draws, for all six presets in both themes, at 4.5:1 or better:
+- the tab and mode labels on the panel, the field and their fills;
+- the accent edge, and the agent names in the feed (also on hover);
+- the badge counts and the notes;
+- the label on the accent.
+
+`every_accent_reads_at_aa_in_both_themes` adds four custom colours (one of them a dark navy and one a bright yellow). The sample in Preferences shows its own ratio (teal on light: 6.2:1).
+
+**An agent check over MCP only:** the release app was started with `--control`, and `scrim mcp --attach PORT` drove it (all checks passed):
+- `serverInfo` is `scrim`;
+- `panel.mode.animate`, then each `panel.tab.*`, read back through `inspect_ui` (`panelMode`, `rightTab`);
+- `code.setFormat`, `inspect.code`, and `code.copyStandaloneHtml` (a doctype and the CSP);
+- `ai.status` (channel on, the attach command with the port);
+- the agent renames a layer, the change shows in `get_changes` as the agent's, `ai.selectChange` selects it, and `ai.undoChange` undoes it (the name comes back). A second undo is refused: "later edits came after this change".
+- `ai.findings` (117 findings in 5 rules, largest first) and `ai.selectFinding`;
+- the agent's `object.toggleLock` is refused, because locks are the person's (Port 3);
+- `pref.accent` (teal, then a grey colour refused, then the default) and `pref.theme`.
+
+**Left for later:**
+- **The canvas chrome follows the default orange,** not a chosen accent (B4, above).
+- **Port 3's refusal wording:** an agent trying to lock an unlocked layer is refused with "… is locked", which describes the state the edit would make.
+- **A timing test fails under heavy load:** `idle_tests::the_prototype_curve_preview_plays_then_rests` failed on B0's docs-only commit and twice during B3, and passed alone each time. Its cause isn't found yet (`docs/design/panel-redesign.md` › this section; the B0 and B3 commits).
+- **The screenshots should be retaken in the app** when the screen is unlocked.

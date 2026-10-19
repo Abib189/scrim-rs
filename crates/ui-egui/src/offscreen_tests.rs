@@ -1,0 +1,302 @@
+//! Screenshots without a window (`docs/design/panel-redesign.md`, B5): the app draws a frame headless,
+//! egui tessellates it, and these triangles are filled in software as the GPU would (premultiplied
+//! colour times the texture, blended over in gamma space). For when no window can draw, such as a locked
+//! screen. Not a pixel-exact match for the GPU path (no MSAA, the texture filtered in gamma space): close enough to
+//! review a layout, never used as a baseline.
+//!
+//! - `SCRIM_SHOTS_DIR=<dir> [SCRIM_SHOTS_SET=before|after] cargo test -p figcraft-ui-egui --lib
+//!   offscreen -- --ignored` writes screenshots of `examples/ridgeline-app.figcraft` there. `before`
+//!   (four selection states, light and dark) uses only commands older than the panel redesign, so
+//!   the same file draws a tree from before it; `after` (the default) adds the redesign's states
+//!   at three panel widths.
+//! - `SCRIM_SHOTS_BEFORE=<dir>` with `SCRIM_SHOTS_DIR=<dir>` compares the shots both hold, outside
+//!   the right panel, and prints how many pixels differ.
+//!
+//! Without the variables the ignored tests do nothing; the one test that always runs checks the
+//! rasterizer itself.
+
+use std::collections::HashMap;
+
+use egui::epaint::{ClippedPrimitive, ImageDelta, Primitive, TextureId};
+use egui::{Color32, Event, Pos2, RawInput, Rect, vec2};
+use figcraft_engine::Session;
+use serde_json::json;
+
+use crate::{FigApp, NoServices};
+
+/// A texture egui asked for, as RGBA premultiplied texels.
+struct Texture {
+    size: [usize; 2],
+    pixels: Vec<Color32>,
+}
+
+/// An app drawn offscreen at a window size, with its textures kept between frames.
+struct Offscreen {
+    ctx: egui::Context,
+    app: FigApp,
+    size: egui::Vec2,
+    time: f64,
+    textures: HashMap<TextureId, Texture>,
+    last: Vec<ClippedPrimitive>,
+}
+
+impl Offscreen {
+    fn new(s: Session, size: egui::Vec2) -> Self {
+        Self { ctx: egui::Context::default(), app: FigApp::new(s, Box::new(NoServices)), size, time: 0.0, textures: HashMap::new(), last: Vec::new() }
+    }
+
+    fn frame(&mut self, events: Vec<Event>) {
+        self.time += 1.0 / 60.0;
+        let input = RawInput { screen_rect: Some(Rect::from_min_size(Pos2::ZERO, self.size)), time: Some(self.time), events, ..Default::default() };
+        let app = &mut self.app;
+        let mut out = self.ctx.run_ui(input, |ui| app.ui(ui));
+        let (set, free) = (std::mem::take(&mut out.textures_delta.set), std::mem::take(&mut out.textures_delta.free));
+        out.textures_delta.clear();
+        for (id, deltas) in set {
+            for delta in &deltas {
+                self.apply(id, delta);
+            }
+        }
+        self.last = self.ctx.tessellate(out.shapes, 1.0);
+        for id in free {
+            self.textures.remove(&id);
+        }
+    }
+
+    fn apply(&mut self, id: TextureId, delta: &ImageDelta) {
+        let egui::ImageData::Color(image) = &delta.image;
+        match delta.pos {
+            None => {
+                self.textures.insert(id, Texture { size: image.size, pixels: image.pixels.clone() });
+            }
+            Some([x0, y0]) => {
+                let Some(t) = self.textures.get_mut(&id) else { return };
+                for y in 0..image.size[1] {
+                    for x in 0..image.size[0] {
+                        if let Some(p) = t.pixels.get_mut((y0 + y) * t.size[0] + x0 + x) {
+                            *p = image.pixels[y * image.size[0] + x];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Frames until the canvas render thread is done and the UI asks for nothing more.
+    fn settle(&mut self) {
+        for _ in 0..240 {
+            self.frame(vec![]);
+            let rendering = crate::idle_tests::wait_for_render(&self.app);
+            if !rendering && !self.ctx.has_requested_repaint() {
+                break;
+            }
+        }
+        self.frame(vec![]);
+    }
+
+    /// The last frame, filled in software.
+    fn image(&self) -> image::RgbaImage {
+        let (w, h) = (self.size.x as usize, self.size.y as usize);
+        let mut px = vec![[0.0_f32; 4]; w * h];
+        for cp in &self.last {
+            let Primitive::Mesh(mesh) = &cp.primitive else { continue };
+            let tex = self.textures.get(&mesh.texture_id);
+            let clip = cp.clip_rect.intersect(Rect::from_min_size(Pos2::ZERO, self.size));
+            for tri in mesh.indices.chunks_exact(3) {
+                let v = [tri[0], tri[1], tri[2]].map(|i| mesh.vertices[i as usize]);
+                fill_triangle(&mut px, w, clip, &v, tex);
+            }
+        }
+        let mut img = image::RgbaImage::new(w as u32, h as u32);
+        for (i, p) in px.iter().enumerate() {
+            let c = [p[0], p[1], p[2], p[3]].map(|c| (c.clamp(0.0, 1.0) * 255.0).round() as u8);
+            img.put_pixel((i % w) as u32, (i / w) as u32, image::Rgba([c[0], c[1], c[2], 255]));
+        }
+        img
+    }
+}
+
+/// Fill one triangle: colours and texture coordinates interpolated at each pixel centre, the
+/// texel (bilinear) times the vertex colour, blended over (premultiplied alpha).
+fn fill_triangle(px: &mut [[f32; 4]], w: usize, clip: Rect, v: &[egui::epaint::Vertex; 3], tex: Option<&Texture>) {
+    let (a, b, c) = (v[0].pos, v[1].pos, v[2].pos);
+    let area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+    if area.abs() < 1e-6 {
+        return;
+    }
+    let bbox = Rect::from_min_max(a.min(b).min(c), a.max(b).max(c)).intersect(clip);
+    if !bbox.is_positive() {
+        return;
+    }
+    let colors = v.map(|v| gamma(v.color));
+    for y in (bbox.min.y.floor() as usize)..(bbox.max.y.ceil() as usize) {
+        for x in (bbox.min.x.floor() as usize)..(bbox.max.x.ceil() as usize) {
+            let p = Pos2::new(x as f32 + 0.5, y as f32 + 0.5);
+            if !clip.contains(p) {
+                continue;
+            }
+            let w0 = ((b.x - p.x) * (c.y - p.y) - (c.x - p.x) * (b.y - p.y)) / area;
+            let w1 = ((c.x - p.x) * (a.y - p.y) - (a.x - p.x) * (c.y - p.y)) / area;
+            let w2 = 1.0 - w0 - w1;
+            if w0 < -1e-4 || w1 < -1e-4 || w2 < -1e-4 {
+                continue;
+            }
+            let mut col = [0.0_f32; 4];
+            for (k, slot) in col.iter_mut().enumerate() {
+                *slot = colors[0][k] * w0 + colors[1][k] * w1 + colors[2][k] * w2;
+            }
+            if let Some(t) = tex {
+                let uv = v[0].uv.to_vec2() * w0 + v[1].uv.to_vec2() * w1 + v[2].uv.to_vec2() * w2;
+                let s = sample(t, uv);
+                for k in 0..4 {
+                    col[k] *= s[k];
+                }
+            }
+            let Some(dst) = px.get_mut(y * w + x) else { continue };
+            for k in 0..4 {
+                dst[k] = col[k] + dst[k] * (1.0 - col[3]);
+            }
+        }
+    }
+}
+
+/// A premultiplied colour's components, 0 to 1, in gamma space (where egui's GPU path blends).
+fn gamma(c: Color32) -> [f32; 4] {
+    c.to_array().map(|v| f32::from(v) / 255.0)
+}
+
+/// The texel at `uv`, bilinear, premultiplied RGBA in gamma space.
+fn sample(t: &Texture, uv: egui::Vec2) -> [f32; 4] {
+    let (tw, th) = (t.size[0] as f32, t.size[1] as f32);
+    let (fx, fy) = (uv.x * tw - 0.5, uv.y * th - 0.5);
+    let (x0, y0) = (fx.floor(), fy.floor());
+    let (dx, dy) = (fx - x0, fy - y0);
+    let at = |x: f32, y: f32| {
+        let (x, y) = ((x.max(0.0) as usize).min(t.size[0] - 1), (y.max(0.0) as usize).min(t.size[1] - 1));
+        gamma(t.pixels[y * t.size[0] + x])
+    };
+    let (p00, p10, p01, p11) = (at(x0, y0), at(x0 + 1.0, y0), at(x0, y0 + 1.0), at(x0 + 1.0, y0 + 1.0));
+    let mut out = [0.0; 4];
+    for k in 0..4 {
+        out[k] = (p00[k] * (1.0 - dx) + p10[k] * dx) * (1.0 - dy) + (p01[k] * (1.0 - dx) + p11[k] * dx) * dy;
+    }
+    out
+}
+
+/// Ridgeline at `size`, its right panel `panel` wide, in the light or dark theme.
+fn ridgeline(dark: bool, panel: f32) -> Offscreen {
+    let mut s = Session::new();
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+    s.execute("file.open", &json!({"path": path})).unwrap_or_default();
+    s.prefs.theme = if dark { "dark" } else { "light" }.into();
+    s.prefs.panel_widths = (240.0, panel);
+    let mut o = Offscreen::new(s, vec2(1440.0, 900.0));
+    o.settle();
+    o.app.session.execute("view.zoomFit", &json!({})).unwrap_or_default();
+    o.settle();
+    o
+}
+
+fn select(o: &mut Offscreen, ids: &[u64]) {
+    o.app.session.execute("select.set", &json!({"ids": ids})).unwrap_or_default();
+    o.settle();
+}
+
+fn run(o: &mut Offscreen, cmd: &str, p: serde_json::Value) {
+    o.app.session.execute(cmd, &p).unwrap_or_default();
+    o.app.handle_ui_requests();
+    o.settle();
+}
+
+fn save(o: &Offscreen, dir: &std::path::Path, name: &str) {
+    let path = dir.join(format!("{name}.png"));
+    o.image().save(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+}
+
+/// The frame "Home — Light", the text "9:41" and three frames of Ridgeline.
+const FRAME: u64 = 68;
+const TEXT: u64 = 70;
+const FRAMES: [u64; 3] = [68, 239, 178];
+
+#[test]
+#[ignore = "writes screenshots when SCRIM_SHOTS_DIR is set"]
+fn screenshots() {
+    let Some(dir) = std::env::var_os("SCRIM_SHOTS_DIR").map(std::path::PathBuf::from) else { return };
+    std::fs::create_dir_all(&dir).unwrap_or_default();
+    let after = std::env::var("SCRIM_SHOTS_SET").map_or(true, |s| s != "before");
+    for (dark, theme) in [(false, "light"), (true, "dark")] {
+        let mut o = ridgeline(dark, 240.0);
+        select(&mut o, &[]);
+        save(&o, &dir, &format!("none-{theme}"));
+        select(&mut o, &[FRAME]);
+        save(&o, &dir, &format!("frame-{theme}"));
+        select(&mut o, &[TEXT]);
+        save(&o, &dir, &format!("text-{theme}"));
+        select(&mut o, &FRAMES);
+        save(&o, &dir, &format!("multiple-{theme}"));
+        if !after {
+            continue;
+        }
+        select(&mut o, &[FRAME]);
+        for (tab, name) in [("prototype", "prototype-frame"), ("code", "code-frame"), ("ai", "ai")] {
+            run(&mut o, &format!("panel.tab.{tab}"), json!({}));
+            save(&o, &dir, &format!("{name}-{theme}"));
+        }
+        run(&mut o, "panel.mode.animate", json!({}));
+        save(&o, &dir, &format!("animate-{theme}"));
+        run(&mut o, "panel.tab.design", json!({}));
+        run(&mut o, "pref.accent", json!({"preset": "teal"}));
+        o.app.ui.preferences = true;
+        o.settle();
+        save(&o, &dir, &format!("preferences-teal-{theme}"));
+        o.app.ui.preferences = false;
+        run(&mut o, "panel.tab.code", json!({}));
+        save(&o, &dir, &format!("code-frame-teal-{theme}"));
+        // Three panel widths: the default (also the narrowest), and two wider.
+        for panel in [240.0, 360.0, 480.0] {
+            let mut o = ridgeline(dark, panel);
+            select(&mut o, &[FRAME]);
+            save(&o, &dir, &format!("width-{}-frame-{theme}", panel as u32));
+            run(&mut o, "panel.tab.ai", json!({}));
+            save(&o, &dir, &format!("width-{}-ai-{theme}", panel as u32));
+        }
+    }
+}
+
+#[test]
+#[ignore = "compares screenshots when SCRIM_SHOTS_BEFORE and SCRIM_SHOTS_DIR are set"]
+fn compare_outside_the_right_panel() {
+    let (Some(before), Some(after)) = (std::env::var_os("SCRIM_SHOTS_BEFORE"), std::env::var_os("SCRIM_SHOTS_DIR")) else { return };
+    let (before, after) = (std::path::PathBuf::from(before), std::path::PathBuf::from(after));
+    let mut names: Vec<_> = std::fs::read_dir(&before).into_iter().flatten().flatten().map(|e| e.file_name()).collect();
+    names.sort();
+    for name in names {
+        let (Ok(a), Ok(b)) = (image::open(before.join(&name)), image::open(after.join(&name))) else { continue };
+        let (a, b) = (a.to_rgba8(), b.to_rgba8());
+        // Left of the 240 px right panel and its border.
+        let edge = a.width().saturating_sub(241);
+        let differ = (0..a.height())
+            .flat_map(|y| (0..edge).map(move |x| (x, y)))
+            .filter(|&(x, y)| a.get_pixel(x, y).0.iter().zip(b.get_pixel(x, y).0.iter()).any(|(p, q)| p.abs_diff(*q) > 2))
+            .count();
+        println!("{}: {differ} pixels differ outside the right panel", name.to_string_lossy());
+    }
+}
+
+/// The rasterizer draws what egui asks: both side panels in their theme's colour.
+#[test]
+fn the_rasterizer_draws_the_panels_in_their_colours() {
+    for (theme, t) in [("light", crate::theme::Tokens::light()), ("dark", crate::theme::Tokens::dark())] {
+        let mut s = Session::new();
+        s.prefs.theme = theme.into();
+        let mut o = Offscreen::new(s, vec2(900.0, 560.0));
+        o.settle();
+        let img = o.image();
+        let at = |x: u32, y: u32| {
+            let p = img.get_pixel(x, y);
+            Color32::from_rgb(p[0], p[1], p[2])
+        };
+        assert_eq!(at(150, 545), t.panel, "{theme}: the layers panel");
+        assert_eq!(at(899 - 120, 545), t.panel, "{theme}: the right panel");
+    }
+}

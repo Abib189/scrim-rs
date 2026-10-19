@@ -109,3 +109,35 @@ fn screen_readers_get_the_mode_switch_and_the_tabs() {
     find(&nodes, Role::Pane, "Animate");
     assert!(!nodes.iter().any(|n| n.role() == Role::Tab && n.label() == Some("Prototype")), "no tabs in Animate mode");
 }
+
+/// B5: every text and mark the redesign draws reads at AA (4.5:1) on what it's drawn on, for each
+/// accent preset, in both themes: the mode switch and tab labels (on the panel, the field and the
+/// active fill), the accent edge, the AI feed's agent names, badges and notes, and the sample.
+#[test]
+fn the_new_panels_text_and_marks_read_at_aa() {
+    use crate::theme::Tokens;
+    use crate::theme::accent::contrast;
+    for (_, c) in figcraft_engine::cmd::appearance::PRESETS {
+        for base in [Tokens::dark(), Tokens::light()] {
+            let t = base.with_accent(egui::Color32::from_rgb(c[0], c[1], c[2]));
+            let pairs = [
+                ("label on the panel", t.text, t.panel),
+                ("secondary label on the panel", t.text_secondary, t.panel),
+                ("tertiary note on the panel", t.text_tertiary, t.panel),
+                ("active tab label on its fill", t.text, t.hover),
+                ("inactive tab label on hover", t.text_secondary, t.hover),
+                ("mode segment on the field", t.text_secondary, t.field),
+                ("active mode segment", t.text, t.panel),
+                ("badge count on the field", t.text, t.field),
+                ("agent name (accent) on the panel", t.accent, t.panel),
+                ("agent name (accent) on hover", t.accent, t.hover),
+                ("accent edge on the panel", t.accent, t.panel),
+                ("label on the accent", t.accent_on, t.accent_fill),
+            ];
+            for (what, fg, bg) in pairs {
+                let r = contrast(fg, bg);
+                assert!(r >= 4.5, "{c:?} dark={}: {what} is {r:.2}:1", t.dark);
+            }
+        }
+    }
+}
