@@ -21,7 +21,7 @@ the app binary keep FigCraft's names for now (cheap upstream merges); see the ta
 | Also opens | `.svg`, `.png`, `.jpg`/`.jpeg` ("Open with", never the default app) |
 | WiX UpgradeCode | `FA07D3AB-4037-4826-BA91-B6E37FFAFC4E` (Scrim's own, fixed forever; FigCraft's is different), ProgId `Scrim.Document` |
 | App icon | The **placeholder** in `assets/app-icon/scrim/` (`cargo xtask icon`), awaiting the owner's mark |
-| Settings | `Scrim` in the platform's settings directory; FigCraft's copied once on first start |
+| Settings | `design.scrim.app` in the platform's settings directory (not `Scrim`: that is the TypeScript Scrim's Electron data directory); FigCraft's copied once on first start |
 | Maintainer (deb, rpm) | `FIGCRAFT_MAINTAINER`, defaulting to `Scrim maintainers <scrim-rs@users.noreply.github.com>`: set a real address before publishing |
 | Linux categories | `Graphics;2DGraphics;VectorGraphics;X-Design;` (`Design` isn't a registered freedesktop category, so `desktop-file-validate` rejects it) |
 

@@ -46,3 +46,60 @@ Scrim ships a **placeholder** app icon drawn in code: an original, simple mark, 
 
 - **Description:** Scrim: a design tool where people and AI agents design together on one canvas. Native Rust; based on FigCraft.
 - **Website:** leave empty until Scrim has a site. (Use `https://github.com/Abib189/scrim-rs` if a value is required.)
+
+## A6: verification (19 Oct 2026, at 9d7fdc6)
+
+**CI:** `cargo xtask ci` exit 0 (fmt, clippy, tests, layers, assets, brand, size, wasm). The locale checks are part of it: the i18n tests refuse missing and unused keys, and Spanish, the one complete catalog, has every string these steps added.
+
+**The macOS app** (`packaging/macos/package.sh --arch aarch64`, ad-hoc signed; `verify.sh` passes, with the expected warnings that it isn't notarized):
+- `scrim-0.7.0-macos-aarch64.dmg` holds `Scrim.app`: `CFBundleName` and `CFBundleDisplayName` Scrim, `CFBundleIdentifier` `design.scrim.app`, executable `Contents/MacOS/Scrim`, icon `Scrim.icns`. Its version line reads `Scrim 0.7.0 (9d7fdc6…)`.
+- Started from the DMG's copy with a temporary home, it opened `examples/ridgeline-app.figcraft` (window title "Ridgeline app – Scrim"; `rebrand/a6/ridgeline-packaged.png`). The Missing fonts notice is expected in a local build without `../craft-fonts`.
+- It opened the owner's `.fig` sample, read in place and never copied into the repository: two pages, every frame, and the file's text and colour styles. No screenshot is committed, because the file is the owner's.
+- Share ▸ Online with no server shows the A5 prompt (`rebrand/a6/share-online-no-server.png`).
+
+**Migrated settings:** the temporary home held a copy of the owner's real FigCraft directory, plus a stand-in for the TypeScript Scrim's `Scrim` directory. On first start:
+- `design.scrim.app/` was made, with the light theme, all 6 recent files and `Recovery/`;
+- `publish_server` changed from `wss://collab.craftapps.dev/` to empty, the A5 rule;
+- FigCraft's `state.json` stayed byte-identical to the original;
+- the `Scrim` directory still held only its own file.
+
+**Verification found and fixed** (commit 9d7fdc6, before this record):
+- **The settings directory.** It is now `design.scrim.app`, not `Scrim` (group 3 above). On this machine `Scrim` is the TypeScript Scrim's data directory, so A2's migration would have skipped, and the app would have written its files among the other app's.
+- **The repository URL** in `Cargo.toml`.
+- **The AppImage's update glob** (`figcraft-*` → `scrim-*`).
+- **Two stale lines** in `docs/releasing.md`.
+
+**The agent path, using the new names:**
+- **The control channel** (`--control`): `ui.screenshot`, `ui.inspect`, `window.list` (title "… – Scrim"), and `engine.execute` with `view.zoom50` and `view.zoomFit`. `collab.share {via: online}` is refused with the A5 message; `pref.publishServer {}` reports `{"default": "", "url": ""}`.
+- **MCP** (the packaged `scrim mcp --attach PORT`): `serverInfo` is `{"name": "scrim", "title": "Scrim", "version": "0.7.0"}`, with 24 tools. `screenshot`, `inspect_ui` and `run_command` (`view.zoom50`) all succeed.
+- **The old name:** `figcraft-cli --version` prints the deprecation note, then `scrim 0.7.0`, and exits 0.
+
+### What still says FigCraft, ArtCraft, storyteller or storytold, and why
+
+The search was re-run at 9d7fdc6 (`git grep`):
+
+| Pattern | Hits now (at caad1bb) |
+|---|---|
+| `figcraft` | 5,165 (5,282) |
+| `FigCraft` | 449 (897) |
+| `FIGCRAFT` | 114 (112) |
+| `ArtCraft` | 53 (39) |
+| `storyteller` | 10 (49) |
+| `storytold` | 38 (39) |
+
+| Where | What | Why it stays |
+|---|---|---|
+| Crate and module names, `figcraft_*` paths, `FigApp`, `FileKind::FigCraft`, the thumbnail enum, the plugin import module (most of the 5,165 `figcraft`) | Engine internals | Group 5: renaming would conflict with every upstream merge, and the plugin module is a public API |
+| `.figcraft`, `application/x-figcraft`, the UTI `ai.storyteller.figcraft.document` (`Info.plist.in`, `docs/releasing.md`) | The file format | Group 6: every existing file keeps opening, and stays exchangeable with FigCraft. The UTI is imported, not exported |
+| The `description` lines of the crates' `Cargo.toml` files (about 20) | Package metadata nobody installs or sees | Group 5, kept with the package names. **Rename later** with them if the owner wants |
+| 91 Rust comments | They describe upstream behaviour, the format, or where code came from | Not shipped text |
+| `migrate.rs` (`OLD`, `UPSTREAM_SERVER`), and `main.rs`'s log line "couldn't copy FigCraft's settings" | The migration from FigCraft | Names the thing being migrated from |
+| About, README, `docs/FORK.md`, `NOTICE`, `ATTRIBUTION.md`, `LICENSE-MIT`, `AGENTS.md`, `CLAUDE.md`, the en and es attribution string, `xtask/src/brand.rs` (all 53 `ArtCraft`) | The attribution, the licences' copyright lines, and the brand check that guards them | Required, or asked for: "Scrim is based on FigCraft by the ArtCraft team" |
+| `FIGCRAFT_*` environment variables (114) | Runtime, build and test switches; `FIGCRAFT_DEFAULT_SERVER` is honoured beside `SCRIM_DEFAULT_SERVER` (that is why the count went up by 2) | Group 11: **rename later**, honouring both spellings |
+| `figcraft-server`, its units, Docker image and install script; the `storytold/figcraft` download URLs in `docs/server.md` | The self-hosted server | Group 4b: **rename later**. Operators' configurations name it, and this fork publishes no server releases yet |
+| `storytold/craft-libs`, `storytold/craft-fonts`, `storytold/craft-common-actions` (Cargo.toml, `Cargo.lock`, workflows, Flatpak manifest) | Upstream's build inputs | Group 7: used as they are. The release workflow can't run for this fork until `craft-common-actions` is replaced (`docs/FORK.md`) |
+| `docs/scrim-transfer/` (100), `docs/scrim-ports/` (38), the port checklists | Records of the transfer, written against FigCraft as it was | History: describes what was done, when |
+| `docs/online-sharing-terms.md` (and `hello@storyteller.ai` in it) | FigCraft's terms for its own server | Kept unchanged as upstream's, under a note that Scrim runs no such service |
+| `assets/app-icon/README.md`, `figcraft*.png`, `hicolor/…/ai.storyteller.figcraft.*` | FigCraft's icon files, still in the repository under their licence | Group 9: not shipped. The README describes both sets |
+| `the figcraft:` invite scheme, `contributors/contributors.json`, `docs/contributors.md`, `release-playbook.md`, `file-format-parity.md`, ROADMAP history rows | Upstream's link scheme, credits and history | Group 7 (rename later, needs both ends); credit; history |
+| `packaging/windows/sign.ps1` (`figcraft-sign-$PID` temp folder), test fixtures and assertions (`tests.rs` find/replace of the word) | Not user-visible | Test data and a temporary name |
