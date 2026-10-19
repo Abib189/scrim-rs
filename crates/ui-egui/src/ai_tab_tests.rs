@@ -127,7 +127,9 @@ fn tree(h: &mut Harness) -> Vec<Node> {
         ..Default::default()
     };
     let app = &mut h.app;
-    let out = h.ctx.run_ui(input, |ui| app.ui(ui));
+    let mut out = h.ctx.run_ui(input, |ui| app.ui(ui));
+    // Another test may load fonts meanwhile (a process-wide change): the font atlas then has updates.
+    out.textures_delta.clear();
     out.platform_output.accesskit_update.expect("an AccessKit update").nodes.into_iter().map(|(_, n)| n).collect()
 }
 

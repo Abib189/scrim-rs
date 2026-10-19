@@ -63,12 +63,29 @@ impl Harness {
     }
 
     /// Settles, then stays idle: more frames with no input ask for nothing sooner.
+    ///
+    /// Waits on state, not time. The font layout generation is process-wide: another test in this
+    /// process that loads fonts bumps it, and the canvas rightly renders again whenever that
+    /// happens. Frames during such a change are another test's event, not this UI failing to rest,
+    /// so the check settles again and starts over (a few times at most).
     pub(crate) fn assert_idle(&mut self, what: &str) {
-        self.settle();
-        for _ in 0..10 {
-            let delay = self.frame(vec![]);
-            assert!(delay >= IDLE, "{what}: asked for a repaint in {delay:?}: {:?}", self.ctx.repaint_causes());
+        for _ in 0..5 {
+            let fonts = figcraft_text::layout_generation();
+            self.settle();
+            let mut rested = true;
+            for _ in 0..10 {
+                let delay = self.frame(vec![]);
+                if figcraft_text::layout_generation() != fonts {
+                    rested = false;
+                    break;
+                }
+                assert!(delay >= IDLE, "{what}: asked for a repaint in {delay:?}: {:?}", self.ctx.repaint_causes());
+            }
+            if rested {
+                return;
+            }
         }
+        panic!("{what}: fonts kept changing while it settled");
     }
 }
 
