@@ -89,6 +89,9 @@ dbg_macro = "warn"
 # Style lints from newer toolchains that fight index-heavy pixel code.
 needless_range_loop = "allow"
 chunks_exact_to_as_chunks = "allow"
+# Rust 1.95's clippy suggests moving `if app.run(..)` into a match guard: a guard that runs a
+# command has a side effect, and a false guard would fall through to later arms. Keep the `if`.
+collapsible_match = "allow"
 # FigCraft never crashes: shipped code returns `Result`/`Option` instead of panicking (see
 # AGENTS.md › Never crash). Tests may unwrap (clippy.toml).
 unwrap_used = "deny"

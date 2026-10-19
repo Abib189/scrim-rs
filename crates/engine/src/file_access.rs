@@ -93,7 +93,16 @@ fn lexically_inside(path: &Path, roots: &[PathBuf]) -> bool {
             c => lexical.push(c),
         }
     }
-    roots.iter().any(|r| lexical.starts_with(r) || lexical.starts_with(shown(r)))
+    if roots.iter().any(|r| lexical.starts_with(r) || lexical.starts_with(shown(r))) {
+        return true;
+    }
+    // The roots are resolved, so a path written through a linked folder (macOS: `/var` →
+    // `/private/var`, where the temporary folder lives) only matches once its existing parent is
+    // resolved too. A parent that links out of a root resolves outside it.
+    match (lexical.parent().map(std::fs::canonicalize), lexical.file_name()) {
+        (Some(Ok(parent)), Some(name)) => roots.iter().any(|r| parent.join(name).starts_with(r)),
+        _ => false,
+    }
 }
 
 /// Whether `path` lies in the app's own folder `folder`, both resolved (links and `..` followed);
