@@ -83,3 +83,11 @@ No port may add a layer violation.
 - **Clippy:** 1.95's `collapsible_match` is allowed workspace-wide (`Cargo.toml`, with the reason). Upstream's CI didn't hit it.
 - **Disk:** a full `cargo xtask ci` debug build takes about 17 GB in `target/`. On a nearly full disk, build with `CARGO_PROFILE_DEV_DEBUG=0` (no debug info) and `cargo clean` between big steps.
 - **macOS:** upstream tests on Linux and only releases for macOS. The fork's first fix was a macOS-only path check (`/var` → `/private/var`, `crates/engine/src/file_access.rs`).
+
+## Baseline build status (19 Oct 2026, macOS arm64; every timing INVALID, the machine was loaded)
+
+| Check | Result |
+|---|---|
+| `cargo xtask ci` (clean checkout, debug) | **Green** after the fork's first two fixes: 2,807 tests passed, 0 failed, 9 ignored; layers, assets, brand, size, wasm and plugins ok. 226 s incremental; the first full run took 895 s |
+| Desktop release build (`cargo build --release -p figcraft -p figcraft-cli`) | Ok, 4 min 21 s from a clean `target/release`. The app opens files, the control channel answers, and `ui.screenshot` works once the window is in front |
+| Web build (`trunk build --release` in `apps/figcraft-web`, trunk 0.21.14) | Ok, 5 min 8 s. `figcraft-web_bg.wasm` is 22.7 MB (CI's limit is 24 MiB). It boots in headless Chromium on WebGPU (SwiftShader) to the empty editor |
