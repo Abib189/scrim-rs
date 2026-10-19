@@ -1,0 +1,52 @@
+{
+  "chromium": {
+    "artboards": {
+      "lines-Rules": 0.0,
+      "lines-Stack": 0.0,
+      "stage-a-Button": 0.0,
+      "stage-a-Button_copy": 0.0,
+      "stage-a-Card": 1.359,
+      "stage-a-FigJam_note": 0.0,
+      "stage-b-Column": 0.908,
+      "stage-b-Effects": 20.802,
+      "stage-b-Empty_hug": 0.0,
+      "stage-b-Free": 0.0,
+      "stage-b-Grid": 0.0,
+      "stage-b-Masks": 0.005,
+      "stage-b-Row": 14.69,
+      "stage-b-Wrap": 0.0,
+      "stage-c-Board": 0.167,
+      "stage-c-Card": 1.087,
+      "stage-c-Card_B": 0.905,
+      "stage-c-Icon": 0.0,
+      "stage-c-Texts": 1.056,
+      "stage-d-Icons": 1.351
+    },
+    "identical": 10
+  },
+  "webkit": {
+    "artboards": {
+      "lines-Rules": 0.0,
+      "lines-Stack": 0.0,
+      "stage-a-Button": 0.0,
+      "stage-a-Button_copy": 0.0,
+      "stage-a-Card": 1.323,
+      "stage-a-FigJam_note": 0.0,
+      "stage-b-Column": 0.882,
+      "stage-b-Effects": 20.805,
+      "stage-b-Empty_hug": 0.0,
+      "stage-b-Free": 0.0,
+      "stage-b-Grid": 0.0,
+      "stage-b-Masks": 0.0,
+      "stage-b-Row": 14.673,
+      "stage-b-Wrap": 0.0,
+      "stage-c-Board": 0.159,
+      "stage-c-Card": 0.943,
+      "stage-c-Card_B": 0.785,
+      "stage-c-Icon": 0.0,
+      "stage-c-Texts": 1.079,
+      "stage-d-Icons": 1.346
+    },
+    "identical": 11
+  }
+}

@@ -376,7 +376,15 @@ pub(crate) fn css_decls(doc: &Document, n: &Node, t: &mut Tokens, hug: (bool, bo
         if l.wrap {
             put("flex-wrap", "wrap".into());
         }
-        put("gap", tok(doc, n, &["gap"], px(l.gap), t));
+        // "Auto" spacing (space between / around) replaces the gap, as on the canvas; wrapped lines
+        // are `cross_gap` apart (CSS `gap` is row then column).
+        let auto = matches!(l.main_align, MainAlign::SpaceBetween | MainAlign::SpaceAround);
+        let main = if auto { "0px".to_string() } else { tok(doc, n, &["gap"], px(l.gap), t) };
+        match (l.wrap, l.mode == LayoutMode::Vertical) {
+            (true, false) => put("gap", format!("{} {main}", px(l.cross_gap))),
+            (true, true) => put("gap", format!("{main} {}", px(l.cross_gap))),
+            (false, _) => put("gap", main),
+        }
         let [pt, pr, pb, pl] = l.padding;
         let sides = [
             tok(doc, n, &["paddingTop", "paddingVertical", "padding"], px(pt), t),
@@ -417,70 +425,103 @@ pub(crate) fn css_decls(doc: &Document, n: &Node, t: &mut Tokens, hug: (bool, bo
             );
         }
     }
-    if matches!(n.kind, NodeKind::Ellipse { .. }) {
-        put("border-radius", "50%".into());
-    } else if let Some(r) = n.corners.uniform().filter(|r| *r > 0.0) {
-        put("border-radius", tok(doc, n, &["cornerRadius"], px(r), t));
-    } else if n.corners.radii.iter().any(|r| *r > 0.0) {
-        let fields = ["topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"];
-        let corners: Vec<String> = n.corners.radii.iter().zip(fields).map(|(r, f)| tok(doc, n, &[f, "cornerRadius"], px(*r), t)).collect();
-        put("border-radius", corners.join(" "));
-    }
-    if n.opacity < 1.0 {
-        put("opacity", tok(doc, n, &["opacity"], num(f64::from(n.opacity)), t));
-    }
-    if !matches!(n.blend, figcraft_color::BlendMode::Normal | figcraft_color::BlendMode::PassThrough) {
-        put("mix-blend-mode", n.blend.css().into());
-    }
-    // Rotation turns counter-clockwise about the top-left corner (the position given); CSS
-    // rotate turns clockwise.
-    let rot = figcraft_geom::rotation_degrees(n.transform);
-    if rot.abs() > 0.01 && rot.is_finite() {
-        put("transform", format!("rotate({}deg)", num(-rot)));
-        put("transform-origin", "top left".into());
-    }
-    for (i, p) in n.fills.iter().enumerate().filter(|(_, p)| p.visible) {
-        match &p.kind {
-            PaintKind::Solid { color } => {
-                let key = if matches!(n.kind, NodeKind::Text(_)) { "color" } else { "background" };
-                let c = color.with_alpha(color.a * p.opacity).to_css();
-                // A variable binds the first paint's colour.
-                put(key, if i == 0 { tok(doc, n, &["fill"], c, t) } else { c });
-            }
-            PaintKind::Gradient(g) => put("background", css_gradient(g, n.width, n.height)),
-            PaintKind::Image(_) => put("background", "url(image.png) center / cover".into()),
-            PaintKind::Pattern(_) => put("background", "url(pattern.png) repeat".into()),
+    // A shape CSS can't draw is drawn by its inline SVG (`Markup::element`), so no paints here.
+    if !svg_drawn(doc, n) {
+        if matches!(n.kind, NodeKind::Ellipse { .. }) {
+            put("border-radius", "50%".into());
+        } else if let Some(r) = n.corners.uniform().filter(|r| *r > 0.0) {
+            put("border-radius", tok(doc, n, &["cornerRadius"], px(r), t));
+        } else if n.corners.radii.iter().any(|r| *r > 0.0) {
+            let fields = ["topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"];
+            let corners: Vec<String> = n.corners.radii.iter().zip(fields).map(|(r, f)| tok(doc, n, &[f, "cornerRadius"], px(*r), t)).collect();
+            put("border-radius", corners.join(" "));
         }
-    }
-    if let Some(c) = stroke_color(n) {
-        let weight = tok(doc, n, &["strokeWeight"], px(n.stroke.weight), t);
-        put("border", format!("{weight} solid {}", tok(doc, n, &["stroke"], c.to_css(), t)));
-    }
-    let shadows: Vec<String> = n
-        .effects
-        .iter()
-        .filter(|e| e.visible)
-        .filter_map(|e| match &e.kind {
-            EffectKind::DropShadow(s) => {
-                Some(format!("{}px {}px {}px {}px {}", num(s.offset.0), num(s.offset.1), num(s.radius), num(s.spread), s.color.to_css()))
+        if n.opacity < 1.0 {
+            put("opacity", tok(doc, n, &["opacity"], num(f64::from(n.opacity)), t));
+        }
+        if !matches!(n.blend, figcraft_color::BlendMode::Normal | figcraft_color::BlendMode::PassThrough) {
+            put("mix-blend-mode", n.blend.css().into());
+        }
+        // Rotation turns counter-clockwise about the top-left corner (the position given); CSS
+        // rotate turns clockwise.
+        let rot = figcraft_geom::rotation_degrees(n.transform);
+        if rot.abs() > 0.01 && rot.is_finite() {
+            put("transform", format!("rotate({}deg)", num(-rot)));
+            put("transform-origin", "top left".into());
+        }
+        // Paints stack bottom to top; CSS lists background layers top first. One solid paint stays a
+        // plain colour (and keeps its variable); a solid under or over others becomes a flat gradient.
+        let visible: Vec<(usize, &figcraft_color::Paint)> = n.fills.iter().enumerate().filter(|(_, p)| p.visible).collect();
+        let mut layers = Vec::new();
+        for &(i, p) in &visible {
+            match &p.kind {
+                PaintKind::Solid { color } => {
+                    let c = color.with_alpha(color.a * p.opacity).to_css();
+                    // A variable binds the first paint's colour.
+                    let c = if i == 0 { tok(doc, n, &["fill"], c, t) } else { c };
+                    if matches!(n.kind, NodeKind::Text(_)) {
+                        put("color", c);
+                    } else if visible.len() == 1 {
+                        put("background", c);
+                    } else {
+                        layers.push(format!("linear-gradient({c}, {c})"));
+                    }
+                }
+                PaintKind::Gradient(g) => layers.push(css_gradient(g, n.width, n.height)),
+                PaintKind::Image(img) => layers.push(css_image(doc, img)),
+                PaintKind::Pattern(_) => layers.push("url(pattern.png) repeat".into()),
             }
-            EffectKind::InnerShadow(s) => {
-                Some(format!("inset {}px {}px {}px {}px {}", num(s.offset.0), num(s.offset.1), num(s.radius), num(s.spread), s.color.to_css()))
+        }
+        if !layers.is_empty() && !matches!(n.kind, NodeKind::Text(_)) {
+            layers.reverse();
+            put("background", layers.join(", "));
+        }
+        if let Some(c) = stroke_color(n) {
+            let weight = tok(doc, n, &["strokeWeight"], px(n.stroke.weight), t);
+            put("border", format!("{weight} solid {}", tok(doc, n, &["stroke"], c.to_css(), t)));
+        }
+        let shadows: Vec<String> = n
+            .effects
+            .iter()
+            .filter(|e| e.visible)
+            .filter_map(|e| match &e.kind {
+                EffectKind::DropShadow(s) => {
+                    Some(format!("{}px {}px {}px {}px {}", num(s.offset.0), num(s.offset.1), num(s.radius), num(s.spread), s.color.to_css()))
+                }
+                EffectKind::InnerShadow(s) => {
+                    Some(format!("inset {}px {}px {}px {}px {}", num(s.offset.0), num(s.offset.1), num(s.radius), num(s.spread), s.color.to_css()))
+                }
+                _ => None,
+            })
+            .collect();
+        if let NodeKind::Text(_) = &n.kind {
+            // Text casts its shadow from its glyphs: `text-shadow` (no spread, no inner shadow).
+            let text: Vec<String> = n
+                .effects
+                .iter()
+                .filter(|e| e.visible)
+                .filter_map(|e| match &e.kind {
+                    EffectKind::DropShadow(s) => {
+                        Some(format!("{}px {}px {}px {}", num(s.offset.0), num(s.offset.1), num(s.radius), s.color.to_css()))
+                    }
+                    _ => None,
+                })
+                .collect();
+            if !text.is_empty() {
+                put("text-shadow", text.join(", "));
             }
-            _ => None,
-        })
-        .collect();
-    if !shadows.is_empty() {
-        put("box-shadow", shadows.join(", "));
-    }
-    for e in n.effects.iter().filter(|e| e.visible) {
-        match e.kind {
-            // CSS blurs are uniform: a progressive blur has no CSS equivalent and is left out.
-            EffectKind::LayerBlur(ref b) if !b.is_progressive() => put("filter", format!("blur({}px)", num(b.radius / 2.0))),
-            EffectKind::BackgroundBlur(ref b) if !b.is_progressive() => put("backdrop-filter", format!("blur({}px)", num(b.radius / 2.0))),
-            // CSS has no refraction: the frost is the nearest.
-            EffectKind::Glass(ref g) => put("backdrop-filter", format!("blur({}px)", num(g.sanitized().frost / 2.0))),
-            _ => {}
+        } else if !shadows.is_empty() {
+            put("box-shadow", shadows.join(", "));
+        }
+        for e in n.effects.iter().filter(|e| e.visible) {
+            match e.kind {
+                // CSS blurs are uniform: a progressive blur has no CSS equivalent and is left out.
+                EffectKind::LayerBlur(ref b) if !b.is_progressive() => put("filter", format!("blur({}px)", num(b.radius / 2.0))),
+                EffectKind::BackgroundBlur(ref b) if !b.is_progressive() => put("backdrop-filter", format!("blur({}px)", num(b.radius / 2.0))),
+                // CSS has no refraction: the frost is the nearest.
+                EffectKind::Glass(ref g) => put("backdrop-filter", format!("blur({}px)", num(g.sanitized().frost / 2.0))),
+                _ => {}
+            }
         }
     }
     if let NodeKind::Text(tx) = &n.kind {
@@ -557,22 +598,10 @@ pub(crate) fn css_decls(doc: &Document, n: &Node, t: &mut Tokens, hug: (bool, bo
 /// A gradient fill on a `w`×`h` box as a CSS background: linear along its handles' direction
 /// (CSS angles: 0deg up, 90deg right), radial with its handles' radii, angular as a conic
 /// gradient from its start direction.
-fn css_gradient(g: &figcraft_color::Gradient, w: f64, h: f64) -> String {
-    let stops = g.sorted_stops().iter().map(|s| format!("{} {}%", s.color.to_css(), (s.position * 100.0).round())).collect::<Vec<_>>().join(", ");
-    let (dx, dy) = ((g.to.0 - g.from.0) * w, (g.to.1 - g.from.1) * h);
-    let angle = if dx == 0.0 && dy == 0.0 { 180.0 } else { dx.atan2(-dy).to_degrees().rem_euclid(360.0) };
-    let pct = |v: f64| format!("{}%", num(v * 100.0));
-    let at = format!("at {} {}", pct(g.from.0), pct(g.from.1));
-    match g.kind {
-        figcraft_color::GradientKind::Linear => format!("linear-gradient({}deg, {stops})", num(angle)),
-        figcraft_color::GradientKind::Radial | figcraft_color::GradientKind::Diamond => {
-            let (rx, ry) = (((g.width.0 - g.from.0) * w).hypot((g.width.1 - g.from.1) * h), dx.hypot(dy));
-            let rel = |r: f64, side: f64| if side > 0.0 { pct(r / side) } else { "50%".into() };
-            format!("radial-gradient({} {} {at}, {stops})", rel(rx, w), rel(ry, h))
-        }
-        figcraft_color::GradientKind::Angular => format!("conic-gradient(from {}deg {at}, {stops})", num(angle)),
-    }
-}
+#[path = "codegen_css.rs"]
+mod paint;
+pub(crate) use paint::svg_drawn;
+use paint::{css_gradient, css_image, inline_svg, mask_clip};
 
 // ------------------------------------------------------------------ HTML and React markup
 
@@ -615,13 +644,18 @@ fn jsx_text(s: &str) -> String {
     out
 }
 
+/// What every exported stylesheet starts with, so the page lays out like the canvas: a layer's
+/// width and height include its padding and border (the document's sizes are border-box), and a
+/// paragraph adds no margin of its own (the export guarantee, `cargo xtask fidelity`).
+pub(crate) const RESET: &str = "*, *::before, *::after {\n  box-sizing: border-box;\n}\np {\n  margin: 0;\n}\n";
+
 /// The whole tree under `id` as nested HTML with a stylesheet: auto layout frames become
 /// flexboxes, other children are placed absolutely in their parent, text becomes paragraphs.
 fn html(doc: &Document, id: NodeId) -> String {
     let ctx = Ctx::new(doc, id);
     let mut out = Markup::new(&ctx, CodeLang::Html);
     out.node(id, None, 0, "");
-    format!("{}\n<style>\n{}{}</style>\n", out.markup, out.tokens.root_rule(), out.styles)
+    format!("{}\n<style>\n{RESET}{}{}</style>\n", out.markup, out.tokens.root_rule(), out.styles)
 }
 
 /// Markup being built for a layer tree: HTML (`class`), React JSX (`className`) or Leptos `view!`
@@ -731,7 +765,7 @@ impl<'c, 'a> Markup<'c, 'a> {
             let c = n.transform.as_coeffs();
             decls.push_str(&format!("position: absolute;\nleft: {}px;\ntop: {}px;\n", num(c[4]), num(c[5])));
             let rot = figcraft_geom::rotation_degrees(n.transform);
-            if rot.abs() > 0.01 {
+            if rot.abs() > 0.01 && !svg_drawn(doc, n) {
                 decls.push_str(&format!("transform: rotate({}deg);\ntransform-origin: 0 0;\n", num(-rot)));
             }
         }
@@ -756,7 +790,7 @@ impl<'c, 'a> Markup<'c, 'a> {
         let hugs = n.layout.is_some() || matches!(n.kind, NodeKind::Text(_));
         let hug = (hugs && n.child_layout.sizing_h == Sizing::Hug, hugs && n.child_layout.sizing_v == Sizing::Hug);
         let mut own = css_decls(doc, n, &mut self.tokens, hug);
-        if n.layout.is_none() && !n.children.is_empty() && !root && in_flow {
+        if ((n.layout.is_none() && !n.children.is_empty()) || svg_drawn(doc, n)) && !root && in_flow {
             own.push_str("position: relative;\n");
         }
         decls.push_str(&own);
@@ -776,6 +810,11 @@ impl<'c, 'a> Markup<'c, 'a> {
                     (None, _) => html_escape(&t.characters),
                 };
                 self.markup.push_str(&format!("{}{body}</p>\n", open("p")));
+            }
+            // A shape drawn as SVG holds its drawing (a boolean's operands are in it).
+            _ if svg_drawn(doc, n) => {
+                let svg = inline_svg(doc, n).unwrap_or_default();
+                self.markup.push_str(&format!("{}{svg}</div>\n", open("div")));
             }
             _ => {
                 let kids = self.ctx.kids(n);
@@ -803,12 +842,31 @@ impl<'c, 'a> Markup<'c, 'a> {
                         None => depth + 1,
                     };
                     let mut seen: Vec<&str> = Vec::new();
+                    // A mask clips the layers above it: they go in a wrapper clipped to its shape,
+                    // and the mask itself isn't drawn (`mask_clip`; other masks stay as layers).
+                    let mut masked = None;
                     // Bottom layer first: later elements paint on top, like the layer order.
                     for k in kids {
                         let Some(kn) = doc.node(k) else { continue };
                         let count = seen.iter().filter(|s| **s == kn.name).count();
                         seen.push(&kn.name);
-                        self.node(k, Some(n), inner, &format!("{path}/{}#{count}", kn.name));
+                        let clip = (kn.is_mask && kn.visible && masked.is_none() && n.layout.is_none()).then(|| mask_clip(n, kn)).flatten();
+                        if let Some(clip) = clip {
+                            let class = class_name(&format!("{} group", kn.name), &mut self.used);
+                            self.markup.push_str(&format!("{}<div {attr}=\"{class}\">\n", self.pad(inner)));
+                            self.rule(
+                                &format!("{path}/{}#{count}", kn.name),
+                                &class,
+                                format!("position: absolute;\ninset: 0;\nclip-path: {clip};\n"),
+                            );
+                            masked = Some(inner);
+                            continue;
+                        }
+                        let level = masked.map_or(inner, |m| m + 1);
+                        self.node(k, Some(n), level, &format!("{path}/{}#{count}", kn.name));
+                    }
+                    if let Some(m) = masked {
+                        self.markup.push_str(&format!("{}</div>\n", self.pad(m)));
                     }
                     match slot {
                         Some(_) if leptos => self.markup.push_str(&format!("{p1}}}.into_any() }}}}\n")),
@@ -822,295 +880,13 @@ impl<'c, 'a> Markup<'c, 'a> {
     }
 }
 
-// ------------------------------------------------------------------ SwiftUI
+#[path = "codegen_native.rs"]
+mod native;
+pub(crate) use native::{compose, swift};
 
-fn swift_color(c: Color) -> String {
-    format!("Color(red: {}, green: {}, blue: {}, opacity: {})", num(f64::from(c.r)), num(f64::from(c.g)), num(f64::from(c.b)), num(f64::from(c.a)))
-}
-
-fn swift_weight(w: u16) -> &'static str {
-    match w {
-        0..=150 => ".thin",
-        151..=250 => ".ultraLight",
-        251..=350 => ".light",
-        351..=450 => ".regular",
-        451..=550 => ".medium",
-        551..=650 => ".semibold",
-        651..=750 => ".bold",
-        751..=850 => ".heavy",
-        _ => ".black",
-    }
-}
-
-/// SwiftUI for a layer and its subtree at `depth`; `extra` modifiers go last (a free child's
-/// offset). A layer a boolean parameter shows sits in an `if`.
-pub(crate) fn swift(ctx: &Ctx, id: NodeId, depth: usize, out: &mut String, extra: &[String]) {
-    let Some(n) = ctx.doc.node(id) else { return };
-    if id != ctx.root
-        && let Some(p) = ctx.param(n, "visible")
-    {
-        let pad = indent(depth);
-        out.push_str(&format!("{pad}if {} {{\n", p.ident));
-        swift_layer(ctx, n, depth + 1, out, extra);
-        out.push_str(&format!("{pad}}}\n"));
-        return;
-    }
-    swift_layer(ctx, n, depth, out, extra);
-}
-
-fn swift_layer(ctx: &Ctx, n: &Node, depth: usize, out: &mut String, extra: &[String]) {
-    let doc = ctx.doc;
-    let pad = indent(depth);
-    if ctx.too_deep(depth) {
-        out.push_str(&format!("{pad}// {} …\n", n.name));
-        return;
-    }
-    // Nested instances are calls; an instance swap parameter is a view.
-    let call = match ctx.param(n, "mainComponent").filter(|_| n.id != ctx.root) {
-        Some(p) => Some(format!("{pad}{}\n", p.ident)),
-        None => ctx.call(n, CodeLang::SwiftUi, depth),
-    };
-    if let Some(call) = call {
-        out.push_str(&call);
-        for m in extra {
-            out.push_str(&format!("{pad}    {m}\n"));
-        }
-        return;
-    }
-    let mut mods: Vec<String> = Vec::new();
-    match &n.kind {
-        NodeKind::Text(t) => {
-            let text = ctx.param(n, "characters").map_or_else(|| literal(&t.characters, false), |p| p.ident.clone());
-            out.push_str(&format!("{pad}Text({text})\n"));
-            mods.push(format!(
-                ".font(.custom({}, size: {}).weight({}))",
-                literal(&t.style.font_family, false),
-                num(t.style.font_size),
-                swift_weight(t.style.weight())
-            ));
-            if let Some(c) = first_fill(n) {
-                mods.push(format!(".foregroundColor({})", swift_color(c)));
-            }
-        }
-        NodeKind::Ellipse { .. } => {
-            out.push_str(&format!("{pad}Ellipse()\n"));
-            if let Some(c) = first_fill(n) {
-                mods.push(format!(".fill({})", swift_color(c)));
-            }
-            mods.push(format!(".frame(width: {}, height: {})", num(n.width), num(n.height)));
-        }
-        NodeKind::Rectangle => {
-            out.push_str(&format!("{pad}RoundedRectangle(cornerRadius: {})\n", num(radius(n))));
-            if let Some(c) = first_fill(n) {
-                mods.push(format!(".fill({})", swift_color(c)));
-            }
-            mods.push(format!(".frame(width: {}, height: {})", num(n.width), num(n.height)));
-        }
-        k if k.is_frame_like() || matches!(k, NodeKind::Group) => {
-            let children = ctx.kids(n);
-            let open = match n.layout.as_ref().map(|l| (l.mode, l)) {
-                Some((LayoutMode::Vertical, l)) => format!("VStack(alignment: .leading, spacing: {}) {{", num(l.gap)),
-                Some((_, l)) => format!("HStack(alignment: .center, spacing: {}) {{", num(l.gap)),
-                None => "ZStack(alignment: .topLeading) {".to_string(),
-            };
-            out.push_str(&format!("{pad}{open}\n"));
-            // A slot shows the instance's content, or else the main's.
-            let slot = ctx.param(n, "slot");
-            let inner = match slot {
-                Some(p) => {
-                    out.push_str(&format!("{pad}    if let {0} {{\n{pad}        {0}\n{pad}    }} else {{\n", p.ident));
-                    depth + 2
-                }
-                None => depth + 1,
-            };
-            for c in &children {
-                // Free children sit at their offset inside a ZStack.
-                let offset: Vec<String> = match doc.node(*c).filter(|_| n.layout.is_none()) {
-                    Some(cn) => {
-                        let [_, _, _, _, x, y] = cn.transform.as_coeffs();
-                        vec![format!(".offset(x: {}, y: {})", num(x), num(y))]
-                    }
-                    None => Vec::new(),
-                };
-                swift(ctx, *c, inner, out, &offset);
-            }
-            if slot.is_some() {
-                out.push_str(&format!("{pad}    }}\n"));
-            }
-            out.push_str(&format!("{pad}}}\n"));
-            if let Some(l) = &n.layout {
-                let [t, r, b, lft] = l.padding;
-                if [t, r, b, lft].iter().any(|v| *v > 0.0) {
-                    mods.push(format!(".padding(EdgeInsets(top: {}, leading: {}, bottom: {}, trailing: {}))", num(t), num(lft), num(b), num(r)));
-                }
-            }
-            mods.push(format!(".frame(width: {}, height: {}, alignment: .topLeading)", num(n.width), num(n.height)));
-            if let Some(c) = first_fill(n) {
-                mods.push(format!(".background({})", swift_color(c)));
-            }
-            if radius(n) > 0.0 {
-                mods.push(format!(".clipShape(RoundedRectangle(cornerRadius: {}))", num(radius(n))));
-            }
-        }
-        _ => {
-            out.push_str(&format!("{pad}// {}: export as an image asset\n{pad}Image({})\n", n.kind.label(), literal(&n.name, false)));
-            mods.push(".resizable()".into());
-            mods.push(format!(".frame(width: {}, height: {})", num(n.width), num(n.height)));
-        }
-    }
-    if let Some(c) = stroke_color(n) {
-        mods.push(format!(
-            ".overlay(RoundedRectangle(cornerRadius: {}).stroke({}, lineWidth: {}))",
-            num(radius(n)),
-            swift_color(c),
-            num(n.stroke.weight)
-        ));
-    }
-    if let Some(s) = drop_shadow(n) {
-        mods.push(format!(
-            ".shadow(color: {}, radius: {}, x: {}, y: {})",
-            swift_color(s.color),
-            num(s.radius / 2.0),
-            num(s.offset.0),
-            num(s.offset.1)
-        ));
-    }
-    if n.opacity < 1.0 {
-        mods.push(format!(".opacity({})", num(f64::from(n.opacity))));
-    }
-    mods.extend(extra.iter().cloned());
-    for m in mods {
-        out.push_str(&format!("{pad}    {m}\n"));
-    }
-}
-
-// ------------------------------------------------------------------ Jetpack Compose
-
-fn kotlin_color(c: Color) -> String {
-    let [r, g, b, a] = c.to_rgba8();
-    format!("Color(0x{a:02X}{r:02X}{g:02X}{b:02X})")
-}
-
-/// The Modifier chain for a layer (size, shadow, background, border, alpha, padding).
-fn modifier(n: &Node, shape: &str, padding: bool) -> String {
-    let mut m = format!("Modifier.size({}.dp, {}.dp)", num(n.width), num(n.height));
-    if let Some(s) = drop_shadow(n) {
-        m.push_str(&format!(".shadow({}.dp, {shape})", num(s.radius / 2.0)));
-    }
-    if let Some(c) = first_fill(n) {
-        m.push_str(&format!(".background({}, {shape})", kotlin_color(c)));
-    }
-    if let Some(c) = stroke_color(n) {
-        m.push_str(&format!(".border({}.dp, {}, {shape})", num(n.stroke.weight), kotlin_color(c)));
-    }
-    if n.opacity < 1.0 {
-        m.push_str(&format!(".alpha({}f)", num(f64::from(n.opacity))));
-    }
-    if padding && let Some(l) = &n.layout {
-        let [t, r, b, lft] = l.padding;
-        if [t, r, b, lft].iter().any(|v| *v > 0.0) {
-            m.push_str(&format!(".padding(start = {}.dp, top = {}.dp, end = {}.dp, bottom = {}.dp)", num(lft), num(t), num(r), num(b)));
-        }
-    }
-    m
-}
-
-/// Jetpack Compose for a layer and its subtree at `depth`. A layer a boolean parameter shows sits
-/// in an `if`.
-pub(crate) fn compose(ctx: &Ctx, id: NodeId, depth: usize, out: &mut String) {
-    let Some(n) = ctx.doc.node(id) else { return };
-    if id != ctx.root
-        && let Some(p) = ctx.param(n, "visible")
-    {
-        let pad = indent(depth);
-        out.push_str(&format!("{pad}if ({}) {{\n", p.ident));
-        compose_layer(ctx, n, depth + 1, out);
-        out.push_str(&format!("{pad}}}\n"));
-        return;
-    }
-    compose_layer(ctx, n, depth, out);
-}
-
-fn compose_layer(ctx: &Ctx, n: &Node, depth: usize, out: &mut String) {
-    let doc = ctx.doc;
-    let pad = indent(depth);
-    if ctx.too_deep(depth) {
-        out.push_str(&format!("{pad}// {} …\n", n.name));
-        return;
-    }
-    // Nested instances are calls; an instance swap parameter is a composable.
-    let call = match ctx.param(n, "mainComponent").filter(|_| n.id != ctx.root) {
-        Some(p) => Some(format!("{pad}{}()\n", p.ident)),
-        None => ctx.call(n, CodeLang::Compose, depth),
-    };
-    if let Some(call) = call {
-        out.push_str(&call);
-        return;
-    }
-    let shape = if radius(n) > 0.0 { format!("RoundedCornerShape({}.dp)", num(radius(n))) } else { "RectangleShape".to_string() };
-    match &n.kind {
-        NodeKind::Text(t) => {
-            let color = first_fill(n).map(kotlin_color).unwrap_or_else(|| "Color.Unspecified".into());
-            let text = ctx.param(n, "characters").map_or_else(|| literal(&t.characters, true), |p| p.ident.clone());
-            out.push_str(&format!(
-                "{pad}Text(\n{pad}    text = {text},\n{pad}    fontSize = {}.sp,\n{pad}    fontWeight = FontWeight.W{},\n{pad}    color = {color},\n{pad})\n",
-                num(t.style.font_size),
-                (t.style.weight().clamp(100, 900) / 100) * 100
-            ));
-        }
-        NodeKind::Ellipse { .. } => out.push_str(&format!("{pad}Box(modifier = {})\n", modifier(n, "CircleShape", false))),
-        NodeKind::Rectangle => out.push_str(&format!("{pad}Box(modifier = {})\n", modifier(n, &shape, false))),
-        k if k.is_frame_like() || matches!(k, NodeKind::Group) => {
-            let children = ctx.kids(n);
-            let open = match n.layout.as_ref().map(|l| (l.mode, l)) {
-                Some((LayoutMode::Vertical, l)) => format!(
-                    "Column(\n{pad}    modifier = {},\n{pad}    verticalArrangement = Arrangement.spacedBy({}.dp),\n{pad}) {{",
-                    modifier(n, &shape, true),
-                    num(l.gap)
-                ),
-                Some((_, l)) => format!(
-                    "Row(\n{pad}    modifier = {},\n{pad}    horizontalArrangement = Arrangement.spacedBy({}.dp),\n{pad}    verticalAlignment = Alignment.CenterVertically,\n{pad}) {{",
-                    modifier(n, &shape, true),
-                    num(l.gap)
-                ),
-                None => format!("Box(modifier = {}) {{", modifier(n, &shape, false)),
-            };
-            out.push_str(&format!("{pad}{open}\n"));
-            // A slot shows the instance's content, or else the main's.
-            let slot = ctx.param(n, "slot");
-            let base = match slot {
-                Some(p) => {
-                    out.push_str(&format!("{pad}    if ({0} != null) {{\n{pad}        {0}()\n{pad}    }} else {{\n", p.ident));
-                    depth + 1
-                }
-                None => depth,
-            };
-            for c in &children {
-                if n.layout.is_none()
-                    && let Some(cn) = doc.node(*c)
-                {
-                    let [_, _, _, _, x, y] = cn.transform.as_coeffs();
-                    out.push_str(&format!("{}Box(modifier = Modifier.offset({}.dp, {}.dp)) {{\n", indent(base + 1), num(x), num(y)));
-                    compose(ctx, *c, base + 2, out);
-                    out.push_str(&format!("{}}}\n", indent(base + 1)));
-                } else {
-                    compose(ctx, *c, base + 1, out);
-                }
-            }
-            if slot.is_some() {
-                out.push_str(&format!("{pad}    }}\n"));
-            }
-            out.push_str(&format!("{pad}}}\n"));
-        }
-        _ => out.push_str(&format!(
-            "{pad}// {}: export as an image asset\n{pad}Image(painter = painterResource(R.drawable.asset), contentDescription = {}, modifier = Modifier.size({}.dp, {}.dp))\n",
-            n.kind.label(),
-            literal(&n.name, true),
-            num(n.width),
-            num(n.height)
-        )),
-    }
-}
+#[cfg(test)]
+#[path = "codegen_export_tests.rs"]
+mod export_tests;
 
 #[cfg(test)]
 mod tests {

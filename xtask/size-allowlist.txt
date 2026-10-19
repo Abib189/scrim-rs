@@ -10,7 +10,6 @@
 1689 crates/engine/src/cmd/file.rs
 1150 crates/engine/src/cmd/props.rs
 1191 crates/engine/src/cmd/styles.rs
-1171 crates/engine/src/codegen.rs
 2137 crates/engine/src/components.rs
 1842 crates/engine/src/lib.rs
 1323 crates/engine/src/library.rs

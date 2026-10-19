@@ -669,7 +669,7 @@ fn web(doc: &Document, c: &Component, lang: CodeLang) -> (String, String, String
             variant_rules.push_str(&format!("{sel} {{\n{}}}\n", diff.iter().map(|l| format!("  {l}\n")).collect::<String>()));
         }
     }
-    let css = format!("{}{}{variant_rules}", m.tokens.root_rule(), m.styles);
+    let css = format!("{}{}{}{variant_rules}", crate::codegen::RESET, m.tokens.root_rule(), m.styles);
     (root_class, m.markup, css)
 }
 
