@@ -56,19 +56,19 @@ environment refuses them (0 steps) and no release is created. The `version` inpu
 
 ## The default server
 
-Share ▸ Online uses the server in Preferences, which starts as the public one built into the app
-(`figcraft_engine::live::DEFAULT_SERVER`). Distributions that would rather not ship that default
-set `FIGCRAFT_DEFAULT_SERVER` when building: to their own server's address (`wss://host/`), or to
-nothing for a build with no default, where online sharing stays off until the user enters a
-server (sharing on the local network works either way):
+Share ▸ Online uses the server in Preferences. **Scrim builds in none**
+(`figcraft_engine::live::DEFAULT_SERVER` is empty), so Online asks the user for a server before
+anything is uploaded; sharing on the local network works either way. A distribution that runs its
+own server can name it when building, with `SCRIM_DEFAULT_SERVER` (FigCraft's
+`FIGCRAFT_DEFAULT_SERVER` is still honoured; the Scrim name wins when both are set):
 
 ```sh
-FIGCRAFT_DEFAULT_SERVER= cargo build --release -p figcraft          # no default server
-FIGCRAFT_DEFAULT_SERVER=wss://design.example.org/ cargo build --release -p figcraft
+cargo build --release -p figcraft                                          # no default server
+SCRIM_DEFAULT_SERVER=wss://design.example.org/ cargo build --release -p figcraft
 ```
 
-The release workflow leaves it unset. The public server's terms are in
-[`online-sharing-terms.md`](online-sharing-terms.md).
+The release workflow leaves it unset. FigCraft's terms for its own public server are in
+[`online-sharing-terms.md`](online-sharing-terms.md), kept as a starting point.
 
 ## What gets built
 

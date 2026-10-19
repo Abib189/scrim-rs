@@ -475,15 +475,40 @@ fn the_server_preference_resets_and_turns_online_sharing_off() {
     // Off: Preferences say what that means, and the popover offers the local network only.
     h.app.session.execute("pref.publishServer", &json!({"url": ""})).unwrap();
     let shapes = h.frames(2);
-    assert!(has_text(&shapes, "Online sharing is off: files are shared on the local network only."));
+    assert!(has_text(&shapes, "No server is set, so nothing is uploaded. Share ▸ Online asks for one first; the local network needs none."));
     h.app.ui.preferences = false;
     h.frames(2);
     let shapes = open(&mut h);
-    assert!(has_text(&shapes, "Sharing on the local network (online sharing is off: no server is set in Preferences)."));
-    assert!(!has_text(&shapes, "Online") && has_text(&shapes, "Start sharing"));
+    assert!(has_text(
+        &shapes,
+        "To share online, enter the address of a server you trust (wss://…), or share on the local network. Nothing is uploaded until you choose a server."
+    ));
+    assert!(!has_text(&shapes, "Start sharing"), "Online waits for a server");
+    click(&mut h, &shapes, "Local network");
+    let shapes = h.frames(2);
     click(&mut h, &shapes, "Start sharing");
     let s = script.lock().unwrap();
     assert!(s.published.is_empty() && s.hosted.len() == 1, "shared on the local network");
+}
+
+/// Rebrand step A5: with no server, Online asks for one, and the address typed becomes the
+/// preference (`pref.publishServer`, as an agent would set it); sharing can then start.
+#[test]
+fn online_asks_for_a_server_and_uses_the_one_typed() {
+    let (mut h, script) = harness();
+    h.app.session.execute("pref.publishServer", &json!({"url": ""})).unwrap();
+    let shapes = open(&mut h);
+    // Use this server with nothing typed does nothing.
+    click(&mut h, &shapes, "Use this server");
+    assert_eq!(h.app.session.prefs.publish_server, "");
+    click(&mut h, &shapes, "Server address");
+    type_text(&mut h, "wss://mine.example/");
+    let shapes = h.frames(1);
+    click(&mut h, &shapes, "Use this server");
+    assert_eq!(h.app.session.prefs.publish_server, "wss://mine.example/");
+    assert!(script.lock().unwrap().published.is_empty(), "choosing a server uploads nothing by itself");
+    let shapes = h.frames(2);
+    assert!(has_text(&shapes, "Start sharing"));
 }
 
 #[test]

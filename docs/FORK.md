@@ -24,8 +24,9 @@
 6. **Third-party material** keeps its own licence. In particular, the design lint rules ported from Scrim are derived from **Impeccable** (Apache-2.0, Copyright 2025 Paul Bakaus): its licence text, the modification notices and the `NOTICE` section shipped with Port 6 (`crates/engine/src/cmd/lint/design-rules/`).
 7. **The name.** The product is **Scrim** everywhere a person looks (`docs/design/rebrand.md`). The About box, this file and the README say "Scrim is based on FigCraft by the ArtCraft team".
 
+**The collab server:** Scrim builds in **none** (the rebrand's step A5): Share ▸ Online asks for a server before anything is uploaded, and the settings migration drops FigCraft's built-in `collab.craftapps.dev`. A build can name one with `SCRIM_DEFAULT_SERVER` (`docs/releasing.md`).
+
 **Not yet repointed** (FigCraft's infrastructure; each needs the owner's decision):
-- **The collab server:** the default host is `collab.craftapps.dev`, contacted only when a person starts or joins a live session. Repoint it or leave it empty (the rebrand's step A5 empties it).
 - **The `craft-docpath` git dependency** (`storytold/craft-libs`) and the optional `craft-fonts` build input (`../craft-fonts`).
 - **The release workflow:** it uses the external `storytold/craft-common-actions@main`, so release builds don't run for this fork until it is replaced.
 - **Done in the rebrand (Stage A):** the product name, the app id (`design.scrim.app`), installers and packages, the settings directory (with a copying migration), the CLI (`scrim`) and the MCP server's name.

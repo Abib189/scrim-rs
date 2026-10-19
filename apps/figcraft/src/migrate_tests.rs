@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::migrate::{Migration, NEW, OLD, migrate};
+use super::migrate::{Migration, NEW, OLD, UPSTREAM_SERVER, migrate};
 
 fn temp(tag: &str) -> PathBuf {
     let d = std::env::temp_dir().join(format!("scrim-migrate-{tag}-{}-{:?}", std::process::id(), std::thread::current().id()));
@@ -64,4 +64,24 @@ fn the_window_app_id_matches_the_packaging() {
     assert!(desktop.contains("Name=Scrim") && desktop.contains("StartupWMClass=design.scrim.app") && desktop.contains("Icon=design.scrim.app"));
     let plist = include_str!("../../../packaging/macos/Info.plist.in");
     assert!(plist.contains("<string>design.scrim.app</string>") && plist.contains("<string>Scrim</string>"));
+}
+
+#[test]
+fn figcrafts_built_in_share_server_is_not_carried_over() {
+    let base = temp("server");
+    let old = format!(r#"{{"prefs":{{"theme":"dark","publish_server":"{UPSTREAM_SERVER}"}}}}"#);
+    write(&base.join(OLD).join("state.json"), &old);
+    assert_eq!(migrate(&base), Migration::Copied { files: 1 });
+    let copied: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(base.join(NEW).join("state.json")).unwrap()).unwrap();
+    assert_eq!(copied["prefs"]["publish_server"], "", "Share ▸ Online asks for a server instead");
+    assert_eq!(copied["prefs"]["theme"], "dark", "the other preferences come across");
+    assert_eq!(std::fs::read_to_string(base.join(OLD).join("state.json")).unwrap(), old, "FigCraft's own file is unchanged");
+    let _ = std::fs::remove_dir_all(&base);
+    // A server the person chose is kept.
+    let base = temp("own-server");
+    let own = r#"{"prefs":{"publish_server":"wss://share.example/"}}"#;
+    write(&base.join(OLD).join("state.json"), own);
+    migrate(&base);
+    assert_eq!(std::fs::read_to_string(base.join(NEW).join("state.json")).unwrap(), own);
+    let _ = std::fs::remove_dir_all(&base);
 }

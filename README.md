@@ -50,11 +50,15 @@ claude mcp add scrim -- scrim mcp             # connect Claude Code (docs/mcp.md
 
 The app works offline: no account, no telemetry, and no server is contacted until you share or join a file.
 
-**Share ▸ Online** uploads the file to a server. In this fork that server is still FigCraft's public default (`collab.craftapps.dev`), which the ArtCraft team runs, not Scrim. The server stores files unencrypted, and anyone with a link can open them. Prefer **Share ▸ Local network**, your own server ([`docs/server.md`](docs/server.md)), or a build with no default server:
+**Scrim builds in no share server**, so nothing is uploaded anywhere by default. **Share ▸ Online** asks for the address of a server you trust before it uploads anything; **Share ▸ Local network** needs no server. A server stores files unencrypted, and anyone with a link can open them, so use one you or someone you trust runs ([`docs/server.md`](docs/server.md)).
+
+A build can name a default server when compiling (FigCraft's `FIGCRAFT_DEFAULT_SERVER` is still honoured):
 
 ```sh
-FIGCRAFT_DEFAULT_SERVER= cargo build --release -p figcraft
+SCRIM_DEFAULT_SERVER=wss://design.example.org/ cargo build --release -p figcraft
 ```
+
+Coming from FigCraft: the settings Scrim copies leave out FigCraft's built-in server, so Online asks for one; a server you chose yourself is kept.
 
 ## Licence and credits
 

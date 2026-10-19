@@ -512,8 +512,9 @@ resuming with its offline edits, and leaving the session going back to snapshot 
   `L`, `O`, `U`); reading one ignores case, spaces and dashes and takes `O` as `0` and `I` or `L`
   as `1`. The join field tells the kinds apart by length (anything with `://` is a link).
 - **Online** (`collab.share {via: "online"}`, the default): the open file is published to the
-  server in Preferences (`pref.publishServer`; built in: `wss://collab.craftapps.dev/`, written
-  once, as `figcraft_engine::live::DEFAULT_SERVER`; empty turns online sharing off) exactly as
+  server in Preferences (`pref.publishServer`; built in: none in Scrim, so Online asks for a
+  server first; a build can name one, written once, as `figcraft_engine::live::DEFAULT_SERVER`;
+  empty means no online sharing until one is chosen) exactly as
   `collab.publish` does on a server open to the public, owner token included; the app then asks
   for a code for the edit link and one for the view link (`Admin code`, as the file's owner) and
   shows the edit code, `K7M-2QX-9TD`: **nine symbols, 45 random bits**, a different code per link.

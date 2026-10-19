@@ -255,12 +255,19 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
                     app.run("pref.publishServer", json!({"url": url}));
                 }
                 let usual = prefs.publish_server == figcraft_engine::live::DEFAULT_SERVER;
-                if crate::widgets::button(ui, tr("Reset"), false, !usual).on_hover_text(tr("Back to the Scrim server")).clicked() {
+                if crate::widgets::button(ui, tr("Reset"), false, !usual)
+                    .on_hover_text(tr("Back to the default: no server, unless this build names one"))
+                    .clicked()
+                {
                     app.run("pref.publishServer", json!({}));
                 }
             });
             if prefs.publish_server.is_empty() {
-                crate::widgets::label(ui, tr("Online sharing is off: files are shared on the local network only."), t.text_secondary);
+                crate::widgets::label(
+                    ui,
+                    tr("No server is set, so nothing is uploaded. Share ▸ Online asks for one first; the local network needs none."),
+                    t.text_secondary,
+                );
             }
             ui.add_space(8.0);
             ui.horizontal(|ui| {

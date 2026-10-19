@@ -3,6 +3,11 @@
 //! files, recovery copies and installed plugins are **copied** into a new Scrim directory. FigCraft's
 //! is never moved, changed or deleted, so a FigCraft install keeps working beside Scrim.
 //!
+//! One setting is not carried over: FigCraft's built-in share server (`UPSTREAM_SERVER`), which
+//! FigCraft saved into its preferences. Scrim builds in none (rebrand step A5), so a copied
+//! preference naming that server is emptied and Share ▸ Online asks for one. A server the person
+//! chose themselves is kept.
+//!
 //! The copy goes to a temporary sibling first and is renamed into place at the end, so a failed or
 //! interrupted copy never leaves a half-filled Scrim directory that would stop a later try.
 
@@ -13,6 +18,9 @@ use std::path::Path;
 pub const NEW: &str = "Scrim";
 /// FigCraft's, copied from once.
 pub const OLD: &str = "FigCraft";
+
+/// FigCraft's built-in share server (upstream's, not Scrim's).
+pub const UPSTREAM_SERVER: &str = "wss://collab.craftapps.dev/";
 
 /// How deep the copy follows directories (the settings tree is shallow).
 const MAX_DEPTH: usize = 32;
@@ -40,7 +48,7 @@ pub fn migrate(base: &Path) -> Migration {
     }
     let tmp = base.join(format!(".{NEW}-copying-{}", std::process::id()));
     let mut files = 0;
-    let copied = copy_tree(&old, &tmp, 0, &mut files).and_then(|()| std::fs::rename(&tmp, &new));
+    let copied = copy_tree(&old, &tmp, 0, &mut files).and_then(|()| forget_upstream_server(&tmp)).and_then(|()| std::fs::rename(&tmp, &new));
     match copied {
         Ok(()) => Migration::Copied { files },
         Err(e) => {
@@ -69,4 +77,18 @@ fn copy_tree(from: &Path, to: &Path, depth: usize, files: &mut usize) -> io::Res
         }
     }
     Ok(())
+}
+
+/// Empty the copied preferences' share server when it is FigCraft's built-in one. A state file
+/// that doesn't parse is left as it is (the app then starts with default preferences anyway).
+fn forget_upstream_server(dir: &Path) -> io::Result<()> {
+    let path = dir.join("state.json");
+    let Ok(text) = std::fs::read_to_string(&path) else { return Ok(()) };
+    let Ok(mut state) = serde_json::from_str::<serde_json::Value>(&text) else { return Ok(()) };
+    let Some(server) = state.pointer_mut("/prefs/publish_server") else { return Ok(()) };
+    if server.as_str().map(str::trim) != Some(UPSTREAM_SERVER) {
+        return Ok(());
+    }
+    *server = serde_json::Value::String(String::new());
+    std::fs::write(&path, serde_json::to_vec(&state).map_err(io::Error::other)?)
 }

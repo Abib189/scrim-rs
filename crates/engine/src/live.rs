@@ -59,15 +59,15 @@ use crate::params::{get, num, req_string, string};
 use crate::tools::ToolId;
 use crate::{DocState, EngineError, Result, Session, TextEdit, ViewState, bad, spec};
 
-/// The server files are shared through online unless Preferences name another: the only place
-/// its address is written.
-///
-/// A build can ship another one, or none: set `FIGCRAFT_DEFAULT_SERVER` when compiling to a
-/// server's address (`wss://host/`), or to nothing (`FIGCRAFT_DEFAULT_SERVER=`) for a build whose
-/// online sharing stays off until the user enters a server in Preferences.
-pub const DEFAULT_SERVER: &str = match option_env!("FIGCRAFT_DEFAULT_SERVER") {
+/// The server Share ▸ Online uses unless Preferences name another: **none** by default, so nothing
+/// is uploaded anywhere until the user enters a server. A build can name one when compiling:
+/// `SCRIM_DEFAULT_SERVER=wss://host/` (FigCraft's `FIGCRAFT_DEFAULT_SERVER` is still honoured).
+pub const DEFAULT_SERVER: &str = match option_env!("SCRIM_DEFAULT_SERVER") {
     Some(server) => server,
-    None => "wss://collab.craftapps.dev/",
+    None => match option_env!("FIGCRAFT_DEFAULT_SERVER") {
+        Some(server) => server,
+        None => "",
+    },
 };
 
 /// Most selected ids one presence update carries (the rest aren't shown to others).
@@ -271,7 +271,7 @@ pub fn join_target(server: &str, typed: &str) -> std::result::Result<String, Str
 }
 
 /// Why nothing can be shared or joined online.
-pub const ONLINE_OFF: &str = "online sharing is off: choose a server in Preferences (or share on the local network)";
+pub const ONLINE_OFF: &str = "online sharing is off until a server is chosen (Share ▸ Online, Preferences) or use the local network";
 
 /// A session's number on the link: the engine picks it (from 1) when it starts the session.
 pub type SessionId = u64;

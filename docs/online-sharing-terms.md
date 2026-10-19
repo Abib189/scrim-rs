@@ -1,5 +1,11 @@
 # Online sharing through the default server: terms and privacy
 
+> **Scrim has no default server** (`docs/design/rebrand.md`, step A5): Share ▸ Online asks for a
+> server before anything is uploaded, and Scrim's settings migration doesn't carry FigCraft's
+> server over. What follows are **FigCraft's** terms for **its** public server, kept unchanged as
+> upstream wrote them, and as a starting point for anyone writing terms for their own server
+> ([`server.md`](server.md)). They don't describe a service Scrim runs.
+
 > **Last updated:** 2026-10-13 · Applies to the public FigCraft collaboration server at
 > `collab.craftapps.dev`, which the app uses for **Share ▸ Online** unless you set another server
 > in Preferences. It does not apply to servers other people run, or to sharing on your local

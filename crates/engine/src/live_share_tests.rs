@@ -12,8 +12,8 @@ use figcraft_collab::message::ClientMsg;
 use serde_json::{Value, json};
 
 use crate::live::{
-    Access, Bind, DEFAULT_SERVER, Event, HostOptions, LiveLink, Presence, PublishOptions, Published, Role, SessionInfo, Shared, SharedLink, Status,
-    join_target,
+    Access, Bind, DEFAULT_SERVER, Event, HostOptions, LiveLink, ONLINE_OFF, Presence, PublishOptions, Published, Role, SessionInfo, Shared,
+    SharedLink, Status, join_target,
 };
 use crate::{EngineError, Session};
 
@@ -164,7 +164,7 @@ fn on_the_server_unshared(s: &mut Session, script: &Arc<Mutex<Script>>) {
 fn the_built_in_server_is_the_default_and_can_be_changed_or_turned_off() {
     let (mut s, _) = session();
     assert_eq!(s.prefs.publish_server, DEFAULT_SERVER);
-    // A build may ship without one (`FIGCRAFT_DEFAULT_SERVER=`); any it ships is TLS.
+    // Scrim builds in none; a build may name one (`SCRIM_DEFAULT_SERVER`); any it names is TLS.
     assert!(
         DEFAULT_SERVER.is_empty() || (DEFAULT_SERVER.starts_with("wss://") && DEFAULT_SERVER.ends_with('/')),
         "TLS, and an address the preference itself accepts"
@@ -323,6 +323,29 @@ fn online_sharing_is_off_without_a_server() {
     let mut bare = Session::new();
     assert!(matches!(bare.execute("collab.share", &json!({"via": "local"})), Err(EngineError::Disabled(..))));
     assert!(matches!(bare.execute("collab.join", &json!({"code": HOST.code()})), Err(EngineError::Disabled(..))));
+}
+
+/// Rebrand step A5: with the preferences a new install starts with, nothing reaches a server. Every
+/// online route is refused before the link is asked to connect, until a server is chosen.
+#[test]
+fn nothing_connects_for_sharing_until_a_server_is_chosen() {
+    if !DEFAULT_SERVER.is_empty() {
+        return; // A build that names a server (`SCRIM_DEFAULT_SERVER`) shares through it.
+    }
+    let (mut s, script) = session();
+    assert_eq!(s.prefs.publish_server, "", "no server is built in");
+    for p in [json!({}), json!({"via": "online"})] {
+        assert!(matches!(s.execute("collab.share", &p), Err(EngineError::Disabled(_, why)) if why == ONLINE_OFF));
+    }
+    assert!(err(&mut s, "collab.join", json!({"code": "K7M-2QX-9TD"})).contains("online sharing is off"));
+    {
+        let sc = script.lock().unwrap();
+        assert!(sc.published.is_empty() && sc.asked.is_empty() && sc.joined.is_empty() && sc.hosted.is_empty(), "the link was never asked");
+    }
+    // Choosing a server is what lets Online connect.
+    ex(&mut s, "pref.publishServer", json!({"url": "wss://share.example/"}));
+    ex(&mut s, "collab.share", json!({"via": "online"}));
+    assert_eq!(script.lock().unwrap().published[0].server, "wss://share.example/");
 }
 
 #[test]

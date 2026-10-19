@@ -27,6 +27,9 @@ use crate::right::{menu_item, menu_item_with, menu_popup};
 use crate::theme::{ACCENT, Tokens, regular, semibold};
 use crate::widgets;
 
+#[path = "live_server.rs"]
+mod live_server;
+
 /// In the browser: what joining needs (a page can't host, and https pages can't reach `ws://`).
 const BROWSER_NOTE: &str = tr_noop(
     "In the browser you can join sessions the desktop app hosts and files on a Scrim server. A page opened over https reaches other computers only through wss:// links (a server behind TLS).",
@@ -717,20 +720,16 @@ fn start_ui(app: &mut FigApp, ui: &mut Ui, t: &Tokens) {
         widgets::label(ui, tr(BROWSER_NOTE), t.text_secondary);
         return;
     }
-    // Without a server in Preferences only the local network is left.
+    // Online needs a server; with none set, Online asks for one (`live_server`) and can't start.
     let server = app.session.prefs.publish_server.trim().to_string();
-    let local = app.ui.live.local || server.is_empty();
-    if server.is_empty() {
-        widgets::label(ui, tr("Sharing on the local network (online sharing is off: no server is set in Preferences)."), t.text_secondary);
-    } else if let Some(i) = widgets::segmented_text(ui, &[tr("Online"), tr("Local network")], usize::from(local)) {
-        app.ui.live.local = i == 1;
-    }
+    let mode = live_server::mode(app, ui, t, &server);
+    let local = mode == Some(true);
     if local {
         widgets::label(ui, tr("People on your network join with a code. Nothing goes through a server."), t.text_secondary);
-    } else {
+    } else if mode.is_some() {
         online_note(app, ui, t, &server);
     }
-    if widgets::button(ui, tr("Start sharing"), true, true).clicked() {
+    if mode.is_some() && widgets::button(ui, tr("Start sharing"), true, true).clicked() {
         let mut params = json!({"via": if local { "local" } else { "online" }});
         if local && app.ui.live.this_computer {
             params["bind"] = json!("local");

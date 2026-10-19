@@ -332,9 +332,10 @@ fn share_popover_and_join_dialog() {
     let share = text_center(&shapes, "Share");
     h.click(share);
     let shapes = h.frames(2);
-    for t in ["Share this file", "Online", "Local network", "Start sharing", "Join with a code", "Export…"] {
+    for t in ["Share this file", "Online", "Local network", "Server address", "Use this server", "Join with a code", "Export…"] {
         assert!(has_text(&shapes, t), "the popover shows {t:?}");
     }
+    assert!(!has_text(&shapes, "Start sharing"), "no server is built in: Online can't start until one is chosen");
     // Starting fails with this link: the error shows, nothing else changes.
     h.click(text_center(&shapes, "Local network"));
     let shapes = h.frames(2);
