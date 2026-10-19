@@ -51,3 +51,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+scrim-rs (fork)
+---------------
+scrim-rs (https://github.com/Abib189/scrim-rs) is a modified version of FigCraft, forked at
+storytold/figcraft commit a0d1162 and changed since; the changes are its commit history after
+that commit (docs/FORK.md). It is based on FigCraft by the ArtCraft team and is not an ArtCraft
+product. As FigCraft's brand terms require, the ArtCraft marks (formerly docs/brand/) are not
+included in this fork. Modifications are Copyright (c) 2026 the scrim-rs contributors, licensed
+under the same MIT OR Apache-2.0 terms.

@@ -37,9 +37,9 @@
          .exe need an .exe icon identifier (ICE50), even when the source is an ICO. -->
     <Icon Id="FigcraftIcon.exe" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="FigcraftIcon.exe" />
-    <Property Id="ARPURLINFOABOUT" Value="https://getartcraft.com/apps/figcraft" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://getartcraft.com/apps/figcraft" />
-    <Property Id="ARPHELPLINK" Value="https://discord.gg/artcraft" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Abib189/scrim-rs" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/Abib189/scrim-rs" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/Abib189/scrim-rs/issues" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="INSTALLFOLDER" Name="FigCraft" />

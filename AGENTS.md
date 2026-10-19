@@ -54,8 +54,9 @@ code.
   embeds it). Everything must build, test and run without it (system fonts are scanned at runtime).
 - Demo and test content is synthetic or public domain; never personal photos or data.
 - Code and original assets are MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`). The
-  ArtCraft logos in `docs/brand/` are trademarks, not open source, under
-  `docs/brand/LICENSE-brand.txt`: never modify them or use them outside FigCraft.
+  ArtCraft name, wordmark and logos are ArtCraft's trademarks and were removed from this fork as
+  FigCraft's brand terms require (`docs/FORK.md`): never add them back. Plain text may say the fork
+  is "based on FigCraft by the ArtCraft team". `cargo xtask brand` (part of `ci`) checks this.
 - If the provenance of an asset is unclear, don't add it.
 
 ### Never crash

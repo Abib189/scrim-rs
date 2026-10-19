@@ -11,7 +11,7 @@ fn main() {
         }
         res.set("ProductName", "FigCraft");
         res.set("FileDescription", "FigCraft");
-        res.set("CompanyName", "ArtCraft");
+        res.set("CompanyName", "scrim-rs contributors");
         if let Err(e) = res.compile() {
             println!("cargo::warning=winresource: {e}");
         }
