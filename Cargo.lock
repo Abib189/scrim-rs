@@ -1680,6 +1680,8 @@ dependencies = [
  "figcraft-render",
  "figcraft-text",
  "flate2",
+ "regex",
+ "serde_json",
  "thiserror 2.0.21",
  "usvg",
 ]

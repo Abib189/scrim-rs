@@ -19,3 +19,8 @@ usvg = { workspace = true }
 base64 = { workspace = true }
 flate2 = { workspace = true }
 thiserror = { workspace = true }
+# The import gate's text tests (Scrim's deny-list, Port 8); already a workspace dependency.
+regex = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

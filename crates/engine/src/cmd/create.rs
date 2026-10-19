@@ -162,7 +162,17 @@ fn create_kind(s: &mut Session, p: &Value, t: &str) -> Result<Value> {
 }
 
 /// Parse SVG path data (`M L H V C S Q T A Z`, absolute and relative) into a bezier path.
+/// Numbers after `Z` are refused, as the SVG grammar (and Scrim's parser) refuses them.
 pub fn parse_path_data(d: &str) -> Option<figcraft_geom::BezPath> {
+    let mut after_close = false;
+    for c in d.chars() {
+        match c {
+            'Z' | 'z' => after_close = true,
+            c if c.is_ascii_alphabetic() && !matches!(c, 'e' | 'E') => after_close = false,
+            c if after_close && (c.is_ascii_digit() || matches!(c, '.' | '-' | '+')) => return None,
+            _ => {}
+        }
+    }
     figcraft_geom::BezPath::from_svg(d).ok()
 }
 

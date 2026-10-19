@@ -815,6 +815,8 @@ click or drag across regions with `pointer` to merge, add `alt` to remove; `shap
 
 ### Importing SVG
 
+**Refused, never sanitised.** An SVG that could run script or reach outside itself is refused before it is parsed, with the reason: `SVG declares entities`, `SVG contains a script element`, `SVG imports a stylesheet`, `SVG references an external file`, `SVG has an event handler attribute`, `SVG links a stylesheet` or `SVG holds HTML (foreignObject)`, followed by `: only self-contained SVGs are imported`. Local references (`#id`) and `data:` URIs are fine; a link to any other file, even a relative one, is refused. These are Scrim's rules (Port 8, `docs/scrim-ports/svg.md`), plus the gaps Scrim's own review listed. Elements nested more than 512 deep are refused too.
+
 `open_file {path}` opens an SVG as a new document; `run_command {command: "file.import", params:
 {path | data + name, x?, y?, center?}}` adds it to the current page as a frame (top-left at `x, y`,
 or centred there with `center: true`, as pasting does). It comes in editable: groups named from

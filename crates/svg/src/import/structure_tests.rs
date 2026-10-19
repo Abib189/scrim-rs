@@ -136,8 +136,16 @@ fn linked_files_are_never_read() {
     let png = dir.join("secret.png");
     std::fs::write(&png, base64::Engine::decode(&base64::engine::general_purpose::STANDARD, PNG).unwrap()).unwrap();
     let href = png.to_string_lossy().replace('\\', "/");
-    let (d, f) = import(&format!(r##"<image width="4" height="2" href="{href}"/><image width="4" height="2" href="file:///{href}"/>"##));
-    assert!(tree(&d, f).is_empty() && d.images.is_empty());
+    // Refused before parsing (Port 8: an SVG that reaches outside itself is refused, never
+    // sanitised), so nothing is read and nothing is made.
+    for body in [format!(r##"<image width="4" height="2" href="{href}"/>"##), format!(r##"<image width="4" height="2" href="file:///{href}"/>"##)] {
+        let svg = format!(r##"<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">{body}</svg>"##);
+        let mut d = Document::new("t");
+        let p = d.first_page().unwrap();
+        let e = import_svg_with_notes(&mut d, svg.as_bytes(), p, 0.0, 0.0, "x").unwrap_err().0;
+        assert!(e.starts_with("SVG references an external file"), "{e}");
+        assert!(d.node(p).unwrap().children.is_empty() && d.images.is_empty());
+    }
     let _ = std::fs::remove_dir_all(&dir);
 }
 

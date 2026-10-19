@@ -15,9 +15,11 @@
 //!
 //! What can't be represented (filters other than shadows and blurs, rotated repeating patterns,
 //! nested clip paths) is left out and reported in the import notes. Linked files are never read: only data URIs.
+//! An SVG that could run script or reach outside itself is refused before parsing ([`gate`]).
 
 mod budget;
 mod fx;
+mod gate;
 mod paint;
 mod shape;
 mod text;
@@ -30,6 +32,8 @@ mod fx_tests;
 mod hostile_tests;
 #[cfg(test)]
 mod paint_tests;
+#[cfg(test)]
+mod scrim_cases_tests;
 #[cfg(test)]
 mod shape_tests;
 #[cfg(test)]
@@ -595,10 +599,10 @@ pub(crate) fn nesting(data: &[u8], limit: usize) -> usize {
     max
 }
 
-fn options(data: &[u8], limits: budget::Limits) -> usvg::Options<'static> {
+fn options(data: &[u8], limits: budget::Limits, used: std::sync::Arc<budget::Used>) -> usvg::Options<'static> {
     // Only data URIs, within budgets: an opened or pasted SVG never pulls other files off the disk
     // and never expands without limit.
-    let mut o = usvg::Options { image_href_resolver: budget::resolver(limits), ..Default::default() };
+    let mut o = usvg::Options { image_href_resolver: budget::resolver(limits, used), ..Default::default() };
     if data.windows(4).any(|w| w == b"text") {
         text::prepare(&mut o);
     }
@@ -651,10 +655,18 @@ fn import_within(
 ) -> Result<Imported, ImportError> {
     // SVGZ is unpacked here, within a budget, so every check below sees the real document.
     let data = budget::document(data, &limits).map_err(ImportError)?;
+    // Refused, never sanitised: script, handlers, entities and anything that reaches outside.
+    if let Some(why) = gate::refusal(&String::from_utf8_lossy(&data)) {
+        return Err(ImportError(format!("{why}: only self-contained SVGs are imported")));
+    }
     if nesting(&data, MAX_NESTING) > MAX_NESTING {
         return Err(ImportError(format!("elements nested more than {MAX_NESTING} deep")));
     }
-    let tree = usvg::Tree::from_data(&data, &options(&data, limits)).map_err(|e| ImportError(e.to_string()))?;
+    let used = budget::Used::new();
+    let tree = usvg::Tree::from_data(&data, &options(&data, limits, used.clone())).map_err(|e| ImportError(e.to_string()))?;
+    if let Some(why) = used.refused() {
+        return Err(ImportError(format!("{why} (in an embedded SVG): only self-contained SVGs are imported")));
+    }
     let size = tree.size();
     let frame =
         doc.create(parent, NodeKind::Frame, name, x, y, f64::from(size.width()), f64::from(size.height())).map_err(|e| ImportError(e.to_string()))?;

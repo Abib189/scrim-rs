@@ -4,8 +4,8 @@
 //! both are done here: a bounded gunzip before usvg sees the bytes, and our own data resolver.
 
 use std::io::Read;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 
 use usvg::{ImageHrefResolver, ImageKind, Options};
 
@@ -53,10 +53,21 @@ pub(super) fn document(data: &[u8], limits: &Limits) -> Result<Vec<u8>, String> 
     if gzipped(data) { inflate(data, limits.document) } else { Ok(data.to_vec()) }
 }
 
-/// What the embedded SVGs of one import have used so far.
-struct Used {
+/// What the embedded SVGs of one import have used so far, and why one was refused.
+pub(super) struct Used {
     bytes: AtomicUsize,
     depth: AtomicUsize,
+    refused: Mutex<Option<&'static str>>,
+}
+
+impl Used {
+    pub(super) fn new() -> Arc<Self> {
+        Arc::new(Used { bytes: AtomicUsize::new(0), depth: AtomicUsize::new(0), refused: Mutex::new(None) })
+    }
+    /// Why an embedded SVG was refused by the gate (the whole import is then refused).
+    pub(super) fn refused(&self) -> Option<&'static str> {
+        self.refused.lock().ok().and_then(|r| *r)
+    }
 }
 
 fn raster(data: &[u8]) -> bool {
@@ -74,6 +85,14 @@ fn embedded(used: &Used, limits: &Limits, data: &[u8], opts: &Options) -> Option
     let left = limits.embedded.saturating_sub(used.bytes.load(Ordering::Relaxed));
     let plain = inflate(data, left).ok()?;
     used.bytes.fetch_add(plain.len(), Ordering::Relaxed);
+    // An embedded SVG passes the same gate as the file (Port 8): the outer text scan can't see
+    // inside a base64 data URI.
+    if let Some(why) = super::gate::refusal(&String::from_utf8_lossy(&plain)) {
+        if let Ok(mut r) = used.refused.lock() {
+            r.get_or_insert(why);
+        }
+        return None;
+    }
     if super::nesting(&plain, super::MAX_NESTING) > super::MAX_NESTING {
         return None;
     }
@@ -84,8 +103,7 @@ fn embedded(used: &Used, limits: &Limits, data: &[u8], opts: &Options) -> Option
 }
 
 /// Resolve `<image>` data URIs: rasters as they are, SVGs within `limits`; nothing else.
-pub(super) fn resolver(limits: Limits) -> ImageHrefResolver<'static> {
-    let used = Arc::new(Used { bytes: AtomicUsize::new(0), depth: AtomicUsize::new(0) });
+pub(super) fn resolver(limits: Limits, used: Arc<Used>) -> ImageHrefResolver<'static> {
     ImageHrefResolver {
         resolve_data: Box::new(move |mime, data, opts| match mime {
             "image/jpg" | "image/jpeg" => Some(ImageKind::JPEG(data)),

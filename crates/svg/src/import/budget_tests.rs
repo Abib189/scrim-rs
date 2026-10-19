@@ -106,8 +106,10 @@ fn an_embedded_compressed_bomb_is_dropped_not_expanded() {
 
 #[test]
 fn linked_files_and_other_mime_types_stay_unresolved() {
-    let data = svg(
-        r##"<image width="10" height="10" xlink:href="/etc/passwd"/><image width="10" height="10" xlink:href="data:application/x-foo;base64,AAAA"/>"##,
-    );
+    // A linked file is refused before parsing (Port 8); a data URI of another type stays
+    // unresolved.
+    let linked = svg(r##"<image width="10" height="10" xlink:href="/etc/passwd"/>"##);
+    assert!(layers(linked.as_bytes(), Limits::default()).unwrap_err().starts_with("SVG references an external file"));
+    let data = svg(r##"<image width="10" height="10" xlink:href="data:application/x-foo;base64,AAAA"/>"##);
     assert_eq!(layers(data.as_bytes(), Limits::default()).unwrap(), layers(svg("").as_bytes(), Limits::default()).unwrap());
 }
