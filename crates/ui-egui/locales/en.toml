@@ -8,6 +8,14 @@
 name = "English"
 
 [ui]
+"Accent" = "Accent"
+"Accent colour (hex)" = "Accent colour (hex)"
+"Back to Scrim's orange, #ff5a1f" = "Back to Scrim's orange, #ff5a1f"
+"Sample" = "Sample"
+"Text on the accent: {ratio}:1" = "Text on the accent: {ratio}:1"
+"{name} accent" = "{name} accent"
+"Pink" = "Pink"
+"Teal" = "Teal"
 "Select {name}" = "Select {name}"
 "Undo" = "Undo"
 "Undo {value}" = "Undo {value}"

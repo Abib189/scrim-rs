@@ -81,7 +81,7 @@ pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
                 app.ui.panel_animate = false;
             }
         }
-        _ => return crate::code_tab::request(app, kind, data),
+        _ => return crate::code_tab::request(app, kind, data) || crate::dialogs::appearance_prefs::request(app, kind, data),
     }
     true
 }

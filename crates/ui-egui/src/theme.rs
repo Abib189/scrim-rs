@@ -165,6 +165,39 @@ impl Tokens {
         }
     }
 
+    /// The theme for `dark`, with the accent the preferences ask for (`pref.accent`).
+    pub fn for_prefs(dark: bool, prefs: &figcraft_engine::Prefs) -> Self {
+        let [r, g, b] = figcraft_engine::cmd::appearance::accent(prefs);
+        (if dark { Self::dark() } else { Self::light() }).with_accent(Color32::from_rgb(r, g, b))
+    }
+
+    /// These tokens with the accent derived from `base` for this theme (Port 1's rule: the mark
+    /// reads at 4.5:1 on the panels, and the label on the fill, white or near-black, at 4.5:1). The
+    /// default accent keeps the tokens as written; a base the rule refuses keeps them too.
+    pub fn with_accent(mut self, base: Color32) -> Self {
+        if base == ACCENT {
+            return self;
+        }
+        let ramp = accent::Ramp {
+            canvas: self.canvas,
+            panel: self.panel,
+            field: self.field,
+            raised: self.pressed,
+            selected: self.selected_row,
+            float: self.menu,
+        };
+        let Ok(a) = accent::derive(base, &ramp, self.dark) else { return self };
+        let (h, s, l) = accent::to_hsl(a.fill);
+        self.accent = a.mark;
+        self.accent_text = a.mark;
+        self.focus = a.mark;
+        self.accent_fill = a.fill;
+        self.accent_hover = accent::from_hsl(h, s, (l - 0.04).max(0.0));
+        self.accent_on = a.on_fill;
+        self.accent_tint = a.tint;
+        self
+    }
+
     pub fn get(ctx: &Context) -> Tokens {
         ctx.data(|d| d.get_temp::<Tokens>(tokens_id())).unwrap_or_else(Tokens::light)
     }

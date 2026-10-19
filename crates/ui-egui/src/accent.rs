@@ -15,8 +15,12 @@ use egui::Color32;
 
 /// The near-black label for light fills (the dark theme's panel).
 pub const INK: Color32 = Color32::from_rgb(0x11, 0x12, 0x14);
-/// Scrim's default accent: orange.
-pub const DEFAULT_ACCENT: Color32 = Color32::from_rgb(0xFF, 0x5A, 0x1F);
+/// Scrim's default accent, orange: the engine's [`figcraft_engine::cmd::appearance::DEFAULT_ACCENT`],
+/// the one place it is written.
+pub const DEFAULT_ACCENT: Color32 = {
+    let [r, g, b] = figcraft_engine::cmd::appearance::DEFAULT_ACCENT;
+    Color32::from_rgb(r, g, b)
+};
 
 /// The surfaces a theme's accent must read on.
 #[derive(Clone, Copy, Debug, PartialEq)]

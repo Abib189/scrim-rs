@@ -17,6 +17,7 @@ pub mod background;
 pub mod booleans;
 pub mod branches;
 pub mod catalog;
+mod clipboard;
 pub mod cmd;
 pub mod code_connect;
 pub mod codegen;
@@ -27,6 +28,7 @@ pub mod dev_resources;
 pub mod devcompare;
 pub mod devinspect;
 pub mod distance;
+pub use clipboard::Clipboard;
 mod doc_preview;
 use doc_preview::ENDS_PREVIEW;
 pub use doc_preview::{PREVIEW_READ_ONLY, VersionPreview};
@@ -594,6 +596,8 @@ pub struct Prefs {
     /// The plugin directory browsed last (`ws://host:port/`, never with a key).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plugin_directory: Option<String>,
+    /// The accent colour (`pref.accent`): `#rrggbb`, or empty for the default.
+    pub accent: String,
     /// The server files are shared through online (Share ▸ Online, join codes; Publish to server
     /// suggests it too): `wss://host/`, never with a key. [`live::DEFAULT_SERVER`] unless the user
     /// chose another; empty: online sharing is off (saved as empty, so it stays off).
@@ -654,6 +658,7 @@ impl Default for Prefs {
             plugin_settings: BTreeMap::new(),
             plugin_directory: None,
             publish_server: live::DEFAULT_SERVER.into(),
+            accent: String::new(),
             panel: Default::default(),
             recent_files: Vec::new(),
             online_files: Vec::new(),
@@ -673,22 +678,6 @@ impl Default for Prefs {
 pub struct UiRequest {
     pub kind: String,
     pub data: Value,
-}
-
-/// Clipboard contents (internal; the UI mirrors to the system clipboard).
-#[derive(Clone, Debug, Default)]
-pub struct Clipboard {
-    /// Copied subtrees: (root, nodes) in z-order.
-    pub nodes: Vec<(NodeId, Vec<figcraft_doc::Node>)>,
-    pub images: std::collections::BTreeMap<String, figcraft_doc::ImageData>,
-    /// Copied properties (Copy properties / Paste properties).
-    pub props: Option<Value>,
-    /// The page-space bounds of the copied selection.
-    pub bounds: Option<figcraft_geom::Rect>,
-    pub source_doc: u64,
-    /// The document copied from (pastes into other files follow its mains) and its file path.
-    pub source: Option<Arc<Document>>,
-    pub source_path: Option<String>,
 }
 
 /// The editing session: open documents, the current tool, clipboard and prefs.

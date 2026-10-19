@@ -55,3 +55,13 @@ fn the_ai_tabs_commands_are_reachable_over_mcp() {
     let findings = c.run("ai.findings", json!({}));
     assert!(findings["groups"].is_array() && findings["count"].is_number(), "{findings}");
 }
+
+#[test]
+fn the_appearance_commands_are_reachable_over_mcp() {
+    let mut c = Client::new();
+    let r = c.run("pref.accent", json!({"preset": "violet"}));
+    assert_eq!((&r["accent"], &r["preset"], &r["default"]), (&json!("#8e7bff"), &json!("violet"), &json!("#ff5a1f")));
+    assert_eq!(c.run("pref.theme", json!({"theme": "dark"}))["theme"], "dark");
+    assert!(c.err("run_command", json!({"command": "pref.accent", "params": {"value": "#777777"}})).contains("too grey"));
+    assert_eq!(c.run("pref.appearance", json!({}))["accent"], "#8e7bff");
+}

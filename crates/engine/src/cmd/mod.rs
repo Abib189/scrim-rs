@@ -2,6 +2,7 @@
 
 pub mod ai;
 pub mod analyze;
+pub mod appearance;
 pub mod arrange;
 pub mod code;
 pub mod comment;
@@ -88,6 +89,7 @@ fn registry() -> &'static Registry {
         list.extend(panel::specs());
         list.extend(code::specs());
         list.extend(ai::specs());
+        list.extend(appearance::specs());
         list.extend(text::specs());
         list.extend(crate::fonts::specs());
         list.extend(styles::specs());

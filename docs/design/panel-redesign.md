@@ -111,6 +111,17 @@ No chat, no API keys, no provider settings. The tab is about the agents already 
 - **Commands:** `pref.accent {value | preset}` and `pref.theme {theme}`, the latter alongside the `view.theme*` ones.
 - **Command palette:** one exists (the Actions palette, `ui.set {palette}`), so B4 adds the new commands to it and builds no second palette.
 
+**As built (B4)** (`crates/engine/src/cmd/appearance.rs`, `crates/ui-egui/src/appearance_prefs.rs`):
+- **The default, written once:** `appearance::DEFAULT_ACCENT` in the engine. `accent::DEFAULT_ACCENT` and `theme::ACCENT` in the UI read it. The preference saves the default as empty, so changing the constant reaches everyone who never chose a colour.
+- **The commands:**
+  - `pref.accent {preset? | value?}`: neither means the default;
+  - `pref.theme {theme}`, beside the existing `view.theme*`;
+  - `pref.appearance {}`, which reads the theme, the accent, the matching preset and the six presets.
+- **Checked in the engine:** what doesn't depend on a theme, namely a hex colour, not too grey, light or dark (Port 1's first rule).
+- **Derived in the UI,** per theme, by `Tokens::with_accent` through Port 1's `accent::derive`: the mark (also the focus ring and coloured text), the fill, its hover, the label on it (4.5:1, white or near-black) and the tint. The default keeps Port 1's hand-checked tokens exactly.
+- **Preferences:** the six swatches (AccessKit toggles named "Orange accent" and so on), a hex field, Reset, and a sample primary button with its label's measured contrast. All of them run `pref.accent`.
+- **Not yet following the accent:** the canvas chrome (selection outlines, handles, guides, about 150 uses of the constant `theme::ACCENT`, most in the frozen `canvas.rs`) stays orange. Moving it to the tokens is a follow-up: it needs room in `canvas.rs` and a pass over each overlay's contrast on the canvas.
+
 ### Verification (B5)
 
 - **CI**, including the locale check.

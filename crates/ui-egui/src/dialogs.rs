@@ -15,6 +15,9 @@ use crate::i18n::{self, tr, tr_noop, trf, trn};
 use crate::icons::{self, Icon};
 use crate::theme::{ACCENT, Tokens, regular, semibold};
 
+#[path = "appearance_prefs.rs"]
+pub(crate) mod appearance_prefs;
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Where a report goes.
@@ -289,6 +292,8 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
                     }
                 }
             });
+            ui.add_space(8.0);
+            appearance_prefs::row(app, ui);
             ui.add_space(8.0);
             ui.horizontal(|ui| {
                 ui.label(tr("Language"));
