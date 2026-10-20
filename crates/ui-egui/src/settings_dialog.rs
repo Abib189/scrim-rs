@@ -53,24 +53,30 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
     let size = vec2((screen.width() - 80.0).clamp(560.0, 820.0), (screen.height() - 80.0).clamp(420.0, 600.0));
     let mut open = true;
     let mut done = false;
-    crate::dialogs::window(tr("Settings"), ctx).open(&mut open).fixed_size(size).anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0)).show(ctx, |ui| {
-        let body = ui.available_rect_before_wrap();
-        let rail_w = 180.0;
-        let rail = Rect::from_min_size(body.min, vec2(rail_w, body.height() - 44.0));
-        let pane = Rect::from_min_max(pos2(rail.max.x + 16.0, body.min.y), pos2(body.max.x, body.max.y - 44.0));
-        ui.painter().line_segment([rail.right_top() + vec2(8.0, 0.0), rail.right_bottom() + vec2(8.0, 0.0)], egui::Stroke::new(1.0, t.border));
-        rail_ui(app, ui, &t, rail);
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(pane));
-        egui::ScrollArea::vertical().id_salt(("settings_pane", app.ui.settings_section)).auto_shrink([false, false]).show(&mut child, |ui| {
-            ui.set_width(pane.width() - 12.0);
-            section(app, ui);
-            ui.add_space(24.0);
+    let shown =
+        crate::dialogs::window(tr("Settings"), ctx).open(&mut open).fixed_size(size).anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0)).show(ctx, |ui| {
+            let body = ui.available_rect_before_wrap();
+            let rail_w = 180.0;
+            let rail = Rect::from_min_size(body.min, vec2(rail_w, body.height() - 44.0));
+            let pane = Rect::from_min_max(pos2(rail.max.x + 16.0, body.min.y), pos2(body.max.x, body.max.y - 44.0));
+            ui.painter().line_segment([rail.right_top() + vec2(8.0, 0.0), rail.right_bottom() + vec2(8.0, 0.0)], egui::Stroke::new(1.0, t.border));
+            rail_ui(app, ui, &t, rail);
+            let mut child = ui.new_child(egui::UiBuilder::new().max_rect(pane));
+            egui::ScrollArea::vertical().id_salt(("settings_pane", app.ui.settings_section)).auto_shrink([false, false]).show(&mut child, |ui| {
+                ui.set_width(pane.width() - 12.0);
+                section(app, ui);
+                ui.add_space(24.0);
+            });
+            let footer = Rect::from_min_max(pos2(pane.min.x, body.max.y - 36.0), body.max);
+            let mut f = ui.new_child(egui::UiBuilder::new().max_rect(footer).layout(egui::Layout::right_to_left(egui::Align::Center)));
+            done = widgets::button(&mut f, tr("Done"), true, true).clicked();
+            ui.allocate_rect(body, Sense::hover());
         });
-        let footer = Rect::from_min_max(pos2(pane.min.x, body.max.y - 36.0), body.max);
-        let mut f = ui.new_child(egui::UiBuilder::new().max_rect(footer).layout(egui::Layout::right_to_left(egui::Align::Center)));
-        done = widgets::button(&mut f, tr("Done"), true, true).clicked();
-        ui.allocate_rect(body, Sense::hover());
-    });
+    // A modal dialog: Tab stays inside it, and what's behind can't be clicked (C1.6). Its own
+    // confirmations open above it and still work.
+    if let Some(r) = shown {
+        ctx.memory_mut(|m| m.set_modal_layer(r.response.layer_id));
+    }
     if !open || done || ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
         app.ui.preferences = false;
     }

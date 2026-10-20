@@ -207,3 +207,34 @@ fn the_control_channel_can_open_settings_at_a_section_for_captures() {
     crate::control::handle(&mut u.app, &ctx, "ui.set", &json!({"settings": false})).unwrap();
     assert!(!u.app.ui.preferences);
 }
+
+/// C1.6 (found in the real app): Settings is modal. Tab never leaves it for the canvas, panels or
+/// tab bar behind, so a keyboard user can't change the document by accident.
+#[test]
+fn tab_stays_inside_settings() {
+    use egui::Key;
+    let mut u = Ui::new(Session::new());
+    u.app.run("shape.rectangle", json!({"x": 0, "y": 0, "width": 40, "height": 40}));
+    u.ctx.enable_accesskit();
+    u.frame(vec![]);
+    u.app.run("settings.open", json!({}));
+    u.app.handle_ui_requests();
+    u.frame(vec![]);
+    u.app.ui.preferences = true;
+    u.frame(vec![]);
+    let inside: Vec<String> =
+        ["General", "Toolbar", "AI & agents", "MCP", "Tool access", "Privacy", "Diagnostics", "Done"].iter().map(|s| s.to_string()).collect();
+    let mut seen = Vec::new();
+    for _ in 0..40 {
+        u.frame(vec![
+            Event::Key { key: Key::Tab, physical_key: None, pressed: true, repeat: false, modifiers: Modifiers::NONE },
+            Event::Key { key: Key::Tab, physical_key: None, pressed: false, repeat: false, modifiers: Modifiers::NONE },
+        ]);
+        u.frame(vec![]);
+        seen.push(crate::a11y::focused_name(&u.ctx));
+    }
+    for outside in ["Home", "Constrain proportions", "Rectangle", "Move"] {
+        assert!(!seen.iter().any(|n| n == outside), "Tab reached {outside:?} behind Settings: {seen:?}");
+    }
+    assert!(seen.iter().any(|n| inside.contains(n)), "Tab moves within Settings: {seen:?}");
+}
