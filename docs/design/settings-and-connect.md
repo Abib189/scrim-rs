@@ -316,3 +316,14 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - the Design lint's rule rows are 13, before and after;
   - opening "Overused font" showed 8 layer rows plus "and 561 more" before;
   - it now shows 2 family rows: Geist 499 and Inter 70.
+
+### C1.6 Verification gaps closed
+The record is `docs/scrim-ports/settings/c1/README.md`, with its captures.
+- **Dark-theme captures** of all seven Settings sections.
+- **Replace and the old figcraft entry's removal,** run against the installed `claude` with a temporary `CLAUDE_CONFIG_DIR`, so the owner's config was never touched. `claude mcp list` before showed `scrim` at 4848 and `figcraft`; after, only `scrim` at the live address, connected. The registered-address check (C1.2) showed "out of date" first.
+- **WASM size:** 48,780,116 bytes before the fonts and 48,676,495 after (−0.10 MB). The fonts aren't in the web build, so nothing loads lazily.
+- **Tool access live,** headless and through `--attach`: `create_node` is hidden; it is refused directly and through run_command, batch and a nested batch; another tool's command runs.
+- **The keyboard alone:**
+  - Settings opens through the menu shortcut (`ui.menu.invoke`, since Cmd+, is the native menu's).
+  - Tab and Space reach Diagnostics ▸ Save…, which opens the system's save panel.
+  - This found a bug, fixed in `8cb4790`: Tab walked out of Settings into the panels behind it. Settings is now modal.
