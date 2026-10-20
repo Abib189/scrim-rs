@@ -214,7 +214,7 @@ pub static KEYS: &[Binding] = &[
     k(View, "view.nextRegion", &["F6"]).win(&["F6", "Ctrl+F6"]).label("Focus the next region (toolbar, layers, canvas, properties)").both(),
     k(View, "view.previousRegion", &["Shift+F6"]).label("Focus the previous region").both(),
     k(View, "view.contextMenu", &["Shift+F10"]).label("Context menu of the selection (the focused layer row or the canvas)"),
-    k(View, "layers.collapseAll", &["Alt+L"]),
+    k(View, "layers.collapse-all", &["Alt+L"]),
     k(View, "doc.nextTab", &["Ctrl+Tab"]),
     k(View, "doc.previousTab", &["Ctrl+Shift+Tab"]),
     k(View, "view.prevPage", &["PageUp"]),

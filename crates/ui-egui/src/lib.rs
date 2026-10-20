@@ -37,6 +37,7 @@ pub mod i18n;
 pub mod icons;
 pub mod import_report;
 pub mod layers;
+pub mod layers_header;
 pub mod layout_panel;
 pub mod list_drag;
 pub mod live;
@@ -940,7 +941,7 @@ impl FigApp {
                 }
                 "preview.close" => self.ui.preview = None,
                 "open.help" => self.services.open_url("https://github.com/Abib189/scrim-rs#readme"),
-                "layers.collapseAll" => layers::collapse_all(self),
+                "layers.collapse-all" => layers_header::collapse_all(self),
                 "contextMenu" => self.ui.key_menu = true,
                 "selectArea" => self.start_key_box(),
                 "canvas.renameLabel" => {

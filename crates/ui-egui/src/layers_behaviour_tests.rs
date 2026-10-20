@@ -97,14 +97,15 @@ fn expanding_collapsing_and_revealing() {
         u.app.ui.expanded.contains(&f) && u.app.ui.expanded.contains(&g),
         "silent: a layer selected on the canvas is revealed in the panel (pinned)"
     );
-    // Collapse layers: everything closes except the way to the selection.
+    // Collapse all (D1): every row closes, the way to the selection too; the selection stays.
     u.app.ui.expanded.insert(h);
-    u.app.run("layers.collapseAll", json!({}));
+    let selected = u.app.session.selection();
+    u.app.run("layers.collapse-all", json!({}));
     u.frame(vec![]);
-    assert!(!u.app.ui.expanded.contains(&h), "Collapse layers closes the expanded layers");
-    assert!(u.app.ui.expanded.contains(&f) && u.app.ui.expanded.contains(&g), "the selected layer's rows stay open");
+    assert!(u.app.ui.expanded.is_empty(), "Collapse all closes every row: {:?}", u.app.ui.expanded);
+    assert_eq!(u.app.session.selection(), selected, "the selection stays");
     u.app.run("select.none", json!({}));
-    u.app.run("layers.collapseAll", json!({}));
+    u.app.run("layers.collapse-all", json!({}));
     u.frame(vec![]);
     assert!(u.app.ui.expanded.is_empty(), "with nothing selected every layer collapses");
 }

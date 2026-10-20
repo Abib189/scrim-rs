@@ -110,3 +110,16 @@ No old test asserts that a row click reveals. The spec is `~/Scrim/docs/checklis
 5. **Input cancels the flight.** The old flight overwrote the person's own scroll and pan for 320 ms.
 6. **The double-click that renames** also focuses, because its first click is a click. That is the same as the old app.
 7. **Every page.** The expanded set is one set for all pages, so collapse-all closes rows on every page. The old document had no pages, so there was nothing to follow.
+
+## D1 as built
+
+- **The command:** `layers.collapse-all` (`crates/engine/src/cmd/layers.rs`), renamed from `layers.collapseAll` everywhere: keymap ⌥L, Object ▸ Collapse layers, every locale's command name, the access list. It is moved out of the frozen `cmd/edit.rs` (whose cap drops from 1390 to 1386).
+- **No new revision:** `Session::after_command` now skips the revision bump for view-only commands (`cmd::view_only`, `layers::VIEW_ONLY`). It never made an undo step or a change-log entry, so agents get no "Agent: …" label.
+- **The header** (`layers_header.rs`): the title, **Collapse all layers** (24 × 24, left of Search; the tooltip "Collapse all layers  ⌥L" names it and its key for screen readers; Tab reaches it, Space presses it; a focus ring), and Search with its row.
+  - Moving it, the search field and `collapse_all` out took `layers.rs` from 1051 lines to 999, under the limit: its frozen entry is gone.
+- **The icon** is drawn in the module (three lines, the last short): `icons.rs` is at its cap.
+- **`collapse_all`** clears every open row (every page) and marks the current selection as seen, so it isn't revealed again until it changes.
+- **The tests port the old suite where it still applies:**
+  - `shell.test.ts`: a partial fold folds the rest; an empty document is fine.
+  - `layersVirtual.dom.test.tsx`: only the top-level rows remain.
+  - "Unfolds on the next toggle" is deliberately not ported: collapse-all is idempotent.

@@ -180,7 +180,7 @@ pub static MENU: &[MenuItem] = &[
     m!("Object", "Show/Hide selection", "object.toggleVisible"),
     m!("Object", "Lock/Unlock selection", "object.toggleLock"),
     m!("Object", "Hide other layers", "object.hideOthers"),
-    m!("Object", "Collapse layers", "layers.collapseAll"),
+    m!("Object", "Collapse layers", "layers.collapse-all"),
     m!("Object", SEP, ""),
     m!("Object", "Remove fill", "object.removeFill"),
     m!("Object", "Remove stroke", "object.removeStroke"),

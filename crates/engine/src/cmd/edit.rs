@@ -201,10 +201,6 @@ pub fn specs() -> Vec<CommandSpec> {
             }
             ok()
         }),
-        spec!("layers.collapseAll", "Collapse layers", "{}", false, |s, _| {
-            s.request_ui("layers.collapseAll", json!({}));
-            ok()
-        }),
         spec!("node.set", "Set properties", super::props::KEYS, true, set),
         spec!("node.get", "Get layer", "{id}", false, |s, p| {
             let i = req_id("node.get", p, "id")?;

@@ -120,7 +120,7 @@ fn report(layers: usize) {
     b.frame(vec![]);
     b.app.session.set_selection(bottom_layer(&b.app.session).into_iter().collect());
     rows.push(("reveal a layer at the bottom of the list", b.frame(vec![])));
-    b.app.run("layers.collapseAll", json!({}));
+    b.app.run("layers.collapse-all", json!({}));
     rows.push(("collapse all layers", b.frame(vec![])));
     println!("UI frame ms — {layers} layers ({})", if cfg!(debug_assertions) { "debug" } else { "release" });
     for (name, v) in rows {

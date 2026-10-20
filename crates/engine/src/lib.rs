@@ -979,7 +979,7 @@ impl Session {
         }
         let edit = changed && ds.interaction.is_none();
         ds.clean_selection();
-        ds.revision += 1;
+        ds.revision += u64::from(!cmd::view_only(spec.id));
         if edit {
             let label = self.agents.step_label(spec.label);
             self.record(uid, spec.history.then_some(label.as_str()), bdoc, bsel, bpage);

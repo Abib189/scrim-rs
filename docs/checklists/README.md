@@ -14,3 +14,4 @@ Every capability has a test and a row here (AGENTS.md › Scrim's rules 4). Ther
 - [`fork.md`](fork.md): the fork's own guarantees (branding, file size, platform fixes).
 
 The Scrim ports add their own areas (`agent-safety.md`, `fig-import.md`, `query.md`, `lint.md`, `guides.md`, `svg.md`, `export-fidelity.md`), and some port Scrim's tables from `docs/scrim-transfer/`.
+- `layers.md`: Stage D, the Layers panel's collapse all and click to focus.

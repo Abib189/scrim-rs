@@ -170,7 +170,7 @@ pub const WRITE: &[&str] = &[
     "help.gettingStarted",
     "help.page",
     "help.shortcuts",
-    "layers.collapseAll",
+    "layers.collapse-all",
     "libraries.open",
     "libraries.publish",
     "library.publishToServer",

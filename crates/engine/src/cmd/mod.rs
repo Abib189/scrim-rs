@@ -13,6 +13,7 @@ pub mod diagnostics;
 pub mod edit;
 pub mod file;
 pub mod image;
+pub mod layers;
 pub mod layout;
 pub mod library;
 pub mod lint;
@@ -97,6 +98,7 @@ fn registry() -> &'static Registry {
         list.extend(appearance::specs());
         list.extend(mcp::specs());
         list.extend(diagnostics::specs());
+        list.extend(layers::specs());
         list.extend(mcp_tools::specs());
         list.extend(toolbar::specs());
         list.extend(text::specs());
@@ -145,6 +147,11 @@ fn registry() -> &'static Registry {
 
 pub fn all_commands() -> &'static [CommandSpec] {
     &registry().list
+}
+
+/// `id` changes only what a panel shows (no new document revision; `layers::VIEW_ONLY`).
+pub fn view_only(id: &str) -> bool {
+    layers::VIEW_ONLY.contains(&id)
 }
 
 pub fn find_command(id: &str) -> Option<&'static CommandSpec> {

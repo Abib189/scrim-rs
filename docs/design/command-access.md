@@ -117,7 +117,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 - **fonts:** `fonts.copyMissingNames`, `fonts.muteMissing`
 - **guide:** `guide.select`
 - **help:** `help.about`, `help.gettingStarted`, `help.page`, `help.shortcuts`
-- **layers:** `layers.collapseAll`
+- **layers:** `layers.collapse-all`
 - **libraries:** `libraries.open`, `libraries.publish`
 - **library:** `library.publishToServer`
 - **mcp:** `mcp.connect-claude-code`, `mcp.copy-address`, `mcp.copy-command`, `mcp.remove-old-entry`, `mcp.reregister`, `mcp.restart-server`, `mcp.restore-tools`, `mcp.run-connect`, `mcp.set-port`, `mcp.set-root-dir`, `mcp.set-tool`, `mcp.set-tool-group`, `mcp.toggle-auth`

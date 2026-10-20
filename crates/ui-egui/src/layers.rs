@@ -514,13 +514,6 @@ pub(crate) fn start_rename(app: &mut FigApp, ids: &[NodeId]) {
     rename_layer(app, id);
 }
 
-/// Collapse layers: every row closes except those leading to the selection.
-pub(crate) fn collapse_all(app: &mut FigApp) {
-    app.ui.expanded.clear();
-    let Ok(ds) = app.session.ds() else { return };
-    app.ui.expanded.extend(ds.selection.iter().flat_map(|s| ds.doc.ancestors(*s)).filter(|a| *a != ds.page));
-}
-
 /// Rename `id` in its row, selected (the selection follows a rename that moves with Tab).
 fn rename_layer(app: &mut FigApp, id: NodeId) {
     app.ui.rename = Some(Rename { id, start: true });
@@ -567,55 +560,10 @@ fn set_expanded_deep(doc: &Document, id: NodeId, open: bool, expanded: &mut BTre
     }
 }
 
-/// The search row under the Layers header (live filter; Escape closes it).
-fn search_field(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, id: Id) {
-    let (fr, _) = ui.allocate_exact_size(vec2(w, 32.0), Sense::hover());
-    let field = Rect::from_min_max(pos2(fr.min.x + 12.0, fr.min.y + 2.0), pos2(fr.max.x - 12.0, fr.max.y - 6.0));
-    ui.painter().rect_filled(field, CornerRadius::same(5), t.field);
-    icons::paint(ui.painter(), Rect::from_center_size(pos2(field.min.x + 12.0, field.center().y), vec2(12.0, 12.0)), Icon::Search, t.icon_secondary);
-    let te_rect = Rect::from_min_max(pos2(field.min.x + 24.0, field.center().y - 7.0), pos2(field.max.x - 6.0, field.center().y + 7.0));
-    let mut child = ui.new_child(egui::UiBuilder::new().max_rect(te_rect));
-    let r = child.add(
-        egui::TextEdit::singleline(&mut app.ui.layer_filter)
-            .id(id)
-            .frame(egui::Frame::NONE)
-            .font(regular(11.0))
-            .hint_text(tr("Find layers"))
-            .vertical_align(egui::Align::Center)
-            .desired_width(te_rect.width()),
-    );
-    crate::widgets::select_all_on_focus(ui, &r, &app.ui.layer_filter);
-    if r.has_focus() {
-        ui.painter().rect_stroke(field, CornerRadius::same(5), Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    }
-    if (r.has_focus() || r.lost_focus()) && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-        app.ui.layer_search = false;
-        app.ui.layer_filter.clear();
-    }
-}
-
 fn layers(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let w = ui.available_width();
-    let (hr, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
-    ui.painter().text(pos2(hr.min.x + 16.0, hr.center().y), Align2::LEFT_CENTER, tr("Layers"), semibold(11.0), t.text);
-    let sr = Rect::from_center_size(pos2(hr.max.x - 22.0, hr.center().y), vec2(24.0, 24.0));
-    let sresp = ui.interact(sr, ui.id().with("layer_search_btn"), Sense::click()).tip(tr("Search layers"));
-    if sresp.hovered() || app.ui.layer_search {
-        ui.painter().rect_filled(sr, CornerRadius::same(5), t.hover);
-    }
-    icons::paint(ui.painter(), sr.shrink(5.0), Icon::Search, t.icon);
-    let search_id = Id::new("layer_search_field");
-    if sresp.clicked() {
-        app.ui.layer_search = !app.ui.layer_search;
-        app.ui.layer_filter.clear();
-        if app.ui.layer_search {
-            ui.memory_mut(|m| m.request_focus(search_id));
-        }
-    }
-    if app.ui.layer_search {
-        search_field(app, ui, &t, w, search_id);
-    }
+    crate::layers_header::show(app, ui, &t, w);
     let Ok(ds) = app.session.ds() else { return };
     let doc = ds.doc.clone();
     let page = ds.page;
