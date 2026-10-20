@@ -28,3 +28,20 @@ revision 13 | agent | agent (control channel) | gesture | Rectangle | ['Page 1',
 revision 24 | person | person | gesture | Rectangle | ['Page 1', 'Rectangle']
 revision 27 | agent | agent (mcp (http)) | shape.ellipse | Ellipse | ['Page 1', 'Ellipse']
 ```
+
+## The real Connect (the owner's HOME, the app started in a folder with no local `scrim` entry)
+
+After Run and the one confirmation (captures 12–14), from that folder:
+
+```
+Checking MCP server health…
+scrim: http://127.0.0.1:7600/mcp (HTTP) - ✔ Connected
+scrim:
+  Scope: User config (available in all your projects)
+  Status: ✔ Connected
+  Type: http
+  URL: http://127.0.0.1:7600/mcp
+
+```
+
+The owner's local-scope `scrim` entries (in `~` and `~/Scrim`, for the TypeScript Scrim on 4848) were not touched, and still win in those folders. `claude mcp remove scrim --scope user` undoes the new one.

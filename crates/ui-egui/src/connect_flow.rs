@@ -257,7 +257,8 @@ pub fn panel(app: &mut FigApp, ui: &mut Ui) {
                 }
             });
         }
-        Stage::Done(Ok(m)) => widgets::note(ui, m, t.success),
+        // (In the text colour: the success green is 2.9:1 on light, too faint for text.)
+        Stage::Done(Ok(m)) => widgets::note(ui, m, t.text),
         Stage::Done(Err(e)) => widgets::note(ui, &trf("It didn't work: {error}", &[("error", e)]), t.danger),
     }
     if matches!(app.ui.connect.stage, Stage::Done(_)) && app.ui.connect.old.is_some() {

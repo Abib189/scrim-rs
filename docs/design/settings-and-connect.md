@@ -264,7 +264,17 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
     - That took a fix (`7322bb8`): canvas gestures never reached the feed before, only commands did.
     - Real window input (`ui.input`) is the person's. `ui.pointer` is automation and is logged as the control channel's.
 - **`ui.set {windowSize}`:** a new control hook that sizes the window for captures at about 1920 × 1080. osascript has no assistive access here, and the window size isn't persisted.
-- **Waiting for an unlocked screen:**
-  - **The real window captures:** the home sidebar, each Settings section, the AI tab empty and connected, and the Connect confirmation.
-  - **The real Connect against the installed `claude`:** its confirmation can only be pressed with real input at a known position, and positions come from a capture. An agent's call can't open it, by design.
-  - The screen locked repeatedly during this run (`CGSSessionScreenIsLocked`), and `ui.screenshot` answers "didn't deliver a screenshot" while it is.
+- **Real window captures** (`docs/scrim-ports/settings/`, indexed in its README):
+  - the home sidebar, each of the seven Settings sections, the AI tab empty and showing the command, the Connect confirmation, and the AI tab connected;
+  - every one with text, at 1920 × 1050 points (the menu bar takes the rest of the 1080);
+  - captured in the seconds the screen stayed unlocked, through `ui.set {windowSize, settings}`.
+- **The real Connect** ran against the installed `claude` 2.1.296 (proof in `c4-live-proofs.md`):
+  - Run, then the one confirmation, both pressed with real window input; "Scrim was added to Claude Code for every project";
+  - `claude mcp list` then reads `scrim: http://127.0.0.1:7600/mcp (HTTP) - ✔ Connected` at user scope, and the AI tab reads "Connected · claude-code".
+  - **The app was started in a folder with no local `scrim` entry,** because the flow's `claude` runs in the app's working folder. In `~` it would have found the owner's local entry for the TypeScript Scrim and offered Replace. That entry wasn't touched.
+  - **The owner's `state.json`** gained only Stage C's defaults and three diagnostics events; nothing else changed.
+- **Fixed after the captures:**
+  - The connect flow's success line was drawn in the `success` green, 2.9:1 on light: below 4.5:1 for text. It is now in the text colour.
+  - The AI tab's feed lost its edits after a few hundred selection changes (`8c225cd`).
+- **The fonts follow-up:** the real BEFORE and AFTER captures of "Brand colour system mockups" (a scratch HOME, so the installed fonts aren't seen): Missing fonts listed Geist, Inter and Source Serif 4 before, and no dialog opens after.
+- **Not changed, reported:** `live.rs` draws "Sharing online · …" and "Sharing on your network · …" in the same green, which predates Stage C.
