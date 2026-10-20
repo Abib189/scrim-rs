@@ -146,6 +146,7 @@ status = "draft — needs native review"
 "Select layers to lock them." = "Selecciona capas para bloquearlas."
 "the connect command" = "el comando de conexión"
 "{name}: {n} findings" = { one = "{name}: un hallazgo", other = "{name}: {n} hallazgos" }
+"{name}: {n} layers" = { one = "{name}: una capa", other = "{name}: {n} capas" }
 "and {n} more: the rule's row selects them all" = { one = "y uno más: la fila de la regla los selecciona todos", other = "y {n} más: la fila de la regla los selecciona todos" }
 "Copy standalone HTML" = "Copiar HTML independiente"
 "A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere" = "Una página web completa para esta capa: con sus estilos e imágenes dentro, sin descargar nada de otro sitio"

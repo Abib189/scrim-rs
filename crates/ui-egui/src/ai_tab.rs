@@ -157,62 +157,96 @@ fn findings(app: &mut FigApp, ui: &mut Ui) {
         widgets::note(ui, tr("No findings: the design lint has nothing to say about this file."), t.text_secondary);
         return;
     }
-    let w = ui.available_width();
     for g in groups {
         let rule = g["rule"].as_str().unwrap_or_default().to_string();
         let count = g["count"].as_u64().unwrap_or_default();
+        let name = g["name"].as_str().unwrap_or_default();
         let open_id = Id::new(("ai_rule_open", &rule));
         let open = ui.data(|d| d.get_temp::<bool>(open_id)).unwrap_or(false);
-        let (r, resp) = ui.allocate_exact_size(vec2(w, 28.0), Sense::click());
-        let name = g["name"].as_str().unwrap_or_default();
         let spoken = trn("{name}: {n} findings", count as usize, &[("name", &name)]);
-        let resp = resp.on_hover_text(tr("Show the findings and select their layers"));
-        a11y::button(&resp, &spoken);
-        if resp.hovered() {
-            ui.painter().rect_filled(r.shrink2(vec2(8.0, 0.0)), CornerRadius::same(5), t.hover);
-        }
-        crate::icons::paint(
-            ui.painter(),
-            Rect::from_center_size(pos2(r.min.x + PAD + 4.0, r.center().y), vec2(10.0, 10.0)),
-            if open { crate::icons::Icon::Chevron } else { crate::icons::Icon::ChevronRight },
-            t.icon_secondary,
-        );
-        let badge = count.to_string();
-        let bw = 10.0 + 7.0 * badge.len() as f32;
-        let br = Rect::from_min_size(pos2(r.max.x - PAD - bw, r.center().y - 9.0), vec2(bw, 18.0));
-        ui.painter().rect_filled(br, CornerRadius::same(9), t.field);
-        ui.painter().text(br.center(), Align2::CENTER_CENTER, &badge, semibold(11.0), t.text);
-        let text_r = Rect::from_min_max(pos2(r.min.x + PAD + 14.0, r.min.y), pos2(br.min.x - 6.0, r.max.y));
-        ui.painter().with_clip_rect(text_r).text(pos2(text_r.min.x, r.center().y), Align2::LEFT_CENTER, name, regular(11.0), t.text);
-        if resp.clicked() {
+        if group_row(ui, &t, name, &spoken, count, open, 0.0).clicked() {
             ui.data_mut(|d| d.insert_temp(open_id, !open));
             app.run("ai.selectFinding", json!({"rule": rule}));
         }
         if !open {
             continue;
         }
-        for (i, f) in g["findings"].as_array().into_iter().flatten().take(PER_RULE).enumerate() {
-            let (fr, fresp) = ui.allocate_exact_size(vec2(w, 24.0), Sense::click());
-            let layer = f["name"].as_str().unwrap_or_default();
-            let fresp = fresp.on_hover_text(f["message"].as_str().unwrap_or_default());
-            a11y::button(&fresp, &trf("Select {name}", &[("name", &layer)]));
-            if fresp.hovered() {
-                ui.painter().rect_filled(fr.shrink2(vec2(8.0, 0.0)), CornerRadius::same(5), t.hover);
+        // C1.7: "Overused font" by family, one row each with its layer count, then its layers.
+        if let Some(families) = g["families"].as_array() {
+            for f in families {
+                let family = f["family"].as_str().unwrap_or_default().to_string();
+                let fname = f["name"].as_str().unwrap_or_default();
+                let fcount = f["count"].as_u64().unwrap_or_default();
+                let fopen_id = Id::new(("ai_family_open", &rule, &family));
+                let fopen = ui.data(|d| d.get_temp::<bool>(fopen_id)).unwrap_or(false);
+                let spoken = trn("{name}: {n} layers", fcount as usize, &[("name", &fname)]);
+                if group_row(ui, &t, fname, &spoken, fcount, fopen, 14.0).clicked() {
+                    ui.data_mut(|d| d.insert_temp(fopen_id, !fopen));
+                    app.run("ai.selectFinding", json!({"rule": rule, "family": family}));
+                }
+                if fopen {
+                    let list = f["findings"].as_array().cloned().unwrap_or_default();
+                    layer_rows(app, ui, &t, json!({"rule": rule, "family": family}), &list, 28.0);
+                }
             }
-            ui.painter().with_clip_rect(fr.shrink2(vec2(PAD, 0.0))).text(
-                pos2(fr.min.x + PAD + 14.0, fr.center().y),
-                Align2::LEFT_CENTER,
-                layer,
-                regular(11.0),
-                t.text_secondary,
-            );
-            if fresp.clicked() {
-                app.run("ai.selectFinding", json!({"rule": rule, "index": i}));
-            }
+            continue;
         }
-        if count as usize > PER_RULE {
-            widgets::note(ui, &trn("and {n} more: the rule's row selects them all", count as usize - PER_RULE, &[]), t.text_tertiary);
+        let list = g["findings"].as_array().cloned().unwrap_or_default();
+        layer_rows(app, ui, &t, json!({"rule": rule}), &list, 14.0);
+    }
+}
+
+/// A rule's (or a family's) row: a chevron, its name and its count; `indent` from the left.
+fn group_row(ui: &mut Ui, t: &Tokens, name: &str, spoken: &str, count: u64, open: bool, indent: f32) -> egui::Response {
+    let w = ui.available_width();
+    let (r, resp) = ui.allocate_exact_size(vec2(w, 28.0), Sense::click());
+    let resp = resp.on_hover_text(tr("Show the findings and select their layers"));
+    a11y::button(&resp, spoken);
+    if resp.hovered() {
+        ui.painter().rect_filled(r.shrink2(vec2(8.0, 0.0)), CornerRadius::same(5), t.hover);
+    }
+    crate::icons::paint(
+        ui.painter(),
+        Rect::from_center_size(pos2(r.min.x + PAD + 4.0 + indent, r.center().y), vec2(10.0, 10.0)),
+        if open { crate::icons::Icon::Chevron } else { crate::icons::Icon::ChevronRight },
+        t.icon_secondary,
+    );
+    let badge = count.to_string();
+    let bw = 10.0 + 7.0 * badge.len() as f32;
+    let br = Rect::from_min_size(pos2(r.max.x - PAD - bw, r.center().y - 9.0), vec2(bw, 18.0));
+    ui.painter().rect_filled(br, CornerRadius::same(9), t.field);
+    ui.painter().text(br.center(), Align2::CENTER_CENTER, &badge, semibold(11.0), t.text);
+    let text_r = Rect::from_min_max(pos2(r.min.x + PAD + 14.0 + indent, r.min.y), pos2(br.min.x - 6.0, r.max.y));
+    ui.painter().with_clip_rect(text_r).text(pos2(text_r.min.x, r.center().y), Align2::LEFT_CENTER, name, regular(11.0), t.text);
+    resp
+}
+
+/// The first [`PER_RULE`] findings' layers; a row selects its layer (`select` plus its `index`).
+fn layer_rows(app: &mut FigApp, ui: &mut Ui, t: &Tokens, select: Value, list: &[Value], indent: f32) {
+    let w = ui.available_width();
+    for (i, f) in list.iter().take(PER_RULE).enumerate() {
+        let (fr, fresp) = ui.allocate_exact_size(vec2(w, 24.0), Sense::click());
+        let layer = f["name"].as_str().unwrap_or_default();
+        let fresp = fresp.on_hover_text(f["message"].as_str().unwrap_or_default());
+        a11y::button(&fresp, &trf("Select {name}", &[("name", &layer)]));
+        if fresp.hovered() {
+            ui.painter().rect_filled(fr.shrink2(vec2(8.0, 0.0)), CornerRadius::same(5), t.hover);
         }
+        ui.painter().with_clip_rect(fr.shrink2(vec2(PAD, 0.0))).text(
+            pos2(fr.min.x + PAD + indent, fr.center().y),
+            Align2::LEFT_CENTER,
+            layer,
+            regular(11.0),
+            t.text_secondary,
+        );
+        if fresp.clicked() {
+            let mut p = select.clone();
+            p["index"] = json!(i);
+            app.run("ai.selectFinding", p);
+        }
+    }
+    if list.len() > PER_RULE {
+        widgets::note(ui, &trn("and {n} more: the rule's row selects them all", list.len() - PER_RULE, &[]), t.text_tertiary);
     }
 }
 

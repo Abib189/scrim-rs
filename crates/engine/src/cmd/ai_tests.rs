@@ -85,3 +85,26 @@ fn findings_are_the_lints_grouped_by_rule_and_select_their_layers() {
     assert_eq!(s.selection().len(), 1);
     assert!(s.execute("ai.selectFinding", &json!({"rule": "no-such-rule"})).is_err());
 }
+
+/// C1.7: "Overused font" findings come grouped by font family, the most used first, and a
+/// family's row selects its layers.
+#[test]
+fn overused_font_findings_are_grouped_by_family() {
+    let mut s = crate::Session::new();
+    for (i, family) in ["Inter", "Inter", "Inter", "Geist", "Geist"].iter().enumerate() {
+        s.execute("text.create", &json!({"text": "Hello", "x": 0, "y": 40 * i, "props": {"fontFamily": family}})).unwrap();
+    }
+    let all = s.execute("ai.findings", &json!({})).unwrap();
+    let group = all["groups"].as_array().unwrap().iter().find(|g| g["rule"] == "overused-font").cloned().unwrap();
+    assert_eq!(group["count"], 5);
+    let fams: Vec<(String, u64)> =
+        group["families"].as_array().unwrap().iter().map(|f| (f["name"].as_str().unwrap().to_string(), f["count"].as_u64().unwrap())).collect();
+    assert_eq!(fams, [("Inter".to_string(), 3), ("Geist".to_string(), 2)]);
+    s.execute("ai.selectFinding", &json!({"rule": "overused-font", "family": "geist"})).unwrap();
+    assert_eq!(s.ds().unwrap().selection.len(), 2, "the family's layers");
+    s.execute("ai.selectFinding", &json!({"rule": "overused-font", "family": "inter", "index": 1})).unwrap();
+    assert_eq!(s.ds().unwrap().selection.len(), 1);
+    assert!(s.execute("ai.selectFinding", &json!({"rule": "overused-font", "family": "comic sans"})).is_err());
+    // Other rules have no families.
+    assert!(all["groups"].as_array().unwrap().iter().filter(|g| g["rule"] != "overused-font").all(|g| g.get("families").is_none()));
+}

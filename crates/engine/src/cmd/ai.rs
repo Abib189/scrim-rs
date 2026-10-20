@@ -97,16 +97,53 @@ fn findings(s: &mut Session, _: &Value) -> Result<Value> {
     for v in lint["violations"].as_array().into_iter().flatten() {
         let rule = v["ruleId"].as_str().unwrap_or_default().to_string();
         let entry = groups.entry(rule).or_insert_with(|| (v["name"].as_str().unwrap_or_default().to_string(), Vec::new()));
-        entry.1.push(json!({"id": v["nodeId"], "name": v["nodeName"], "message": v["message"]}));
+        entry.1.push(json!({"id": v["nodeId"], "name": v["nodeName"], "message": v["message"], "detail": v["detail"]}));
     }
-    let mut out: Vec<Value> =
-        groups.into_iter().map(|(rule, (name, f))| json!({"rule": rule, "name": name, "count": f.len(), "findings": f})).collect();
+    let mut out: Vec<Value> = groups
+        .into_iter()
+        .map(|(rule, (name, f))| {
+            let mut g = json!({"rule": rule, "name": name, "count": f.len()});
+            if BY_FAMILY.contains(&rule.as_str()) {
+                g["families"] = Value::Array(families(&f));
+            }
+            g["findings"] = Value::Array(f);
+            g
+        })
+        .collect();
     out.sort_by(|a, b| b["count"].as_u64().cmp(&a["count"].as_u64()));
     Ok(json!({"count": lint["violationCount"], "groups": out}))
 }
 
-/// `ai.selectFinding`: select a finding's layer (`index` within its rule's group), or every layer
-/// of the rule without `index`.
+/// Rules whose findings the AI tab groups by font family (C1.7): one row per family, with how many
+/// layers use it. The lint names the family in each finding's `detail`, lowercase.
+const BY_FAMILY: &[&str] = &["overused-font"];
+
+/// A family's name as people write it ("plus jakarta sans" → "Plus Jakarta Sans").
+fn family_name(detail: &str) -> String {
+    detail
+        .split_whitespace()
+        .map(|w| {
+            let mut c = w.chars();
+            c.next().map(|f| f.to_uppercase().chain(c).collect::<String>()).unwrap_or_default()
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// `findings` grouped by family, the most used first: [{family, name, count, findings}].
+fn families(findings: &[Value]) -> Vec<Value> {
+    let mut by: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+    for f in findings {
+        by.entry(f["detail"].as_str().unwrap_or_default().to_string()).or_default().push(f.clone());
+    }
+    let mut out: Vec<Value> =
+        by.into_iter().map(|(fam, f)| json!({"family": fam, "name": family_name(&fam), "count": f.len(), "findings": f})).collect();
+    out.sort_by(|a, b| b["count"].as_u64().cmp(&a["count"].as_u64()).then_with(|| a["name"].as_str().cmp(&b["name"].as_str())));
+    out
+}
+
+/// `ai.selectFinding`: select a finding's layer (`index` within its rule's group, or within
+/// `family`), or every layer of the rule (or of `family`) without `index`.
 fn select_finding(s: &mut Session, p: &Value) -> Result<Value> {
     let cmd = "ai.selectFinding";
     let rule = p.get("rule").and_then(Value::as_str).ok_or_else(|| bad(cmd, "`rule` is required (from ai.findings)"))?.to_string();
@@ -115,7 +152,14 @@ fn select_finding(s: &mut Session, p: &Value) -> Result<Value> {
         .as_array()
         .and_then(|g| g.iter().find(|g| g["rule"] == rule.as_str()).cloned())
         .ok_or_else(|| bad(cmd, "no findings for that rule"))?;
-    let list = group["findings"].as_array().cloned().unwrap_or_default();
+    let list = match p.get("family").and_then(Value::as_str) {
+        None => group["findings"].as_array().cloned().unwrap_or_default(),
+        Some(fam) => group["families"]
+            .as_array()
+            .and_then(|f| f.iter().find(|f| f["family"] == fam))
+            .and_then(|f| f["findings"].as_array().cloned())
+            .ok_or_else(|| bad(cmd, "no findings for that family in this rule"))?,
+    };
     let picked: Vec<&Value> = match p.get("index").and_then(Value::as_u64) {
         Some(i) => vec![list.get(i as usize).ok_or_else(|| bad(cmd, "`index` is past the rule's findings"))?],
         None => list.iter().collect(),
@@ -156,14 +200,14 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "ai.findings",
             "Design lint findings by rule",
-            "{} → {count, groups: [{rule, name, count, findings: [{id, name, message}]}]}  (lint.run, grouped; largest group first)",
+            "{} → {count, groups: [{rule, name, count, findings: [{id, name, message, detail}], families? (overused-font: [{family, name, count, findings}], most used first)}]}  (lint.run, grouped; largest group first)",
             false,
             findings
         ),
         spec!(
             "ai.selectFinding",
             "Select a finding's layers",
-            "{rule, index? (default: every layer of the rule)} → the selection",
+            "{rule, family? (overused-font: one family's findings), index? (default: every layer of the rule, or of the family)} → the selection",
             false,
             select_finding
         ),

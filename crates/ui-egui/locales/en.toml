@@ -146,6 +146,7 @@ name = "English"
 "Select layers to lock them." = "Select layers to lock them."
 "the connect command" = "the connect command"
 "{name}: {n} findings" = { one = "{name}: one finding", other = "{name}: {n} findings" }
+"{name}: {n} layers" = { one = "{name}: one layer", other = "{name}: {n} layers" }
 "and {n} more: the rule's row selects them all" = { one = "and one more: the rule's row selects them all", other = "and {n} more: the rule's row selects them all" }
 "Copy standalone HTML" = "Copy standalone HTML"
 "A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere" = "A complete web page for this layer: its styles and images inside, nothing fetched from elsewhere"

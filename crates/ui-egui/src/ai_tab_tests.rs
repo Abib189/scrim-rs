@@ -167,3 +167,26 @@ fn the_feed_keeps_its_edits_after_many_selection_changes() {
     assert!(has_text(&shapes, "Agent (mcp): Rename"), "still listed");
     assert!(!has_text(&shapes, "No changes yet. Edits by you and by agents appear here, newest first."));
 }
+
+/// C1.7: "Overused font" opens to one row per font family with its layer count; a family's row
+/// selects its layers and opens to them.
+#[test]
+fn overused_font_findings_are_grouped_by_family() {
+    let (mut h, _, _) = harness();
+    for (i, family) in ["Inter", "Inter", "Inter", "Geist", "Geist"].iter().enumerate() {
+        h.app.session.execute("text.create", &json!({"text": "Hello", "x": 0, "y": 300 + 40 * i, "props": {"fontFamily": family}})).unwrap();
+    }
+    let shapes = h.frames(2);
+    h.click(text_center(&shapes, "Overused font"));
+    let shapes = h.frames(2);
+    assert!(has_text(&shapes, "Inter") && has_text(&shapes, "Geist"), "a row per family");
+    // ("Hello" is each layer's name: the Layers panel lists them too.)
+    let hellos = |shapes: &[egui::Shape]| crate::live_tests::texts(shapes).iter().filter(|(t, _, _)| t == "Hello").count();
+    let before = hellos(&shapes);
+    h.click(text_center(&shapes, "Geist"));
+    let shapes = h.frames(2);
+    assert_eq!(h.app.session.selection().len(), 2, "the family's layers are selected");
+    assert_eq!(hellos(&shapes), before + 2, "and listed under it");
+    let nodes = tree(&mut h);
+    assert!(nodes.iter().any(|n| n.label() == Some("Inter: 3 layers")) && nodes.iter().any(|n| n.label() == Some("Geist: 2 layers")));
+}

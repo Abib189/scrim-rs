@@ -308,3 +308,11 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - text roles (success, danger, warning, accent text and the three text greys) at 4.5:1 on the panel, menu and field;
   - mark roles (the same status colours, accent, focus ring and both icon greys) at 3:1 on those surfaces plus the selected row and the canvas.
 - **Pixels outside Stage C** change in light theme wherever `success` appears: Dev Mode's "Ready for dev" pill, the compare view's "added" colour, the home screen's shared-file mark and the live presence dot.
+
+### C1.7 Overused font by family
+- **`ai.findings`** gives the `overused-font` group a `families` list: [{family, name, count, findings}], the most used first. The lint names the family in each finding's `detail`. `ai.selectFinding` takes `family` to select one family's layers, or one of them with `index`.
+- **The AI tab:** opening "Overused font" shows one row per family with its layer count; opening a family shows its layers, and its row selects them all. Every other rule is drawn as before, at the same positions.
+- **Brand colour system mockups, report only:**
+  - the Design lint's rule rows are 13, before and after;
+  - opening "Overused font" showed 8 layer rows plus "and 561 more" before;
+  - it now shows 2 family rows: Geist 499 and Inter 70.
