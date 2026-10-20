@@ -112,3 +112,54 @@
 6. **Property tweens are limited to moves,** and the delete fade to delete-only changes. Fills, sizes and text change at once, as the brief allows ("only where cheap and safe; if not, skip them").
 7. **"Claude" in "Following Claude"** comes from the MCP client's name: any client named like Claude reads "Claude", another client its own name, and the control channel or a plugin "an agent". It is never hard-coded.
 8. **The 400 ms limit** applies between flights; the first flight of a burst goes at once.
+
+## Addendum (21 Oct 2026): the working indicator, and the reveal beside it
+
+Two amendments to the brief (read before I2). The reveal still plays, and a **working indicator** (dots and a handle-free outline) is shown **in addition** to it, never instead of it.
+
+### Decided from the code
+- **The group gaps are a fixed pattern.** The code has no indicator, so nothing constrains this; it is decided here. The 20 columns are four groups of five, with a fixed extra gap between groups, and the wave runs through them. This is why:
+  - The width stays constant, so E2's label layout can place the row once, without re-laying-out every frame.
+  - Fixed geometry is testable.
+  - A gap that moved would read as the row breaking apart.
+
+  If the screen recording shows the gaps moving, it is a change to the wave function only.
+- **Its size is in screen points,** zoom-independent like the labels. The screenshot reads as a 2× capture, so its "8–10 px dots" become 4 pt dots with a 3 pt gap, and 3 pt between groups. That makes the row 149 × 11 pt, 12 pt above the artboard's top edge, right-aligned to it.
+- **It joins E2's layout step** (`canvas_labels.rs`):
+  - The titles, status icons and section labels are placed first, as they are today; they win.
+  - The indicator then takes the right end of its artboard's row, if that stretch is free with E2's gap either side. Otherwise it drops columns from the left, one at a time, down to five (one group). With less room than that it hides.
+  - It is never wider than its artboard on screen, so it never sits detached from it.
+- **Owner:** the indicator belongs to the latest top-level artboard the agent worked on in a burst, never to leaf layers.
+- **The outline:** that artboard gets a 2 px solid outline in the canvas overlay colour (`ink::overlay()`, G1). It has no handles and no hit area; it is only painted. If the person has that artboard selected, the selection's own outline and handles are drawn and this one is not, so the person's wins.
+- **The wave:**
+  - **Opacity and radius:** each dot's are `0.5 − 0.5·cos(2π·(t/1.6 + phase(row, column)))`, where the phase is a hash of the column seeded per artboard, plus a small offset per row.
+  - **Timing:** it loops every 1.6 s, cosine-smooth, so nothing pops.
+  - **Fades:** in over 160 ms when work starts; out over 400 ms once the agent has been idle for 600 ms.
+  - **Determinism:** it is a pure function of (seed, column, row, time), and tests pin it.
+- **Static row:** with reduced motion, Animations Off, or "Show working indicator" degraded, the row is drawn at a fixed point of the wave, with no time.
+- **Accessibility:** one AccessKit node, a polite live status: "Claude is working on {artboard}" (or "{agent} is working on …"). The agent's name and the artboard are the same ones the AI tab's "Following …" text uses. There is no node per dot.
+- **Contrast:** the dots are decorative. The row's brightest dot (full opacity, `ink::overlay()`) reaches 3:1 against the page behind it in both themes; G1's overlay rule already guarantees that, and a test asserts it.
+
+### The reveal beside it
+- **Both run together:** the reveal and the indicator never suppress, delay or replace each other. A test runs a 16-layer batch and asserts both are active in the same frames.
+- **Follow paused:** new layers still reveal if they are in the viewport when they arrive.
+  - While following, the work the camera is flying to counts as in view.
+  - Layers created off screen skip the entrance and are drawn final at once, never left hidden or half-faded.
+- **Settings ▸ General ▸ Animations** (Follow system / On / Off) governs both. With Off, or reduced motion, layers appear final and the indicator is the static row.
+- **Two more switches, both on by default and saved:**
+  - **"Reveal agent work":** `pref.revealAgentWork {on?}`;
+  - **"Show working indicator":** `pref.workingIndicator {on?}`.
+  - Both are commands, so they have MCP routes. `settings_version` 3 covers them with `follow_agents`.
+- **Degrading under load** (replaces I2's cost rule). Steps are taken in this order, and the next only while frames are still over budget:
+  1. the dot wave becomes the static row;
+  2. the outline's gentle pulse (its opacity breathing with the wave) stops;
+  3. the stagger shortens, the whole reveal capped at 0.6 s.
+
+  The layer fade itself is dropped only:
+  - when the window is hidden;
+  - when frames are skipped badly (a gap over 250 ms);
+  - when the setting is off;
+  - with reduced motion or Animations Off.
+
+  I4 reports which step the 782-layer file reached.
+- **Never in the document:** the reveal, the indicator and the outline are painted only. A test takes `screenshot`, an export and `inspect_document` mid-reveal and after, and asserts they are identical.
