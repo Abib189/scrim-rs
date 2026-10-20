@@ -1,6 +1,9 @@
-//! The Missing fonts window (#752): the fonts a file uses that aren't installed, whose text is
-//! drawn in a fallback font. It opens by itself after the user opens a file that has any (once
-//! the installed fonts are indexed and any import report is closed), and from Text ▸ Missing fonts.
+//! The Missing fonts window (#752): the fonts a file uses that aren't installed (or bundled with
+//! Scrim: Inter, Source Serif 4 and Geist never are), whose text is drawn in a fallback font. It
+//! opens by itself after the user opens a file that has any (once the installed fonts are indexed
+//! and any import report is closed), unless the person chose "Don't show again for this file"
+//! (`fonts.muteMissing`), and from Text ▸ Missing fonts. "Copy font names" runs
+//! `fonts.copyMissingNames`.
 
 use egui::RichText;
 use figcraft_engine::fonts::{Missing, missing};
@@ -68,7 +71,10 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
         }
         if !app.ui.font_checks.is_empty() && app.ui.import_report.is_none() && app.ui.missing_fonts.is_none() {
             let uid = app.ui.font_checks.remove(0);
-            if list(app, uid).is_some_and(|f| f.is_empty()) {
+            let path = app.session.docs.iter().find(|d| d.uid == uid).and_then(|d| d.path.clone());
+            if figcraft_engine::fonts::muted(&app.session.prefs, path.as_deref()) {
+                // Don't show again for this file.
+            } else if list(app, uid).is_some_and(|f| f.is_empty()) {
                 app.ui.missing_fonts = None;
             }
         }
@@ -76,10 +82,13 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
     if app.ui.missing_fonts.as_ref().is_some_and(|m| !app.session.docs.iter().any(|d| d.uid == m.uid)) {
         app.ui.missing_fonts = None;
     }
-    let Some(shown) = &app.ui.missing_fonts else { return };
+    let Some(shown) = app.ui.missing_fonts.clone() else { return };
+    let path = app.session.docs.iter().find(|d| d.uid == shown.uid).and_then(|d| d.path.clone());
+    let muted = figcraft_engine::fonts::muted(&app.session.prefs, path.as_deref());
     let t = Tokens::get(ctx);
     let mut open = true;
     let mut close_clicked = false;
+    let (mut toggle_mute, mut copy) = (false, false);
     crate::dialogs::window(tr("Missing fonts"), ctx).open(&mut open).show(ctx, |ui| {
         ui.set_width(380.0);
         if shown.indexing {
@@ -89,7 +98,7 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
         } else {
             ui.label(
                 RichText::new(tr(
-                    "This file uses fonts that aren't installed on this computer. Their text is drawn in a fallback font until you install them.",
+                    "This file uses fonts that aren't installed on this computer. Their text is drawn in a fallback font, so its widths, line breaks and anything sized to the text can change until you install them. The file itself keeps the fonts' names.",
                 ))
                 .color(t.text_secondary)
                 .font(regular(11.0)),
@@ -106,9 +115,25 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
                 }
             });
         }
-        ui.add_space(12.0);
-        close_clicked = crate::widgets::button(ui, tr("Close"), true, true).clicked();
+        ui.add_space(8.0);
+        if path.is_some() {
+            toggle_mute = crate::widgets::checkbox(ui, muted, tr("Don't show again for this file"));
+        }
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            close_clicked = crate::widgets::button(ui, tr("Close"), true, true).clicked();
+            if !shown.families.is_empty() {
+                copy = crate::widgets::button(ui, tr("Copy font names"), false, true).clicked();
+            }
+        });
     });
+    if toggle_mute {
+        app.run("fonts.muteMissing", json!({"path": path, "muted": !muted}));
+        app.services.save_prefs(&app.session.prefs);
+    }
+    if copy {
+        app.run("fonts.copyMissingNames", json!({}));
+    }
     if !open || close_clicked {
         app.ui.missing_fonts = None;
     }

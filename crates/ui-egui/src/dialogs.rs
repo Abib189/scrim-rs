@@ -144,6 +144,13 @@ fn about_body(ui: &mut egui::Ui, t: &Tokens) {
             .color(t.text_secondary)
             .font(regular(11.0)),
     );
+    // The bundled fonts' licence asks for their notice to travel with them (assets/fonts/).
+    #[cfg(not(target_arch = "wasm32"))]
+    ui.label(
+        RichText::new(tr("Includes the fonts Inter, Source Serif 4 and Geist, under the SIL Open Font License 1.1 (see NOTICE)."))
+            .color(t.text_secondary)
+            .font(regular(11.0)),
+    );
 }
 
 /// Escape closes the topmost simple dialog (one without menus of its own), before the canvas's

@@ -50,6 +50,7 @@ pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
             let what = match data["what"].as_str().unwrap_or_default() {
                 "standalone HTML" => tr("standalone HTML"),
                 "the connect command" => tr("the connect command"),
+                "the font names" => tr("the font names"),
                 other => other,
             };
             app.toast(trf("Copied {value}", &[("value", &what)]));

@@ -85,14 +85,64 @@ fn missing_fonts(s: &mut Session, _: &Value) -> Result<Value> {
     Ok(json!({"families": families}))
 }
 
+/// The file the Missing fonts window is about: `path`, or the open document's.
+fn file_path(s: &Session, p: &Value, cmd: &str) -> Result<String> {
+    match p.get("path").and_then(Value::as_str) {
+        Some(path) if !path.trim().is_empty() => Ok(path.to_string()),
+        _ => s.ds()?.path.clone().ok_or_else(|| crate::bad(cmd, "the file isn't saved yet: there is no file to remember")),
+    }
+}
+
+/// `fonts.muteMissing`: the Missing fonts window doesn't open by itself for this file (or does
+/// again, with `muted: false`).
+fn mute_missing(s: &mut Session, p: &Value) -> Result<Value> {
+    let path = file_path(s, p, "fonts.muteMissing")?;
+    let muted = p.get("muted").and_then(Value::as_bool).unwrap_or(true);
+    let list = &mut s.prefs.settings.fonts_muted;
+    list.retain(|f| f != &path);
+    if muted {
+        list.push(path.clone());
+    }
+    s.prefs.settings = std::mem::take(&mut s.prefs.settings).sanitized();
+    Ok(json!({"path": path, "muted": muted}))
+}
+
+/// Whether the Missing fonts window stays closed for the file at `path`.
+pub fn muted(prefs: &crate::Prefs, path: Option<&str>) -> bool {
+    path.is_some_and(|p| prefs.settings.fonts_muted.iter().any(|m| m == p))
+}
+
+/// `fonts.copyMissingNames`: the missing families' names, one per line, onto the clipboard.
+fn copy_missing_names(s: &mut Session, _: &Value) -> Result<Value> {
+    let families: Vec<String> = missing(&s.ds()?.doc).into_iter().map(|m| m.family).collect();
+    s.request_ui(crate::cmd::code::COPY_REQUEST, json!({"text": families.join("\n"), "what": "the font names"}));
+    Ok(json!({"families": families}))
+}
+
 pub fn specs() -> Vec<CommandSpec> {
-    vec![spec!(
-        "text.missingFonts",
-        "Missing fonts",
-        "{}  fonts the open document names that aren't installed (text layers, styled ranges, text styles, font family variables); the app shows them → {families: [{family, layers}]}",
-        false,
-        missing_fonts
-    )]
+    vec![
+        spec!(
+            "text.missingFonts",
+            "Missing fonts",
+            "{}  fonts the open document names that aren't installed (text layers, styled ranges, text styles, font family variables); the app shows them → {families: [{family, layers}]}",
+            false,
+            missing_fonts
+        ),
+        spec!(
+            "fonts.muteMissing",
+            "Don't show missing fonts again for this file",
+            "{path? (default: the open file), muted? (default true; false shows it again)} → {path, muted}",
+            false,
+            mute_missing
+        ),
+        spec!(
+            "fonts.copyMissingNames",
+            "Copy missing font names",
+            "{} → {families}  (one per line, onto the clipboard in the app)",
+            false,
+            copy_missing_names
+        ),
+    ]
 }
 
 #[cfg(test)]

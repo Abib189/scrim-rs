@@ -7,6 +7,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 mod breaks;
+pub mod bundled;
 pub mod color;
 pub mod display;
 pub mod fontdb;

@@ -55,7 +55,9 @@ code.
   (and `Icon::Logo` draws the same mark in the interface). It awaits the owner's real mark. FigCraft's
   chameleon in `assets/app-icon/` stays in the repository, unshipped.
 - **Fonts live in [storytold/craft-fonts](https://github.com/storytold/craft-fonts), never in this
-  repo.** The app uses it only through the optional `CRAFT_FONTS_DIR` build input
+  repo,** with one exception the owner asked for (Stage C): Inter, Source Serif 4 and Geist (SIL OFL
+  1.1) in `assets/fonts/`, embedded in the desktop app by `crates/text/src/bundled.rs`, with their
+  licences, sources and checksums (`assets/fonts/README.md`). Add no other font here. The app uses it only through the optional `CRAFT_FONTS_DIR` build input
   (`.cargo/config.toml` points it at `../craft-fonts` for local builds; `crates/text/build.rs`
   embeds it). Everything must build, test and run without it (system fonts are scanned at runtime).
 - Demo and test content is synthetic or public domain; never personal photos or data.

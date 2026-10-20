@@ -473,6 +473,13 @@ fn raw_db() -> &'static RwLock<FontDb> {
                 db.add(face);
             }
         }
+        // The fonts bundled with the app, for families craft-fonts doesn't supply.
+        let from_craft: std::collections::HashSet<String> = CRAFT_FONTS.iter().map(|f| f.family.to_lowercase()).collect();
+        for f in crate::bundled::BUNDLED_FONTS.iter().filter(|f| !from_craft.contains(&f.family.to_lowercase())) {
+            if let Some(face) = Face::from_bytes(FontBytes::Static(f.bytes), 0, Some(f.family), Some(f.style)) {
+                db.add(face);
+            }
+        }
         RwLock::new(db)
     })
 }

@@ -124,3 +124,16 @@ fn needs_an_open_document() {
     let mut s = Session::empty();
     assert!(s.execute("text.missingFonts", &json!({})).is_err());
 }
+
+/// Inter, Source Serif 4 and Geist are bundled with the desktop app (`assets/fonts/`): a file
+/// using them misses nothing, without any installed font (this test indexes none).
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn the_bundled_families_are_never_missing() {
+    let mut s = crate::Session::new();
+    for (f, style) in [("Inter", "Semi Bold"), ("Source Serif 4", "Italic"), ("Geist", "Medium"), ("Scrim Not A Font", "Regular")] {
+        s.execute("text.create", &serde_json::json!({"text": "Aa", "x": 0, "y": 0, "props": {"fontFamily": f, "fontStyle": style}})).unwrap();
+    }
+    let missing: Vec<String> = super::missing(s.doc().unwrap()).into_iter().map(|m| m.family).collect();
+    assert_eq!(missing, ["Scrim Not A Font"]);
+}

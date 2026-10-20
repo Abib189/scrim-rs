@@ -147,3 +147,85 @@ fn placing_images_or_clearing_recents_does_not_bring_it_back() {
     assert!(u.app.ui.font_checks.is_empty());
     assert_eq!(listed(&u), Value::Null);
 }
+
+/// The clipboard, kept where the test can read it.
+struct Clipboard(std::sync::Arc<std::sync::Mutex<Vec<String>>>);
+
+impl crate::Services for Clipboard {
+    fn clipboard_set_text(&mut self, s: &str) {
+        self.0.lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(s.to_string());
+    }
+}
+
+/// Inter, Source Serif 4 and Geist are bundled (`assets/fonts/`): a file using only them opens
+/// without the window, and a file using them with a missing one lists only that one.
+#[test]
+fn bundled_fonts_are_never_missing() {
+    if !fonts_indexed() {
+        eprintln!("skipped: system fonts opted out");
+        return;
+    }
+    let bundled = saved("bundled", &["Inter", "Source Serif 4", "Geist"]);
+    let mut u = Ui::new(Session::new());
+    u.app.run_user("file.open", json!({"path": bundled}));
+    u.frame(vec![]);
+    u.frame(vec![]);
+    assert_eq!(listed(&u), Value::Null, "no window for the bundled families");
+    u.app.run("file.close", json!({}));
+    let mixed = saved("mixed", &["Scrim Missing Face", "Inter", "Geist"]);
+    u.app.run_user("file.open", json!({"path": mixed}));
+    u.frame(vec![]);
+    assert_eq!(listed(&u)["families"], json!([{"family": "Scrim Missing Face", "layers": 2}]));
+    for p in [bundled, mixed] {
+        std::fs::remove_file(p).unwrap();
+    }
+}
+
+#[test]
+fn dont_show_again_is_remembered_for_that_file_only() {
+    if !fonts_indexed() {
+        eprintln!("skipped: system fonts opted out");
+        return;
+    }
+    let (a, b) = (saved("mute-a", &["Scrim Missing Face"]), saved("mute-b", &["Scrim Missing Face"]));
+    let mut u = Ui::new(Session::new());
+    u.app.run_user("file.open", json!({"path": a}));
+    u.frame(vec![]);
+    assert!(listed(&u).is_object(), "it opens the first time");
+    assert_eq!(u.app.run("fonts.muteMissing", json!({})), Some(json!({"path": a, "muted": true})));
+    u.app.run("file.close", json!({}));
+    u.frame(vec![]);
+    u.app.run_user("file.open", json!({"path": a}));
+    u.frame(vec![]);
+    u.frame(vec![]);
+    assert_eq!(listed(&u), Value::Null, "not again for this file");
+    // Text ▸ Missing fonts still shows it.
+    u.app.run("text.missingFonts", json!({}));
+    u.frame(vec![]);
+    assert!(listed(&u).is_object());
+    u.app.ui.missing_fonts = None;
+    u.app.run("file.close", json!({}));
+    u.app.run_user("file.open", json!({"path": b}));
+    u.frame(vec![]);
+    assert!(listed(&u).is_object(), "another file still shows it");
+    let saved_prefs = serde_json::to_value(&u.app.session.prefs).unwrap();
+    assert_eq!(saved_prefs["fonts_muted"], json!([a]), "kept in the preferences");
+    for p in [a, b] {
+        std::fs::remove_file(p).unwrap();
+    }
+}
+
+#[test]
+fn copy_font_names_copies_the_missing_families() {
+    let mut s = Session::new();
+    for f in ["Scrim Missing One", "Inter", "Scrim Missing Two"] {
+        s.execute("text.create", &json!({"text": "Aa", "x": 0, "y": 0, "props": {"fontFamily": f}})).unwrap();
+    }
+    let mut u = Ui::new(s);
+    let copied = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    u.app.services = Box::new(Clipboard(copied.clone()));
+    let r = u.app.run("fonts.copyMissingNames", json!({})).unwrap();
+    let want = ["Scrim Missing One", "Scrim Missing Two"];
+    assert_eq!(r["families"], json!(want));
+    assert_eq!(copied.lock().unwrap().last().map(String::as_str), Some(want.join("\n").as_str()));
+}

@@ -83,7 +83,7 @@ There is **no HTTP server** in the workspace (no hyper, axum or tiny_http). The 
     - **Allowed:** the rebrand test matches "FigCraft" case-sensitively, so the lowercase extension (and the Open file card's "Open .figcraft, .svg or images") passes.
     - **Kept,** per the rebrand decisions' group 6.
     - **Renaming it is a later decision.** It needs a compatibility importer for `.figcraft`, a new UTI and MIME type, and the file associations of both.
-11. **Fonts (addendum 2): Inter and Source Serif 4, bundled.**
+11. **Fonts (addendum 2): Inter and Source Serif 4, bundled, and Geist as well.** "Brand colour system mockups" also uses Geist in 499 layers (more than Inter's 70 and Source Serif 4's 20). Without it, the Missing fonts window would still open for that file on a machine without Geist. Geist is OFL 1.1 too, so it is bundled with the other two. **Overrule** if you want only the two you named; the window would then list Geist there.
     - **Conflict:** this goes against the rule "Fonts live in craft-fonts, never in this repo" in AGENTS.md / CLAUDE.md. The addendum is the owner's newer instruction, so the fonts commit updates the rule to name this exception. If you'd rather keep the rule, the alternative is to put these two families into craft-fonts and build with it.
     - **The source of the files:** this Mac already has both installed, the same OFL 1.1 files upstream ships:
       - Inter 4.001 (git-9221beed3, rsms/inter) and Source Serif 4 4.004 (adobe-fonts/source-serif), in `~/Library/Fonts`;

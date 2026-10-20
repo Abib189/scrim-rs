@@ -69,3 +69,14 @@ Paul Bakaus, licensed under the Apache License, Version 2.0. A copy of that lice
 crates/engine/src/cmd/lint/design-rules/LICENSE. The rules were ported to TypeScript and
 modified by the Scrim project, then re-implemented in Rust and modified by this fork; the
 chain of changes is in crates/engine/src/cmd/lint/design-rules/NOTICE.md.
+
+Bundled fonts
+-------------
+The desktop app embeds these fonts from assets/fonts/, unmodified, each under the SIL Open
+Font License, Version 1.1 (the licence text is next to each font: assets/fonts/*/OFL.txt):
+- Inter 4.001, Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter).
+- Source Serif 4, version 4.004, (c) 2014 - 2021 Adobe Systems Incorporated
+  (http://www.adobe.com/), with Reserved Font Name 'Source'
+  (https://github.com/adobe-fonts/source-serif).
+- Geist 1.401, Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font).
+Where each file came from, and its SHA-256, is in assets/fonts/README.md.

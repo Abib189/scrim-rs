@@ -18,6 +18,8 @@ pub mod booleans;
 pub mod branches;
 pub mod catalog;
 mod clipboard;
+pub mod settings;
+pub use settings::UiRequest;
 pub mod cmd;
 pub mod code_connect;
 pub mod codegen;
@@ -596,6 +598,9 @@ pub struct Prefs {
     /// The plugin directory browsed last (`ws://host:port/`, never with a key).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plugin_directory: Option<String>,
+    /// Scrim's own preferences (Stage C).
+    #[serde(flatten)]
+    pub settings: settings::Settings,
     /// The accent colour (`pref.accent`): `#rrggbb`, or empty for the default.
     pub accent: String,
     /// The server files are shared through online (Share ▸ Online, join codes; Publish to server
@@ -659,6 +664,7 @@ impl Default for Prefs {
             plugin_directory: None,
             publish_server: live::DEFAULT_SERVER.into(),
             accent: String::new(),
+            settings: Default::default(),
             panel: Default::default(),
             recent_files: Vec::new(),
             online_files: Vec::new(),
@@ -670,14 +676,6 @@ impl Default for Prefs {
             recent_actions: Vec::new(),
         }
     }
-}
-
-/// A request from a command to the UI (open a dialog or panel, show a message). Programmatic
-/// callers ignore them.
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct UiRequest {
-    pub kind: String,
-    pub data: Value,
 }
 
 /// The editing session: open documents, the current tool, clipboard and prefs.
