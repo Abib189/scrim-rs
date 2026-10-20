@@ -20,7 +20,7 @@ use crate::theme::{Tokens, regular};
 use crate::{FigApp, a11y, widgets};
 
 /// The sections, in the rail's order: (id, name).
-pub const SECTIONS: &[(&str, &str)] = &[("general", tr_noop("General"))];
+pub const SECTIONS: &[(&str, &str)] = &[("general", tr_noop("General")), ("toolbar", tr_noop("Toolbar"))];
 
 /// Open Settings at `section` (`dialog.settings`, `dialog.preferences`).
 pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
@@ -94,8 +94,9 @@ fn rail_ui(app: &mut FigApp, ui: &mut Ui, t: &Tokens, rail: Rect) {
 
 fn section(app: &mut FigApp, ui: &mut Ui) {
     // (Each section is its own module; C3 adds them one commit at a time.)
-    if app.ui.settings_section == "general" {
-        crate::settings_general::show(app, ui);
+    match app.ui.settings_section {
+        "toolbar" => crate::settings_toolbar::show(app, ui),
+        _ => crate::settings_general::show(app, ui),
     }
 }
 

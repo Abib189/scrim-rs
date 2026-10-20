@@ -11,25 +11,35 @@ use crate::i18n::{tr, tr_noop, trf};
 use crate::icons::{self, Icon};
 use crate::theme::{ACCENT, Tokens, regular};
 
-struct Group {
+/// The default groups (`figcraft_engine::cmd::toolbar::DEFAULT` names the same): each tool's icon,
+/// and the menu button's name for a group as it ships.
+struct Default {
     key: &'static str,
-    /// The flyout button's name for screen readers.
     name: &'static str,
     tools: &'static [(ToolId, Icon)],
 }
 
-const GROUPS: &[Group] = &[
-    Group {
+/// A group as the toolbar shows it (Settings ▸ Toolbar arranges them): its visible tools.
+struct Group {
+    /// The group's first tool (its id names the button and its menu).
+    key: &'static str,
+    /// The flyout button's name for screen readers.
+    name: &'static str,
+    tools: Vec<(ToolId, Icon)>,
+}
+
+const GROUPS: &[Default] = &[
+    Default {
         key: "move",
         name: tr_noop("Move tools"),
         tools: &[(ToolId::Move, Icon::Move), (ToolId::Hand, Icon::Hand), (ToolId::Scale, Icon::Scale)],
     },
-    Group {
+    Default {
         key: "frame",
         name: tr_noop("Frame tools"),
         tools: &[(ToolId::Frame, Icon::Frame), (ToolId::Section, Icon::Section), (ToolId::Slice, Icon::Slice)],
     },
-    Group {
+    Default {
         key: "shape",
         name: tr_noop("Shape tools"),
         tools: &[
@@ -41,14 +51,36 @@ const GROUPS: &[Group] = &[
             (ToolId::Star, Icon::Star),
         ],
     },
-    Group {
+    Default {
         key: "pen",
         name: tr_noop("Drawing tools"),
         tools: &[(ToolId::Pen, Icon::Pen), (ToolId::Pencil, Icon::Pencil), (ToolId::ShapeBuilder, Icon::ShapeBuilder)],
     },
-    Group { key: "text", name: tr_noop("Text"), tools: &[(ToolId::Text, Icon::Text)] },
-    Group { key: "comment", name: tr_noop("Comment"), tools: &[(ToolId::Comment, Icon::Comment)] },
+    Default { key: "text", name: tr_noop("Text"), tools: &[(ToolId::Text, Icon::Text)] },
+    Default { key: "comment", name: tr_noop("Comment"), tools: &[(ToolId::Comment, Icon::Comment)] },
 ];
+
+/// A tool's icon on the toolbar.
+pub(crate) fn icon_of(tool: ToolId) -> Icon {
+    GROUPS.iter().flat_map(|g| g.tools.iter()).find(|(t, _)| *t == tool).map_or(Icon::Move, |(_, i)| *i)
+}
+
+/// The groups the toolbar shows: the preferences' layout, hidden tools left out (they keep their
+/// shortcuts), empty groups dropped. A group with the tools of a default group keeps its name.
+fn groups(app: &FigApp) -> Vec<Group> {
+    figcraft_engine::cmd::toolbar::layout(&app.session.prefs)
+        .iter()
+        .filter_map(|g| {
+            let all: Vec<ToolId> = g.iter().filter_map(|e| ToolId::from_id(&e.tool)).collect();
+            let tools: Vec<(ToolId, Icon)> = g.iter().filter(|e| e.on).filter_map(|e| ToolId::from_id(&e.tool)).map(|t| (t, icon_of(t))).collect();
+            // A default group keeps its key and name; another is named after its first tool.
+            let default = GROUPS.iter().find(|d| d.tools.len() == all.len() && d.tools.iter().all(|(t, _)| all.contains(t)));
+            let key = default.map_or(all.first()?.id(), |d| d.key);
+            let name = default.map_or(tr_noop("Tools"), |d| d.name);
+            (!tools.is_empty()).then_some(Group { key, name, tools })
+        })
+        .collect()
+}
 
 fn remembered(ui: &Ui, key: &str, default: ToolId) -> ToolId {
     ui.data(|d| d.get_temp::<u8>(egui::Id::new(("tb_last", key)))).and_then(|i| ToolId::ALL.get(i as usize).copied()).unwrap_or(default)
@@ -77,21 +109,30 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
 }
 
 /// The main toolbar pill's width: the Actions palette matches it so the two read as one bar.
-pub(crate) fn main_width() -> f32 {
+pub(crate) fn main_width(app: &FigApp) -> f32 {
     let (cell, gap) = (32.0, 4.0);
-    GROUPS.len() as f32 * (cell + gap) + gap * 10.0 + 2.0 * (cell + gap) + 16.0 + 4.0 * 34.0 + 24.0
+    groups(app).len() as f32 * (cell + gap) + gap * 10.0 + 2.0 * (cell + gap) + 16.0 + 4.0 * 34.0 + 24.0
 }
 
 fn main_toolbar(app: &mut FigApp, ui: &mut Ui, canvas: Rect, t: &Tokens) {
     let (cell, gap) = (32.0, 4.0);
-    let width = main_width();
+    let width = main_width(app);
     let rect = pill(ui, &mut app.ui.nav, canvas, width, t);
     let current = app.session.tool.tool;
     let mut x = rect.min.x + 8.0;
     let cy = rect.center().y;
-    for g in GROUPS {
+    for g in &groups(app) {
         let in_group = g.tools.iter().any(|(tid, _)| *tid == current);
-        let shown = if in_group { current } else { remembered(ui, g.key, g.tools.first().map(|x| x.0).unwrap_or(ToolId::Move)) };
+        let first = g.tools.first().map_or(ToolId::Move, |x| x.0);
+        // (The tool the group last showed may since have been hidden or moved: then its first.)
+        let last = remembered(ui, g.key, first);
+        let shown = if in_group {
+            current
+        } else if g.tools.iter().any(|(tid, _)| *tid == last) {
+            last
+        } else {
+            first
+        };
         let icon = g.tools.iter().find(|(tid, _)| *tid == shown).map(|(_, i)| *i).unwrap_or(Icon::Move);
         let r = Rect::from_center_size(pos2(x + cell / 2.0, cy), vec2(cell, cell));
         let resp = tool_cell(ui, t, r, ("tool", g.key), icon, in_group, &format!("{}  {}", tr(shown.label()), pretty_shortcut(shown.shortcut())));
@@ -419,7 +460,7 @@ fn flyout(app: &mut FigApp, ui: &mut Ui, g: &Group, bottom_left: egui::Pos2) {
         let (rect, _) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
         ui.painter().rect_filled(rect, CornerRadius::same(13), t.menu);
         let mut y = rect.min.y + 8.0;
-        for (tid, icon) in g.tools {
+        for (tid, icon) in &g.tools {
             let r = Rect::from_min_size(pos2(rect.min.x + 8.0, y), vec2(w - 16.0, item_h));
             let resp = ui.interact(r, ui.id().with(("fly", tid.id())), Sense::click());
             a11y::menu_item(&resp, tr(tid.label()), tid.shortcut(), Some(*tid == app.session.tool.tool));

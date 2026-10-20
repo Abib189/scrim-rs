@@ -26,6 +26,7 @@ pub mod section;
 pub mod structure;
 pub mod styles;
 pub mod text;
+pub mod toolbar;
 pub mod variables;
 pub mod variables_io;
 pub mod view;
@@ -92,6 +93,7 @@ fn registry() -> &'static Registry {
         list.extend(ai::specs());
         list.extend(appearance::specs());
         list.extend(mcp::specs());
+        list.extend(toolbar::specs());
         list.extend(text::specs());
         list.extend(crate::fonts::specs());
         list.extend(styles::specs());

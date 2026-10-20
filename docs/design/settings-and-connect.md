@@ -167,6 +167,24 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
 - **`home_settings_row.rs`:** the Settings row, pinned 8 px above the bottom of the home sidebar below a hairline, the same 32 px row as the others, with our own gear. In a short window it stays below the rows, never over them. The three rows above are untouched, as are their positions; the test checks them.
 - **The settings struct** gains `motion` and `preserve_unsaved`, both falling back when missing or invalid.
 
+## C3b as built: Toolbar
+
+- **The model (`crates/engine/src/cmd/toolbar.rs`):** `settings.toolbar`, a list of groups of `{tool, on}`. It is empty while the toolbar is the default, so a default toolbar keeps following the app's.
+  - **`normalized`** drops unknown and repeated tools and empty groups, adds a missing tool shown in a group of its own, and keeps Move shown.
+  - **The commands:** `toolbar.state`, `toolbar.toggle {tool, on?}`, `toolbar.move {tool, group, index?}`, `toolbar.group {tool, with}`, `toolbar.ungroup {tool}` and `toolbar.reset`. Agents reach them through `run_command` like every other command.
+  - **Move can't be hidden;** `toolbar.toggle` refuses it with the reason.
+- **The toolbar (`toolbar.rs`)** draws the groups from the preferences. Hidden tools are left out, and an empty group is dropped.
+  - A group with the tools of a group as it ships keeps that group's name ("Shape tools"); another is named "Tools".
+  - A hidden tool keeps its shortcut: the keymap never looked at the toolbar.
+  - If the tool a group last showed was hidden or moved, the group shows its first tool.
+  - The keyboard dock (F6, Tab, the arrows) and the grab work on whatever groups there are; the a11y tests still pass unchanged.
+- **Settings ▸ Toolbar (`settings_toolbar.rs`):** one bordered box per group; one row per tool with its handle, icon, name, key, Show, and the buttons Up, Down, Join above and Own button.
+  - **The mouse:** drag a row's handle onto another tool to put the two in one group (after that tool), onto a group's box to move it to the end of that group, or onto "Drop here for a button of its own".
+  - **The keyboard:** every move has a button. Up and Down cross into the next group at its edge.
+  - Every row shows the same buttons, disabled where they don't apply, so the columns line up.
+  - **Reset to default** runs `toolbar.reset`; it is disabled while the toolbar is the default.
+- **Screen readers** hear which of the section's buttons are disabled. `widgets::button` itself doesn't say so, so every other disabled button still reads as one you can press; `widgets.rs` is frozen at its size cap, so that fix waits for a split of the file (listed in the final report).
+
 ## Order of the commits
 
 1. **C0:** this plan.

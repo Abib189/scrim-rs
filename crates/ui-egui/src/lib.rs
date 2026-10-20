@@ -62,6 +62,7 @@ mod selection_spacing;
 pub mod services;
 pub mod settings_dialog;
 pub mod settings_general;
+pub mod settings_toolbar;
 pub mod shortcuts;
 pub mod shortcuts_panel;
 pub mod style_picker;

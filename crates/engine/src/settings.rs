@@ -61,6 +61,9 @@ pub struct Settings {
     /// already stay until their files are saved.
     #[serde(default = "yes")]
     pub preserve_unsaved: bool,
+    /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub toolbar: crate::cmd::toolbar::Layout,
     /// Files (their paths) the Missing fonts window doesn't open for by itself any more (its
     /// "Don't show again for this file"). Text ▸ Missing fonts still shows it.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -69,7 +72,7 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { mcp: McpSettings::default(), motion: system(), preserve_unsaved: true, fonts_muted: Vec::new() }
+        Self { mcp: McpSettings::default(), motion: system(), preserve_unsaved: true, toolbar: Vec::new(), fonts_muted: Vec::new() }
     }
 }
 
