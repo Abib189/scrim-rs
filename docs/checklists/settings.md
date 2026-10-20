@@ -17,3 +17,8 @@ The plan: `docs/design/settings-and-connect.md`.
 | Without `claude`: Copy only, and why | On a machine without Claude Code | `without_claude_only_copy_is_offered` |
 | An agent can't make Scrim run a program | `run_command {command: "mcp.run-connect"}` over MCP | `an_agent_cannot_make_scrim_run_a_program` |
 | The AI tab shows no "--control" or "scrim mcp" | — | `the_ai_tab_shows_no_control_channel_or_scrim_mcp_copy` |
+| Settings opens from the home sidebar's bottom row, Cmd+, and the palette (`settings.open`); Done and Escape close it; an agent's `settings.open` opens nothing and returns the settings | Click Settings at the bottom of Home; press Cmd+, in a file | `settings_tests.rs` › `settings_opens_from_its_command_cmd_comma_and_closes_with_done_or_escape`, `an_agents_settings_open_returns_the_settings_and_opens_nothing` |
+| Settings ▸ General ▸ Theme and the tab bar's sun/moon are one setting (`pref.theme`): each follows the other | Toggle the moon, open Settings; choose Light there | `the_theme_in_settings_and_the_tab_bars_toggle_follow_each_other` |
+| Animations: Follow system / On / Off | Choose Off: hovers and openings don't animate | `animations_follow_system_on_or_off` |
+| Keep recovery copies of unsaved work (on by default); off stops new copies | Turn it off, then force-quit with an unsaved change | `keeping_unsaved_work_is_a_kept_setting` (the setting); the recovery tick's guard in `apps/figcraft/src/main.rs` (manual) |
+| The home sidebar's Settings row: pinned at the bottom below a hairline, the same row as the others, which stay where they were | Look at Home in a short and a tall window | `the_home_sidebar_has_settings_pinned_at_the_bottom` |

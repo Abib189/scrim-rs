@@ -192,8 +192,8 @@ pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
         }
         icons::paint(ui.painter(), theme_r.shrink(7.0), if app.ui.dark { Icon::Sun } else { Icon::Moon }, t.icon);
         if tresp.clicked() {
-            let cmd = if app.ui.dark { "view.themeLight" } else { "view.themeDark" };
-            app.run(cmd, json!({}));
+            // The same command as Settings ▸ General ▸ Theme: one setting, two places.
+            app.run("pref.theme", json!({"theme": if app.ui.dark { "light" } else { "dark" }}));
         }
         if let Some(i) = switch {
             if let Some(p) = app.ui.present.take() {

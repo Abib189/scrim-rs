@@ -38,20 +38,47 @@ impl Default for McpSettings {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+/// The Settings sections (`settings.open {section}`).
+pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
+
+fn yes() -> bool {
+    true
+}
+
+fn system() -> String {
+    "system".into()
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     /// The MCP endpoint's settings.
     pub mcp: McpSettings,
+    /// Interface animations: `system` (follow the system's reduce-motion setting), `on` or `off`.
+    #[serde(default = "system")]
+    pub motion: String,
+    /// Keep recovery copies of unsaved work (on by default): off stops new copies; those kept
+    /// already stay until their files are saved.
+    #[serde(default = "yes")]
+    pub preserve_unsaved: bool,
     /// Files (their paths) the Missing fonts window doesn't open for by itself any more (its
     /// "Don't show again for this file"). Text ▸ Missing fonts still shows it.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fonts_muted: Vec<String>,
 }
 
+impl Default for Settings {
+    fn default() -> Self {
+        Self { mcp: McpSettings::default(), motion: system(), preserve_unsaved: true, fonts_muted: Vec::new() }
+    }
+}
+
 impl Settings {
     /// These settings with anything out of range put back in range.
     pub fn sanitized(mut self) -> Self {
+        if !matches!(self.motion.as_str(), "system" | "on" | "off") {
+            self.motion = system();
+        }
         if self.mcp.port < 1024 {
             self.mcp.port = DEFAULT_MCP_PORT;
         }

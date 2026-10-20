@@ -93,7 +93,16 @@ impl eframe::App for App {
             self.title = title;
         }
         let now = ctx.input(|i| i.time);
-        if let Some(wait) = with_app(|fig| recovery::lock(&self.recovery).as_mut().and_then(|r| r.tick(&fig.session, now))).flatten() {
+        // Settings ▸ General ▸ Keep recovery copies of unsaved work: off, no new copies.
+        let tick = |fig: &mut FigApp| {
+            fig.session
+                .prefs
+                .settings
+                .preserve_unsaved
+                .then(|| recovery::lock(&self.recovery).as_mut().and_then(|r| r.tick(&fig.session, now)))
+                .flatten()
+        };
+        if let Some(wait) = with_app(tick).flatten() {
             ctx.request_repaint_after(std::time::Duration::from_secs_f64(wait));
         }
     }

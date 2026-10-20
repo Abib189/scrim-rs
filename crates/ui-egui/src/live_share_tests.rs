@@ -464,13 +464,40 @@ fn the_join_dialog_is_the_same_field() {
     assert!(h.app.ui.live.join.is_none(), "it closes once the join started");
 }
 
+/// Scroll the Settings pane until `text` shows; the shapes drawn then.
+fn scroll_to(h: &mut Harness, text: &str) -> Vec<Shape> {
+    let wheel = Event::MouseWheel {
+        unit: egui::MouseWheelUnit::Point,
+        delta: egui::vec2(0.0, -120.0),
+        phase: egui::TouchPhase::Move,
+        modifiers: Default::default(),
+    };
+    for _ in 0..40 {
+        let shapes = h.frames(2);
+        if has_text(&shapes, text) {
+            return h.frames(12);
+        }
+        h.frame(vec![Event::PointerMoved(egui::pos2(900.0, 400.0)), wheel.clone()]);
+    }
+    panic!("{text:?} never showed")
+}
+
 #[test]
 fn the_server_preference_resets_and_turns_online_sharing_off() {
     let (mut h, script) = harness();
+    // Settings ▸ General, scrolled down to Sharing.
     h.app.ui.preferences = true;
-    let shapes = h.frames(2);
-    assert!(has_text(&shapes, "Server for online sharing") && has_text(&shapes, "Reset"));
-    click(&mut h, &shapes, "Reset");
+    let shapes = scroll_to(&mut h, "Server for online sharing");
+    let row = text_center(&shapes, "Server for online sharing");
+    // (General has another Reset, the accent's: the one on the server's row.)
+    let reset = texts(&shapes)
+        .into_iter()
+        .filter(|(t, _, _)| t == "Reset")
+        .map(|(_, p, s)| p + s / 2.0)
+        .min_by(|a, b| (a.y - row.y).abs().total_cmp(&(b.y - row.y).abs()))
+        .unwrap();
+    h.click(reset);
+    h.frames(2);
     assert_eq!(h.app.session.prefs.publish_server, DEFAULT_SERVER);
     // Off: Preferences say what that means, and the popover offers the local network only.
     h.app.session.execute("pref.publishServer", &json!({"url": ""})).unwrap();

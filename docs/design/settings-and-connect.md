@@ -147,6 +147,26 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
 - **The string guard:** `the_ai_tab_shows_no_control_channel_or_scrim_mcp_copy` fails if "--control" or "scrim mcp" appears in a string literal of `ai_tab.rs` or `connect_flow.rs`. The activity feed, lint findings and lock from B3 are unchanged.
 - **The rebrand test now also refuses "OpenPencil"** in interface strings.
 
+## C3a as built: the Settings shell and General
+
+- **`settings_dialog.rs`:** a rail of sections on the left (AccessKit tabs, focus ring), the section's pane on the right (it scrolls), and **Done**. Escape closes it.
+  - **It opens from:**
+    - the home sidebar's Settings row;
+    - Cmd+, (`app.preferences`, which opens it at General);
+    - the Actions palette, `settings.open {section?}`.
+  - **An agent's `settings.open`** opens no window, since programmatic calls never open dialogs (AGENTS.md). It returns the settings instead.
+  - **The rail lists only the sections built so far.**
+- **`settings_general.rs`:** Appearance, then Animations, Shared rooms, Unsaved work, Snapping, Editing, Sharing and Language.
+  - **Appearance:** the theme, Auto / Light / Dark through `pref.theme`, the same command as the tab bar's sun and moon; the accent row from B4.
+  - **Animations:** Follow system / On / Off, through `pref.motion`, which also keeps the old `reduce_motion` in step.
+  - **Shared rooms:** your name (`pref.userName`; shown beside your cursor and on comments).
+  - **Unsaved work:** "Keep recovery copies of unsaved work" (`pref.preserveUnsaved`; desktop only). Off stops the recovery tick and the emergency save; existing copies stay. It sits beside "Save files automatically".
+  - **Snapping:** "Snap to objects" (`view.snapObjects`) and "Snap to pixel grid" (`view.snapPixel`), the switches that work.
+  - **Editing, Sharing and Language:** Preferences' rows, unchanged.
+- **The Preferences window is gone;** its rows live in General.
+- **`home_settings_row.rs`:** the Settings row, pinned 8 px above the bottom of the home sidebar below a hairline, the same 32 px row as the others, with our own gear. In a short window it stays below the rows, never over them. The three rows above are untouched, as are their positions; the test checks them.
+- **The settings struct** gains `motion` and `preserve_unsaved`, both falling back when missing or invalid.
+
 ## Order of the commits
 
 1. **C0:** this plan.

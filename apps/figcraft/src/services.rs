@@ -354,6 +354,9 @@ impl Services for Desktop {
         }
     }
     fn emergency_save(&mut self, session: &Session) {
+        if !session.prefs.settings.preserve_unsaved {
+            return;
+        }
         if let Some(r) = crate::recovery::lock(&self.recovery).as_mut() {
             r.write(session, true);
             // Earlier runs' copies now covered go, so the next start doesn't open them twice.

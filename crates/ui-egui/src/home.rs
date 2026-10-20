@@ -232,6 +232,7 @@ fn sidebar(app: &mut FigApp, ui: &mut Ui, t: &Tokens, left: Rect) {
         }
         y += 34.0;
     }
+    crate::home_settings_row::show(app, ui, t, left, y);
 }
 
 fn file_matches(name: &str, location: &str, query: &str) -> bool {

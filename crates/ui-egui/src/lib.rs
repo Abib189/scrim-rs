@@ -32,6 +32,7 @@ pub mod guides;
 pub mod handles;
 pub mod home;
 pub mod home_recents;
+pub mod home_settings_row;
 pub mod i18n;
 pub mod icons;
 pub mod import_report;
@@ -59,6 +60,8 @@ pub mod section_panel;
 pub mod selection_colors;
 mod selection_spacing;
 pub mod services;
+pub mod settings_dialog;
+pub mod settings_general;
 pub mod shortcuts;
 pub mod shortcuts_panel;
 pub mod style_picker;
@@ -382,6 +385,8 @@ pub struct UiState {
     pub panel_animate: bool,
     /// Connect Claude Code (`connect_flow`).
     pub connect: connect_flow::Flow,
+    /// The section Settings shows (`settings_dialog::SECTIONS`); `preferences` says it's open.
+    pub settings_section: &'static str,
     /// The tab of the previous frame, to see the right panel change mode.
     pub last_right_tab: RightTab,
     pub left_tab: LeftTab,
@@ -549,6 +554,7 @@ impl Default for UiState {
             right_tab: RightTab::Design,
             panel_animate: false,
             connect: Default::default(),
+            settings_section: "general",
             last_right_tab: RightTab::Design,
             left_tab: LeftTab::File,
             pages_open: true,
@@ -843,7 +849,10 @@ impl FigApp {
                     self.ui.about = true;
                     self.ui.about_tab = dialogs::AboutTab::About;
                 }
-                "dialog.preferences" => self.ui.preferences = true,
+                "dialog.preferences" => {
+                    self.ui.preferences = true;
+                    self.ui.settings_section = "general";
+                }
                 "dialog.missingFonts" => missing_fonts::request(self),
                 "panel.shortcuts" => self.ui.shortcuts_panel = !self.ui.shortcuts_panel,
                 "palette.actions" => menus::toggle_palette(&mut self.ui),
@@ -1144,7 +1153,12 @@ impl FigApp {
 
     /// Reduced motion: the preference or the system's setting.
     pub fn reduce_motion(&self) -> bool {
-        self.session.prefs.reduce_motion || self.services.reduce_motion()
+        // Settings ▸ General ▸ Animations: On, Off, or Follow system.
+        match self.session.prefs.settings.motion.as_str() {
+            "on" => false,
+            "off" => true,
+            _ => self.session.prefs.reduce_motion || self.services.reduce_motion(),
+        }
     }
 
     /// The CJK scripts the UI shows: the language's, the language picker's (Preferences open),

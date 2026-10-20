@@ -369,7 +369,39 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!("pref.renameDuplicates", "Rename duplicated layers", "{on?}", false, |s, p| pref(s, p, |x| &mut x.rename_duplicates)),
         spec!("pref.showDimensions", "Show dimensions on objects", "{on?}", false, |s, p| pref(s, p, |x| &mut x.show_dimensions)),
         spec!("pref.numberKeysOpacity", "Use number keys for opacity", "{on?}", false, |s, p| pref(s, p, |x| &mut x.number_keys_opacity)),
-        spec!("pref.reduceMotion", "Reduce motion", "{on?}", false, |s, p| pref(s, p, |x| &mut x.reduce_motion)),
+        spec!("pref.reduceMotion", "Reduce motion", "{on?}", false, |s, p| {
+            let r = pref(s, p, |x| &mut x.reduce_motion)?;
+            // The same switch as Settings ▸ General ▸ Animations: Off, or Follow system again.
+            s.prefs.settings.motion = if s.prefs.reduce_motion { "off" } else { "system" }.into();
+            Ok(r)
+        }),
+        spec!(
+            "pref.motion",
+            "Animations",
+            "{motion: system|on|off} → {motion}  (system follows the system's reduce-motion setting; prototype transitions always play)",
+            false,
+            |s, p| {
+                let m =
+                    string(p, "motion").map(|m| m.to_ascii_lowercase()).ok_or_else(|| bad("pref.motion", "`motion` is required: system|on|off"))?;
+                if !matches!(m.as_str(), "system" | "on" | "off") {
+                    return Err(bad("pref.motion", "motion: system|on|off"));
+                }
+                s.prefs.reduce_motion = m == "off";
+                s.prefs.settings.motion = m.clone();
+                Ok(json!({"motion": m}))
+            }
+        ),
+        spec!(
+            "pref.preserveUnsaved",
+            "Keep recovery copies of unsaved work",
+            "{on?} → {on}  (on by default; off: no new recovery copies, the ones kept already stay)",
+            false,
+            |s, p| {
+                let on = boolean(p, "on").unwrap_or(!s.prefs.settings.preserve_unsaved);
+                s.prefs.settings.preserve_unsaved = on;
+                Ok(json!({"on": on}))
+            }
+        ),
         spec!("pref.autoSave", "Save files automatically", "{on?}", false, |s, p| pref(s, p, |x| &mut x.auto_save)),
         spec!("pref.nudge", "Nudge amount", "{small?, big?}", false, |s, p| {
             s.prefs.nudge_small = num(p, "small").unwrap_or(s.prefs.nudge_small).clamp(0.01, 1000.0);
@@ -425,6 +457,28 @@ pub fn specs() -> Vec<CommandSpec> {
             }
         ),
         spec!("app.preferences", "Preferences", "{}", false, |s, _| ui(s, "dialog.preferences")),
+        spec!(
+            "settings.open",
+            "Settings",
+            "{section?: general|toolbar|ai|mcp|tools|privacy|diagnostics} → {section, sections, appearance, motion, preserveUnsaved}  (opens Settings for the person; an agent gets the settings back instead, since programmatic calls open no dialogs)",
+            false,
+            |s, p| {
+                let section = string(p, "section").map(|x| x.to_ascii_lowercase()).unwrap_or_else(|| "general".into());
+                if !crate::settings::SECTIONS.contains(&section.as_str()) {
+                    return Err(bad("settings.open", "section: general|toolbar|ai|mcp|tools|privacy|diagnostics"));
+                }
+                s.request_ui("dialog.settings", json!({"section": section}));
+                Ok(json!({
+                    "section": section,
+                    "sections": crate::settings::SECTIONS,
+                    "theme": s.prefs.theme,
+                    "accent": crate::cmd::appearance::hex(crate::cmd::appearance::accent(&s.prefs)),
+                    "motion": s.prefs.settings.motion,
+                    "preserveUnsaved": s.prefs.settings.preserve_unsaved,
+                    "displayName": s.prefs.user_name,
+                }))
+            }
+        ),
         spec!("app.actions", "Actions", "{}", false, |s, _| ui(s, "palette.actions")),
         spec!("help.shortcuts", "Keyboard shortcuts", "{}", false, |s, _| ui(s, "panel.shortcuts")),
         spec!("help.about", "About Scrim", "{}", false, |s, _| ui(s, "dialog.about")),
