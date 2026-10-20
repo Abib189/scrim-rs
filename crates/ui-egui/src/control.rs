@@ -664,6 +664,15 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
                 app.ui.style_grid = v == "grid";
             }
             // The Color profile dialog: a profile id opens it with that profile chosen, null closes it.
+            // Settings at a section (a test hook, as for the dialogs above; an agent's `settings.open`
+            // opens nothing), or false to close it.
+            match p.get("settings") {
+                Some(Value::String(section)) => {
+                    crate::settings_dialog::request(app, "dialog.settings", &json!({"section": section}));
+                }
+                Some(Value::Bool(false)) => app.ui.preferences = false,
+                _ => {}
+            }
             if let Some(v) = p.get("colorProfileDialog") {
                 app.ui.color_profile = v.as_str().and_then(figcraft_color::ColorProfile::parse);
             }

@@ -196,3 +196,14 @@ fn settings_can_be_used_from_the_keyboard_alone() {
     press(&mut u, Key::Escape, Modifiers::NONE);
     assert!(!u.app.ui.preferences, "Escape closes it");
 }
+
+/// `ui.set {settings}` opens Settings at a section for captures, and false closes it.
+#[test]
+fn the_control_channel_can_open_settings_at_a_section_for_captures() {
+    let mut u = Ui::new(Session::new());
+    let ctx = u.ctx.clone();
+    crate::control::handle(&mut u.app, &ctx, "ui.set", &json!({"settings": "diagnostics"})).unwrap();
+    assert!(u.app.ui.preferences && u.app.ui.settings_section == "diagnostics");
+    crate::control::handle(&mut u.app, &ctx, "ui.set", &json!({"settings": false})).unwrap();
+    assert!(!u.app.ui.preferences);
+}
