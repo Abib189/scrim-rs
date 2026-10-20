@@ -196,3 +196,11 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 2. **⌥L stays an idempotent collapse.** It isn't a toggle, so it matches the command and the menu. Keyboard users get the restore with Tab and Space on the button.
 3. **Sibling order isn't structure.** Reordering layers keeps the snapshot, because restoring after a reorder still opens the same rows.
 4. **A new selection's reveal drops the snapshot.** It opens rows, the same as opening them by hand.
+
+## H3 results
+
+Live in the release build: the captures, numbers and method are in `docs/scrim-ports/layers/README.md` (Stage H).
+- **Restore is pixel-exact.** On Brand colour system mockups, collapse then restore gives back the same 96 open rows (the ids compared) and the same scroll. The restored capture equals the one before at **0 px** across the window, canvas included. The collapse changes only the Layers panel.
+- **The first try failed** on the list's scroll. That is fixed (`65f639c`) and covered by a test.
+- **By keyboard:** Tab to the button, Space collapses (the focused name becomes "Restore expanded layers"), and Space restores (0 px against the start).
+- **Contrast of the icon:** 7.82:1 (light) and 6.66:1 (dark) on the pressed fill; 9.33:1 and 8.05:1 at rest.
