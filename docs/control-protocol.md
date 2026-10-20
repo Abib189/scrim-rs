@@ -337,6 +337,10 @@ command does the same.
 Closing a window closes its files, asking first when one has unsaved changes; the main window
 closing while others are open takes over one of them, and closing the last window quits.
 
+### `mcp.policy {}`
+
+The MCP tools turned off in Settings ▸ Tool access: `{disabledTools: [name]}`. `scrim mcp --attach` asks before every `tools/list` and `tools/call`, leaving them out and refusing them.
+
 ### `app.quit {}`
 
 Close the app (every window, without asking about unsaved changes).

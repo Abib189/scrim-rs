@@ -44,6 +44,15 @@ pub trait Backend {
         capture(self, json!({}))
     }
 
+    /// The tools turned off in Scrim's Settings ▸ Tool access: left out of `tools/list` and refused.
+    /// The default asks the backend (`mcp.policy`); one that can't answer turns nothing off.
+    fn disabled_tools(&mut self) -> Vec<String> {
+        self.call("mcp.policy", json!({}))
+            .ok()
+            .and_then(|v| v.get("disabledTools").and_then(Value::as_array).map(|a| a.iter().filter_map(|t| t.as_str().map(str::to_string)).collect()))
+            .unwrap_or_default()
+    }
+
     /// PNG bytes of the attached app's window `window` (an id from `window.list`).
     fn window_png(&mut self, window: u64) -> Result<Vec<u8>, String> {
         capture(self, json!({"window": window}))

@@ -219,7 +219,14 @@ impl Server {
                 }))
             }
             "ping" => Ok(json!({})),
-            "tools/list" => Ok(json!({"tools": tool_definitions()})),
+            "tools/list" => {
+                let off = self.backend.disabled_tools();
+                let tools: Vec<Value> = tool_definitions()
+                    .into_iter()
+                    .filter(|t| !off.iter().any(|d| Some(d.as_str()) == t.get("name").and_then(Value::as_str)))
+                    .collect();
+                Ok(json!({"tools": tools}))
+            }
             "tools/call" => {
                 let name = params.get("name").and_then(Value::as_str).ok_or((INVALID_PARAMS, "missing tool `name` (a string)".to_string()))?;
                 let args = params.get("arguments").cloned().unwrap_or(Value::Null);
@@ -228,6 +235,9 @@ impl Server {
                 }
                 if !crate::tools::TOOL_NAMES.contains(&name) {
                     return Err((INVALID_PARAMS, format!("unknown tool `{name}`")));
+                }
+                if self.backend.disabled_tools().iter().any(|d| d == name) {
+                    return Err((INVALID_PARAMS, format!("the tool `{name}` is turned off in Scrim (Settings ▸ Tool access)")));
                 }
                 Ok(call_tool(self.backend.as_mut(), name, &args).to_value())
             }

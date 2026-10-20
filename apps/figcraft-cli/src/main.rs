@@ -254,7 +254,14 @@ fn mcp(attach: Option<&str>, roots: Option<figcraft_engine::file_access::Roots>)
                 .map_err(|e| format!("can't reach the Scrim app at {addr}: {e} (start it with `figcraft --control PORT`)"))?;
             Box::new(b)
         }
-        None => Box::new(figcraft_mcp::Headless::new()),
+        None => {
+            // Settings ▸ Tool access applies here too: the app's saved settings say which tools are off.
+            let mut session = figcraft_engine::Session::new();
+            if let Some(dir) = figcraft_engine::settings::config_base_dir() {
+                session.prefs.settings.mcp = figcraft_engine::settings::saved_mcp(&dir.join(figcraft_engine::settings::APP_DIR));
+            }
+            Box::new(figcraft_mcp::Headless::with_session(session))
+        }
     };
     eprintln!("figcraft MCP server ({}) on stdio", backend.describe());
     if let Some(r) = &roots {

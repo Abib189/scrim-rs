@@ -16,7 +16,7 @@ use crate::theme::{Tokens, regular, semibold};
 use crate::{FigApp, RightTab, UiState, a11y, widgets};
 
 #[path = "ai_tab.rs"]
-mod ai_tab;
+pub(crate) mod ai_tab;
 
 /// The tab a [`Tab`] draws as.
 fn right_tab(tab: Tab) -> RightTab {

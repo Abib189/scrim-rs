@@ -185,6 +185,25 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - **Reset to default** runs `toolbar.reset`; it is disabled while the toolbar is the default.
 - **Screen readers** hear which of the section's buttons are disabled. `widgets::button` itself doesn't say so, so every other disabled button still reads as one you can press; `widgets.rs` is frozen at its size cap, so that fix waits for a split of the file (listed in the final report).
 
+## C3c as built: AI & agents, MCP, Tool access
+
+- **AI & agents (`settings_mcp::ai`):** a line saying agents bring their own models and keys, then the AI tab's Claude Code block (`ai_tab::connection`): the status row, Connect Claude Code and the one connect flow. Nothing to type.
+- **MCP (`settings_mcp::mcp`):**
+  - **Server:** the status, Restart, the address with Copy (`mcp.copy-address`, new), the version, and a line on loopback-only;
+  - **Authentication:** Require authentication (`mcp.toggle-auth`);
+  - **Files agents may use:** the folder, then Use default or Choose folder… (`mcp.set-root-dir`);
+  - **Connect:** Connect Claude Code, opening the same flow inline.
+- **Tool access (`settings_tools.rs`):** "N of M enabled", Restore defaults, a search box, and two groups, the read-only tools and the tools that make changes. Each group has an "All …" switch, then one switch per tool.
+  - **The list** is `cmd::mcp_tools::TOOLS` in the engine (name, title, read-only), so Settings can show it without the mcp crate. `crates/mcp/tests/tool_access.rs` checks it against the server's tool definitions, their order and their `readOnlyHint`.
+  - **The commands:** `mcp.tools`, `mcp.set-tool`, `mcp.set-tool-group`, `mcp.restore-tools`.
+  - **Enforcement:** `Server` asks its backend (`Backend::disabled_tools`) on every `tools/list` and `tools/call`.
+    - The app's HTTP backend reads a list it shares with the UI, updated by `McpHandle::configure`.
+    - `--attach` asks the app over the control channel (`mcp.policy`, new).
+    - Headless `scrim mcp` reads the app's saved `state.json` at start (`settings::saved_mcp`; the settings folder's path moved into the engine, `settings::config_base_dir`, so the app and the CLI share one copy).
+    - A backend that can't answer turns nothing off.
+  - **Per tool, not per command:** `run_command` and `batch` reach every command. Settings says so: turning those two off is what takes the commands away.
+- **Agents can't widen their own access (a fix to C1):** before, an agent could call `mcp.toggle-auth {on: false}` or `mcp.set-root-dir` through `run_command`. Now an agent's call that turns a tool back on, turns authentication off or changes the root folder is refused (`person_only`). Narrowing is still allowed.
+
 ## Order of the commits
 
 1. **C0:** this plan.

@@ -16,6 +16,7 @@ pub mod library;
 pub mod lint;
 pub mod lists;
 pub mod mcp;
+pub mod mcp_tools;
 pub mod page;
 pub mod panel;
 pub mod props;
@@ -93,6 +94,7 @@ fn registry() -> &'static Registry {
         list.extend(ai::specs());
         list.extend(appearance::specs());
         list.extend(mcp::specs());
+        list.extend(mcp_tools::specs());
         list.extend(toolbar::specs());
         list.extend(text::specs());
         list.extend(crate::fonts::specs());

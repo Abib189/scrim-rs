@@ -94,3 +94,29 @@ fn refused_requests_never_reach_the_ui_and_a_token_applies_at_once() {
     // A restart keeps the port.
     assert_eq!(h.restart(&McpSettings { port, ..settings }).ok(), Some(port));
 }
+
+/// Settings ▸ Tool access over HTTP: a tool turned off is left out of tools/list and refused if
+/// called anyway (nothing reaches the UI thread); turned back on, it's there at once.
+#[test]
+fn a_tool_turned_off_is_hidden_and_refused_over_http() {
+    let queue = Arc::new(Mutex::new(Vec::new()));
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    ui(queue.clone(), seen.clone());
+    let mut h = McpHandle::new(queue, Arc::new(Mutex::new(None)));
+    let mut settings = McpSettings { port: free_port(), disabled_tools: vec!["run_command".into()], ..Default::default() };
+    let port = h.restart(&settings).unwrap_or_else(|e| panic!("{e}"));
+    let list = json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list"});
+    let names = |body: &str| -> Vec<String> {
+        let v: Value = serde_json::from_str(body).unwrap_or_default();
+        v["result"]["tools"].as_array().map(|a| a.iter().filter_map(|t| t["name"].as_str().map(str::to_string)).collect()).unwrap_or_default()
+    };
+    let listed = names(&post(port, "", &list).1);
+    assert!(listed.iter().any(|n| n == "inspect_document") && !listed.iter().any(|n| n == "run_command"), "{listed:?}");
+    let call = json!({"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "run_command", "arguments": {"command": "select.all"}}});
+    let (_, body) = post(port, "", &call);
+    assert!(body.contains("turned off in Scrim"), "{body}");
+    assert!(!seen.lock().unwrap_or_else(std::sync::PoisonError::into_inner).iter().any(|(m, _)| m == "engine.execute"), "refused before the UI");
+    settings.disabled_tools.clear();
+    h.configure(&settings);
+    assert!(names(&post(port, "", &list).1).iter().any(|n| n == "run_command"), "back on at once");
+}

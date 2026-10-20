@@ -17,6 +17,8 @@ use serde_json::{Value, json};
 
 type Queue = Arc<Mutex<Vec<ControlRequest>>>;
 type CtxSlot = Arc<Mutex<Option<egui::Context>>>;
+/// The tools Settings ▸ Tool access turned off, shared with the server thread.
+type Disabled = Arc<RwLock<Vec<String>>>;
 
 /// How many ports after the preferred one are tried.
 const TRIES: u16 = 20;
@@ -29,6 +31,7 @@ const MAX_QUEUED: usize = 8;
 struct InApp {
     queue: Queue,
     ctx: CtxSlot,
+    disabled: Disabled,
 }
 
 impl InApp {
@@ -77,6 +80,9 @@ impl Backend for InApp {
     fn describe(&self) -> String {
         "this Scrim window (MCP over HTTP)".into()
     }
+    fn disabled_tools(&mut self) -> Vec<String> {
+        self.disabled.read().map(|d| d.clone()).unwrap_or_else(|p| p.into_inner().clone())
+    }
 }
 
 /// The endpoint the desktop services own: started, stopped and reconfigured from the UI.
@@ -84,12 +90,13 @@ pub struct McpHandle {
     queue: Queue,
     ctx: CtxSlot,
     config: Arc<RwLock<Config>>,
+    disabled: Disabled,
     endpoint: Option<Endpoint>,
 }
 
 impl McpHandle {
     pub fn new(queue: Queue, ctx: CtxSlot) -> Self {
-        Self { queue, ctx, config: Arc::new(RwLock::new(Config::default())), endpoint: None }
+        Self { queue, ctx, config: Arc::new(RwLock::new(Config::default())), disabled: Disabled::default(), endpoint: None }
     }
 
     /// Stop the endpoint if it runs, and start it with `settings`. Returns its port.
@@ -98,10 +105,10 @@ impl McpHandle {
             e.stop();
         }
         self.configure(settings);
-        let (queue, ctx) = (self.queue.clone(), self.ctx.clone());
+        let (queue, ctx, disabled) = (self.queue.clone(), self.ctx.clone(), self.disabled.clone());
         let endpoint = Endpoint::start(settings.port, TRIES, self.config.clone(), move || {
-            let notify = InApp { queue: queue.clone(), ctx: ctx.clone() };
-            Server::new(Box::new(InApp { queue, ctx })).with_initialize_hook(move |info| {
+            let notify = InApp { queue: queue.clone(), ctx: ctx.clone(), disabled: disabled.clone() };
+            Server::new(Box::new(InApp { queue, ctx, disabled })).with_initialize_hook(move |info| {
                 let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
                 let params = json!({"name": info.get("name"), "version": info.get("version"), "now": now});
                 // Told to the UI thread without waiting for it.
@@ -114,12 +121,14 @@ impl McpHandle {
         Ok(port)
     }
 
-    /// Apply changed settings (the token) to the running endpoint.
+    /// Apply changed settings (the token, the tools turned off) to the running endpoint.
     pub fn configure(&mut self, settings: &McpSettings) {
         let token = (settings.require_auth && !settings.token.is_empty()).then(|| settings.token.clone());
         if let Ok(mut c) = self.config.write() {
             c.token = token;
         }
+        let mut d = self.disabled.write().unwrap_or_else(std::sync::PoisonError::into_inner);
+        d.clone_from(&settings.disabled_tools);
     }
 }
 

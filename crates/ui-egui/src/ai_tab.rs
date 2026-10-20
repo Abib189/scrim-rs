@@ -38,7 +38,8 @@ fn read(app: &mut FigApp, cmd: &str, p: Value) -> Value {
     figcraft_engine::find_command(cmd).and_then(|c| (c.run)(&mut app.session, &p).ok()).unwrap_or(Value::Null)
 }
 
-fn connection(app: &mut FigApp, ui: &mut Ui) {
+/// Claude Code's status and the connect flow (Settings ▸ AI & agents shows it too).
+pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     widgets::section_header(ui, tr("Claude Code"), &[], false);
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();

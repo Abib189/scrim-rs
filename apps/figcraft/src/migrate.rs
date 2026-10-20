@@ -20,7 +20,7 @@ use std::io;
 use std::path::Path;
 
 /// The settings directory's name under the platform's base directory: the app id (see above).
-pub const NEW: &str = "design.scrim.app";
+pub const NEW: &str = figcraft_engine::settings::APP_DIR;
 /// The TypeScript Scrim's data directory, which this app leaves alone.
 #[cfg(test)]
 pub const ELECTRON: &str = "Scrim";

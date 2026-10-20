@@ -20,6 +20,15 @@ pub const CONFIG_REQUEST: &str = "mcp.config";
 pub const RUN_DIALOG: &str = "dialog.mcpRunConnect";
 pub const REMOVE_OLD_DIALOG: &str = "dialog.mcpRemoveOld";
 
+/// Refuse `what` when an agent asks: widening what agents may do (turning authentication off,
+/// another root folder, a tool back on) is the person's alone.
+pub(crate) fn person_only(s: &Session, cmd: &str, what: &str) -> crate::Result<()> {
+    if s.agents.author.is_agent() {
+        return Err(bad(cmd, format!("an agent can't {what}: that's the person's, in Scrim's Settings")));
+    }
+    Ok(())
+}
+
 fn token(s: &Session) -> Option<&str> {
     let m = &s.prefs.settings.mcp;
     m.require_auth.then_some(m.token.as_str()).filter(|t| !t.is_empty())
@@ -121,6 +130,11 @@ pub fn specs() -> Vec<CommandSpec> {
                 Ok(json!({"command": command(s, false)}))
             }
         ),
+        spec!("mcp.copy-address", "Copy the MCP address", "{} → {url}  (the endpoint's address, onto the clipboard in the app)", false, |s, _| {
+            let url = s.agents.mcp.url().ok_or_else(|| bad("mcp.copy-address", "the MCP endpoint isn't running"))?;
+            s.request_ui(super::code::COPY_REQUEST, json!({"text": url, "what": "the MCP address"}));
+            Ok(json!({"url": url}))
+        }),
         spec!(
             "mcp.restart-server",
             "Restart the MCP endpoint",
@@ -138,6 +152,9 @@ pub fn specs() -> Vec<CommandSpec> {
             false,
             |s, p| {
                 let on = p.get("on").and_then(Value::as_bool).unwrap_or(!s.prefs.settings.mcp.require_auth);
+                if !on && s.prefs.settings.mcp.require_auth {
+                    person_only(s, "mcp.toggle-auth", "turn MCP authentication off")?;
+                }
                 let m = &mut s.prefs.settings.mcp;
                 m.require_auth = on;
                 if on && m.token.len() < 32 {
@@ -154,6 +171,7 @@ pub fn specs() -> Vec<CommandSpec> {
             false,
             |s, p| {
                 let cmd = "mcp.set-root-dir";
+                person_only(s, cmd, "change the folder MCP file tools may use")?;
                 let dir = match p.get("path").and_then(Value::as_str).map(str::trim).filter(|d| !d.is_empty()) {
                     None => None,
                     Some(d) => {

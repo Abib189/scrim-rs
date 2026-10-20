@@ -278,6 +278,8 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
         }
         // The app's MCP endpoint saw a client initialize (`figcraft_mcp::http`).
         "mcp.client" => crate::mcp_ui::client_seen(app, p),
+        // The tools Settings ▸ Tool access turned off (`scrim mcp --attach` hides and refuses them).
+        "mcp.policy" => Ok(json!({"disabledTools": app.session.prefs.settings.mcp.disabled_tools})),
         "engine.commands" => Ok(Value::Array(
             figcraft_engine::all_commands()
                 .iter()

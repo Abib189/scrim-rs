@@ -239,6 +239,7 @@ impl Headless {
 impl Backend for Headless {
     fn call(&mut self, method: &str, p: Value) -> Result<Value, String> {
         match method {
+            "mcp.policy" => Ok(json!({"disabledTools": self.session.prefs.settings.mcp.disabled_tools})),
             "engine.execute" => {
                 let cmd = p.get("command").and_then(Value::as_str).ok_or("`command` required")?.to_string();
                 let params = match p.get("params") {

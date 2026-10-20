@@ -38,6 +38,34 @@ impl Default for McpSettings {
     }
 }
 
+/// The settings folder's name under the platform's application-settings folder (the app id).
+pub const APP_DIR: &str = "design.scrim.app";
+
+/// The platform's folder for application settings (Application Support, AppData, ~/.config).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn config_base_dir() -> Option<std::path::PathBuf> {
+    use std::path::PathBuf;
+    #[cfg(target_os = "macos")]
+    let base = std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support"));
+    #[cfg(target_os = "windows")]
+    let base = std::env::var_os("APPDATA").map(PathBuf::from);
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let base = std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")));
+    base
+}
+
+/// The MCP settings the app saved in `dir/state.json` (the defaults when there are none), for an MCP
+/// server that runs without the app (`scrim mcp`): it honours Settings ▸ Tool access too.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
+    crate::file_access::read_capped(dir.join("state.json"), 16 << 20)
+        .ok()
+        .and_then(|s| serde_json::from_slice::<serde_json::Value>(&s).ok())
+        .and_then(|v| serde_json::from_value::<crate::Prefs>(v.get("prefs")?.clone()).ok())
+        .map(|p| p.settings.sanitized().mcp)
+        .unwrap_or_default()
+}
+
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
 

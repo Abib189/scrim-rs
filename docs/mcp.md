@@ -142,13 +142,25 @@ What an agent does over HTTP is what it does over `scrim mcp --attach`:
   ```
 - **Framing:** bodies must use `Content-Length` (no chunked encoding) and stay under 32 MiB.
 
+**Tool access** (Settings ▸ Tool access): a tool turned off is left out of `tools/list` and refused when it is called anyway (`the tool `x` is turned off in Scrim`). This applies to every way in:
+- over HTTP, at once;
+- through `scrim mcp --attach`, which asks the app (`mcp.policy`) on every list and call;
+- through headless `scrim mcp`, which reads the app's saved settings when it starts.
+
+Access is per tool. `run_command` and `batch` reach every command, so turning those two off is what takes the commands away.
+
+**Agents can narrow their access, never widen it.** An agent's call that would turn a tool back on, turn authentication off or change the root folder is refused; only the person makes those changes, in Settings.
+
 **Commands** (all are MCP routes too, through `run_command`):
 - `mcp.status`
 - `mcp.connect-claude-code`
 - `mcp.copy-command`
+- `mcp.copy-address`
 - `mcp.restart-server`
-- `mcp.toggle-auth {on?}`
-- `mcp.set-root-dir {path?}`
+- `mcp.toggle-auth {on?}` (an agent can turn it on, not off)
+- `mcp.set-root-dir {path?}` (the person's alone)
+- `mcp.tools`
+- `mcp.set-tool {tool, on}`, `mcp.set-tool-group {group: read|write, on}`, `mcp.restore-tools` (an agent can turn tools off, not on)
 
 ### Claude Code, through the `scrim` CLI
 
