@@ -173,6 +173,7 @@ pub const WRITE: &[&str] = &[
     "help.page",
     "help.shortcuts",
     "layers.collapse-all",
+    "layers.restore-expansion",
     "libraries.open",
     "libraries.publish",
     "library.publishToServer",

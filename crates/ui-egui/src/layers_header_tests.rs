@@ -1,8 +1,9 @@
 //! D1: Collapse all layers, from the Layers header's button (and ⌥L). Ported from the old Scrim's
 //! `shell.test.ts` › collapse-all and `layersVirtual.dom.test.tsx` where they still apply: it leaves
-//! only the top-level rows, an empty document is fine, and a partial fold folds the rest. It is
-//! idempotent (the old button toggled; see D0), keeps the selection, leaves an active filter's list
-//! alone, and opening a row by hand afterwards opens only that row.
+//! only the top-level rows, an empty document is fine, and a partial fold folds the rest. The command
+//! is idempotent; the button's second press restores (Stage H, `layers_restore_tests.rs`). It keeps
+//! the selection, leaves an active filter's list alone, and opening a row by hand afterwards opens
+//! only that row.
 
 use egui::accesskit::{Node, Role};
 use egui::{Event, Modifiers, PointerButton, pos2};
@@ -16,7 +17,7 @@ fn id(v: Value) -> NodeId {
     figcraft_engine::params::id_of(&v["id"]).unwrap()
 }
 
-fn tree(u: &mut Ui) -> Vec<Node> {
+pub(crate) fn tree(u: &mut Ui) -> Vec<Node> {
     u.ctx.enable_accesskit();
     u.frame(vec![]);
     let mut out = u.frame_output(vec![]);
@@ -25,14 +26,14 @@ fn tree(u: &mut Ui) -> Vec<Node> {
 }
 
 /// The layer rows listed now, top to bottom.
-fn rows(u: &mut Ui) -> Vec<String> {
+pub(crate) fn rows(u: &mut Ui) -> Vec<String> {
     let mut r: Vec<(f64, String)> =
         tree(u).iter().filter(|n| n.role() == Role::TreeItem).filter_map(|n| Some((n.bounds()?.y0, n.label()?.to_string()))).collect();
     r.sort_by(|a, b| a.0.total_cmp(&b.0));
     r.into_iter().map(|(_, l)| l).collect()
 }
 
-fn click_named(u: &mut Ui, label: &str) {
+pub(crate) fn click_named(u: &mut Ui, label: &str) {
     let nodes = tree(u);
     let n = nodes.iter().find(|n| n.label() == Some(label)).unwrap_or_else(|| panic!("no {label:?}"));
     let b = n.bounds().unwrap();
@@ -44,7 +45,7 @@ fn click_named(u: &mut Ui, label: &str) {
 }
 
 /// Two top-level frames, Poster and Kiln, each holding a frame with a rectangle in it, every row open.
-fn nested() -> (Ui, [NodeId; 4]) {
+pub(crate) fn nested() -> (Ui, [NodeId; 4]) {
     let mut s = Session::new();
     let mut ids = Vec::new();
     for (i, name) in ["Poster", "Kiln"].iter().enumerate() {
@@ -64,15 +65,15 @@ fn nested() -> (Ui, [NodeId; 4]) {
 }
 
 #[test]
-fn the_button_collapses_every_row_to_the_top_level_and_is_idempotent() {
+fn the_button_collapses_every_row_to_the_top_level_and_the_command_is_idempotent() {
     let (mut u, _) = nested();
     assert_eq!(rows(&mut u).len(), 6, "every row open first: {:?}", rows(&mut u));
     let canvas_before = u.app.session.ds().unwrap().view.clone();
     click_named(&mut u, "Collapse all layers");
     assert_eq!(rows(&mut u), ["Kiln", "Poster"], "only the top-level rows (front first)");
     assert!(u.app.ui.expanded.is_empty());
-    click_named(&mut u, "Collapse all layers");
-    assert_eq!(rows(&mut u), ["Kiln", "Poster"], "a second press changes nothing");
+    u.app.run("layers.collapse-all", json!({}));
+    assert_eq!(rows(&mut u), ["Kiln", "Poster"], "the command again changes nothing");
     let ds = u.app.session.ds().unwrap();
     assert_eq!((ds.view.cx, ds.view.cy, ds.view.zoom), (canvas_before.cx, canvas_before.cy, canvas_before.zoom), "the camera doesn't move");
 }

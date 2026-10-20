@@ -151,3 +151,46 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 
 - **The old Scrim's second press expanded everything; it did not restore.** `toggleCollapseAll` (`~/Scrim/apps/studio/src/editor/shell.ts:183-187`) returns an empty folded set once everything is folded, and `shell.test.ts:48-54` pins "folds everything, then unfolds everything on the next toggle". Rows folded by hand before the collapse came back open.
 - **Stage H disagrees on purpose:** the second press restores the rows that were open before the collapse (a snapshot), as the brief asks, rather than opening every row. Expanding everything would undo the person's own folds; restoring returns exactly what they had.
+
+## H1 and H2 as built
+
+**The commands** (`crates/engine/src/cmd/layers.rs`):
+- `layers.collapse-all` is unchanged for its callers. It still closes every row and is idempotent; called again, it never restores, so agents' behaviour doesn't change. It now also keeps a snapshot of the open rows.
+- `layers.restore-expansion` is new and has its own MCP route ("Restore expanded layers"). It is panel state only: Write access in the list, view-only, so it makes no revision, no undo step and no "Agent: …" label. Every locale names it.
+
+**The snapshot** (`crates/ui-egui/src/layers_restore.rs`, `app.ui.collapse_snapshot`) holds the open rows, the document's tab, the page shown, and the shape of the layer tree.
+- **Taken** by a collapse when no snapshot holds and no filter is active. A collapse while one holds changes nothing and keeps it.
+- **Restore** puts back exactly the rows it kept, then the snapshot is gone. The selection isn't revealed again (it survives both presses).
+- **Dropped for good** by any of these:
+  - a row opened since (by hand, by Alt-click, or by a new selection's reveal; opened then closed counts too);
+  - another page;
+  - another file or tab;
+  - a structural change: a layer added, deleted or moved to another parent, or an undo or redo of one.
+- **What a structural change is:** the pages, and every layer with its parent. Sibling order is left out, as are renames, fills and canvas moves; those keep the snapshot.
+- **When it is checked:**
+  - after every command (`handle_ui_requests`, so an add and its undo between two frames still drop it);
+  - each frame the Layers panel draws;
+  - before each press.
+- **A filter:** the button collapses as D1 does, and no snapshot is taken or applied. One taken before the filter is kept for after it.
+- **Never saved:** the snapshot isn't in the file. It lives in the window and is never written to the document.
+
+**The button** (`layers_header.rs`) does whichever applies: `layers.restore-expansion` when a snapshot holds and no filter is active, otherwise `layers.collapse-all`. When it would restore:
+- **Name and tooltip:** "Restore expanded layers", with no key. ⌥L stays Collapse all.
+- **Screen readers:** a toggle button, pressed.
+- **Look:** it stays pressed (the `pressed` fill) and its icon changes shape. Collapse is three lines with the last one short; restore is an open tree, the second and third lines indented under the first. So the state isn't carried by colour alone.
+
+**`ui.inspect`** reports `layers: {open, restoreNext}`: the open rows, and whether the next press restores.
+
+**Lines:** `lib.rs` went from 1715 to 1722 lines (cap 1730), `layers.rs` is untouched, and the new code is in the new module.
+
+**H2 tests** (`layers_restore_tests.rs`, `cmd/layers_tests.rs`) are listed in `docs/checklists/layers.md`. Breaking each check in turn fails a test:
+- the tree's shape;
+- the page or file check;
+- the open-rows check;
+- the check after every command.
+
+**Overrule if you disagree:**
+1. **The selection's ancestors close too.** The brief says "keep the selection's ancestors open, as D1 already does", but D1 closes them (D0 decision 3, pinned by `layers_behaviour_tests.rs`: "every row closes, the way to the selection too"). I kept D1's collapse unchanged, because the brief also asks that agents' `layers.collapse-all` doesn't change. Keeping them open is a one-line change in `layers_header::collapse_all`; restore would still be exact.
+2. **⌥L stays an idempotent collapse.** It isn't a toggle, so it matches the command and the menu. Keyboard users get the restore with Tab and Space on the button.
+3. **Sibling order isn't structure.** Reordering layers keeps the snapshot, because restoring after a reorder still opens the same rows.
+4. **A new selection's reveal drops the snapshot.** It opens rows, the same as opening them by hand.

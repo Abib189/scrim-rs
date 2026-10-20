@@ -1,9 +1,9 @@
-//! D1: `layers.collapse-all` is panel state only: it asks the panel, and leaves no undo step, no
-//! document change, no new revision and no agent label behind.
+//! D1 and H1: `layers.collapse-all` and `layers.restore-expansion` are panel state only: they ask
+//! the panel, and leave no undo step, no document change, no new revision and no agent label behind.
 
 use serde_json::json;
 
-use super::COLLAPSE_REQUEST;
+use super::{COLLAPSE_REQUEST, RESTORE_REQUEST};
 use crate::Session;
 use crate::agents::Author;
 
@@ -27,7 +27,12 @@ fn collapse_all_is_panel_state_only() {
         // Idempotent: again, the same.
         s.execute("layers.collapse-all", &json!({})).unwrap();
         assert_eq!(s.ds().unwrap().revision, revision);
+        s.ui_requests.clear();
+        s.execute("layers.restore-expansion", &json!({})).unwrap();
+        let ds = s.ds().unwrap();
+        assert!(std::sync::Arc::ptr_eq(&ds.doc, &doc) && ds.revision == revision && ds.history.undo.len() == undo, "restore: panel state only");
+        assert_eq!(s.ui_requests[0].kind, RESTORE_REQUEST);
     }
     let feed = s.execute("history.changes", &json!({})).unwrap();
-    assert!(!feed.to_string().contains("collapse"), "no change logged, so no \"Agent: …\" label: {feed}");
+    assert!(!feed.to_string().contains("collapse") && !feed.to_string().contains("restore"), "no change logged, so no \"Agent: …\" label: {feed}");
 }

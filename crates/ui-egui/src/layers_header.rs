@@ -3,7 +3,9 @@
 //! which is at its size cap.
 //!
 //! Collapse all (`layers.collapse-all`, ⌥L) closes every row on every page. It is panel state only:
-//! the selection, the document and its revision are untouched, and there is no undo step.
+//! the selection, the document and its revision are untouched, and there is no undo step. Its next
+//! press restores the rows it closed while nothing has changed (Stage H, `layers_restore`): the
+//! button is then shown pressed, with an open tree for its icon, named "Restore expanded layers".
 
 use egui::{Align2, CornerRadius, Id, Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::json;
@@ -23,19 +25,24 @@ fn search_id() -> Id {
 pub(crate) fn show(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) {
     let (hr, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
     ui.painter().text(pos2(hr.min.x + 16.0, hr.center().y), Align2::LEFT_CENTER, tr("Layers"), semibold(11.0), t.text);
-    // Collapse all layers, left of the search button.
+    // Collapse all layers, left of the search button; pressed while its next press restores.
     let cr = Rect::from_center_size(pos2(hr.max.x - 50.0, hr.center().y), vec2(24.0, 24.0));
-    let tip = crate::shortcuts::tip(tr("Collapse all layers"), "layers.collapse-all");
-    let cresp = ui.interact(cr, ui.id().with("layer_collapse_all_btn"), Sense::click()).tip(tip);
-    if cresp.hovered() {
-        ui.painter().rect_filled(cr, CornerRadius::same(5), t.hover);
+    let restore = crate::layers_restore::restores_next(app);
+    let tip = if restore { tr("Restore expanded layers") } else { crate::shortcuts::tip(tr("Collapse all layers"), "layers.collapse-all") };
+    let cresp = ui.interact(cr, ui.id().with("layer_collapse_all_btn"), Sense::click());
+    crate::a11y::toggle(&cresp, tip, restore);
+    let cresp = cresp.on_hover_ui(|ui| {
+        ui.label(tip);
+    });
+    if restore || cresp.hovered() {
+        ui.painter().rect_filled(cr, CornerRadius::same(5), if restore { t.pressed } else { t.hover });
     }
-    collapse_icon(ui, cr.shrink(5.0), t.icon);
+    collapse_icon(ui, cr.shrink(5.0), t.icon, restore);
     if cresp.has_focus() {
         ui.painter().rect_stroke(cr, CornerRadius::same(5), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
     }
     if cresp.clicked() {
-        app.run("layers.collapse-all", json!({}));
+        app.run(if restore { "layers.restore-expansion" } else { "layers.collapse-all" }, json!({}));
     }
     let sr = Rect::from_center_size(pos2(hr.max.x - 22.0, hr.center().y), vec2(24.0, 24.0));
     let sresp = ui.interact(sr, ui.id().with("layer_search_btn"), Sense::click()).tip(tr("Search layers"));
@@ -55,13 +62,15 @@ pub(crate) fn show(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) {
     }
 }
 
-/// Collapse all's icon: three lines, the last one short (our own drawing; `icons.rs` is at its cap).
-fn collapse_icon(ui: &Ui, r: Rect, color: egui::Color32) {
+/// Collapse all's icon (our own drawing; `icons.rs` is at its cap): three lines, the last one
+/// short; or, when its next press restores, an open tree (the second and third lines indented).
+fn collapse_icon(ui: &Ui, r: Rect, color: egui::Color32, restore: bool) {
     let stroke = Stroke::new(1.3, color);
     let (x0, w) = (r.min.x + r.width() * 0.12, r.width() * 0.76);
-    for (i, len) in [1.0, 1.0, 0.55].iter().enumerate() {
+    let lines = if restore { [(0.0, 1.0), (0.3, 1.0), (0.3, 1.0)] } else { [(0.0, 1.0), (0.0, 1.0), (0.0, 0.55)] };
+    for (i, (from, to)) in lines.iter().enumerate() {
         let y = r.min.y + r.height() * (0.25 + 0.25 * i as f32);
-        ui.painter().line_segment([pos2(x0, y), pos2(x0 + w * len, y)], stroke);
+        ui.painter().line_segment([pos2(x0 + w * from, y), pos2(x0 + w * to, y)], stroke);
     }
 }
 
@@ -92,8 +101,9 @@ fn search_field(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, id: Id) {
     }
 }
 
-/// `layers.collapse-all`: every row closes, on every page. The selection isn't changed, and isn't
-/// revealed again until it changes (so the collapse sticks).
+/// D1's collapse (`layers_restore::collapse` keeps a snapshot first): every row closes, on every
+/// page. The selection isn't changed, and isn't revealed again until it changes (so the collapse
+/// sticks).
 pub(crate) fn collapse_all(app: &mut FigApp) {
     app.ui.expanded.clear();
     app.ui.layers_seen_sel = app.session.selection();
@@ -101,4 +111,4 @@ pub(crate) fn collapse_all(app: &mut FigApp) {
 
 #[cfg(test)]
 #[path = "layers_header_tests.rs"]
-mod tests;
+pub(crate) mod tests;

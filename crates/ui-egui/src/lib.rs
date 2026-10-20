@@ -43,6 +43,7 @@ pub mod icons;
 pub mod import_report;
 pub mod layers;
 pub mod layers_header;
+pub mod layers_restore;
 pub mod layout_panel;
 pub mod list_drag;
 pub mod live;
@@ -476,6 +477,8 @@ pub struct UiState {
     /// (set by a click on a row, cleared by a press on the canvas).
     pub layers_focus: bool,
     pub layers_seen_sel: Vec<NodeId>,
+    /// The rows open before Collapse all, while the button would restore them (`layers_restore`).
+    pub collapse_snapshot: Option<layers_restore::Snapshot>,
     pub dark: bool,
     pub follow_system: bool,
     pub tool_flyout: Option<&'static str>,
@@ -615,6 +618,7 @@ impl Default for UiState {
             layer_anchor: None,
             layers_focus: false,
             layers_seen_sel: Vec::new(),
+            collapse_snapshot: None,
             dark: false,
             follow_system: false,
             tool_flyout: None,
@@ -860,6 +864,7 @@ impl FigApp {
 
     /// Act on UI requests queued by commands (dialogs, panels).
     pub fn handle_ui_requests(&mut self) {
+        layers_restore::check(self);
         let reqs = std::mem::take(&mut self.session.ui_requests);
         for r in reqs {
             match r.kind.as_str() {
@@ -952,7 +957,8 @@ impl FigApp {
                 }
                 "preview.close" => self.ui.preview = None,
                 "open.help" => self.services.open_url("https://github.com/Abib189/scrim-rs#readme"),
-                "layers.collapse-all" => layers_header::collapse_all(self),
+                "layers.collapse-all" => layers_restore::collapse(self),
+                "layers.restore-expansion" => layers_restore::restore(self),
                 figcraft_engine::cmd::camera::FLY_REQUEST => camera_flight::request(self, &r.data),
                 "contextMenu" => self.ui.key_menu = true,
                 "selectArea" => self.start_key_box(),
@@ -1662,6 +1668,7 @@ impl FigApp {
         state["homeSearch"] = json!(self.ui.home_view.file_query);
         state["panelMode"] = json!(if self.ui.panel_animate { "animate" } else { "design" });
         state["pendingOpens"] = json!(self.ui.pending_opens.len());
+        state["layers"] = layers_restore::inspect(self);
         state["missingFonts"] = json!(self.ui.missing_fonts.as_ref().map(missing_fonts::Shown::inspect));
         state
     }
