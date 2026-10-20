@@ -88,6 +88,7 @@ pub const READ: &[&str] = &[
 /// Commands outside the undo history that change something: the selection, the view, a setting,
 /// the clipboard, a file, a live session or the network.
 pub const WRITE: &[&str] = &[
+    "camera.focus-layer",
     "ai.copyConnectCommand",
     "ai.selectChange",
     "ai.selectFinding",

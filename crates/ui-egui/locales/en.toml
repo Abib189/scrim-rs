@@ -1851,6 +1851,7 @@ name = "English"
 "{n} minutes ago" = { one = "{n} minute ago", other = "{n} minutes ago" }
 "{n} months ago" = { one = "{n} month ago", other = "{n} months ago" }
 "{n} more notes omitted from this report" = { one = "{n} more note omitted from this report", other = "{n} more notes omitted from this report" }
+"{n} of these layers are hidden" = "{n} of these layers are hidden"
 "{n} of {total}" = "{n} of {total}"
 "{n} people joined" = { one = "{n} person joined", other = "{n} people joined" }
 "{n} preferred components" = { one = "{n} preferred component", other = "{n} preferred components" }
@@ -1877,6 +1878,7 @@ name = "English"
 "{tool}  hold {key}" = "{tool}  hold {key}"
 "{value} isn't a colour" = "{value} isn't a colour"
 "{when} · edited" = "{when} · edited"
+"“{name}” is hidden" = "“{name}” is hidden"
 "← ↑ → ↓" = "← ↑ → ↓"
 "← → ↑ ↓" = "← → ↑ ↓"
 "←" = "←"

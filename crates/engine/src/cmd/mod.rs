@@ -5,6 +5,7 @@ pub mod ai;
 pub mod analyze;
 pub mod appearance;
 pub mod arrange;
+pub mod camera;
 pub mod code;
 pub mod comment;
 pub mod component;
@@ -99,6 +100,7 @@ fn registry() -> &'static Registry {
         list.extend(mcp::specs());
         list.extend(diagnostics::specs());
         list.extend(layers::specs());
+        list.extend(camera::specs());
         list.extend(mcp_tools::specs());
         list.extend(toolbar::specs());
         list.extend(text::specs());

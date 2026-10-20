@@ -1852,6 +1852,7 @@ status = "draft — needs native review"
 "{n} minutes ago" = { one = "hace {n} minuto", other = "hace {n} minutos" }
 "{n} months ago" = { one = "hace {n} mes", other = "hace {n} meses" }
 "{n} more notes omitted from this report" = { one = "{n} nota más omitida de este informe", other = "{n} notas más omitidas de este informe" }
+"{n} of these layers are hidden" = "{n} de estas capas están ocultas"
 "{n} of {total}" = "{n} de {total}"
 "{n} people joined" = { one = "{n} persona se ha unido", other = "{n} personas se han unido" }
 "{n} preferred components" = { one = "{n} componente preferido", other = "{n} componentes preferidos" }
@@ -1878,6 +1879,7 @@ status = "draft — needs native review"
 "{tool}  hold {key}" = "{tool}  mantén {key}"
 "{value} isn't a colour" = "{value} no es un color"
 "{when} · edited" = "{when} · editado"
+"“{name}” is hidden" = "«{name}» está oculta"
 "← ↑ → ↓" = "← ↑ → ↓"
 "← → ↑ ↓" = "← → ↑ ↓"
 "←" = "←"
@@ -1890,6 +1892,7 @@ status = "draft — needs native review"
 "⌥ drag" = "⌥ arrastrar"
 
 [commands]
+"camera.focus-layer" = "Enfocar capa"
 "mcp.reregister" = "Volver a registrar Scrim en Claude Code"
 "mcp.set-port" = "Puerto de MCP"
 "diagnostics.clear" = "Borrar el diagnóstico"

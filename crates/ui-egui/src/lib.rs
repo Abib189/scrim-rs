@@ -9,6 +9,7 @@ pub mod a11y;
 pub mod assets_panel;
 pub mod bidi;
 pub mod branch_ui;
+pub mod camera_flight;
 pub mod canvas;
 pub mod cjk;
 pub mod code_tab;
@@ -391,6 +392,8 @@ pub struct UiState {
     pub panel_animate: bool,
     /// Connect Claude Code (`connect_flow`).
     pub connect: connect_flow::Flow,
+    /// The camera's flight to a focused layer (D2).
+    pub camera: camera_flight::State,
     /// The section Settings shows (`settings_dialog::SECTIONS`); `preferences` says it's open.
     pub settings_section: &'static str,
     /// The tab of the previous frame, to see the right panel change mode.
@@ -560,6 +563,7 @@ impl Default for UiState {
             right_tab: RightTab::Design,
             panel_animate: false,
             connect: Default::default(),
+            camera: Default::default(),
             settings_section: "general",
             last_right_tab: RightTab::Design,
             left_tab: LeftTab::File,
@@ -942,6 +946,7 @@ impl FigApp {
                 "preview.close" => self.ui.preview = None,
                 "open.help" => self.services.open_url("https://github.com/Abib189/scrim-rs#readme"),
                 "layers.collapse-all" => layers_header::collapse_all(self),
+                figcraft_engine::cmd::camera::FLY_REQUEST => camera_flight::request(self, &r.data),
                 "contextMenu" => self.ui.key_menu = true,
                 "selectArea" => self.start_key_box(),
                 "canvas.renameLabel" => {
@@ -1485,6 +1490,7 @@ impl FigApp {
             let worker = self.worker.take();
             let mut worker = worker.unwrap_or_else(|| render_worker::Worker::new(ctx.clone()));
             canvas::show(self, ui, &mut worker);
+            camera_flight::tick(self, ui.ctx());
             self.worker = Some(worker);
             if !hidden {
                 ui.scope_builder(egui::UiBuilder::new().id_salt("toolbar"), |ui| {

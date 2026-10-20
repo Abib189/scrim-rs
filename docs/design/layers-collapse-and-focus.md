@@ -123,3 +123,16 @@ No old test asserts that a row click reveals. The spec is `~/Scrim/docs/checklis
   - `shell.test.ts`: a partial fold folds the rest; an empty document is fine.
   - `layersVirtual.dom.test.tsx`: only the top-level rows remain.
   - "Unfolds on the next toggle" is deliberately not ported: collapse-all is idempotent.
+
+## D2 as built
+
+- **The engine** (`cmd/camera.rs`): `camera.focus-layer {id | ids}`, which defaults to the selection, an MCP route.
+  - **`reveal`** is the old `revealCamera`: the zoom is kept, a 32 px margin is left, the least move is made on each axis, a layer bigger than the view gets its leading edge at the margin, and a layer already in view moves nothing.
+  - **The rest of the command:** the union of several layers; another page's layer shows its page first; hidden layers are focused and listed in `hidden`.
+  - **The camera is set at once** and the window is asked to fly (`camera.fly` with where it came from). It is classified Write for Tool access.
+- **The window** (`camera_flight.rs`):
+  - **The flight:** 320 ms, ease-in-out cubic, the zoom eased geometrically, from where the camera was. It jumps with Animations off, reduced motion, or a page switch.
+  - **Cancel on input:** each frame compares the view with what the flight last wrote. Any other change (wheel, pinch, space-drag, the hand tool, a zoom key) stops the flight there.
+  - **The fit race:** a focus asked for before the canvas has its real size (when its first sizing re-fits the page) is kept and applied after that sizing.
+- **The hook:** the Layers row click (`layers.rs`, one line, at 1000 of 1000) calls `focus_selection` after selecting. Enter on a keyboard-focused row is a click to egui, so it focuses too: `a11y.rs`, at its cap, needed no change. A hidden layer gets the toast "“Name” is hidden".
+- **Canvas clicks** don't go through it: they never move the camera (tested).

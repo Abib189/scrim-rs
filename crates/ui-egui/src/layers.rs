@@ -994,6 +994,7 @@ fn layers(app: &mut FigApp, ui: &mut Ui) {
         {
             let _ = figcraft_engine::textedit::end(&mut app.session);
         }
+        crate::camera_flight::focus_selection(app);
     }
     let _ = Color32::TRANSPARENT;
 }
