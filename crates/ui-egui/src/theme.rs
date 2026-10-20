@@ -108,7 +108,8 @@ impl Tokens {
             component: COMPONENT,
             component_row: hex(0xF1E9FF),
             danger: hex(0xCF2A2A),
-            success: hex(0x14AE5C),
+            // C1.5: 5.4:1 on the panel as text, 3:1 or more as a mark everywhere (the old #14AE5C was 2.9:1).
+            success: hex(0x0B7A3E),
             warning: hex(0x985F08),
             guide: hex(0xD61F69),
             tab_bar: hex(0xECECEA),

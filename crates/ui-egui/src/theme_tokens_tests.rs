@@ -88,3 +88,49 @@ fn chrome_text_reads_at_aa_in_both_themes() {
         }
     }
 }
+
+/// C1.5: every semantic colour, in both themes, at 4.5:1 where it is text (on the panel, menus and
+/// fields) and 3:1 where it is a mark (a status dot, an icon, a ring), on every surface it sits on.
+#[test]
+fn every_semantic_colour_reads_in_both_themes() {
+    for (name, t) in themes() {
+        let text_surfaces = [("panel", t.panel), ("menu", t.menu), ("field", t.field)];
+        let mark_surfaces = [("panel", t.panel), ("menu", t.menu), ("field", t.field), ("selected row", t.selected_row), ("canvas", t.canvas)];
+        let text_roles = [
+            ("success", t.success),
+            ("danger", t.danger),
+            ("warning", t.warning),
+            ("accent text", t.accent_text),
+            ("text", t.text),
+            ("secondary text", t.text_secondary),
+            ("tertiary text", t.text_tertiary),
+        ];
+        let mark_roles = [
+            ("success", t.success),
+            ("danger", t.danger),
+            ("warning", t.warning),
+            ("accent", t.accent),
+            ("focus ring", t.focus),
+            ("icon", t.icon),
+            ("secondary icon", t.icon_secondary),
+        ];
+        let mut low = Vec::new();
+        for (role, fg) in text_roles {
+            for (surface, bg) in text_surfaces {
+                let r = contrast(fg, bg);
+                if r < 4.5 {
+                    low.push(format!("{name}: {role} text on {surface} {r:.2}:1 ({} on {})", hex(fg), hex(bg)));
+                }
+            }
+        }
+        for (role, fg) in mark_roles {
+            for (surface, bg) in mark_surfaces {
+                let r = contrast(fg, bg);
+                if r < 3.0 {
+                    low.push(format!("{name}: {role} mark on {surface} {r:.2}:1 ({} on {})", hex(fg), hex(bg)));
+                }
+            }
+        }
+        assert!(low.is_empty(), "{low:#?}");
+    }
+}

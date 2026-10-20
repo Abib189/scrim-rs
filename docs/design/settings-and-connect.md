@@ -299,3 +299,12 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
 - **The default is `~/Documents/Scrim`** (`settings::default_mcp_root`), never the home folder. It is made the first time a request on the app's MCP endpoint names a file (a `path` anywhere in its parameters; `mcp_ui::ensure_root`), and file access is confined to it from then on.
 - **Until it exists, the endpoint's file access is confined to nothing.** Before, a folder that couldn't be resolved (a chosen one since deleted, or no home) left the endpoint unconfined: a gap, closed here.
 - **A chosen folder** (`mcp.set-root-dir`) is never made or changed. Settings ▸ MCP shows the default as "Documents ▸ Scrim (…), made the first time an agent uses a file".
+
+### C1.5 The success green
+- **Light:** `success` is now #0B7A3E: 5.43:1 on the panel and menu, 4.93:1 on fields as text, and 4.15:1 or more as a mark on the selected row and the canvas. The old #14AE5C was 2.90:1.
+- **Dark:** #14AE5C already reads at 4.74:1 or more on every dark surface, so it stays.
+- **`live.rs`'s sharing status** ("Sharing online · …", "Live · …", "Joined …") was already drawn in `success`, so it now reads at AA with no code change. The connect flow's success line went back to the text colour in C4; it could use `success` again.
+- **The test:** `theme_tokens_tests.rs` › `every_semantic_colour_reads_in_both_themes` checks every semantic colour in both themes:
+  - text roles (success, danger, warning, accent text and the three text greys) at 4.5:1 on the panel, menu and field;
+  - mark roles (the same status colours, accent, focus ring and both icon greys) at 3:1 on those surfaces plus the selected row and the canvas.
+- **Pixels outside Stage C** change in light theme wherever `success` appears: Dev Mode's "Ready for dev" pill, the compare view's "added" colour, the home screen's shared-file mark and the live presence dot.
