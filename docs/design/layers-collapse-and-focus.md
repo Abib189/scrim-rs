@@ -146,3 +146,8 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 - **A scripted scroll** 0.127 s into the flight stops it at once (x stays at 1896.6, short of 1159). A second focus answers `moved: false` with identical pixels. Canvas clicks never moved the camera.
 - **By keyboard only:** F6, 9 Tabs to the button, Space collapses, then Tab to the rows, arrows, and Enter flies.
 - **Contrast:** the icon 9.33:1 (light) and 8.05:1 (dark) on the panel; the focus ring 5.43:1 and 6.01:1; the toast 16.7:1.
+
+## H0: the old second press, checked again
+
+- **The old Scrim's second press expanded everything; it did not restore.** `toggleCollapseAll` (`~/Scrim/apps/studio/src/editor/shell.ts:183-187`) returns an empty folded set once everything is folded, and `shell.test.ts:48-54` pins "folds everything, then unfolds everything on the next toggle". Rows folded by hand before the collapse came back open.
+- **Stage H disagrees on purpose:** the second press restores the rows that were open before the collapse (a snapshot), as the brief asks, rather than opening every row. Expanding everything would undo the person's own folds; restoring returns exactly what they had.
