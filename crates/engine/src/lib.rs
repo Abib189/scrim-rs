@@ -591,8 +591,7 @@ pub struct Prefs {
     /// Installed plugins (Plugins menu), in menu order.
     #[serde(serialize_with = "plugins::persisted")]
     pub plugins: Vec<plugins::InstalledPlugin>,
-    /// Plugins' own settings (`setting_set`), by plugin id, then key: JSON values, capped per
-    /// plugin.
+    /// Plugins' own settings (`setting_set`), by plugin id, then key: JSON values, capped per plugin.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plugin_settings: BTreeMap<String, BTreeMap<String, Value>>,
     /// The plugin directory browsed last (`ws://host:port/`, never with a key).
@@ -609,8 +608,7 @@ pub struct Prefs {
     pub publish_server: String,
     /// The right panel's mode and tab chosen last (`panel.mode.*`, `panel.tab.*`).
     pub panel: cmd::panel::PanelView,
-    /// Recently opened or saved files, newest first (File ▸ Open recent; at most
-    /// [`cmd::file::MAX_RECENT`]).
+    /// Recently opened or saved files, newest first (File ▸ Open recent; at most [`cmd::file::MAX_RECENT`]).
     pub recent_files: Vec<String>,
     /// The files you put on a server without its key, with their owner tokens (passwords: see
     /// [`online`]), most recently opened first, at most [`online::MAX_ONLINE_FILES`].
@@ -1065,7 +1063,8 @@ impl Session {
         let (uid, page) = (ds.uid, ds.page);
         ds.revision += 1;
         if !Arc::ptr_eq(&it.doc, &ds.doc) && *it.doc != *ds.doc {
-            self.record(uid, Some(&it.label), it.doc, it.selection, page);
+            self.record(uid, Some(&it.label), it.doc.clone(), it.selection, page);
+            self.note_gesture(uid, &it.doc, &it.label);
         } else {
             ds.doc = it.doc;
         }

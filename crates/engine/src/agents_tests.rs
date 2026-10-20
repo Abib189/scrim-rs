@@ -111,3 +111,38 @@ fn a_stale_write_is_refused_and_says_what_changed() {
     // Its own earlier edits don't count against it.
     s.execute_as(agent(), Some(again), "fill.set", &json!({"ids": [r], "color": "#0000FF"})).unwrap();
 }
+
+/// The person's canvas gestures are in the feed too (found by Stage C's C4: gestures commit
+/// without a command, so the feed showed only commands). A drawn shape and a drag each log one
+/// edit by the person; an agent's command logs one by the agent.
+#[test]
+fn the_persons_canvas_gestures_are_in_the_feed() {
+    use crate::tools::{PointerEvent, PointerKind};
+    let drag = |s: &mut Session, from: (f64, f64), to: (f64, f64)| {
+        s.pointer(&PointerEvent::at(PointerKind::Down, from.0, from.1, 1.0)).unwrap();
+        for k in 1..=4 {
+            let t = f64::from(k) / 4.0;
+            s.pointer(&PointerEvent::at(PointerKind::Move, from.0 + (to.0 - from.0) * t, from.1 + (to.1 - from.1) * t, 1.0)).unwrap();
+        }
+        s.pointer(&PointerEvent::at(PointerKind::Up, to.0, to.1, 1.0)).unwrap();
+    };
+    let mut s = Session::new();
+    s.execute("tool.rectangle", &json!({})).unwrap();
+    drag(&mut s, (100.0, 100.0), (200.0, 180.0));
+    s.execute("tool.move", &json!({})).unwrap();
+    drag(&mut s, (150.0, 140.0), (250.0, 140.0));
+    s.set_author(agent());
+    s.execute("shape.ellipse", &json!({"x": 400, "y": 100, "width": 50, "height": 50})).unwrap();
+    s.set_author(Author::Person);
+    let feed = s.execute("history.changes", &json!({})).unwrap();
+    let rows: Vec<(String, String, bool)> = feed["changes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| (c["command"].as_str().unwrap().to_string(), c["author"].as_str().unwrap().to_string(), c["agent"].as_bool().unwrap()))
+        .collect();
+    let gestures: Vec<_> = rows.iter().filter(|r| r.0 == "gesture").collect();
+    assert_eq!(gestures.len(), 2, "the drawn rectangle and the drag: {rows:?}");
+    assert!(gestures.iter().all(|g| g.1 == "person" && !g.2));
+    assert_eq!(rows.last().map(|r| (r.0.as_str(), r.2)), Some(("shape.ellipse", true)), "the agent's edit, its own entry");
+}

@@ -233,16 +233,27 @@ impl Session {
     /// Log a successful edit of document `uid` (it was `before`) by the current author.
     pub(crate) fn note_change(&mut self, spec: &CommandSpec, before: Option<(Arc<Document>, u64)>) {
         let Some((bdoc, uid)) = before else { return };
+        self.note_edit(uid, &bdoc, spec.id, spec.label);
+    }
+
+    /// Log a canvas gesture (a drag, a drawn shape, a nudge) that changed document `uid` (it was
+    /// `before`) as one edit, `label` its undo step's name. Gestures commit without a command, so
+    /// before this the feed showed only commands, never the person's own canvas edits.
+    pub(crate) fn note_gesture(&mut self, uid: u64, before: &Arc<Document>, label: &str) {
+        self.note_edit(uid, before, "gesture", label);
+    }
+
+    fn note_edit(&mut self, uid: u64, bdoc: &Arc<Document>, command: &str, label: &str) {
         let Some(ds) = self.docs.iter().find(|d| d.uid == uid) else { return };
-        if Arc::ptr_eq(&ds.doc, &bdoc) {
+        if Arc::ptr_eq(&ds.doc, bdoc) {
             return;
         }
         let change = Change {
             revision: ds.revision,
             author: self.agents.author.clone(),
-            command: spec.id.to_string(),
-            label: spec.label.to_string(),
-            ids: changed_ids(&bdoc, &ds.doc),
+            command: command.to_string(),
+            label: label.to_string(),
+            ids: changed_ids(bdoc, &ds.doc),
         };
         let log = self.agents.logs.entry(uid).or_default();
         log.push_back(change);
