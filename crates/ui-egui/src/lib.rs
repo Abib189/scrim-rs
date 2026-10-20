@@ -6,6 +6,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod a11y;
+pub mod accent_ink;
 pub mod assets_panel;
 pub mod bidi;
 pub mod branch_ui;
@@ -1495,6 +1496,7 @@ impl FigApp {
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.canvas)).show(ui, |ui| {
             let worker = self.worker.take();
             let mut worker = worker.unwrap_or_else(|| render_worker::Worker::new(ctx.clone()));
+            crate::accent_ink::set_page_of(self, ui.ctx());
             canvas::show(self, ui, &mut worker);
             camera_flight::tick(self, ui.ctx());
             self.worker = Some(worker);

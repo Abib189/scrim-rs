@@ -13,7 +13,7 @@ use crate::FigApp;
 use crate::export_panel::{export_layers, save_one, suggested_name};
 use crate::i18n::{self, tr, trf, trn};
 use crate::icons::{self, Icon};
-use crate::theme::{ACCENT, Tokens, regular, semibold};
+use crate::theme::{BRAND, BRAND_ON, Tokens, regular, semibold};
 
 #[path = "appearance_prefs.rs"]
 pub(crate) mod appearance_prefs;
@@ -125,8 +125,8 @@ pub(crate) fn tab_strip<T: Copy + PartialEq>(ui: &mut egui::Ui, t: &Tokens, tabs
 fn about_body(ui: &mut egui::Ui, t: &Tokens) {
     ui.horizontal(|ui| {
         let (r, _) = ui.allocate_exact_size(vec2(48.0, 48.0), Sense::hover());
-        ui.painter().rect_filled(r, CornerRadius::same(10), ACCENT);
-        icons::paint(ui.painter(), r.shrink(10.0), Icon::Logo, crate::theme::ACCENT_ON);
+        ui.painter().rect_filled(r, CornerRadius::same(10), BRAND);
+        icons::paint(ui.painter(), r.shrink(10.0), Icon::Logo, BRAND_ON);
         ui.vertical(|ui| {
             ui.label(RichText::new("Scrim").font(semibold(18.0)));
             ui.label(RichText::new(trf("Version {version}", &[("version", &VERSION)])).color(t.text_secondary));

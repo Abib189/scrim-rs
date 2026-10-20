@@ -9,7 +9,7 @@ use crate::FigApp;
 use crate::a11y::{self, Nav, Region, Tip};
 use crate::i18n::{tr, tr_noop, trf};
 use crate::icons::{self, Icon};
-use crate::theme::{ACCENT, Tokens, regular};
+use crate::theme::{Tokens, ink, regular};
 
 /// The default groups (`figcraft_engine::cmd::toolbar::DEFAULT` names the same): each tool's icon,
 /// and the menu button's name for a group as it ships.
@@ -186,11 +186,11 @@ fn main_toolbar(app: &mut FigApp, ui: &mut Ui, canvas: Rect, t: &Tokens) {
         // The Actions button reads on while its panel is open; clicking it again closes it.
         let actions_open = id == "actions" && app.ui.palette.is_some();
         if actions_open {
-            ui.painter().rect_filled(r, CornerRadius::same(5), ACCENT);
+            ui.painter().rect_filled(r, CornerRadius::same(5), ink::fill());
         } else if resp.hovered() {
             ui.painter().rect_filled(r, CornerRadius::same(5), t.hover);
         }
-        icons::paint(ui.painter(), r.shrink(7.0), icon, if actions_open { crate::theme::ACCENT_ON } else { t.icon });
+        icons::paint(ui.painter(), r.shrink(7.0), icon, if actions_open { crate::theme::ink::on() } else { t.icon });
         if resp.clicked() {
             if id == "actions" {
                 crate::menus::toggle_palette(&mut app.ui);
@@ -422,14 +422,14 @@ fn tool_cell(ui: &mut Ui, t: &Tokens, r: Rect, id: impl egui::AsIdSalt, icon: Ic
     });
     a11y::toggle(&resp, tip, active);
     let bg = if active {
-        ACCENT
+        ink::fill()
     } else if resp.hovered() {
         t.hover
     } else {
         Color32::TRANSPARENT
     };
     ui.painter().rect_filled(r, CornerRadius::same(5), bg);
-    icons::paint(ui.painter(), r.shrink(7.0), icon, if active { crate::theme::ACCENT_ON } else { t.icon });
+    icons::paint(ui.painter(), r.shrink(7.0), icon, if active { crate::theme::ink::on() } else { t.icon });
     resp
 }
 
@@ -445,8 +445,8 @@ fn done_button(ui: &mut Ui, t: &Tokens, x: f32, cy: f32, tip: &str) -> bool {
     divider(ui, t, x, cy);
     let done = Rect::from_min_size(pos2(x + 12.0, cy - 14.0), vec2(DONE_W, 28.0));
     let resp = ui.interact(done, ui.id().with("tool_done"), Sense::click()).tip(tip);
-    ui.painter().rect_filled(done, CornerRadius::same(6), if resp.hovered() { t.accent_hover } else { ACCENT });
-    ui.painter().text(done.center(), Align2::CENTER_CENTER, tr("Done"), crate::theme::semibold(11.5), crate::theme::ACCENT_ON);
+    ui.painter().rect_filled(done, CornerRadius::same(6), if resp.hovered() { t.accent_hover } else { ink::fill() });
+    ui.painter().text(done.center(), Align2::CENTER_CENTER, tr("Done"), crate::theme::semibold(11.5), crate::theme::ink::on());
     resp.clicked()
 }
 

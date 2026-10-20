@@ -869,7 +869,7 @@ pub fn canvas_banner<R>(ctx: &egui::Context, id: Id, canvas: Rect, add: impl FnO
 
 /// Where a dragged row will land: an accent line across `x0..x1` at `y`.
 pub fn insertion_line(painter: &egui::Painter, x0: f32, x1: f32, y: f32) {
-    painter.line_segment([pos2(x0, y), pos2(x1, y)], Stroke::new(2.0, crate::theme::ACCENT));
+    painter.line_segment([pos2(x0, y), pos2(x1, y)], Stroke::new(2.0, crate::theme::ink::fill()));
 }
 
 /// What a drag carries, following the pointer at `at`: `galley` in a small outlined box above
@@ -880,7 +880,7 @@ pub fn drag_ghost(ctx: &egui::Context, at: egui::Pos2, galley: std::sync::Arc<eg
     let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Tooltip, Id::new("drag_ghost")));
     let r = Rect::from_min_size(at + vec2(14.0, 10.0), galley.size() + vec2(16.0, 8.0));
     painter.rect_filled(r, CornerRadius::same(5), t.panel);
-    painter.rect_stroke(r, CornerRadius::same(5), Stroke::new(1.0, crate::theme::ACCENT), StrokeKind::Inside);
+    painter.rect_stroke(r, CornerRadius::same(5), Stroke::new(1.0, crate::theme::ink::fill()), StrokeKind::Inside);
     painter.galley(r.min + vec2(8.0, 4.0), galley, t.text);
 }
 
@@ -974,7 +974,7 @@ pub fn checkbox(ui: &mut Ui, on: bool, label: &str) -> bool {
     let b = Rect::from_min_size(pos2(rect.min.x, rect.center().y - 7.0), vec2(14.0, 14.0));
     if on {
         ui.painter().rect_filled(b, CornerRadius::same(3), t.accent_fill);
-        icons::paint(ui.painter(), b.shrink(1.5), Icon::Check, crate::theme::ACCENT_ON);
+        icons::paint(ui.painter(), b.shrink(1.5), Icon::Check, crate::theme::ink::on());
     } else {
         ui.painter().rect_stroke(b, CornerRadius::same(3), Stroke::new(1.0, t.border_strong), StrokeKind::Inside);
     }
@@ -990,7 +990,7 @@ pub fn radio(ui: &mut Ui, on: bool, label: &str) -> bool {
     let c = pos2(rect.min.x + 7.0, rect.center().y);
     if on {
         ui.painter().circle_filled(c, 7.0, t.accent_fill);
-        ui.painter().circle_filled(c, 2.5, crate::theme::ACCENT_ON);
+        ui.painter().circle_filled(c, 2.5, crate::theme::ink::on());
     } else {
         ui.painter().circle_stroke(c, 6.5, Stroke::new(1.0, if resp.hovered() { t.accent } else { t.border_strong }));
     }
@@ -1008,8 +1008,8 @@ pub fn button(ui: &mut Ui, label: &str, primary: bool, enabled: bool) -> Respons
     a11y::button(&resp, label);
     let hot = enabled && resp.hovered();
     let (fill, text) = match (primary, hot) {
-        (true, false) => (t.accent_fill, crate::theme::ACCENT_ON),
-        (true, true) => (t.accent_hover, crate::theme::ACCENT_ON),
+        (true, false) => (t.accent_fill, crate::theme::ink::on()),
+        (true, true) => (if resp.is_pointer_button_down_on() { t.accent_pressed } else { t.accent_hover }, crate::theme::ink::on()),
         (false, false) => (Color32::TRANSPARENT, t.text),
         (false, true) => (t.hover, t.text),
     };

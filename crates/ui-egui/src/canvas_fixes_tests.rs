@@ -105,7 +105,8 @@ fn the_pen_draws_the_handles_of_the_point_being_dragged_and_a_curved_band() {
     let press = |p: Pos2, pressed: bool| {
         vec![Event::PointerMoved(p), Event::PointerButton { pos: p, button: PointerButton::Primary, pressed, modifiers: Default::default() }]
     };
-    let accent = egui::epaint::ColorMode::Solid(crate::theme::ACCENT);
+    // The overlay accent for this page (a light one: the default orange darkened to 3:1, Stage G).
+    let accent = || egui::epaint::ColorMode::Solid(crate::accent_ink::overlay());
     // A handle: the line from its anchor and the dot at its end.
     let handle = |shapes: &[Shape], a: Pos2, e: Pos2| {
         let near = |p: Pos2, q: Pos2| p.distance(q) < 0.5;
@@ -125,7 +126,7 @@ fn the_pen_draws_the_handles_of_the_point_being_dragged_and_a_curved_band() {
     // After release, towards the next point: the band curves along the out handle.
     let shapes = flat(&u.frame_output(vec![Event::PointerMoved(at(&u, 200.0, 200.0))]).shapes);
     assert!(handle(&shapes, a, at(&u, 140.0, 100.0)), "the handles stay");
-    let band = shapes.iter().any(|s| matches!(s, Shape::CubicBezier(c) if c.points[0].distance(a) < 0.5 && c.points[1].distance(at(&u, 140.0, 100.0)) < 0.5 && c.stroke.color == accent));
+    let band = shapes.iter().any(|s| matches!(s, Shape::CubicBezier(c) if c.points[0].distance(a) < 0.5 && c.points[1].distance(at(&u, 140.0, 100.0)) < 0.5 && c.stroke.color == accent()));
     assert!(band, "a curve leaving along the out handle");
 }
 

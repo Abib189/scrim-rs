@@ -37,6 +37,10 @@ pub struct Tokens {
     /// The accent's fill (primary buttons, checked boxes, chips) and its hover.
     pub accent_fill: Color32,
     pub accent_hover: Color32,
+    /// The accent fill while pressed.
+    pub accent_pressed: Color32,
+    /// The accent the person chose (the canvas overlays derive theirs from it per page).
+    pub accent_base: Color32,
     /// The label on the accent fill: 4.5:1.
     pub accent_on: Color32,
     /// A wash of the mark, for drop targets and highlights.
@@ -65,6 +69,13 @@ pub struct Tokens {
 /// Scrim's default accent fill (orange), the same in both themes; its label is [`ACCENT_ON`]. Where
 /// the tokens are at hand, use `t.accent_fill` / `t.accent_on` (and `t.accent` for marks).
 pub const ACCENT: Color32 = accent::DEFAULT_ACCENT;
+/// Scrim's brand orange: the logo "S", file badges, the About tile and the app icon keep it whatever
+/// the accent (`docs/design/accent-sweep.md`); its label is [`BRAND_ON`]. Everything interactive
+/// reads the accent instead ([`ink`]).
+pub const BRAND: Color32 = accent::DEFAULT_ACCENT;
+pub const BRAND_ON: Color32 = accent::INK;
+/// The live accent where code paints it (Stage G).
+pub use crate::accent_ink as ink;
 /// The label on [`ACCENT`]: near-black, 4.5:1 or better (white on this orange is about 3:1).
 pub const ACCENT_ON: Color32 = accent::INK;
 pub const COMPONENT: Color32 = Color32::from_rgb(0x97, 0x47, 0xFF);
@@ -100,6 +111,8 @@ impl Tokens {
             accent: hex(0xC53400),
             accent_fill: ACCENT,
             accent_hover: hex(0xEB531D),
+            accent_pressed: hex(0xF54100),
+            accent_base: ACCENT,
             accent_on: ACCENT_ON,
             accent_tint: Color32::from_rgba_unmultiplied(0xC5, 0x34, 0x00, 31),
             accent_text: hex(0xC53400),
@@ -144,6 +157,8 @@ impl Tokens {
             accent: ACCENT,
             accent_fill: ACCENT,
             accent_hover: hex(0xEB531D),
+            accent_pressed: hex(0xF54100),
+            accent_base: ACCENT,
             accent_on: ACCENT_ON,
             accent_tint: Color32::from_rgba_unmultiplied(0xFF, 0x5A, 0x1F, 41),
             accent_text: ACCENT,
@@ -194,6 +209,8 @@ impl Tokens {
         self.focus = a.mark;
         self.accent_fill = a.fill;
         self.accent_hover = accent::from_hsl(h, s, (l - 0.04).max(0.0));
+        self.accent_pressed = accent::from_hsl(h, s, (l - 0.08).max(0.0));
+        self.accent_base = base;
         self.accent_on = a.on_fill;
         self.accent_tint = a.tint;
         self
@@ -220,6 +237,7 @@ pub fn apply(ctx: &Context, t: Tokens) {
 /// when the system or the preferences ask for reduced motion. Prototype transitions still play.
 pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
     ctx.data_mut(|d| d.insert_temp(tokens_id(), t));
+    crate::accent_ink::install(&t);
     ctx.set_visuals(visuals(t));
     ctx.global_style_mut(|s| {
         // Scrim's rhythm: 24 px controls and a 4 px gap make 28 px rows (`ui/README.md` §6).

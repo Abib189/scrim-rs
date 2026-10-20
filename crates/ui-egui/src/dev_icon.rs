@@ -84,7 +84,16 @@ impl Ink {
         let (light, dark) = (Tokens::light(), Tokens::dark());
         let on_dark = contrast(dark.text_secondary, page) > contrast(light.text_secondary, page);
         let (t, component) = if on_dark { (dark, COMPONENT_ON_DARK) } else { (light, COMPONENT_ON_LIGHT) };
-        Ink { page, text: t.text_secondary, accent: t.accent_text, component, ready: t.success, changed: t.warning, completed: t.text_secondary }
+        // The selected-title colour is the person's accent (Stage G), as text that reads on this page.
+        Ink {
+            page,
+            text: t.text_secondary,
+            accent: crate::accent_ink::text_on_page(page),
+            component,
+            ready: t.success,
+            changed: t.warning,
+            completed: t.text_secondary,
+        }
     }
 
     /// The icon colour for `s`.

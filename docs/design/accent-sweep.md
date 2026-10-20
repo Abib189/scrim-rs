@@ -233,3 +233,16 @@ Uses of `theme::ACCENT` / `ACCENT_ON` and their definitions (test files left out
 6. **Text selection stays neutral** (`selected_row`): "Selection is neutral; the accent is only an edge or a mark" (`ui/README.md` §4). The brief lists the text-selection colour; it has no orange to fix.
 7. **New tokens:** `accent_pressed` (the brief's accent-pressed). `accent_base` keeps the chosen colour for the canvas overlay. The brief's accent-subtle is the existing `accent_tint`, and on-accent is `accent_on` (black or white by contrast).
 8. **Frozen files stay at their size.** `canvas.rs`, `present.rs`, `right.rs`, `comments.rs`, `colorpicker.rs`, `widgets.rs`, `proto_panel.rs` and `live.rs` are at their caps. The lookup goes into a new module (`accent_ink.rs`) with one-word calls, so the swaps don't add lines.
+
+## G1 as built
+
+- **`crates/ui-egui/src/accent_ink.rs`** (new; `theme::ink`):
+  - `fill()`, `on()` and `text()` are the theme's accent tokens.
+  - `overlay()` and `overlay_on()` are the canvas overlay accent. `for_page(base, page)` keeps the chosen colour where it reads at 3:1 on the page, else moves its lightness, keeping the hue.
+  - `text_on_page(page)` is the accent as text on the canvas, at 4.5:1: a selected or hovered frame title.
+- **Live:** `theme::apply_with` installs the tokens every frame (`install`), and the window sets the shown page's colour just before the canvas (`set_page_of`). The UI is one thread, so they are kept per thread. A change of accent repaints everything on the next frame (tested: handles go from green to pink in one frame, with no input).
+- **Tokens:** `accent_pressed` (lightness −0.08, used by primary buttons while held) and `accent_base` (the chosen colour). The brief's accent-subtle is `accent_tint`, its on-accent is `accent_on`.
+- **Swapped:** every interactive orange in the G0 table, as listed. The brand marks use `theme::BRAND` / `BRAND_ON`: the "S" on file tabs, recent files, the home sidebar and file rows, and the About tile. A collaborator without a readable colour falls back to `BRAND` too.
+  - The frozen files keep their sizes: `canvas.rs`, `present.rs`, `right.rs`, `comments.rs`, `colorpicker.rs`, `widgets.rs`, `proto_panel.rs` and `live.rs`, each still at its cap.
+- **Stage E's selected frame title** (`dev_icon::Ink`) took the default tokens' orange. It now takes `text_on_page`.
+- **Unchanged (Decisions 5 and 6):** guides (pink and red) and the neutral text selection.
