@@ -282,3 +282,12 @@ Uses of `theme::ACCENT` / `ACCENT_ON` and their definitions (test files left out
 - **`the_default_accent_constants_are_used_only_where_tokens_are_defined`:** `theme::ACCENT` / `ACCENT_ON` appear in no UI or app source file outside `theme.rs` and `accent.rs`.
 - Both were checked by planting an orange in `tabs.rs`: both failed, naming the line.
 - `docs/design/*` (this page) is documentation and outside the scan.
+
+## G3 results
+
+Captures and numbers: `docs/scrim-ports/accent/README.md`.
+- **Before:** with green, Share, the active tool, the selection, its handles, the size label and the selected title were orange.
+- **After:** all of them follow, in light and dark, on green, blue and pink. The brand "S" stays orange.
+- **The default:** pixel-identical in 10 of 12 views. The other two, the home screens, differ only in the scratch file's name and path.
+- **Live:** switching blue → teal with a frame selected repainted the canvas without input (4,424 blue pixels became 4,427 teal).
+- **Not verified:** custom colours, overlays on a light page, and pins, the player and compare in the window; Windows and Linux.
