@@ -128,3 +128,11 @@ fn reaching(base: Color32, page: Color32, ratio: f64) -> Color32 {
 #[cfg(test)]
 #[path = "accent_ink_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "accent_contrast_tests.rs"]
+mod contrast_tests;
+
+#[cfg(test)]
+#[path = "accent_guard_tests.rs"]
+mod guard_tests;

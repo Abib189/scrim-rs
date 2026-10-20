@@ -246,3 +246,39 @@ Uses of `theme::ACCENT` / `ACCENT_ON` and their definitions (test files left out
   - The frozen files keep their sizes: `canvas.rs`, `present.rs`, `right.rs`, `comments.rs`, `colorpicker.rs`, `widgets.rs`, `proto_panel.rs` and `live.rs`, each still at its cap.
 - **Stage E's selected frame title** (`dev_icon::Ink`) took the default tokens' orange. It now takes `text_on_page`.
 - **Unchanged (Decisions 5 and 6):** guides (pink and red) and the neutral text selection.
+
+## G2 as built: contrast for every preset, and a guard
+
+**The thresholds** (`accent_contrast_tests.rs` › `every_preset_in_both_themes_meets_every_role`, every preset in both themes):
+
+| Role | Needs | Against |
+|---|---|---|
+| Indicator or outline in the panels: the fill, the mark, the focus ring | 3:1 | the panel |
+| Canvas overlay (`for_page`) | 3:1 | the theme's canvas and both default page colours |
+| A mark on the overlay (`overlay_on`) | 4.5:1 | the overlay |
+| Label on the accent (`accent_on`) | 4.5:1 | the fill, the hover and the pressed fill |
+| Accent text | 4.5:1 | the panel (and `text_on_page` on the canvas's pages) |
+
+**What the rule moved** (`which_presets_were_adjusted`; anything not listed is the preset as chosen):
+
+| Preset | Light theme | Dark theme |
+|---|---|---|
+| Orange (default) | mark #c53400 (as before G); overlay #fa4200 on the light canvas, #ff4f10 on the default light page | overlay #ff4f10 on a light page; as chosen on dark pages and everywhere else |
+| Blue | mark #0558ff; overlay #407fff on the light canvas | as chosen |
+| Violet | mark #6248ff; overlay #8571ff / #8a76ff on light canvas / page | overlay #8a76ff on a light page |
+| Green | mark #207848, fill #2ca965; overlay #28975a / #2a9f5f | overlay #2a9f5f on a light page |
+| Pink | mark #cc166b; overlay #eb4693 on the light canvas | as chosen |
+| Teal | mark #14766c, fill #1ca698; overlay #1a978a / #1b9b8e | overlay #1b9b8e on a light page |
+
+**Pressed fills:** the first cut darkened every pressed fill by 0.08. The near-black label then fell to 3.8–4.3:1 on blue, violet, green and teal. `with_accent` now darkens the pressed fill only as far as the label still reads at 4.5:1, and lightens it if no darker shade does. The default's pressed #f54100 reads at 5.03:1.
+
+**The guard** (`accent_guard_tests.rs`):
+- **`no_brand_orange_literal_outside_the_allow_list`:** no `#ff5a1f` in any spelling (hex, `0xFF, 0x5A, 0x1F`, `255, 90, 31`) in `crates`, `apps`, `xtask`, `assets`, `tools`, `plugins` or `docs/scrim-transfer`, except:
+  - the token definitions (`appearance.rs`, `theme.rs`, `accent.rs`);
+  - the app icon and its generator;
+  - text naming the default (the Reset tooltip, the locales);
+  - the design-system source;
+  - tests asserting the default.
+- **`the_default_accent_constants_are_used_only_where_tokens_are_defined`:** `theme::ACCENT` / `ACCENT_ON` appear in no UI or app source file outside `theme.rs` and `accent.rs`.
+- Both were checked by planting an orange in `tabs.rs`: both failed, naming the line.
+- `docs/design/*` (this page) is documentation and outside the scan.

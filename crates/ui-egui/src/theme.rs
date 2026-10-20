@@ -209,7 +209,13 @@ impl Tokens {
         self.focus = a.mark;
         self.accent_fill = a.fill;
         self.accent_hover = accent::from_hsl(h, s, (l - 0.04).max(0.0));
-        self.accent_pressed = accent::from_hsl(h, s, (l - 0.08).max(0.0));
+        // Pressed: as much darker as the label allows (4.5:1 on it), up to −0.08; lighter if none does.
+        let readable = |c: &Color32| accent::contrast(a.on_fill, *c) >= 4.5;
+        self.accent_pressed = (1..=8u8)
+            .rev()
+            .map(|k| accent::from_hsl(h, s, (l - 0.01 * f64::from(k)).max(0.0)))
+            .find(readable)
+            .unwrap_or_else(|| accent::from_hsl(h, s, (l + 0.05).min(1.0)));
         self.accent_base = base;
         self.accent_on = a.on_fill;
         self.accent_tint = a.tint;
