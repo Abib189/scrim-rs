@@ -477,8 +477,8 @@ pub struct UiState {
     /// (set by a click on a row, cleared by a press on the canvas).
     pub layers_focus: bool,
     pub layers_seen_sel: Vec<NodeId>,
-    /// The rows open before Collapse all, while the button would restore them (`layers_restore`).
-    pub collapse_snapshot: Option<layers_restore::Snapshot>,
+    /// Collapse all's snapshot of the open rows, and the Layers list's scroll (`layers_restore`).
+    pub layers_restore: layers_restore::Restore,
     pub dark: bool,
     pub follow_system: bool,
     pub tool_flyout: Option<&'static str>,
@@ -618,7 +618,7 @@ impl Default for UiState {
             layer_anchor: None,
             layers_focus: false,
             layers_seen_sel: Vec::new(),
-            collapse_snapshot: None,
+            layers_restore: layers_restore::Restore::default(),
             dark: false,
             follow_system: false,
             tool_flyout: None,

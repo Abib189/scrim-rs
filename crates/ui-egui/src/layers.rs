@@ -625,7 +625,7 @@ fn layers(app: &mut FigApp, ui: &mut Ui) {
     // The drag is over a row that takes no drop: the not-allowed cursor shows.
     let mut refused = false;
     // Only the rows in view are laid out and drawn; the rest is empty scroll space.
-    egui::ScrollArea::vertical().auto_shrink([false, false]).show_viewport(ui, |ui, viewport| {
+    egui::ScrollArea::vertical().id_salt(crate::layers_restore::LIST).auto_shrink([false, false]).show_viewport(ui, |ui, viewport| {
         let pitch = ROW + ui.spacing().item_spacing.y;
         let top = ui.max_rect().top();
         let total = rows.len() as f32 * pitch;

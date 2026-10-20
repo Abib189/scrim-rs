@@ -1,10 +1,10 @@
 //! Collapse all, then restore (Stage H, `docs/design/layers-collapse-and-focus.md`).
-//! - **Collapse** (`layers.collapse-all`, ⌥L, the header button) keeps which rows are open (a
-//!   snapshot), then closes every row on every page as D1 does. Called while a snapshot still holds,
-//!   it changes nothing and keeps it, so an agent's `layers.collapse-all` stays idempotent and never
-//!   restores.
+//! - **Collapse** (`layers.collapse-all`, ⌥L, the header button) keeps which rows are open and
+//!   where the list was scrolled (a snapshot), then closes every row on every page as D1 does.
+//!   Called while a snapshot still holds, it changes nothing and keeps it, so an agent's
+//!   `layers.collapse-all` stays idempotent and never restores.
 //! - **Restore** (`layers.restore-expansion`, the button's next press) opens exactly the rows the
-//!   snapshot kept, and nothing else.
+//!   snapshot kept, and nothing else, and scrolls the list back to where it was.
 //! - **The snapshot is dropped, for good,** by any row opened or closed afterwards (by hand, a new
 //!   selection revealed, a drag held over a row), another page, another file, or a structural change
 //!   to the layer tree: a layer added, deleted or moved to another parent, or an undo or redo of
@@ -17,14 +17,29 @@ use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
+use egui::Ui;
+use egui::scroll_area::State;
 use figcraft_doc::{Document, NodeId};
 
 use crate::FigApp;
 
+/// The Layers list's scroll area (`layers.rs`).
+pub(crate) const LIST: &str = "layers_list";
+
+/// Collapse all's state in the window (`app.ui.layers_restore`).
+#[derive(Clone, Debug, Default)]
+pub struct Restore {
+    snapshot: Option<Snapshot>,
+    /// The list's scroll offset as last seen, and one to put back before the list draws next.
+    scroll: f32,
+    scroll_back: Option<f32>,
+}
+
 /// The rows open before Collapse all, and what they were open in.
 #[derive(Clone, Debug)]
-pub struct Snapshot {
+struct Snapshot {
     open: BTreeSet<NodeId>,
+    scroll: f32,
     /// The document's tab and the page shown.
     uid: u64,
     page: NodeId,
@@ -51,7 +66,7 @@ fn filtering(app: &FigApp) -> bool {
 
 /// Drop the snapshot once it no longer holds (each frame the panel draws, and after every command).
 pub(crate) fn check(app: &mut FigApp) {
-    let Some(s) = app.ui.collapse_snapshot.as_mut() else { return };
+    let Some(s) = app.ui.layers_restore.snapshot.as_mut() else { return };
     let holds = app.session.ds().is_ok_and(|ds| {
         let same_tree = Arc::ptr_eq(&s.doc, &ds.doc) || shape(&ds.doc) == s.shape;
         if same_tree {
@@ -61,7 +76,7 @@ pub(crate) fn check(app: &mut FigApp) {
     });
     // Collapse all leaves no row open: any open row since was opened by hand or by a reveal.
     if !holds || !app.ui.expanded.is_empty() {
-        app.ui.collapse_snapshot = None;
+        app.ui.layers_restore.snapshot = None;
     }
 }
 
@@ -69,39 +84,65 @@ pub(crate) fn check(app: &mut FigApp) {
 /// collapses.
 pub(crate) fn restores_next(app: &mut FigApp) -> bool {
     check(app);
-    app.ui.collapse_snapshot.is_some() && !filtering(app)
+    app.ui.layers_restore.snapshot.is_some() && !filtering(app)
 }
 
-/// `layers.collapse-all`: keep which rows are open (unless a snapshot still holds, or a filter is
-/// active), then close every row (D1).
+/// `layers.collapse-all`: keep which rows are open and the list's scroll (unless a snapshot still
+/// holds, or a filter is active), then close every row (D1).
 pub(crate) fn collapse(app: &mut FigApp) {
     check(app);
-    if app.ui.collapse_snapshot.is_none()
+    if app.ui.layers_restore.snapshot.is_none()
         && !filtering(app)
         && let Ok(ds) = app.session.ds()
     {
-        let snap = Snapshot { open: app.ui.expanded.clone(), uid: ds.uid, page: ds.page, doc: ds.doc.clone(), shape: shape(&ds.doc) };
-        app.ui.collapse_snapshot = Some(snap);
+        let (uid, page, doc, shape) = (ds.uid, ds.page, ds.doc.clone(), shape(&ds.doc));
+        let (open, scroll) = (app.ui.expanded.clone(), app.ui.layers_restore.scroll);
+        app.ui.layers_restore.snapshot = Some(Snapshot { open, scroll, uid, page, doc, shape });
     }
     crate::layers_header::collapse_all(app);
 }
 
-/// `layers.restore-expansion`: open exactly the rows open before Collapse all, when its snapshot
-/// still holds and no filter is active; otherwise nothing. The selection isn't revealed again.
+/// `layers.restore-expansion`: open exactly the rows open before Collapse all, and scroll the list
+/// back, when its snapshot still holds and no filter is active; otherwise nothing. The selection
+/// isn't revealed again.
 pub(crate) fn restore(app: &mut FigApp) {
     if !restores_next(app) {
         return;
     }
-    if let Some(s) = app.ui.collapse_snapshot.take() {
+    if let Some(s) = app.ui.layers_restore.snapshot.take() {
         app.ui.expanded = s.open;
         app.ui.layers_seen_sel = app.session.selection();
+        app.ui.layers_restore.scroll_back = Some(s.scroll);
     }
 }
 
-/// For `ui.inspect`: the open rows, and whether the button's next press restores.
+/// From the Layers header, before the list draws (`ui` is the list's parent): note where the list is
+/// scrolled (`after: false`), or put back the scroll a restore asked for (`after: true`, once the
+/// header's own button has been handled).
+pub(crate) fn scroll(app: &mut FigApp, ui: &Ui, after: bool) {
+    let id = ui.make_persistent_id(egui::IdSalt::new(LIST));
+    let r = &mut app.ui.layers_restore;
+    match (after, r.scroll_back.take()) {
+        (false, back) => {
+            r.scroll_back = back;
+            r.scroll = State::load(ui.ctx(), id).map_or(0.0, |s| s.offset.y);
+        }
+        (true, Some(y)) => {
+            let mut s = State::load(ui.ctx(), id).unwrap_or_default();
+            s.offset.y = y;
+            s.store(ui.ctx(), id);
+            r.scroll = y;
+        }
+        (true, None) => {}
+    }
+}
+
+/// For `ui.inspect`: the open rows, whether the button's next press restores, and the list's
+/// scroll offset.
 pub(crate) fn inspect(app: &FigApp) -> serde_json::Value {
-    let restore_next = app.ui.collapse_snapshot.is_some() && !filtering(app);
-    serde_json::json!({"open": app.ui.expanded.iter().map(|i| i.0).collect::<Vec<_>>(), "restoreNext": restore_next})
+    let restore_next = app.ui.layers_restore.snapshot.is_some() && !filtering(app);
+    let open: Vec<u64> = app.ui.expanded.iter().map(|i| i.0).collect();
+    serde_json::json!({"open": open, "restoreNext": restore_next, "scroll": app.ui.layers_restore.scroll})
 }
 
 #[cfg(test)]

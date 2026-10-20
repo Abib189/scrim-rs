@@ -1,5 +1,6 @@
 //! H2: Collapse all as a toggle with restore.
-//! - Collapse then restore gives back the identical set of open rows, and the selection.
+//! - Collapse then restore gives back the identical set of open rows, the list's scroll, and the
+//!   selection.
 //! - A row opened (or opened then closed) by hand, another page, another file, a layer added,
 //!   deleted or moved to another parent, and an undo or redo of one, each drop the snapshot: the
 //!   next press collapses again and takes a new one. A rename keeps it.
@@ -84,7 +85,7 @@ fn collapse_then_restore_gives_back_the_identical_rows_and_writes_nothing() {
     assert_eq!(u.app.session.selection(), [poster_body], "the selection survives the collapse");
     let (name, pressed, key) = button(&mut u);
     assert_eq!((name.as_str(), pressed, key), (RESTORE, true, None), "pressed, named for the restore, no key");
-    assert_eq!(u.app.inspect()["layers"], json!({"open": [], "restoreNext": true}), "ui.inspect says so too");
+    assert_eq!((&u.app.inspect()["layers"]["open"], &u.app.inspect()["layers"]["restoreNext"]), (&json!([]), &json!(true)), "ui.inspect says so too");
     click_named(&mut u, RESTORE);
     assert_eq!(open(&u), before_open, "exactly the rows open before");
     assert_eq!(rows(&mut u), before_rows);
@@ -93,6 +94,53 @@ fn collapse_then_restore_gives_back_the_identical_rows_and_writes_nothing() {
     assert_doc_untouched(&u, &doc, "collapse and restore");
     let feed = u.app.run("history.changes", json!({})).unwrap()["changes"].clone();
     assert_eq!(feed, feed_before, "nothing logged, so no \"Agent: …\" label");
+}
+
+/// Ten frames, each holding four rectangles, every row open: a list longer than the panel, whose
+/// top-level rows alone fit in it.
+fn long_list() -> Ui {
+    let mut s = figcraft_engine::Session::new();
+    let mut frames = Vec::new();
+    for i in 0..10 {
+        let f = s.execute("frame.create", &json!({"x": 120 * i, "y": 0, "width": 100, "height": 100, "name": format!("Frame {i:02}")})).unwrap();
+        let f = id(Some(f));
+        for _ in 0..4 {
+            s.execute("shape.rectangle", &json!({"x": 5, "y": 5, "width": 20, "height": 20, "parent": f})).unwrap();
+        }
+        frames.push(f);
+    }
+    s.execute("select.none", &json!({})).unwrap();
+    let mut u = Ui::new(s);
+    u.app.ui.expanded.extend(frames);
+    u.frame(vec![]);
+    u
+}
+
+#[test]
+fn restore_scrolls_the_list_back_to_where_it_was() {
+    let mut u = long_list();
+    // Scroll the list down with the wheel, over its rows.
+    u.frame(vec![Event::PointerMoved(pos2(150.0, 500.0))]);
+    for _ in 0..4 {
+        u.frame(vec![Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Point,
+            delta: egui::vec2(0.0, -150.0),
+            modifiers: egui::Modifiers::NONE,
+            phase: egui::TouchPhase::Move,
+        }]);
+    }
+    for _ in 0..40 {
+        u.frame(vec![]);
+    }
+    let scrolled = u.app.inspect()["layers"]["scroll"].as_f64().unwrap_or_default();
+    assert!(scrolled > 100.0, "scrolled down first: {scrolled}");
+    let before = rows(&mut u);
+    assert!(!before.contains(&"Frame 09".to_string()), "the top rows are scrolled out of view: {before:?}");
+    click_named(&mut u, COLLAPSE);
+    assert!(rows(&mut u).contains(&"Frame 09".to_string()), "collapsed, the list is back at its top");
+    click_named(&mut u, RESTORE);
+    assert_eq!(rows(&mut u), before, "the same rows in view: scrolled back, not only reopened");
+    assert_eq!(u.app.inspect()["layers"]["scroll"].as_f64(), Some(scrolled));
 }
 
 #[test]
@@ -262,7 +310,7 @@ fn with_a_filter_the_button_collapses_and_takes_or_applies_no_snapshot() {
     click_named(&mut u, COLLAPSE);
     assert!(open(&u).is_empty(), "D1's collapse");
     assert_eq!(rows(&mut u), filtered, "the filtered list is unchanged");
-    assert!(u.app.ui.collapse_snapshot.is_none(), "no snapshot taken");
+    assert!(u.app.inspect()["layers"]["restoreNext"] == json!(false), "no snapshot taken");
     assert_eq!(next(&mut u), COLLAPSE);
     // A snapshot taken before the filter is neither applied while it is active nor lost.
     let (mut u, _) = partly_open();

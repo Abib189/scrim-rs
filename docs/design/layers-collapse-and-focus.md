@@ -158,9 +158,10 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 - `layers.collapse-all` is unchanged for its callers. It still closes every row and is idempotent; called again, it never restores, so agents' behaviour doesn't change. It now also keeps a snapshot of the open rows.
 - `layers.restore-expansion` is new and has its own MCP route ("Restore expanded layers"). It is panel state only: Write access in the list, view-only, so it makes no revision, no undo step and no "Agent: …" label. Every locale names it.
 
-**The snapshot** (`crates/ui-egui/src/layers_restore.rs`, `app.ui.collapse_snapshot`) holds the open rows, the document's tab, the page shown, and the shape of the layer tree.
+**The snapshot** (`crates/ui-egui/src/layers_restore.rs`, `app.ui.layers_restore`) holds the open rows, the list's scroll offset, the document's tab, the page shown, and the shape of the layer tree.
 - **Taken** by a collapse when no snapshot holds and no filter is active. A collapse while one holds changes nothing and keeps it.
-- **Restore** puts back exactly the rows it kept, then the snapshot is gone. The selection isn't revealed again (it survives both presses).
+- **Restore** puts back exactly the rows it kept and scrolls the list back to where it was, then the snapshot is gone. The selection isn't revealed again (it survives both presses).
+  - **Why the scroll:** a collapse that makes the list fit resets its scroll to the top. Without the offset, the restored rows came back scrolled differently, which H3's first captures showed (29,417 px differed in the Layers rows). The list's scroll area is now named `layers_list` (`layers.rs`, edited in place, still 1000 lines).
 - **Dropped for good** by any of these:
   - a row opened since (by hand, by Alt-click, or by a new selection's reveal; opened then closed counts too);
   - another page;
@@ -179,7 +180,7 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 - **Screen readers:** a toggle button, pressed.
 - **Look:** it stays pressed (the `pressed` fill) and its icon changes shape. Collapse is three lines with the last one short; restore is an open tree, the second and third lines indented under the first. So the state isn't carried by colour alone.
 
-**`ui.inspect`** reports `layers: {open, restoreNext}`: the open rows, and whether the next press restores.
+**`ui.inspect`** reports `layers: {open, restoreNext, scroll}`: the open rows, whether the next press restores, and the list's scroll offset.
 
 **Lines:** `lib.rs` went from 1715 to 1722 lines (cap 1730), `layers.rs` is untouched, and the new code is in the new module.
 
@@ -187,7 +188,8 @@ Live in the release build; the captures, numbers and method are in `docs/scrim-p
 - the tree's shape;
 - the page or file check;
 - the open-rows check;
-- the check after every command.
+- the check after every command;
+- putting the scroll back.
 
 **Overrule if you disagree:**
 1. **The selection's ancestors close too.** The brief says "keep the selection's ancestors open, as D1 already does", but D1 closes them (D0 decision 3, pinned by `layers_behaviour_tests.rs`: "every row closes, the way to the selection too"). I kept D1's collapse unchanged, because the brief also asks that agents' `layers.collapse-all` doesn't change. Keeping them open is a one-line change in `layers_header::collapse_all`; restore would still be exact.

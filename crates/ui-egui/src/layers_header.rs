@@ -23,6 +23,7 @@ fn search_id() -> Id {
 
 /// The header row, then the search row when it is open.
 pub(crate) fn show(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) {
+    crate::layers_restore::scroll(app, ui, false);
     let (hr, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
     ui.painter().text(pos2(hr.min.x + 16.0, hr.center().y), Align2::LEFT_CENTER, tr("Layers"), semibold(11.0), t.text);
     // Collapse all layers, left of the search button; pressed while its next press restores.
@@ -60,6 +61,8 @@ pub(crate) fn show(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) {
     if app.ui.layer_search {
         search_field(app, ui, t, w, search_id());
     }
+    // A restore (this button's, or a command's) scrolls the list back before it draws.
+    crate::layers_restore::scroll(app, ui, true);
 }
 
 /// Collapse all's icon (our own drawing; `icons.rs` is at its cap): three lines, the last one
