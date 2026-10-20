@@ -708,6 +708,10 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
             if b(p, "resetFrameStats") {
                 app.frame_stats.reset();
             }
+            // The window's size in points (captures at a set size; the person's own resizing is the OS's).
+            if let Some([w, h]) = p.get("windowSize").and_then(Value::as_array).and_then(|a| Some([a.first()?.as_f64()?, a.get(1)?.as_f64()?])) {
+                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(w.clamp(800.0, 8192.0) as f32, h.clamp(500.0, 8192.0) as f32)));
+            }
             Ok(app.inspect())
         }
         "ui.render" => {

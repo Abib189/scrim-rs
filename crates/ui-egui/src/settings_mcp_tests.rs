@@ -123,3 +123,76 @@ fn the_control_channel_tells_attached_servers_which_tools_are_off() {
     let r = crate::control::handle(&mut u.app, &ctx, "mcp.policy", &json!({})).unwrap();
     assert_eq!(r["disabledTools"], json!(["screenshot"]));
 }
+
+/// C4: the text colours Settings draws meet 4.5:1 on the dialog (and on the rail's current row).
+#[test]
+fn settings_text_meets_4_5_to_1() {
+    use crate::theme::Tokens;
+    use crate::theme::accent::contrast;
+    for (theme, t) in [("light", Tokens::light()), ("dark", Tokens::dark())] {
+        let mut low = Vec::new();
+        for (name, fg, bg) in [
+            ("text", t.text, t.menu),
+            ("text_secondary", t.text_secondary, t.menu),
+            ("text_tertiary", t.text_tertiary, t.menu),
+            ("danger", t.danger, t.menu),
+            // (`success` colours only the status dot, always beside its text: not text itself.)
+            ("warning", t.warning, t.menu),
+            ("rail current", t.text, t.selected_row),
+        ] {
+            let c = contrast(fg, bg);
+            eprintln!("{theme} {name}: {c:.2}");
+            if c < 4.5 {
+                low.push(format!("{theme} {name} {c:.2}"));
+            }
+        }
+        assert!(low.is_empty(), "{low:?}");
+    }
+}
+
+/// C4: the dialog without a mouse. Cmd+, opens it; Tab reaches the rail's sections, Space picks
+/// one; Tab goes on into its controls, Space works them; Escape closes it.
+#[test]
+fn settings_can_be_used_from_the_keyboard_alone() {
+    use egui::Key;
+    let press = |u: &mut Ui, key: Key, modifiers: Modifiers| {
+        u.frame(vec![
+            Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers },
+            Event::Key { key, physical_key: None, pressed: false, repeat: false, modifiers },
+        ]);
+        u.frame(vec![]);
+    };
+    let mut u = Ui::new(Session::new());
+    u.ctx.enable_accesskit();
+    u.frame(vec![]);
+    press(&mut u, Key::Comma, Modifiers::COMMAND);
+    assert!(u.app.ui.preferences, "Cmd+, opens Settings");
+    // Tab until the rail's Tool access tab has the focus.
+    let mut seen = Vec::new();
+    for _ in 0..60 {
+        press(&mut u, Key::Tab, Modifiers::NONE);
+        let name = crate::a11y::focused_name(&u.ctx);
+        seen.push(name.clone());
+        if name == "Tool access" {
+            break;
+        }
+    }
+    assert_eq!(seen.last().map(String::as_str), Some("Tool access"), "Tab reaches the rail: {seen:?}");
+    press(&mut u, Key::Space, Modifiers::NONE);
+    assert_eq!(u.app.ui.settings_section, "tools", "Space picks the section");
+    // On into the pane: the first tool's switch, worked with Space.
+    let mut seen = Vec::new();
+    for _ in 0..40 {
+        press(&mut u, Key::Tab, Modifiers::NONE);
+        let name = crate::a11y::focused_name(&u.ctx);
+        seen.push(name.clone());
+        if name == "list_commands" {
+            break;
+        }
+    }
+    assert_eq!(seen.last().map(String::as_str), Some("list_commands"), "{seen:?}");
+    press(&mut u, Key::Space, Modifiers::NONE);
+    assert_eq!(u.app.session.prefs.settings.mcp.disabled_tools, ["list_commands"], "Space works the switch");
+    press(&mut u, Key::Escape, Modifiers::NONE);
+    assert!(!u.app.ui.preferences, "Escape closes it");
+}

@@ -243,3 +243,28 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - **The capture window:** bringing a window to the front can put it under your pointer. During C0, a click landed in a test window. Nothing was saved and the file is unchanged, but captures should be taken when you're not using the mouse.
 - **The real Connect:** it runs `claude mcp add` at user scope against your installed `claude` (2.1.296). It doesn't touch your `~/Scrim` project's `scrim` entry.
 - **The diff:** 0 px outside the home sidebar, Settings and the AI tab, using `offscreen_tests.rs`'s comparison against the tree before Stage C. Comparing real captures pixel by pixel isn't stable across runs.
+
+### C4 results so far
+
+- **0 px outside the changed areas** (offscreen, 1440 × 900, light and dark; `offscreen_tests.rs` now also shoots the home screen):
+  - **The editor** (no selection, a frame, a text layer, several frames; the toolbar included): 0 px between HEAD and the fonts commit `02356cf`.
+    - Against `7ccc97b`, the tree before Stage C, only the canvas differs, by about 4,350 px. That is the fonts commit rendering document text in the bundled Inter, as addendum 2 asked; none of C1–C3 changes a pixel there.
+    - So the default toolbar, now drawn from the preferences, is pixel-identical.
+  - **Home:** the Settings row, 553 px (light) and 555 px (dark), all at the sidebar's bottom.
+    - Otherwise, only two things differ, and both come from the setup: the open file's path text (the comparison tree was checked out elsewhere) and its "Edited …" time.
+    - Nothing else differs.
+- **Contrast:** `settings_text_meets_4_5_to_1` measures every text colour Settings uses on the dialog, and the rail's current row.
+  - Light: the lowest is tertiary text at 6.12:1. Dark: the lowest is tertiary text at 5.16:1.
+  - The `success` green (2.90:1 on light) colours only the status dots, always beside their text. It is below 3:1 for a graphic; it's an existing token used elsewhere, so it is reported, not changed.
+- **The keyboard:** `settings_can_be_used_from_the_keyboard_alone`. Cmd+, opens it, Tab reaches the rail, Space picks Tool access, Tab reaches a tool's switch, Space turns it off, and Escape closes.
+- **Live, in the release build** (`docs/scrim-ports/settings/c4-live-proofs.md`):
+  - **Security:** a non-loopback `Host`, or a web page's `Origin`, is refused with 403 and its reason; loopback gets 200.
+  - **Tool access:** with `create_node` off, `tools/list` drops from 24 tools to 23, a direct call is refused, and an agent's `mcp.restore-tools` is refused.
+  - **The feed:** the person's drawn rectangle and the agent's ellipse are separate entries.
+    - That took a fix (`7322bb8`): canvas gestures never reached the feed before, only commands did.
+    - Real window input (`ui.input`) is the person's. `ui.pointer` is automation and is logged as the control channel's.
+- **`ui.set {windowSize}`:** a new control hook that sizes the window for captures at about 1920 × 1080. osascript has no assistive access here, and the window size isn't persisted.
+- **Waiting for an unlocked screen:**
+  - **The real window captures:** the home sidebar, each Settings section, the AI tab empty and connected, and the Connect confirmation.
+  - **The real Connect against the installed `claude`:** its confirmation can only be pressed with real input at a known position, and positions come from a capture. An agent's call can't open it, by design.
+  - The screen locked repeatedly during this run (`CGSSessionScreenIsLocked`), and `ui.screenshot` answers "didn't deliver a screenshot" while it is.

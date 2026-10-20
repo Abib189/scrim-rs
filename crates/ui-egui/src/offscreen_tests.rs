@@ -234,6 +234,12 @@ fn screenshots() {
         save(&o, &dir, &format!("text-{theme}"));
         select(&mut o, &FRAMES);
         save(&o, &dir, &format!("multiple-{theme}"));
+        // The home screen (Stage C pins Settings at the bottom of its sidebar).
+        o.app.ui.home = true;
+        o.settle();
+        save(&o, &dir, &format!("home-{theme}"));
+        o.app.ui.home = false;
+        o.settle();
         if !after {
             continue;
         }
