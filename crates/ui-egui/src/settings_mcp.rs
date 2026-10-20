@@ -99,6 +99,7 @@ pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
     });
 
     heading(ui, tr("Connect"));
+    crate::mcp_registration::row(app, ui);
     if app.ui.connect.open {
         crate::connect_flow::panel(app, ui);
     } else if widgets::button(ui, tr("Connect Claude Code"), true, state != "stopped").clicked() {

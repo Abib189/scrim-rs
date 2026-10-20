@@ -60,6 +60,7 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
             app.run("mcp.restart-server", json!({}));
         }
     });
+    crate::mcp_registration::row(app, ui);
     if app.ui.connect.open {
         crate::connect_flow::panel(app, ui);
     } else if state != "connected" {

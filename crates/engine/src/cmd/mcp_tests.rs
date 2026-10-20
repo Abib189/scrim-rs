@@ -94,3 +94,36 @@ fn the_settings_are_kept_and_bad_values_fall_back() {
     let missing: crate::Prefs = serde_json::from_value(json!({"theme": "dark"})).unwrap();
     assert_eq!(missing.settings.mcp, Default::default());
 }
+
+/// C1.2: the default is 7680. A port the first default (7600) or its fallback kept moves to it on
+/// load, unless the person chose it (`mcp.set-port`); a later file keeps whatever it says.
+#[test]
+fn the_old_default_port_moves_to_7680_unless_it_was_chosen() {
+    use crate::settings::{SETTINGS_VERSION, Settings};
+    assert_eq!(DEFAULT_MCP_PORT, 7680);
+    let read = |v: serde_json::Value| -> Settings { serde_json::from_value::<crate::Prefs>(v).unwrap().settings.sanitized() };
+    assert_eq!(read(json!({"settings_version": 1, "mcp": {"port": 7600}})).mcp.port, 7680, "the old default");
+    assert_eq!(read(json!({"settings_version": 1, "mcp": {"port": 7601}})).mcp.port, 7680, "its fallback");
+    assert_eq!(read(json!({"mcp": {"port": 7605}})).mcp.port, 7680, "no version: a Stage C file before versions");
+    assert_eq!(read(json!({"settings_version": 1, "mcp": {"port": 7600, "port_chosen": true}})).mcp.port, 7600, "chosen");
+    assert_eq!(read(json!({"settings_version": 1, "mcp": {"port": 9000}})).mcp.port, 9000, "not the old default's");
+    assert_eq!(read(json!({"settings_version": 2, "mcp": {"port": 7600}})).mcp.port, 7600, "already version 2");
+    assert_eq!(read(json!({"settings_version": 1})).settings_version, SETTINGS_VERSION);
+
+    let mut s = Session::new();
+    s.ui_requests.clear();
+    assert_eq!(s.execute("mcp.set-port", &json!({"port": 7600})).unwrap()["port"], 7600);
+    assert!(s.prefs.settings.mcp.port_chosen);
+    assert_eq!(s.ui_requests[0].kind, RESTART_REQUEST);
+    assert!(s.execute("mcp.set-port", &json!({"port": 80})).is_err());
+    s.set_author(crate::agents::Author::agent("mcp"));
+    assert!(s.execute("mcp.set-port", &json!({"port": 7700})).unwrap_err().to_string().contains("an agent can't"));
+}
+
+#[test]
+fn reregister_only_asks() {
+    let mut s = running(7681);
+    s.ui_requests.clear();
+    assert_eq!(s.execute("mcp.reregister", &json!({})).unwrap()["asked"], true);
+    assert_eq!(s.ui_requests[0].kind, super::REREGISTER_DIALOG);
+}

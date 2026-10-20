@@ -17,7 +17,7 @@
 //! one, so an agent can't make Scrim run a program. Nothing here touches the document.
 
 use egui::{Context, RichText, Ui};
-use figcraft_engine::cmd::mcp::{REMOVE_OLD_DIALOG, RUN_DIALOG};
+use figcraft_engine::cmd::mcp::{REMOVE_OLD_DIALOG, REREGISTER_DIALOG, RUN_DIALOG};
 use serde_json::json;
 
 use crate::i18n::{tr, trf};
@@ -81,13 +81,25 @@ pub struct Flow {
     stage: Stage,
     confirm_run: bool,
     confirm_remove_old: bool,
+    /// Re-register: the out-of-date entry the confirmation replaces (C1.2).
+    confirm_reregister: Option<Entry>,
     /// Claude Code's old `figcraft` entry, when the check found one.
     old: Option<Entry>,
+    /// What Claude Code's `scrim` entry says (`mcp_registration`).
+    pub(crate) registered: crate::mcp_registration::Check,
+}
+
+impl Flow {
+    /// The flow is running `claude`.
+    pub(crate) fn busy(&self) -> bool {
+        matches!(self.stage, Stage::Running(..))
+    }
 }
 
 /// Open the flow (`mcp.connect-claude-code`).
 pub fn open(app: &mut FigApp) {
-    app.ui.connect = Flow { open: true, ..Flow::default() };
+    let registered = std::mem::take(&mut app.ui.connect.registered);
+    app.ui.connect = Flow { open: true, registered, ..Flow::default() };
 }
 
 /// Act on the confirmations' requests; `false` when `kind` isn't one.
@@ -98,6 +110,7 @@ pub fn request(app: &mut FigApp, kind: &str) -> bool {
             app.ui.connect.confirm_run = true;
         }
         REMOVE_OLD_DIALOG => app.ui.connect.confirm_remove_old = app.ui.connect.old.is_some(),
+        REREGISTER_DIALOG => app.ui.connect.confirm_reregister = crate::mcp_registration::out_of_date(app),
         _ => return false,
     }
     true
@@ -159,6 +172,7 @@ fn step(app: &mut FigApp, waiting: Waiting, out: Result<ProgramOutput, String>) 
             Some(e) => app.ui.connect.stage = Stage::Done(Err(e)),
         },
         Waiting::Add => {
+            crate::mcp_registration::forget(app);
             app.ui.connect.stage = Stage::Done(match failed(&out) {
                 None => Ok(tr("Scrim was added to Claude Code for every project. Start a new Claude Code session to use it.").into()),
                 Some(e) => Err(e),
@@ -294,6 +308,36 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
             run(app, strings(&["mcp", "get", "scrim"]), Waiting::GetScrim);
         } else if cancel || !open {
             app.ui.connect.confirm_run = false;
+        }
+    }
+    if let Some(e) = app.ui.connect.confirm_reregister.clone() {
+        let command = status(app)["command"].as_str().unwrap_or_default().to_string();
+        let (mut go, mut cancel, mut open) = (false, false, true);
+        crate::dialogs::window(tr("Re-register Scrim?"), ctx).open(&mut open).show(ctx, |ui| {
+            ui.set_width(420.0);
+            let text = trf(
+                "Scrim will run Claude Code's claude command to replace its scrim entry, which points to {old}, with this window's address:",
+                &[("old", &e.target)],
+            );
+            ui.label(RichText::new(text).font(regular(11.0)).color(t.text_secondary));
+            ui.add_space(6.0);
+            ui.label(RichText::new(&command).monospace().color(t.text));
+            ui.add_space(10.0);
+            ui.horizontal(|ui| {
+                go = widgets::button(ui, tr("Re-register"), true, true).clicked();
+                cancel = widgets::button(ui, tr("Cancel"), false, true).clicked();
+            });
+        });
+        if go {
+            app.ui.connect.confirm_reregister = None;
+            app.ui.connect.open = true;
+            let mut args = strings(&["mcp", "remove", "scrim"]);
+            if let Some(s) = &e.scope {
+                args.extend(strings(&["--scope", s]));
+            }
+            run(app, args, Waiting::Remove);
+        } else if cancel || !open {
+            app.ui.connect.confirm_reregister = None;
         }
     }
     if app.ui.connect.confirm_remove_old {

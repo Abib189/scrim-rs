@@ -36,10 +36,10 @@ The Cargo packages keep FigCraft's names (`figcraft`, `figcraft-cli`…) so upst
 
 Every capability is a command with one entry point: the same commands drive the menus, the CLI, the control channel and the MCP server.
 
-**Connect Claude Code to the running app:** the app serves MCP over HTTP on 127.0.0.1 (port 7600, or the next free one; Settings ▸ MCP shows it). The AI tab's **Connect Claude Code** runs this for you after asking:
+**Connect Claude Code to the running app:** the app serves MCP over HTTP on 127.0.0.1 (port 7680, or the next free one; Settings ▸ MCP shows it). The AI tab's **Connect Claude Code** runs this for you after asking:
 
 ```sh
-claude mcp add --transport http --scope user scrim http://127.0.0.1:7600/mcp
+claude mcp add --transport http --scope user scrim http://127.0.0.1:7680/mcp
 ```
 
 The endpoint refuses requests from other hosts and from web pages; Settings ▸ MCP can also require a token. **Without the app**, or for stdio-only clients, `scrim mcp` still works, headless or attached (`docs/mcp.md`):

@@ -19,6 +19,8 @@ pub const CONFIG_REQUEST: &str = "mcp.config";
 /// agent can't make Scrim run a program).
 pub const RUN_DIALOG: &str = "dialog.mcpRunConnect";
 pub const REMOVE_OLD_DIALOG: &str = "dialog.mcpRemoveOld";
+/// The confirmation before Claude Code's out-of-date `scrim` entry is replaced (C1.2).
+pub const REREGISTER_DIALOG: &str = "dialog.mcpReregister";
 
 /// Refuse `what` when an agent asks: widening what agents may do (turning authentication off,
 /// another root folder, a tool back on) is the person's alone.
@@ -128,6 +130,33 @@ pub fn specs() -> Vec<CommandSpec> {
                 let full = command(s, true).ok_or_else(|| bad("mcp.copy-command", "the MCP endpoint isn't running"))?;
                 s.request_ui(super::code::COPY_REQUEST, json!({"text": full, "what": "the connect command"}));
                 Ok(json!({"command": command(s, false)}))
+            }
+        ),
+        spec!(
+            "mcp.reregister",
+            "Re-register Scrim with Claude Code",
+            "{} → {asked: true}  (when Claude Code's scrim entry points to another address: opens the confirmation to replace it with this window's; only the person can confirm)",
+            false,
+            |s, _| {
+                s.request_ui(REREGISTER_DIALOG, json!({}));
+                Ok(json!({"asked": true}))
+            }
+        ),
+        spec!(
+            "mcp.set-port",
+            "MCP port",
+            "{port (1024–65535)} → {port}  (the port the endpoint tries first; it restarts there, or on the next free port; the person's alone)",
+            false,
+            |s, p| {
+                let cmd = "mcp.set-port";
+                person_only(s, cmd, "move the MCP endpoint")?;
+                let port = p.get("port").and_then(Value::as_u64).and_then(|n| u16::try_from(n).ok()).filter(|n| *n >= 1024);
+                let port = port.ok_or_else(|| bad(cmd, "`port` is a number from 1024 to 65535"))?;
+                let m = &mut s.prefs.settings.mcp;
+                m.port = port;
+                m.port_chosen = true;
+                s.request_ui(RESTART_REQUEST, json!({}));
+                Ok(json!({"port": port}))
             }
         ),
         spec!("mcp.copy-address", "Copy the MCP address", "{} → {url}  (the endpoint's address, onto the clipboard in the app)", false, |s, _| {

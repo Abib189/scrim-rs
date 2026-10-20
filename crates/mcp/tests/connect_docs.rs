@@ -18,8 +18,8 @@ fn the_apps_connect_commands_are_the_documented_ones() {
 
 #[test]
 fn the_http_connect_command_is_the_documented_one() {
-    let plain = claude_add_command(7600, None);
-    let with_token = claude_add_command(7600, Some("<token>"));
+    let plain = claude_add_command(figcraft_engine::settings::DEFAULT_MCP_PORT, None);
+    let with_token = claude_add_command(figcraft_engine::settings::DEFAULT_MCP_PORT, Some("<token>"));
     for (doc, name) in [(MCP_DOC, "docs/mcp.md"), (README, "README.md")] {
         assert!(doc.contains(&plain), "{name} doesn't show `{plain}`");
     }

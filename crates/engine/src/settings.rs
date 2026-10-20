@@ -12,9 +12,12 @@ pub mod diagnostics;
 /// The most files the Missing fonts window remembers not to open for.
 pub const MAX_MUTED_FONT_FILES: usize = 500;
 
-/// The port the MCP endpoint tries first (the brief's choice; the next free port is used and kept
-/// when it's taken).
-pub const DEFAULT_MCP_PORT: u16 = 7600;
+/// The port the MCP endpoint tries first (C1.2: 7680; 7600, the first default, is OpenPencil's). The
+/// next free port is used and kept when it's taken.
+pub const DEFAULT_MCP_PORT: u16 = 7680;
+
+/// The ports the first default (7600) and its fallback could have kept (`TRIES` = 20).
+const OLD_DEFAULT_PORTS: std::ops::Range<u16> = 7600..7620;
 
 /// The app's MCP endpoint (Settings ▸ MCP, Tool access).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -22,6 +25,10 @@ pub const DEFAULT_MCP_PORT: u16 = 7600;
 pub struct McpSettings {
     /// The port last served on (the endpoint tries it first).
     pub port: u16,
+    /// The person chose `port` (`mcp.set-port`). Otherwise it is the default or its fallback, which a
+    /// change of default may move.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub port_chosen: bool,
     /// Requests need `Authorization: Bearer <token>`.
     pub require_auth: bool,
     /// The bearer token (made when authentication is first turned on; kept in the settings file,
@@ -38,7 +45,7 @@ pub struct McpSettings {
 
 impl Default for McpSettings {
     fn default() -> Self {
-        Self { port: DEFAULT_MCP_PORT, require_auth: false, token: String::new(), root_dir: None, disabled_tools: Vec::new() }
+        Self { port: DEFAULT_MCP_PORT, port_chosen: false, require_auth: false, token: String::new(), root_dir: None, disabled_tools: Vec::new() }
     }
 }
 
@@ -72,7 +79,9 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 
 /// The version of these settings `state.json` holds (`settings_version`). A file from a later
 /// version is read as far as it goes, never refused.
-pub const SETTINGS_VERSION: u32 = 1;
+/// - 1: Stage C.
+/// - 2: the MCP port's default moved from 7600 to 7680 (C1.2).
+pub const SETTINGS_VERSION: u32 = 2;
 
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
@@ -92,7 +101,8 @@ fn week() -> u32 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
-    /// [`SETTINGS_VERSION`] when written.
+    /// [`SETTINGS_VERSION`] when written; missing in a file from before versions (read as 0).
+    #[serde(default)]
     pub settings_version: u32,
     /// The MCP endpoint's settings.
     pub mcp: McpSettings,
@@ -136,6 +146,11 @@ impl Default for Settings {
 impl Settings {
     /// These settings with anything out of range put back in range.
     pub fn sanitized(mut self) -> Self {
+        // Version 2 moved the default port. A port nobody chose that the first default (or its
+        // fallback) kept moves with it; a chosen one stays.
+        if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
+            self.mcp.port = DEFAULT_MCP_PORT;
+        }
         self.settings_version = SETTINGS_VERSION;
         if !matches!(self.motion.as_str(), "system" | "on" | "off") {
             self.motion = system();

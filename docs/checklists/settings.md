@@ -4,7 +4,7 @@ The plan: `docs/design/settings-and-connect.md`.
 
 | Check | How | Covered by |
 |---|---|---|
-| The app serves MCP over HTTP on 127.0.0.1:7600 (or the next free port, kept) from launch | Start the app; `curl -s -X POST -H 'Host: 127.0.0.1:7600' -d '{"jsonrpc":"2.0","id":1,"method":"ping"}' http://127.0.0.1:7600/mcp` | `crates/mcp/tests/http.rs` › `the_mcp_round_trip_over_http`, `a_taken_port_falls_back_to_the_next_free_one`; `mcp_endpoint_tests.rs` |
+| The app serves MCP over HTTP on 127.0.0.1:7680 (or the next free port, kept) from launch | Start the app; `curl -s -X POST -H 'Host: 127.0.0.1:7680' -d '{"jsonrpc":"2.0","id":1,"method":"ping"}' http://127.0.0.1:7680/mcp` | `crates/mcp/tests/http.rs` › `the_mcp_round_trip_over_http`, `a_taken_port_falls_back_to_the_next_free_one`; `mcp_endpoint_tests.rs` |
 | Requests from another Host (DNS rebinding) or a web page's Origin are refused with 403, before anything runs | `curl -H 'Origin: http://evil.example' …` | `requests_from_elsewhere_are_refused`; `refused_requests_never_reach_the_ui_and_a_token_applies_at_once` |
 | Require authentication: a token is made once; requests without it get 401; the connect command carries it | Settings ▸ MCP, then curl with and without the header | `a_required_token_must_be_sent`; `authentication_makes_a_token_once_and_the_command_carries_it` |
 | Tool calls over HTTP run as the agent "mcp (http)": locks bind them, their undo steps say "Agent: …" | Edit over HTTP, then look at Edit ▸ Undo and the AI tab | `tool_calls_reach_the_ui_as_the_mcp_agent` |
@@ -34,4 +34,6 @@ The plan: `docs/design/settings-and-connect.md`.
 | No prompts, document content, paths or tokens in the events | — | `no_secrets_reach_the_events` |
 | Settings ▸ Diagnostics: Keep for, Copy, Save…, Clear; only the person clears | Click each | `the_diagnostics_section_lists_copies_and_clears`; `retention_drops_old_events_and_zero_keeps_none`; `the_commands_list_copy_save_and_clear_and_only_the_person_clears` |
 | Settings are versioned (`settings_version`) and values out of range fall back on load | Edit state.json by hand, start the app | `the_settings_carry_a_version_and_odd_values_fall_back` |
+| The default port is 7680; a saved 7600–7619 nobody chose moves to it; a chosen one stays | Start an old settings file | `cmd/mcp_tests.rs` › `the_old_default_port_moves_to_7680_unless_it_was_chosen` |
+| A taken port falls back; the AI tab and Settings ▸ MCP see Claude Code's entry is out of date and Re-register (one confirmation) fixes it | Occupy 7680, start the app, open the AI tab | `mcp_registration_tests.rs` › `a_busy_port_falls_back_the_mismatch_shows_and_reregister_fixes_it`, `an_agent_cannot_reregister` |
 | The home sidebar's Settings row: pinned at the bottom below a hairline, the same row as the others, which stay where they were | Look at Home in a short and a tall window | `the_home_sidebar_has_settings_pinned_at_the_bottom` |

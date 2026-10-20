@@ -278,3 +278,11 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - The AI tab's feed lost its edits after a few hundred selection changes (`8c225cd`).
 - **The fonts follow-up:** the real BEFORE and AFTER captures of "Brand colour system mockups" (a scratch HOME, so the installed fonts aren't seen): Missing fonts listed Geist, Inter and Source Serif 4 before, and no dialog opens after.
 - **Not changed, reported:** `live.rs` draws "Sharing online · …" and "Sharing on your network · …" in the same green, which predates Stage C.
+
+## C.1 (Stage C.1, from the Stage C report)
+
+### C1.2 Port 7680, the registered address
+- **The default is 7680** (`settings::DEFAULT_MCP_PORT`). The fallback to the next free port, kept, is unchanged.
+- **Telling a chosen port from a defaulted one:** until C1.2 nothing let the person choose a port (no field, no command), so every saved port came from the default or its fallback. C1.2 adds `mcp.set-port {port}` (the person's alone), which records `port_chosen: true`. On load, a file older than `settings_version` 2 whose port is in 7600–7619 (the first default plus its 20 tries) and not `port_chosen` moves to 7680. A chosen one, or any other port, stays.
+- **The registered address** (`mcp_registration.rs`): while the AI tab or Settings ▸ MCP shows, Scrim asks `claude mcp get scrim` once per address (an argument list, read-only). When Claude Code's entry points elsewhere it says "Registered address is out of date" with **Re-register** (`mcp.reregister`): one confirmation, then `claude mcp remove scrim --scope <its scope>` and the add, as Connect's Replace does. Afterwards it asks again.
+- **A change to C2's rule, for you to overrule:** C2 ran nothing before the confirmation. The check now runs `claude mcp get` (read-only) just by showing the tab; anything that changes Claude Code still waits for the confirmation. The C2 tests now assert that.

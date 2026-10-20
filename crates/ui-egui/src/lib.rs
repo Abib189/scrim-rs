@@ -41,6 +41,7 @@ pub mod layout_panel;
 pub mod list_drag;
 pub mod live;
 pub mod live_text;
+pub mod mcp_registration;
 pub mod mcp_ui;
 pub mod measure_overlay;
 pub mod menus;

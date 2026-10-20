@@ -112,13 +112,13 @@ The server announces itself as `scrim` (MCP `serverInfo`). Tool names and parame
 
 The desktop app serves MCP itself, over streamable HTTP on **127.0.0.1** only, from the moment it
 starts:
-- **Address:** `http://127.0.0.1:<port>/mcp`. The port is **7600**, or the next free one when 7600 is
+- **Address:** `http://127.0.0.1:<port>/mcp`. The port is **7680**, or the next free one when 7680 is
   taken (the app keeps the port it got). Settings ▸ MCP shows the address.
 - **Connecting Claude Code:** one command, which the AI tab's **Connect Claude Code** runs for you
   after one confirmation:
 
 ```sh
-claude mcp add --transport http --scope user scrim http://127.0.0.1:7600/mcp
+claude mcp add --transport http --scope user scrim http://127.0.0.1:7680/mcp
 ```
 
   `--scope user` makes it available in every project. Without it, Claude Code would add it only for
@@ -129,6 +129,10 @@ What an agent does over HTTP is what it does over `scrim mcp --attach`:
 - locks bind it, and the stale-write guard applies;
 - its edits show as "Agent: …" in Edit ▸ Undo and in the AI tab's feed, with the author `agent (mcp (http))`.
 
+**When the address moves** (the port was taken, or the person picked another with `mcp.set-port`), Claude Code still points at the old one. The AI tab and Settings ▸ MCP ask `claude mcp get scrim` (read-only) and, when it differs, say "Registered address is out of date" with **Re-register**: one confirmation, then the entry is replaced the way Connect's Replace does.
+
+**The default moved from 7600 to 7680** (7600 is OpenPencil's). A saved port in 7600–7619 that nobody chose, the first default or its fallback, moves to 7680 when the app loads its settings (`settings_version` 2). A port chosen with `mcp.set-port` (`port_chosen`) stays.
+
 **Its file tools** (`open_file`, `save_file`, `export` with a path) may use files only inside the root folder in Settings ▸ MCP, your home folder by default.
 
 **Security:**
@@ -138,7 +142,7 @@ What an agent does over HTTP is what it does over `scrim mcp --attach`:
 - **Token:** turning on **Require authentication** in Settings ▸ MCP (`mcp.toggle-auth`) makes a random token. Requests then need `Authorization: Bearer <token>`, and the connect command carries it:
 
   ```sh
-  claude mcp add --transport http --scope user scrim http://127.0.0.1:7600/mcp --header "Authorization: Bearer <token>"
+  claude mcp add --transport http --scope user scrim http://127.0.0.1:7680/mcp --header "Authorization: Bearer <token>"
   ```
 - **Framing:** bodies must use `Content-Length` (no chunked encoding) and stay under 32 MiB.
 

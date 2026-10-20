@@ -51,9 +51,12 @@ fn missing() -> ProgramOutput {
 
 const URL: &str = "http://127.0.0.1:7601/mcp";
 
-/// The AI tab with the endpoint on 7601 and `claude` on this computer (or not).
+/// The AI tab with the endpoint on 7601 and `claude` on this computer (or not). With `claude`, the
+/// tab first asks what Claude Code has registered (C1.2, read-only): Claude Code has nothing, then
+/// `answers` in order.
 fn harness(claude: bool, answers: Vec<ProgramOutput>) -> (Harness, Arc<Mutex<Script>>) {
     let (mut h, _) = Harness::new();
+    let answers: Vec<ProgramOutput> = if claude { std::iter::once(missing()).chain(answers).collect() } else { answers };
     let script = Arc::new(Mutex::new(Script { claude, answers: answers.into(), ..Default::default() }));
     h.app.services = Box::new(Platform(script.clone()));
     h.app.session.agents.mcp.port = Some(7601);
@@ -71,6 +74,11 @@ fn click(h: &mut Harness, text: &str) {
 
 fn args(v: &[&str]) -> Vec<String> {
     v.iter().map(|s| s.to_string()).collect()
+}
+
+/// The runs that change Claude Code (add or remove); `claude mcp get` only reads.
+fn writes(script: &Arc<Mutex<Script>>) -> Vec<Vec<String>> {
+    script.lock().unwrap().ran.iter().map(|(_, a)| a.clone()).filter(|a| a.get(1).is_some_and(|v| v != "get")).collect()
 }
 
 fn add_args() -> Vec<String> {
@@ -98,17 +106,18 @@ fn connect_shows_the_command_runs_nothing_until_confirmed_then_adds_scrim() {
     let shapes = h.frames(2);
     assert!(has_text(&shapes, &format!("claude mcp add --transport http --scope user scrim {URL}")), "the exact command");
     assert!(has_text(&shapes, "Run") && has_text(&shapes, "Copy"));
-    assert!(script.lock().unwrap().ran.is_empty(), "nothing runs to show it");
+    assert!(writes(&script).is_empty(), "nothing that changes Claude Code runs to show it");
+    assert_eq!(script.lock().unwrap().ran.len(), 1, "only the registration check (read-only)");
     click(&mut h, "Run");
     let shapes = h.frames(2);
     assert!(has_text(&shapes, "Run this command?"), "one confirmation");
-    assert!(script.lock().unwrap().ran.is_empty(), "nothing runs before it");
+    assert_eq!(script.lock().unwrap().ran.len(), 1, "nothing more runs before it");
     // Confirm: the dialog's Run (the lower one on screen).
     let runs: Vec<_> = crate::live_tests::texts(&shapes).into_iter().filter(|(t, _, _)| t == "Run").map(|(_, p, s)| p + s / 2.0).collect();
     let confirm = runs.iter().copied().max_by(|a, b| a.y.total_cmp(&b.y)).unwrap();
     h.click(confirm);
     h.frames(8);
-    let ran = script.lock().unwrap().ran.clone();
+    let ran: Vec<_> = script.lock().unwrap().ran[1..4].to_vec();
     let claude = "/Users/me/.local/bin/claude".to_string();
     assert_eq!(
         ran,
@@ -138,12 +147,10 @@ fn an_entry_already_there_is_offered_for_replace_never_overwritten() {
     h.frames(6);
     let shapes = h.frames(2);
     assert!(has_text(&shapes, "Claude Code already has a scrim entry pointing to http://127.0.0.1:4848/mcp. Replace it with this window's address?"));
-    assert_eq!(script.lock().unwrap().ran.len(), 2, "only the checks so far");
+    assert!(writes(&script).is_empty(), "only the checks so far");
     click(&mut h, "Replace");
     h.frames(6);
-    let ran: Vec<Vec<String>> = script.lock().unwrap().ran.iter().map(|(_, a)| a.clone()).collect();
-    assert_eq!(ran[2], args(&["mcp", "remove", "scrim", "--scope", "local"]));
-    assert_eq!(ran[3], add_args());
+    assert_eq!(writes(&script), [args(&["mcp", "remove", "scrim", "--scope", "local"]), add_args()]);
 }
 
 #[test]
@@ -172,7 +179,7 @@ fn an_agent_cannot_make_scrim_run_a_program() {
     }
     h.frames(6);
     assert!(!h.app.ui.connect.confirm_run, "an agent's call opens no confirmation");
-    assert!(script.lock().unwrap().ran.is_empty(), "and nothing runs");
+    assert!(writes(&script).is_empty(), "and nothing that changes Claude Code runs");
 }
 
 /// Addendum 2: the AI tab no longer tells people to start Scrim with --control or to use scrim mcp.
