@@ -41,6 +41,12 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         widgets::label(ui, tr("Your system asks for reduced motion: animations stay off."), t.text_secondary);
     }
 
+    heading(ui, tr("Agents at work"));
+    if widgets::checkbox(ui, prefs.settings.follow_agents, tr("Follow agents as they work")) {
+        app.run("camera.follow-agents", json!({"on": !prefs.settings.follow_agents}));
+    }
+    widgets::label(ui, tr("The camera goes to an agent's edits as they land. Your own scroll, zoom or edit pauses it."), t.text_secondary);
+
     heading(ui, tr("Shared rooms"));
     ui.horizontal(|ui| {
         ui.label(tr("Your name"));

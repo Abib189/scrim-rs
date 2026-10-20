@@ -9,13 +9,17 @@
 //!
 //! The camera is set at once, so agents and headless runs are deterministic. The window then
 //! animates from where it was (`FLY_REQUEST`, `camera_flight` in the UI).
+//!
+//! With `fit` (Stage I's follow, `docs/design/follow-agent.md`), layers that don't fit at the
+//! current zoom are fitted instead: the zoom goes down just enough, never up.
+//! `camera.follow-agents` turns following agents' edits on or off, or resumes it.
 
 use figcraft_doc::NodeId;
 use figcraft_doc::geom::Rect;
 use serde_json::{Value, json};
 
 use super::CommandSpec;
-use crate::params::id_of;
+use crate::params::{boolean, id_of};
 use crate::{EngineError, Result, Session, ViewState, bad, spec};
 
 /// The margin left around a focused layer, in screen pixels.
@@ -42,6 +46,20 @@ pub fn reveal(view: &ViewState, r: Rect) -> (f64, f64) {
         }
     };
     (axis(view.cx, view.vw, r.x0, r.x1), axis(view.cy, view.vh, r.y0, r.y1))
+}
+
+/// The view (centre and zoom) that shows `r`: [`reveal`] when it fits at the current zoom, else the
+/// zoom that fits it with the margin (lower, never higher), centred on it.
+pub fn reveal_or_fit(view: &ViewState, r: Rect) -> (f64, f64, f64) {
+    let zoom = view.zoom.max(1e-9);
+    let room = |screen: f64| (screen - 2.0 * REVEAL_MARGIN).max(1.0);
+    let fit = (room(view.vw) / r.width().max(1e-9)).min(room(view.vh) / r.height().max(1e-9));
+    if fit >= zoom || !fit.is_finite() {
+        let (cx, cy) = reveal(view, r);
+        return (cx, cy, zoom);
+    }
+    let z = fit.clamp(ViewState::MIN_ZOOM, zoom);
+    (r.center().x, r.center().y, z)
 }
 
 /// Whether `id` or one of its ancestors is hidden.
@@ -74,24 +92,57 @@ fn focus(s: &mut Session, p: &Value) -> Result<Value> {
         ds.page = page;
     }
     let from = json!({"cx": ds.view.cx, "cy": ds.view.cy, "zoom": ds.view.zoom});
-    let (cx, cy) = reveal(&ds.view, bounds);
-    let moved = cx != ds.view.cx || cy != ds.view.cy;
+    let (cx, cy, zoom) = if boolean(p, "fit") == Some(true) {
+        reveal_or_fit(&ds.view, bounds)
+    } else {
+        let (cx, cy) = reveal(&ds.view, bounds);
+        (cx, cy, ds.view.zoom)
+    };
+    let moved = cx != ds.view.cx || cy != ds.view.cy || zoom != ds.view.zoom;
     ds.view.cx = cx;
     ds.view.cy = cy;
+    ds.view.zoom = zoom;
     let view = json!({"cx": cx, "cy": cy, "zoom": ds.view.zoom});
     let ids: Vec<u64> = ids.iter().map(|i| i.0).collect();
     s.request_ui(FLY_REQUEST, json!({"from": from, "ids": ids, "switched": switched}));
     Ok(json!({"moved": moved, "page": page.0, "switched": switched, "hidden": hidden, "view": view}))
 }
 
+/// Following agents now: `off`, `paused` (by the person, in the window) or `following`.
+pub fn follow_state(s: &Session) -> &'static str {
+    match (s.prefs.settings.follow_agents, s.agents.follow_paused) {
+        (false, _) => "off",
+        (true, true) => "paused",
+        (true, false) => "following",
+    }
+}
+
+fn follow_agents(s: &mut Session, p: &Value) -> Result<Value> {
+    // Without `on`: following → off; paused or off → following. The window sees a resume (paused or
+    // off, then following) and flies to the latest work.
+    let on = boolean(p, "on").unwrap_or(follow_state(s) != "following");
+    s.prefs.settings.follow_agents = on;
+    s.agents.follow_paused = false;
+    Ok(json!({"on": on, "state": follow_state(s)}))
+}
+
 pub fn specs() -> Vec<CommandSpec> {
-    vec![spec!(
-        "camera.focus-layer",
-        "Focus layer",
-        "{id? | ids? (default: the selection)} → {moved, page, switched, hidden: [ids], view: {cx, cy, zoom}}  (the least camera move that brings the layers into view with a 32 px margin, the zoom kept; a layer bigger than the view gets its leading edge at the margin; another page is shown first; hidden layers are focused and listed)",
-        false,
-        focus
-    )]
+    vec![
+        spec!(
+            "camera.focus-layer",
+            "Focus layer",
+            "{id? | ids? (default: the selection), fit? (zoom out to fit when they don't fit at this zoom)} → {moved, page, switched, hidden: [ids], view: {cx, cy, zoom}}  (the least camera move that brings the layers into view with a 32 px margin, the zoom kept; a layer bigger than the view gets its leading edge at the margin, or with `fit` the zoom goes down just enough to fit; another page is shown first; hidden layers are focused and listed)",
+            false,
+            focus
+        ),
+        spec!(
+            "camera.follow-agents",
+            "Follow agent",
+            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window's camera goes to agents' edits as they land, and stays with them; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings)",
+            false,
+            follow_agents
+        ),
+    ]
 }
 
 #[cfg(test)]

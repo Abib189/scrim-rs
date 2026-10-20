@@ -91,7 +91,8 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// version is read as far as it goes, never refused.
 /// - 1: Stage C.
 /// - 2: the MCP port's default moved from 7600 to 7680 (C1.2).
-pub const SETTINGS_VERSION: u32 = 2;
+/// - 3: `follow_agents` (Stage I), on by default.
+pub const SETTINGS_VERSION: u32 = 3;
 
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
@@ -123,6 +124,10 @@ pub struct Settings {
     /// already stay until their files are saved.
     #[serde(default = "yes")]
     pub preserve_unsaved: bool,
+    /// The camera follows agents' edits (`camera.follow-agents`; on by default). Pausing it is the
+    /// window's own state and isn't saved.
+    #[serde(default = "yes")]
+    pub follow_agents: bool,
     /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub toolbar: crate::cmd::toolbar::Layout,
@@ -145,6 +150,7 @@ impl Default for Settings {
             mcp: McpSettings::default(),
             motion: system(),
             preserve_unsaved: true,
+            follow_agents: true,
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
             diagnostics: Vec::new(),

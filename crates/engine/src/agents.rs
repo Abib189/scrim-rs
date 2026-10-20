@@ -119,10 +119,26 @@ pub struct Agents {
     pub control_port: Option<u16>,
     /// The app's MCP endpoint, as the app reports it (`mcp.status`).
     pub mcp: McpEndpoint,
+    /// The window paused following agents (the person moved the camera or edited); set by the
+    /// window, read by `camera.follow-agents`. Never saved.
+    pub follow_paused: bool,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 
 impl Agents {
+    /// Document `uid`'s logged edits after `revision`, oldest first. The newest is looked at first,
+    /// so with nothing new this is one comparison and allocates nothing.
+    pub fn edits_after(&self, uid: u64, revision: u64) -> impl Iterator<Item = &Change> {
+        let log = self.logs.get(&uid);
+        let newer = log.map_or(0, |l| l.iter().rev().take_while(|c| c.revision > revision).count());
+        log.into_iter().flat_map(move |l| l.iter().skip(l.len().saturating_sub(newer)))
+    }
+
+    /// The revision of document `uid`'s newest logged edit.
+    pub fn last_edit(&self, uid: u64) -> Option<u64> {
+        self.logs.get(&uid).and_then(VecDeque::back).map(|c| c.revision)
+    }
+
     /// The undo step's label: an agent's steps say so.
     pub(crate) fn step_label(&self, label: &str) -> String {
         if self.author.is_agent() { format!("Agent: {label}") } else { label.to_string() }

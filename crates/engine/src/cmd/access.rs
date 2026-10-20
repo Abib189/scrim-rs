@@ -90,6 +90,7 @@ pub const READ: &[&str] = &[
 /// the clipboard, a file, a live session or the network.
 pub const WRITE: &[&str] = &[
     "camera.focus-layer",
+    "camera.follow-agents",
     "ai.copyConnectCommand",
     "ai.selectChange",
     "ai.selectFinding",

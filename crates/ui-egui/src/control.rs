@@ -262,7 +262,12 @@ fn handle_request(app: &mut FigApp, ctx: &Context, r: &ControlRequest) -> Result
 pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, p: &Value) -> Result<Value, String> {
     let author = app.session.set_author(figcraft_engine::agents::Author::agent(route));
     let since = app.session.set_since(p.get("since").and_then(Value::as_u64));
+    let view = app.session.ds().map(|d| (d.uid, d.page, d.view.cx, d.view.cy, d.view.zoom)).ok();
     let r = handle_method(app, ctx, method, p);
+    // An agent's own camera move doesn't pause following (Stage I).
+    if app.session.ds().map(|d| (d.uid, d.page, d.view.cx, d.view.cy, d.view.zoom)).ok() != view {
+        crate::follow_agent::agent_moved_camera(app);
+    }
     app.session.set_author(author);
     app.session.set_since(since);
     r

@@ -163,3 +163,35 @@ Two amendments to the brief (read before I2). The reveal still plays, and a **wo
 
   I4 reports which step the 782-layer file reached.
 - **Never in the document:** the reveal, the indicator and the outline are painted only. A test takes `screenshot`, an export and `inspect_document` mid-reveal and after, and asserts they are identical.
+
+## I1 as built
+
+- **The engine:**
+  - **`camera.focus-layer {fit}`:** `reveal_or_fit` is D2's least move when the layers fit at the current zoom; otherwise it is the zoom that fits them with the 32 px margin (lower, never higher), centred on them.
+  - **`camera.follow-agents {on?}`** answers `{on, state}`, with `follow_state` giving following, paused or off. Access is Write. Every locale names it.
+  - **The setting:** `Settings.follow_agents` (default on), `SETTINGS_VERSION` 3. A file from version 2 reads on.
+  - **Paused:** `Agents::follow_paused`, the window's, never saved.
+  - **`Agents::edits_after` / `last_edit`:** reading the log costs one comparison when nothing is new.
+- **The window** (`crates/ui-egui/src/follow_agent.rs`; hooks in `lib.rs` before and after the canvas, 1722 → 1728 lines of 1730):
+  - **Each frame**, the new log entries are classified created, changed or deleted against the document last seen. Another file's history is never new work.
+  - **The target:** the agent's layers on the newest one's page. A created top-level frame is framed whole; more than 60 layers frame their top-level frames; a layer listed only as another's parent is left out.
+  - **The move:** `camera.focus-layer {ids, fit}`'s function runs directly (no revision or journal entry), then D2's flight. The first flight goes at once, then at most one every 400 ms to the gathered union.
+  - **Pauses** on:
+    - the person's edit;
+    - a press, wheel or pinch on the canvas. The bottom 72 px, where the toolbar and help button float, and the chip don't count;
+    - a camera move that isn't follow's or an agent's own.
+  - **Agents' own moves:** `control::handle_route` notes an agent's own camera move (`agent_moved_camera`).
+  - **Waits** while the pointer is down, a text edit or canvas interaction is open, or someone else's flight runs. Nothing moves before the canvas has its real size.
+  - **Resume:** the "Follow agent" chip at the top of the canvas, the AI tab's button, or the command. The window sees the change to following and flies to the latest work.
+- **The AI tab:** one row under the Claude Code status: the "Follow agent" switch, Resume while paused, and the status ("Following Claude · Poster"). The name is the MCP client's ("Claude" for Claude's); other routes read "An agent".
+  - **When it shows:** once there is an agent to follow (an MCP client connected, or an agent's edit seen), and whenever following is paused or off.
+  - **Why:** a row for nothing pushed the tab's other sections down for no reason; Settings and the palette always have the switch.
+- **An Activity row** now selects and focuses (`camera_flight::focus_selection`).
+- **Nothing to pause before an agent works:** the person's own edits, clicks and scrolls pause following only once an agent's work has been seen in the file. Otherwise every edit would show the paused chip with no agent anywhere. (Overrule if you want the brief's literal rule.)
+- **Settings ▸ General ▸ Agents at work:** "Follow agents as they work".
+- **Tests:** 14 window tests, plus two in `cmd/camera_tests.rs`. Breaking each of these in turn fails a test:
+  - the person-edit pause;
+  - the 400 ms limit;
+  - the mid-gesture wait;
+  - the size wait;
+  - the agent-camera hook.

@@ -44,6 +44,11 @@ impl State {
     pub fn flying(&self) -> bool {
         self.flight.is_some()
     }
+
+    /// Stop the flight where the camera is now (following paused mid-flight).
+    pub fn stop(&mut self) {
+        self.flight = None;
+    }
 }
 
 fn ease_in_out_cubic(t: f64) -> f64 {
@@ -51,7 +56,7 @@ fn ease_in_out_cubic(t: f64) -> f64 {
 }
 
 /// Whether the canvas has had its real size in this document (the first sizing re-fits the page).
-fn sized(app: &FigApp) -> bool {
+pub(crate) fn sized(app: &FigApp) -> bool {
     let r = app.canvas.rect;
     r.width() > 1.0
         && app.session.ds().is_ok_and(|ds| (ds.view.vw - f64::from(r.width())).abs() < 0.5 && (ds.view.vh - f64::from(r.height())).abs() < 0.5)

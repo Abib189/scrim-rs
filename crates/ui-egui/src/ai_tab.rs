@@ -22,6 +22,7 @@ const PER_RULE: usize = 8;
 
 pub fn tab(app: &mut FigApp, ui: &mut Ui) {
     connection(app, ui);
+    crate::follow_agent::ai_section(app, ui);
     widgets::separator(ui);
     activity(app, ui);
     widgets::separator(ui);
@@ -130,7 +131,9 @@ fn activity(app: &mut FigApp, ui: &mut Ui) {
             }
         }
         if resp.clicked() {
+            // Select the change's layers, then bring them on screen (D2's focus).
             app.run("ai.selectChange", json!({"revision": revision}));
+            crate::camera_flight::focus_selection(app);
         }
     }
 }

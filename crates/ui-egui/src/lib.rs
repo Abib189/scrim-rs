@@ -29,6 +29,7 @@ pub mod dev_mode;
 pub mod dialogs;
 pub mod export_panel;
 pub mod field_math;
+pub mod follow_agent;
 pub mod font_preview;
 pub mod frame_labels;
 pub mod frame_presets;
@@ -479,6 +480,8 @@ pub struct UiState {
     pub layers_seen_sel: Vec<NodeId>,
     /// Collapse all's snapshot of the open rows, and the Layers list's scroll (`layers_restore`).
     pub layers_restore: layers_restore::Restore,
+    /// The agent's edits as the window saw them land, and following them (`follow_agent`).
+    pub agent_view: follow_agent::State,
     pub dark: bool,
     pub follow_system: bool,
     pub tool_flyout: Option<&'static str>,
@@ -619,6 +622,7 @@ impl Default for UiState {
             layers_focus: false,
             layers_seen_sel: Vec::new(),
             layers_restore: layers_restore::Restore::default(),
+            agent_view: follow_agent::State::default(),
             dark: false,
             follow_system: false,
             tool_flyout: None,
@@ -1503,8 +1507,10 @@ impl FigApp {
             let worker = self.worker.take();
             let mut worker = worker.unwrap_or_else(|| render_worker::Worker::new(ctx.clone()));
             crate::accent_ink::set_page_of(self, ui.ctx());
+            follow_agent::before_canvas(self, ui.ctx());
             canvas::show(self, ui, &mut worker);
             camera_flight::tick(self, ui.ctx());
+            follow_agent::after_canvas(self, ui);
             self.worker = Some(worker);
             if !hidden {
                 ui.scope_builder(egui::UiBuilder::new().id_salt("toolbar"), |ui| {
