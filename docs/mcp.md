@@ -133,7 +133,7 @@ What an agent does over HTTP is what it does over `scrim mcp --attach`:
 
 **The default moved from 7600 to 7680** (7600 is OpenPencil's). A saved port in 7600–7619 that nobody chose, the first default or its fallback, moves to 7680 when the app loads its settings (`settings_version` 2). A port chosen with `mcp.set-port` (`port_chosen`) stays.
 
-**Its file tools** (`open_file`, `save_file`, `export` with a path) may use files only inside the root folder in Settings ▸ MCP, your home folder by default.
+**Its file tools** (`open_file`, `save_file`, `export` with a path) may use files only inside the root folder in Settings ▸ MCP. By default that is `~/Documents/Scrim`, made the first time an agent's request names a file; never the home folder. Until the folder exists, and whenever a chosen folder is missing, file tools may use nothing at all.
 
 **Security:**
 - **Loopback only:** the endpoint binds 127.0.0.1.

@@ -251,6 +251,9 @@ pub fn handle(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Resul
 /// access confined to the MCP root folder (Settings ▸ MCP), unless the app already runs confined
 /// to its automation roots, which then stay.
 fn handle_request(app: &mut FigApp, ctx: &Context, r: &ControlRequest) -> Result<Value, String> {
+    if r.route == ROUTE_MCP_HTTP && app.automation_roots.is_none() {
+        crate::mcp_ui::ensure_root(app, &r.params);
+    }
     let roots = if r.route == ROUTE_MCP_HTTP && app.automation_roots.is_none() { app.session.agents.mcp.roots.clone() } else { None };
     figcraft_engine::file_access::confined(roots.as_ref(), || handle_route(app, ctx, r.route, &r.method, &r.params))
 }

@@ -68,6 +68,7 @@ pub fn status(s: &Session, now: Option<u64>) -> Value {
         "version": env!("CARGO_PKG_VERSION"),
         "requireAuth": m.require_auth,
         "rootDir": m.root_dir,
+        "defaultRootDir": crate::settings::default_mcp_root().map(|p| p.to_string_lossy().into_owned()),
         "client": connected(s, now).map(|(name, version)| json!({"name": name, "version": version})),
         "command": command(s, false),
         "args": e.port.map(|p| claude_add_args(p, token(s))),

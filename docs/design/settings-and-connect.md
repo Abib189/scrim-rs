@@ -294,3 +294,8 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - a Read command while every read-only tool is off, and a Write one while every tool that makes changes is off;
   - an unclassified command (deny by default).
 - **Every route:** this is in `Server`, so HTTP, `--attach` and headless all get it. Each has a test, and refused calls reach neither the window nor the app.
+
+### C1.4 The MCP root folder
+- **The default is `~/Documents/Scrim`** (`settings::default_mcp_root`), never the home folder. It is made the first time a request on the app's MCP endpoint names a file (a `path` anywhere in its parameters; `mcp_ui::ensure_root`), and file access is confined to it from then on.
+- **Until it exists, the endpoint's file access is confined to nothing.** Before, a folder that couldn't be resolved (a chosen one since deleted, or no home) left the endpoint unconfined: a gap, closed here.
+- **A chosen folder** (`mcp.set-root-dir`) is never made or changed. Settings ▸ MCP shows the default as "Documents ▸ Scrim (…), made the first time an agent uses a file".

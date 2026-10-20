@@ -3,6 +3,7 @@
 //! changed settings, keeping the port it got, confining its file tools to the root folder, and
 //! noting the clients that connect. The commands (`mcp.*`) ask for these through UI requests.
 
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use figcraft_engine::cmd::mcp::{CONFIG_REQUEST, CONNECT_REQUEST, RESTART_REQUEST};
@@ -33,10 +34,45 @@ pub fn restart(app: &mut FigApp) {
     app.session.agents.mcp.roots = roots(&settings);
 }
 
-/// The folders the endpoint's file tools are confined to: the chosen folder, or the home folder.
+/// The folder the endpoint's file tools are confined to: the chosen folder, or `~/Documents/Scrim`
+/// (C1.4; never the home folder).
 fn roots(settings: &figcraft_engine::settings::McpSettings) -> Option<Arc<Roots>> {
-    let dir = settings.root_dir.clone().or_else(|| std::env::var("HOME").ok().or_else(|| std::env::var("USERPROFILE").ok()))?;
-    Roots::new(std::slice::from_ref(&dir), std::slice::from_ref(&dir)).ok().map(Arc::new)
+    roots_for(settings, figcraft_engine::settings::default_mcp_root())
+}
+
+/// [`roots`] with `default` as the default folder. A folder that isn't there (yet), or no folder at
+/// all, confines to nothing: no file may be read or written, never the whole disk.
+fn roots_for(settings: &figcraft_engine::settings::McpSettings, default: Option<PathBuf>) -> Option<Arc<Roots>> {
+    let dir = settings.root_dir.clone().or_else(|| default.map(|d| d.to_string_lossy().into_owned()));
+    let only = dir.and_then(|d| Roots::new(std::slice::from_ref(&d), std::slice::from_ref(&d)).ok());
+    only.or_else(|| Roots::new(&[], &[]).ok()).map(Arc::new)
+}
+
+/// Before an MCP request runs: make the default folder the first time a request names a file
+/// (`path` anywhere in its parameters), and confine to it from then on. A chosen folder is never
+/// made or changed.
+pub fn ensure_root(app: &mut FigApp, params: &Value) {
+    ensure_root_in(app, params, figcraft_engine::settings::default_mcp_root());
+}
+
+fn ensure_root_in(app: &mut FigApp, params: &Value, default: Option<PathBuf>) {
+    let settings = app.session.prefs.settings.mcp.clone();
+    let Some(dir) = default.as_ref().filter(|_| settings.root_dir.is_none()) else { return };
+    if figcraft_engine::file_access::is_dir(dir) || !names_a_file(params) {
+        return;
+    }
+    if figcraft_engine::file_access::create_dir_all(dir).is_ok() {
+        app.session.agents.mcp.roots = roots_for(&settings, default);
+    }
+}
+
+/// Whether `p` has a `path` (a file) anywhere in it.
+fn names_a_file(p: &Value) -> bool {
+    match p {
+        Value::Object(m) => m.iter().any(|(k, v)| (k == "path" && v.as_str().is_some_and(|s| !s.is_empty())) || names_a_file(v)),
+        Value::Array(a) => a.iter().any(names_a_file),
+        _ => false,
+    }
 }
 
 /// Act on an MCP request from a command; `false` when `kind` isn't one.
@@ -67,3 +103,7 @@ pub fn client_seen(app: &mut FigApp, p: &Value) -> Result<Value, String> {
     clients.drain(..excess);
     Ok(json!({"ok": true}))
 }
+
+#[cfg(test)]
+#[path = "mcp_ui_tests.rs"]
+mod tests;

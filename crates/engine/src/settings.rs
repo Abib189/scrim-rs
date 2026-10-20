@@ -65,6 +65,16 @@ pub fn config_base_dir() -> Option<std::path::PathBuf> {
     base
 }
 
+/// The folder agents' file tools use unless the person chose one (C1.4): `~/Documents/Scrim`, made
+/// the first time an agent's request names a file. Never the home folder itself.
+pub fn default_mcp_root() -> Option<std::path::PathBuf> {
+    #[cfg(not(target_arch = "wasm32"))]
+    let home = std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE"));
+    #[cfg(target_arch = "wasm32")]
+    let home: Option<std::ffi::OsString> = None;
+    home.map(|h| std::path::PathBuf::from(h).join("Documents").join("Scrim"))
+}
+
 /// The MCP settings the app saved in `dir/state.json` (the defaults when there are none), for an MCP
 /// server that runs without the app (`scrim mcp`): it honours Settings ▸ Tool access too.
 #[cfg(not(target_arch = "wasm32"))]

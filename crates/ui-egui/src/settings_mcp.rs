@@ -84,7 +84,8 @@ pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
 
     heading(ui, tr("Files agents may use"));
     let dir = st["rootDir"].as_str().map(str::to_string);
-    let shown = dir.clone().unwrap_or_else(|| trf("Your home folder ({path})", &[("path", &std::env::var("HOME").unwrap_or_default())]));
+    let default = st["defaultRootDir"].as_str().unwrap_or_default().to_string();
+    let shown = dir.clone().unwrap_or_else(|| trf("Documents ▸ Scrim ({path}), made the first time an agent uses a file", &[("path", &default)]));
     widgets::label(ui, &shown, t.text);
     widgets::label(ui, tr("open_file, save_file and export over this server only reach files inside this folder."), t.text_secondary);
     ui.horizontal(|ui| {
