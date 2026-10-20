@@ -152,3 +152,18 @@ fn reading_the_tab_every_frame_leaves_no_trace() {
     h.frames(10);
     assert_eq!(h.app.session.journal.len(), journal, "the tab's reads aren't commands the person ran");
 }
+
+/// The feed lists the newest edits however long ago they were: selection changes move the
+/// revision too, and the tab used to ask for a revision window, which a few hundred clicks emptied
+/// (found by Stage C's C4 in the real app: "No changes yet" under three edits).
+#[test]
+fn the_feed_keeps_its_edits_after_many_selection_changes() {
+    let (mut h, _, _) = harness();
+    for _ in 0..200 {
+        h.app.session.execute("select.all", &json!({})).unwrap();
+        h.app.session.execute("select.none", &json!({})).unwrap();
+    }
+    let shapes = h.frames(2);
+    assert!(has_text(&shapes, "Agent (mcp): Rename"), "still listed");
+    assert!(!has_text(&shapes, "No changes yet. Edits by you and by agents appear here, newest first."));
+}

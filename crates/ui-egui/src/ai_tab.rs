@@ -79,9 +79,10 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
 fn activity(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     widgets::section_header(ui, tr("Activity"), &[], false);
-    let Ok(ds) = app.session.ds() else { return };
-    let since = ds.revision.saturating_sub(FEED as u64 * 4);
-    let feed = read(app, "history.changes", json!({"since": since}));
+    if app.session.ds().is_err() {
+        return;
+    }
+    let feed = read(app, "history.changes", json!({"last": FEED}));
     let changes: Vec<Value> = feed["changes"].as_array().map(|c| c.iter().rev().take(FEED).cloned().collect()).unwrap_or_default();
     if changes.is_empty() {
         widgets::note(ui, tr("No changes yet. Edits by you and by agents appear here, newest first."), t.text_secondary);

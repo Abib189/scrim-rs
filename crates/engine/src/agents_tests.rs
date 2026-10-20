@@ -146,3 +146,23 @@ fn the_persons_canvas_gestures_are_in_the_feed() {
     assert!(gestures.iter().all(|g| g.1 == "person" && !g.2));
     assert_eq!(rows.last().map(|r| (r.0.as_str(), r.2)), Some(("shape.ellipse", true)), "the agent's edit, its own entry");
 }
+
+/// `history.changes {last}`: the newest edits however far the revision has moved since (it also
+/// moves for selection and view changes). The AI tab's feed asked for a revision window instead
+/// and lost the edits after a few hundred selection changes.
+#[test]
+fn the_newest_edits_are_listed_however_far_the_revision_moved() {
+    let mut s = Session::new();
+    for i in 0..5 {
+        s.execute("shape.rectangle", &json!({"x": i * 30, "y": 0, "width": 20, "height": 20})).unwrap();
+    }
+    for _ in 0..300 {
+        s.execute("select.none", &json!({})).unwrap();
+        s.execute("select.all", &json!({})).unwrap();
+    }
+    let feed = s.execute("history.changes", &json!({"last": 3})).unwrap();
+    let labels: Vec<&str> = feed["changes"].as_array().unwrap().iter().map(|c| c["label"].as_str().unwrap()).collect();
+    assert_eq!(labels.len(), 3, "{feed}");
+    assert!(feed["revision"].as_u64().unwrap() > 300, "the revision moved on");
+    assert_eq!(s.execute("history.changes", &json!({})).unwrap()["changes"].as_array().unwrap().len(), 5);
+}

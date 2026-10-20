@@ -264,13 +264,22 @@ impl Session {
 
     /// The active document's revision and its edits after revision `since`, oldest first.
     pub fn changes_since(&self, since: u64) -> Result<Value> {
+        self.changes(since, None)
+    }
+
+    /// [`changes_since`](Self::changes_since), `last`: only the newest `last` of them.
+    pub fn changes(&self, since: u64, last: Option<usize>) -> Result<Value> {
         let ds = self.ds()?;
         let log = self.agents.logs.get(&ds.uid);
         let oldest = log.and_then(|l| l.front()).map(|c| c.revision);
+        let newer = log.into_iter().flatten().filter(|c| c.revision > since).count();
         let changes: Vec<Value> = log
             .into_iter()
             .flatten()
             .filter(|c| c.revision > since)
+            // `last`: only the newest ones (the revision also moves for selection and view changes,
+            // so a revision window is no measure of how many edits there were).
+            .skip(last.map_or(0, |n| newer.saturating_sub(n)))
             .map(|c| {
                 let layers: Vec<Value> = c.ids.iter().map(|i| json!({"id": i.0, "name": ds.doc.node(*i).map(|n| n.name.clone())})).collect();
                 json!({"revision": c.revision, "author": c.author.describe(), "agent": c.author.is_agent(), "command": c.command, "label": c.label, "layers": layers})
@@ -284,14 +293,15 @@ impl Session {
 
 fn changes_cmd(s: &mut Session, p: &Value) -> Result<Value> {
     let since = p.get("since").and_then(Value::as_u64).unwrap_or(0);
-    s.changes_since(since)
+    let last = p.get("last").and_then(Value::as_u64).and_then(|n| usize::try_from(n).ok());
+    s.changes(since, last)
 }
 
 pub fn specs() -> Vec<CommandSpec> {
     vec![spec!(
         "history.changes",
         "Changes since a revision",
-        "{since? (revision; default 0)} → {revision (now), since, complete (false: older edits left the log), changes: [{revision, author (\"person\" | \"agent (route)\"), agent, command, label, layers: [{id, name}]}]}, oldest first",
+        "{since? (revision; default 0), last? (only the newest n)} → {revision (now), since, complete (false: older edits left the log), changes: [{revision, author (\"person\" | \"agent (route)\"), agent, command, label, layers: [{id, name}]}]}, oldest first",
         false,
         changes_cmd
     )]
