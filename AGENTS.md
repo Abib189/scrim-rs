@@ -123,6 +123,8 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
 8. **Process:**
    - One scoped task per commit; `cargo xtask ci` green before every commit.
    - Never use `--no-verify`, and never push a red tree.
+   - Never commit or push on a red CI run, with no exception for docs-only commits. If a flake fails it, rerun until it is green first.
+   - Read the CI result in a separate step from the commit, never chained with it.
    - Label any timing measured under load or swap as INVALID.
 
 ## Running and looking at the app
