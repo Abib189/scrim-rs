@@ -38,8 +38,9 @@ enum Confirm {
 pub struct Flow {
     pub open: bool,
     confirm: Option<Confirm>,
-    /// What the last write said.
-    outcome: Option<Result<String, String>>,
+    /// What the last write said, and the file's state right after it: shown only while the file
+    /// stays so (an edit made since makes it stale).
+    outcome: Option<(Result<String, String>, String)>,
     /// The file's status as last read, and when (egui seconds): read again every two seconds while
     /// it shows, and at once after a write.
     seen: Option<(f64, Value)>,
@@ -108,8 +109,11 @@ fn act(app: &mut FigApp, c: Confirm, r: &Value) {
         }
     }
     forget(app);
+    let after = cd::report(&app.session, app.services.find_program("npx").as_deref())
+        .map(|r| r["state"].as_str().unwrap_or_default().to_string())
+        .unwrap_or_default();
     let kept = backup.and_then(|b| b.file_name().map(|n| n.to_string_lossy().into_owned()));
-    app.ui.desktop.outcome = Some(match (result, c) {
+    let said = match (result, c) {
         (Err(e), _) => Err(e),
         (Ok(()), Confirm::RemoveOld) => Ok(tr("The old entry was removed from Claude Desktop's configuration.").into()),
         (Ok(()), _) => Ok(match kept {
@@ -119,7 +123,8 @@ fn act(app: &mut FigApp, c: Confirm, r: &Value) {
             ),
             None => tr("Scrim was added to Claude Desktop. Quit Claude Desktop completely and open it again to use it.").into(),
         }),
-    });
+    };
+    app.ui.desktop.outcome = Some((said, after));
 }
 
 /// The status row's words for a state.
@@ -265,9 +270,9 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
     });
     match &app.ui.desktop.outcome {
         // (In the text colour, like Connect Claude Code's.)
-        Some(Ok(m)) => widgets::note(ui, m, t.text),
-        Some(Err(e)) => widgets::note(ui, &trf("It didn't work: {error}", &[("error", e)]), t.danger),
-        None => {}
+        Some((Ok(m), after)) if after == state => widgets::note(ui, m, t.text),
+        Some((Err(e), _)) => widgets::note(ui, &trf("It didn't work: {error}", &[("error", e)]), t.danger),
+        _ => {}
     }
     let old: Vec<&str> = r["old"].as_array().into_iter().flatten().filter_map(Value::as_str).collect();
     if !old.is_empty() && path.is_some() && state != "unreadable" {

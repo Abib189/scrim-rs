@@ -114,7 +114,7 @@ fn connect_shows_the_file_and_entry_and_writes_only_after_one_confirmation() {
     let said = h.app.ui.desktop.outcome.clone();
     assert_eq!(
         said,
-        Some(Ok("Scrim was added to Claude Desktop. Quit Claude Desktop completely and open it again to use it.".into())),
+        Some((Ok("Scrim was added to Claude Desktop. Quit Claude Desktop completely and open it again to use it.".into()), "configured".into())),
         "the restart is the person's"
     );
     assert!(has_text(&h.frames(3), "Configured"), "read back from the file");

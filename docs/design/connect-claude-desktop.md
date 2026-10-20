@@ -102,3 +102,12 @@ Claude Desktop can't be asked anything (no CLI), so this target reads and writes
 - **Agents can't look or write:**
   - **Reading:** the status reads through `file_access`, so inside an agent's request (confined to its folders) the file is reported as unreadable, not read. An agent learns the path and the entry Scrim would write, not what the file holds.
   - **Writing:** `apply` refuses to run inside such a scope at all. Elsewhere it is allowed direct file access (`#[allow(clippy::disallowed_methods)]`, as `plugin_directory` is), for the backup and the rename.
+
+## F2 results
+
+Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
+
+- **Live in the release build** (a scratch HOME; the real configuration never touched): button, panel, confirmation, written, Configured, Out of date with Re-register and its confirmation, Can't read with Copy only (the file untouched), the old entry offered, and Settings ▸ MCP.
+- **The written entry, started as Claude Desktop starts it,** reached Scrim through `mcp-remote@0.14.3` on the live port (7681 here): `initialize`, 24 tools, `inspect_document`.
+- **Found and fixed in F2:** a write's message stayed on screen after the file changed (it showed "Scrim was added" under the "can't be read" error). A message now shows only while the file is in the state the write left.
+- **Not verified:** a real Claude Desktop (no live test was run against it); Windows and Linux beyond unit tests; no npx, and authentication on, live.
