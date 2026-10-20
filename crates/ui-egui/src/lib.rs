@@ -11,6 +11,7 @@ pub mod bidi;
 pub mod branch_ui;
 pub mod camera_flight;
 pub mod canvas;
+pub mod canvas_labels;
 pub mod cjk;
 pub mod code_tab;
 pub mod colorpicker;

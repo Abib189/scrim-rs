@@ -175,3 +175,21 @@ It had no sections, no component labels and no handoff status. Labels were 10 px
   - A hidden label publishes no area.
 - **The section title moved above the section** (no pill) in this step. The icon must sit outside the frame and right after the title, which a title inside the section can't give.
 - **Not yet:** the shared layout between labels, and the label text inks (E2).
+
+## E2 as built
+
+- **`canvas_labels.rs`** (new): the one layout step. `layout` is pure, rectangles in and rectangles out. `draw` measures every label (`frame_labels::prepare`), lays them out, then paints them (`frame_labels::paint`).
+  - `canvas.rs` now collects the labelled frames and calls it once, after the layout grids (still 1509 lines).
+- **Priority, highest first** (`Class`):
+  1. labels turned with a rotated frame (kept along their edge, their box taken);
+  2. section titles, outer before inner;
+  3. selected;
+  4. hovered;
+  5. the rest in layer order, bottom first.
+- **Placing:** each label takes the leftmost free stretch of its frame's on-screen width, 8 px from any placed label. In that stretch, `fit` cuts the title, then drops the icon, then hides the label (under 20 px).
+- **Inks:** titles, selected titles and component titles take `Ink::for_page` of the label's **backdrop** (`frame_labels::backdrop`): the page's colour, with the solid fills of the sections the frame is in laid over it.
+  - A label inside Ridgeline's near-white Components section sits on white, not on the dark page. My first cut used the page colour alone, and the live capture showed washed-out purple there.
+  - Component titles use #7B2FE0 on light pages and #B794FF on dark pages: 4.5:1 or more as text, where the old #9747FF was 3.7–4.1:1.
+  - Before, the light theme's #44474C titles on Ridgeline's dark page were 1.79:1.
+- **The "Components" pill** became a quiet title above the section in E1. It is an always-on section name, not a hover or selection label. Here it gets the top priority, so a child label at the section's corner (Landscape) moves along past it, or hides when its frame has no room left.
+- **Hit testing is unchanged:** the label areas still go to `ToolState::labels`, at the labels' new places. A press on any label selects and drags its frame (tested on every Ridgeline label at 22%).

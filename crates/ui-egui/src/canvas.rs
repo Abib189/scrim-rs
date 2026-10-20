@@ -906,7 +906,7 @@ fn overlays(app: &FigApp, painter: &egui::Painter, t: &Tokens) -> Vec<(NodeId, [
     }
     // Layout grids and frame labels for top-level frames (also those in sections); the focus view
     // labels only its frame.
-    let focus = ds.focused();
+    let (focus, mut named) = (ds.focused(), Vec::new());
     for c in boards(&doc, page).iter().filter(|c| focus.is_none_or(|f| f == **c)) {
         let Some(n) = doc.node(*c) else { continue };
         let Some(b) = doc.world_bounds(*c) else { continue };
@@ -931,12 +931,12 @@ fn overlays(app: &FigApp, painter: &egui::Painter, t: &Tokens) -> Vec<(NodeId, [
                 }
             }
         }
-        // The focus view's bar names its frame.
-        let labelled = focus.is_none() && (n.kind.is_frame_like() || matches!(n.kind, NodeKind::Section { .. }));
-        if labelled && let Some(q) = crate::frame_labels::draw(app, painter, t, &doc, *c, sel.contains(c), ds.hover == Some(*c)) {
-            labels.push((*c, q.map(|p| app.to_page(p))));
+        // The focus view's bar names its frame; the rest are laid out together below.
+        if focus.is_none() && (n.kind.is_frame_like() || matches!(n.kind, NodeKind::Section { .. })) {
+            named.push(*c);
         }
     }
+    labels.extend(crate::canvas_labels::draw(app, painter, t, &doc, &named, &sel, ds.hover).into_iter().map(|(c, q)| (c, q.map(|p| app.to_page(p)))));
     // Prototype connections.
     crate::proto_canvas::draw(app, painter);
     // Hover outline (measuring outlines the measured box in red instead).

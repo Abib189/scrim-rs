@@ -163,7 +163,7 @@ pub fn pill(painter: &Painter, n: &Node, at: Pos2) -> Option<Rect> {
 
 #[cfg(test)]
 #[path = "dev_icon_tests.rs"]
-mod tests;
+pub(crate) mod tests;
 
 #[cfg(test)]
 #[path = "dev_icon_ui_tests.rs"]

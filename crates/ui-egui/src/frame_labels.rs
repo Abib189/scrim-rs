@@ -11,10 +11,11 @@ use figcraft_doc::{Document, NodeId, NodeKind};
 use figcraft_geom::Point;
 
 use crate::FigApp;
+use crate::canvas_labels::{Class, Item, Placed, ROW_BOTTOM, ROW_TOP};
 use crate::dev_icon::{self, ICON, ICON_GAP, Ink, State};
 use crate::i18n::tr;
 use crate::icons::Icon;
-use crate::theme::{ACCENT, COMPONENT, Tokens, regular};
+use crate::theme::{Tokens, regular};
 
 /// Where a label goes on screen: the corner it starts at, the angle it reads along (radians,
 /// clockwise on screen) and the length of the frame's edge along that direction.
@@ -109,20 +110,50 @@ pub fn fit(room: f32, title: f32, icon: bool) -> Option<(f32, bool)> {
     (room >= least).then_some((title.min(room), false))
 }
 
-/// The colour of the page `id` is on (what the canvas shows behind its label).
-pub fn page_colour(painter: &Painter, t: &Tokens, doc: &Document, id: NodeId) -> Color32 {
-    let page = doc.page_of(id).and_then(|p| doc.node(p));
-    match page.map(|p| &p.kind) {
-        Some(NodeKind::Page { background, .. }) => crate::theme::doc_c32(painter.ctx(), *background),
-        _ => t.canvas,
+/// What the canvas shows behind `id`'s label: its page's colour, with the solid fills of the
+/// sections it is inside laid over it (outer sections first). A label inside a white section on a
+/// dark page sits on white.
+pub fn backdrop(painter: &Painter, t: &Tokens, doc: &Document, id: NodeId) -> Color32 {
+    let mut bg = t.canvas;
+    for a in doc.ancestors(id).iter().rev().filter_map(|a| doc.node(*a)) {
+        match &a.kind {
+            NodeKind::Page { background, .. } => bg = crate::theme::doc_c32(painter.ctx(), *background),
+            NodeKind::Section { .. } if a.visible => {
+                for p in a.fills.iter().filter(|p| p.visible) {
+                    if let figcraft_color::PaintKind::Solid { color } = p.kind {
+                        let over = crate::theme::doc_c32(painter.ctx(), color.with_alpha(1.0));
+                        bg = mix(bg, over, (color.a * p.opacity).clamp(0.0, 1.0));
+                    }
+                }
+            }
+            _ => {}
+        }
     }
+    bg
 }
 
-/// Draw the label of `id` (a top-level frame or a section): its name just above its top edge
-/// (turned with it), after the component diamond or a hidden section's eye, then its handoff
-/// status icon. The area it covers on screen (its corners) for hit testing; `None` when its frame
-/// is too narrow on screen to hold it.
-pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: NodeId, selected: bool, hovered: bool) -> Option<[Pos2; 4]> {
+/// `over` laid on `under` at `alpha` (opaque).
+fn mix(under: Color32, over: Color32, alpha: f32) -> Color32 {
+    let ch = |u: u8, o: u8| (f32::from(u) + (f32::from(o) - f32::from(u)) * alpha).round().clamp(0.0, 255.0) as u8;
+    Color32::from_rgb(ch(under.r(), over.r()), ch(under.g(), over.g()), ch(under.b(), over.b()))
+}
+
+/// A label measured and ready to place (`canvas_labels`), then to [`paint`].
+pub struct Label {
+    pub id: NodeId,
+    pub item: Item,
+    edge: LabelEdge,
+    lead_icon: Option<Icon>,
+    name: String,
+    col: Color32,
+    state: Option<State>,
+    ink: Ink,
+}
+
+/// Measure the label of `id` (a top-level frame or a section): its name above its top edge (turned
+/// with it), after the component diamond or a hidden section's eye, then its status icon; the
+/// colours from the page it is on. A hidden section's "Contents hidden" is drawn here.
+pub fn prepare(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: NodeId, selected: bool, hovered: bool) -> Option<Label> {
     let n = doc.node(id)?;
     let w = doc.world_transform(id);
     let at = |x: f64, y: f64| {
@@ -131,14 +162,15 @@ pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: Nod
     };
     let (p00, p01) = (at(0.0, 0.0), at(0.0, n.height));
     let edge = label_edge(p00, at(n.width, 0.0), p01);
-    let tl = edge.corner;
+    let ink = Ink::for_page(backdrop(painter, t, doc, id));
     let is_comp = matches!(n.kind, NodeKind::Component { .. } | NodeKind::ComponentSet { .. });
+    let section = matches!(n.kind, NodeKind::Section { .. });
     let col = if is_comp {
-        COMPONENT
+        ink.component
     } else if selected || hovered {
-        ACCENT
+        ink.accent
     } else {
-        t.text_secondary
+        ink.text
     };
     if n.hides_contents() {
         let height = (p01 - p00).length();
@@ -149,43 +181,69 @@ pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: Nod
     }
     let lead_icon = if is_comp {
         Some(Icon::Component)
-    } else if matches!(n.kind, NodeKind::Section { .. }) && n.hides_contents() {
+    } else if section && n.hides_contents() {
         Some(Icon::EyeOff)
     } else {
         None
     };
-    let lead = if lead_icon.is_some() { LEAD } else { 0.0 };
     let state = State::of(n);
-    let font = regular(11.0);
-    let natural = crate::bidi::name_galley(painter, &n.name, font.clone(), col, f32::MAX).size().x;
-    let (title_w, show_icon) = fit(edge.len - lead, natural, state.is_some())?;
+    let title = crate::bidi::name_galley(painter, &n.name, regular(11.0), col, f32::MAX).size().x;
+    let turned = (edge.angle != 0.0).then(|| {
+        let row = Rect::from_min_max(pos2(edge.corner.x, edge.corner.y - ROW_TOP), pos2(edge.corner.x + edge.len, edge.corner.y - ROW_BOTTOM));
+        Rect::from_points(&turn_quad(row, edge.corner, edge.angle))
+    });
+    let class = if turned.is_some() {
+        Class::Turned
+    } else if section {
+        Class::Section
+    } else if selected {
+        Class::Selected
+    } else if hovered {
+        Class::Hovered
+    } else {
+        Class::Other
+    };
+    let depth = doc.ancestors(id).iter().filter(|a| doc.node(**a).is_some_and(|a| matches!(a.kind, NodeKind::Section { .. }))).count() as u32;
+    let lead = if lead_icon.is_some() { LEAD } else { 0.0 };
+    let item = Item { corner: edge.corner, room: edge.len, turned, class, depth, lead, title, icon: state.is_some() };
+    Some(Label { id, item, edge, lead_icon, name: n.name.clone(), col, state, ink })
+}
+
+/// `r`'s corners turned by `angle` (radians, clockwise on screen) about `pivot`.
+fn turn_quad(r: Rect, pivot: Pos2, angle: f32) -> [Pos2; 4] {
+    let rot = Rot2::from_angle(angle);
+    [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].map(|p| pivot + rot * (p - pivot))
+}
+
+/// Draw `l` where the layout put it; the area it covers on screen (its corners) for hit testing.
+pub fn paint(painter: &Painter, l: &Label, p: Placed) -> [Pos2; 4] {
+    let tl = l.edge.corner;
+    let x = tl.x + p.offset;
+    let top = tl.y - 16.0;
     // Drawn upright at the corner, then turned with the frame.
     let from = painter.add(Shape::Noop);
-    let top = tl.y - 16.0;
-    if let Some(icon) = lead_icon {
-        crate::icons::paint(painter, Rect::from_min_size(pos2(tl.x, top), vec2(12.0, 12.0)), icon, col);
+    if let Some(icon) = l.lead_icon {
+        crate::icons::paint(painter, Rect::from_min_size(pos2(x, top), vec2(12.0, 12.0)), icon, l.col);
     }
     // Names longer than their room end in an ellipsis (a right-to-left name keeps its start).
-    let galley = crate::bidi::name_galley(painter, &n.name, font, col, title_w.max(1.0));
+    let galley = crate::bidi::name_galley(painter, &l.name, regular(11.0), l.col, p.title.max(1.0));
     let size = galley.size();
-    let mut end = tl.x + lead + size.x;
-    painter.galley(pos2(tl.x + lead, top), galley, col);
+    let lead = l.item.lead;
+    let mut end = x + lead + size.x;
+    painter.galley(pos2(x + lead, top), galley, l.col);
     let mut bottom = top + size.y.max(12.0);
-    let icon = state.filter(|_| show_icon).map(|s| {
-        let r = Rect::from_min_size(pos2(end + ICON_GAP, tl.y - 2.0 - ICON), vec2(ICON, ICON));
-        dev_icon::paint(painter, r, s, &Ink::for_page(page_colour(painter, t, doc, id)));
+    let icon = l.state.filter(|_| p.icon).map(|s| {
+        let r = Rect::from_min_size(pos2(end + ICON_GAP, tl.y - ROW_BOTTOM - ICON), vec2(ICON, ICON));
+        dev_icon::paint(painter, r, s, &l.ink);
         end = r.max.x;
         bottom = bottom.max(r.max.y);
         (r, s)
     });
-    let area = Rect::from_min_max(pos2(tl.x, tl.y - 18.0), pos2(end, bottom));
-    turn_since(painter, from, tl, edge.angle);
-    let rot = Rot2::from_angle(edge.angle);
-    let turned = |r: Rect| [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].map(|p| tl + rot * (p - tl));
+    turn_since(painter, from, tl, l.edge.angle);
     if let Some((r, s)) = icon {
-        dev_icon::annotate(painter, id, Rect::from_points(&turned(r)), s);
+        dev_icon::annotate(painter, l.id, Rect::from_points(&turn_quad(r, tl, l.edge.angle)), s);
     }
-    Some(turned(area))
+    turn_quad(Rect::from_min_max(pos2(x, tl.y - ROW_TOP), pos2(end, bottom)), tl, l.edge.angle)
 }
 
 /// The field over a frame's or section's name label being renamed (`UiState::rename_label`, from a
