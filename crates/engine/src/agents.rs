@@ -58,6 +58,10 @@ pub struct McpEndpoint {
     pub clients: Vec<(String, String, u64)>,
     /// The folders its requests' file access is confined to (Settings ▸ MCP ▸ root folder).
     pub roots: Option<std::sync::Arc<crate::file_access::Roots>>,
+    /// Claude Desktop's configuration file (`cmd::claude_desktop`): set by the desktop app from the
+    /// platform's place. `None` (the browser, headless, tests unless they point it at a scratch
+    /// file): there's no file, so nothing reads or writes the real one.
+    pub desktop_config: Option<std::path::PathBuf>,
 }
 
 /// How long after a client's last `initialize` the AI tab still calls it connected.

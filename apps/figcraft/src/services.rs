@@ -295,6 +295,10 @@ impl Services for Desktop {
         }
         rx
     }
+    fn claude_desktop_config(&self) -> Option<std::path::PathBuf> {
+        use figcraft_engine::cmd::claude_desktop::{Env, Os, config_path};
+        config_path(Os::this(), &Env::this())
+    }
     fn find_program(&self, name: &str) -> Option<String> {
         find_program(name)
     }

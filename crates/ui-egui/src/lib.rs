@@ -21,6 +21,7 @@ pub mod connect_flow;
 pub mod control;
 pub mod credits;
 pub mod cursors;
+pub mod desktop_flow;
 pub mod dev_compare;
 pub mod dev_icon;
 pub mod dev_mode;
@@ -394,6 +395,8 @@ pub struct UiState {
     pub panel_animate: bool,
     /// Connect Claude Code (`connect_flow`).
     pub connect: connect_flow::Flow,
+    /// Connect Claude Desktop (`desktop_flow`).
+    pub desktop: desktop_flow::Flow,
     /// The camera's flight to a focused layer (D2).
     pub camera: camera_flight::State,
     /// The section Settings shows (`settings_dialog::SECTIONS`); `preferences` says it's open.
@@ -565,6 +568,7 @@ impl Default for UiState {
             right_tab: RightTab::Design,
             panel_animate: false,
             connect: Default::default(),
+            desktop: Default::default(),
             camera: Default::default(),
             settings_section: "general",
             last_right_tab: RightTab::Design,

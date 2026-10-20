@@ -193,6 +193,7 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
     crate::import_report::show(app, ctx);
     crate::missing_fonts::show(app, ctx);
     crate::connect_flow::dialogs(app, ctx);
+    crate::desktop_flow::dialogs(app, ctx);
     let t = Tokens::get(ctx);
     if app.ui.about {
         let mut open = true;

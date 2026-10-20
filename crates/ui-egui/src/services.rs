@@ -100,4 +100,9 @@ pub trait Services {
     fn find_program(&self, _name: &str) -> Option<String> {
         None
     }
+    /// Claude Desktop's configuration file on this computer (`cmd::claude_desktop`). Only the desktop
+    /// app knows it; elsewhere (the browser, tests) there is none, so nothing reads the real file.
+    fn claude_desktop_config(&self) -> Option<std::path::PathBuf> {
+        None
+    }
 }

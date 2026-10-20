@@ -106,6 +106,7 @@ pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
     } else if widgets::button(ui, tr("Connect Claude Code"), true, state != "stopped").clicked() {
         app.run("mcp.connect-claude-code", json!({}));
     }
+    crate::desktop_flow::section(app, ui);
 }
 
 #[cfg(test)]

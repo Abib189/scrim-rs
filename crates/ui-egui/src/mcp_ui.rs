@@ -18,6 +18,7 @@ pub fn restart(app: &mut FigApp) {
     match app.services.mcp_restart(&settings) {
         Ok(port) => {
             crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpStarted(port));
+            app.session.agents.mcp.desktop_config = app.services.claude_desktop_config();
             app.session.agents.mcp.port = Some(port);
             app.session.agents.mcp.error = None;
             if settings.port != port {
@@ -86,7 +87,7 @@ pub fn request(app: &mut FigApp, kind: &str, _data: &Value) -> bool {
             app.services.save_prefs(&app.session.prefs);
         }
         CONNECT_REQUEST => crate::connect_flow::open(app),
-        _ => return crate::connect_flow::request(app, kind),
+        _ => return crate::desktop_flow::request(app, kind) || crate::connect_flow::request(app, kind),
     }
     true
 }

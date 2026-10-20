@@ -6,6 +6,7 @@ pub mod analyze;
 pub mod appearance;
 pub mod arrange;
 pub mod camera;
+pub mod claude_desktop;
 pub mod code;
 pub mod comment;
 pub mod component;
@@ -98,6 +99,7 @@ fn registry() -> &'static Registry {
         list.extend(ai::specs());
         list.extend(appearance::specs());
         list.extend(mcp::specs());
+        list.extend(claude_desktop::specs());
         list.extend(diagnostics::specs());
         list.extend(layers::specs());
         list.extend(camera::specs());

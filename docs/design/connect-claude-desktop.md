@@ -86,3 +86,19 @@ Claude Desktop can't be asked anything (no CLI), so this target reads and writes
 7. **Old entries** are the keys `figcraft` and `figcraft-app` (the names before the rename, `docs/mcp.md`).
 8. **Only the person can write:** the write, re-register and removal commands only ask. Agents get the path, the entry and the status, and Copy.
 9. **A first-party bridge would remove the Node.js dependency.** That would be a `scrim mcp` mode forwarding stdio to the HTTP endpoint, with the CLI installed beside the app. It isn't built here: the brief names `mcp-remote`, and the CLI isn't shipped inside the app bundle.
+
+## F1 as built
+
+- **Engine:** `crates/engine/src/cmd/claude_desktop.rs` holds the path per OS, `npx_command`, `entry`, `inspect`, `changed`, `apply`, `stamp`, `report` and the six commands. `claude_desktop/splice.rs` changes one member of `mcpServers` in the text and pretty-prints entries with `command`, `args`, `env` first.
+  - **Access:** `mcp.claude-desktop-status` is Read; the other five are Write.
+- **Only the desktop app gives the real path.** `McpEndpoint::desktop_config` is set from `Services::claude_desktop_config` when the endpoint starts. The browser, headless runs and every test have none (or a scratch file), so no test can read or write the real configuration.
+- **Window:** `crates/ui-egui/src/desktop_flow.rs` gives the Claude Desktop section in the AI tab (under Claude Code) and in Settings ▸ MCP (under Connect Claude Code). Each has:
+  - a status row read from the file (every 2 s while it shows, at once after a write);
+  - "Registered address is out of date" with Re-register;
+  - the panel (file, entry, Write or Re-register, Copy, Close, and the notes: Linux path inferred, npx missing, token written, the file can't be read);
+  - the three confirmations, which read the file again and don't ask when there's nothing to do.
+- **The outcome** names the backup and says to quit Claude Desktop completely and open it again.
+- **Strings:** en and es.
+- **Agents can't look or write:**
+  - **Reading:** the status reads through `file_access`, so inside an agent's request (confined to its folders) the file is reported as unreadable, not read. An agent learns the path and the entry Scrim would write, not what the file holds.
+  - **Writing:** `apply` refuses to run inside such a scope at all. Elsewhere it is allowed direct file access (`#[allow(clippy::disallowed_methods)]`, as `plugin_directory` is), for the backup and the rename.

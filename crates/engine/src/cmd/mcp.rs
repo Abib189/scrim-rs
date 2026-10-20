@@ -31,7 +31,7 @@ pub(crate) fn person_only(s: &Session, cmd: &str, what: &str) -> crate::Result<(
     Ok(())
 }
 
-fn token(s: &Session) -> Option<&str> {
+pub(crate) fn token(s: &Session) -> Option<&str> {
     let m = &s.prefs.settings.mcp;
     m.require_auth.then_some(m.token.as_str()).filter(|t| !t.is_empty())
 }

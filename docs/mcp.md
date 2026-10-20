@@ -196,13 +196,34 @@ Or in a project's `.mcp.json`:
 
 ### Claude Desktop
 
-`claude_desktop_config.json` (Settings > Developer > Edit Config):
+**Connect Claude Desktop** (the AI tab, Settings ▸ MCP, the Actions palette; `mcp.connect-claude-desktop`) adds Scrim to Claude Desktop's `claude_desktop_config.json`: `~/Library/Application Support/Claude/` on macOS, `%APPDATA%\Claude\` on Windows, `~/.config/Claude/` on Linux (inferred: Anthropic names no Linux path). It shows the exact file and entry first, and writes only after one confirmation:
+- **Safely:** an invalid file is refused, never overwritten. Only `mcpServers.scrim` changes, and the rest keeps its text. A backup is kept as `claude_desktop_config.json.scrim-backup-<UTC time>`, and the new file is written by rename.
+- **Through a bridge:** Claude Desktop starts local servers as programs, and its Connectors reach servers from Anthropic's cloud, not this computer. So the entry runs `mcp-remote` (third-party, pinned), which forwards to the window's live address. That needs Node.js's `npx`; without it, Copy only.
+- **The status** is read from the file: Configured, Not configured, Out of date (with Re-register), or Can't read. Claude Desktop can't be asked whether it is connected.
+- **Afterwards,** quit Claude Desktop completely and open it again. Scrim never restarts or closes it.
 
 ```json
 {
   "mcpServers": {
-    "scrim": { "command": "/path/to/scrim", "args": ["mcp"] },
-    "scrim-app": { "command": "/path/to/scrim", "args": ["mcp", "--attach", "7979"] }
+    "scrim": {
+      "command": "/path/to/npx",
+      "args": ["-y", "mcp-remote@0.14.3", "http://127.0.0.1:7680/mcp"],
+      "env": { "PATH": "/path/to:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin" }
+    }
+  }
+}
+```
+
+With MCP authentication on, the entry adds `"--header", "Authorization:${SCRIM_MCP_AUTH}"` and `env.SCRIM_MCP_AUTH = "Bearer <token>"`. The token is then in Claude Desktop's file.
+
+Commands: `mcp.connect-claude-desktop` and `mcp.claude-desktop-status` (`{npx?}` → the path, the entry, the state), `mcp.copy-claude-desktop-entry`. Three commands only ask the person: `mcp.write-claude-desktop`, `mcp.reregister-claude-desktop` and `mcp.remove-old-desktop-entry` (the old `figcraft` and `figcraft-app` keys).
+
+Without the app, Claude Desktop can also run Scrim's own CLI headless (stdio):
+
+```json
+{
+  "mcpServers": {
+    "scrim": { "command": "/path/to/scrim", "args": ["mcp"] }
   }
 }
 ```
