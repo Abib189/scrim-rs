@@ -128,6 +128,25 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
   - `crates/engine/src/cmd/mcp_tests.rs`;
   - `crates/mcp/tests/connect_docs.rs` (the HTTP command is the one `docs/mcp.md` and the README show).
 
+## C2 as built
+
+- **`crates/ui-egui/src/connect_flow.rs`:** one flow, used by the AI tab now and by Settings in C3.
+  1. **Connect Claude Code** (`mcp.connect-claude-code`) shows the exact command, with Run and Copy (`mcp.copy-command`).
+  2. Run (`mcp.run-connect`) opens **one confirmation**.
+  3. Only then does Scrim run `claude mcp get scrim` and `claude mcp get figcraft`.
+  4. A `scrim` entry pointing elsewhere is offered for **Replace** (remove at its scope, then add) or Keep it; one already pointing here, at user scope, is reported as done.
+  5. Otherwise `claude mcp add --transport http --scope user scrim <url>`.
+  6. Success, or Claude Code's own error text, is shown. An old `figcraft` entry gets **Remove the old entry** (`mcp.remove-old-entry`, confirmed again).
+- **Running programs:** `Services::run_program` runs on a background thread, with an argument list and no shell (`std::process::Command`).
+- **Finding `claude`:** `Services::find_program` looks along `PATH` and then the usual install folders. An app started from the Finder gets a short `PATH` without `~/.local/bin`, where `claude` lives here. Without `claude`, the panel offers Copy only and says why.
+- **Agents can't run programs:** the confirmations are `dialog.*` requests, which an agent's command never opens (`an_agent_cannot_make_scrim_run_a_program`).
+- **The AI tab's Connection card is gone,** along with its `--control` copy and the `scrim mcp` command. In its place:
+  - a status row: Connected with the client's name (an `initialize` in the last 10 minutes), Not connected, or Server stopped with Restart;
+  - the empty state: one line and **Connect Claude Code**;
+  - the flow.
+- **The string guard:** `the_ai_tab_shows_no_control_channel_or_scrim_mcp_copy` fails if "--control" or "scrim mcp" appears in a string literal of `ai_tab.rs` or `connect_flow.rs`. The activity feed, lint findings and lock from B3 are unchanged.
+- **The rebrand test now also refuses "OpenPencil"** in interface strings.
+
 ## Order of the commits
 
 1. **C0:** this plan.

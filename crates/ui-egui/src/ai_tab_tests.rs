@@ -41,17 +41,18 @@ fn sel(h: &Harness) -> Vec<u64> {
 }
 
 #[test]
-fn the_connection_shows_and_copies_the_command_that_connects_an_agent() {
-    let (mut h, copied, _) = harness();
+fn the_status_row_says_stopped_not_connected_or_connected() {
+    let (mut h, _, _) = harness();
     let shapes = h.frames(1);
-    assert!(has_text(&shapes, "claude mcp add scrim -- scrim mcp"), "headless without a control channel");
-    h.click(text_center(&shapes, "Copy the connect command"));
-    h.frames(1);
-    assert_eq!(copied.lock().unwrap().last().map(String::as_str), Some("claude mcp add scrim -- scrim mcp"));
-    h.app.session.agents.control_port = Some(7979);
+    assert!(has_text(&shapes, "Server stopped") && has_text(&shapes, "Restart"), "no endpoint in the test harness");
+    h.app.session.agents.mcp.port = Some(7601);
     let shapes = h.frames(2);
-    assert!(has_text(&shapes, "claude mcp add scrim-app -- scrim mcp --attach 7979"));
-    assert!(has_text(&shapes, "Agents can work in this window: its control channel listens on 127.0.0.1:7979."));
+    assert!(has_text(&shapes, "Not connected") && has_text(&shapes, "Connect Claude Code"), "the empty state");
+    let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap();
+    h.app.session.agents.mcp.clients.push(("claude-code".into(), "2.1.296".into(), now));
+    let shapes = h.frames(2);
+    assert!(has_text(&shapes, "Connected · claude-code"), "connected, and by whom");
+    assert!(!has_text(&shapes, "Connect Claude Code"), "no Connect button once connected");
 }
 
 #[test]
@@ -138,7 +139,7 @@ fn screen_readers_get_every_control_by_name() {
     let (mut h, _, _) = harness();
     let nodes = tree(&mut h);
     let named = |role: Role, label: &str| nodes.iter().any(|n| n.role() == role && n.label() == Some(label));
-    for label in ["Copy the connect command", "Agent (mcp): Rename", "Undo Rename"] {
+    for label in ["Restart", "Agent (mcp): Rename", "Undo Rename"] {
         assert!(named(Role::Button, label), "a button named {label:?}");
     }
     assert!(named(Role::CheckBox, "Keep agents off the selection"));

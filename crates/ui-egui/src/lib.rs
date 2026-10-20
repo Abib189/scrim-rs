@@ -15,6 +15,7 @@ pub mod code_tab;
 pub mod colorpicker;
 pub mod comments;
 pub mod component_panel;
+pub mod connect_flow;
 pub mod control;
 pub mod credits;
 pub mod cursors;
@@ -235,7 +236,7 @@ use serde_json::{Value, json};
 
 pub use control::{ControlReply, ControlRequest};
 
-pub use services::{ProgramOutput, Services};
+pub use services::{ProgramOutput, ProgramRun, Services};
 
 pub type DialogFuture = Pin<Box<dyn Future<Output = Option<PathBuf>>>>;
 type DialogDone = Box<dyn FnOnce(&mut FigApp, PathBuf)>;
@@ -379,6 +380,8 @@ pub struct UiState {
     pub right_tab: RightTab,
     /// The right panel is in Animate mode (a placeholder: `panel_view`).
     pub panel_animate: bool,
+    /// Connect Claude Code (`connect_flow`).
+    pub connect: connect_flow::Flow,
     /// The tab of the previous frame, to see the right panel change mode.
     pub last_right_tab: RightTab,
     pub left_tab: LeftTab,
@@ -545,6 +548,7 @@ impl Default for UiState {
             right_width: PANEL_DEFAULT,
             right_tab: RightTab::Design,
             panel_animate: false,
+            connect: Default::default(),
             last_right_tab: RightTab::Design,
             left_tab: LeftTab::File,
             pages_open: true,

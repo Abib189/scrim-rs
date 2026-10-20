@@ -47,9 +47,8 @@ pub fn request(app: &mut FigApp, kind: &str, _data: &Value) -> bool {
             app.session.agents.mcp.roots = roots(&settings);
             app.services.save_prefs(&app.session.prefs);
         }
-        // The Connect flow that shows and runs the command arrives with the AI tab's (C2).
-        CONNECT_REQUEST => {}
-        _ => return false,
+        CONNECT_REQUEST => crate::connect_flow::open(app),
+        _ => return crate::connect_flow::request(app, kind),
     }
     true
 }

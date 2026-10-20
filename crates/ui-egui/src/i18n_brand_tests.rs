@@ -6,7 +6,9 @@ use super::*;
 /// The attribution lines, by English key: "Scrim is based on FigCraft by the ArtCraft team".
 const ATTRIBUTION: &[&str] = &["Scrim is based on FigCraft by the ArtCraft team; it is not an ArtCraft product. Dual-licensed MIT OR Apache-2.0."];
 
-const OLD_NAMES: &[&str] = &["FigCraft", "ArtCraft"];
+/// Also OpenPencil: Stage C took its settings dialog and AI tab as references for structure only,
+/// and none of its words.
+const OLD_NAMES: &[&str] = &["FigCraft", "ArtCraft", "OpenPencil"];
 
 fn texts(t: &Text) -> Vec<&'static str> {
     match t {

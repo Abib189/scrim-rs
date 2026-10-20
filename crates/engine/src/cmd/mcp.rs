@@ -15,6 +15,10 @@ use crate::{Session, bad, spec};
 pub const CONNECT_REQUEST: &str = "mcp.connect";
 pub const RESTART_REQUEST: &str = "mcp.restart";
 pub const CONFIG_REQUEST: &str = "mcp.config";
+/// The confirmations before Scrim runs `claude` (dialogs: an agent's calls never open one, so an
+/// agent can't make Scrim run a program).
+pub const RUN_DIALOG: &str = "dialog.mcpRunConnect";
+pub const REMOVE_OLD_DIALOG: &str = "dialog.mcpRemoveOld";
 
 fn token(s: &Session) -> Option<&str> {
     let m = &s.prefs.settings.mcp;
@@ -84,6 +88,26 @@ pub fn specs() -> Vec<CommandSpec> {
                 let r = json!({"command": command(s, false), "args": claude_add_args(port, token(s))});
                 s.request_ui(CONNECT_REQUEST, r.clone());
                 Ok(r)
+            }
+        ),
+        spec!(
+            "mcp.run-connect",
+            "Run the Claude Code connect command",
+            "{} → {asked: true}  (opens the confirmation; the command runs only when the person confirms it there; an agent's call opens nothing and runs nothing)",
+            false,
+            |s, _| {
+                s.request_ui(RUN_DIALOG, json!({}));
+                Ok(json!({"asked": true}))
+            }
+        ),
+        spec!(
+            "mcp.remove-old-entry",
+            "Remove the old figcraft entry from Claude Code",
+            "{} → {asked: true}  (opens the confirmation to remove Claude Code's `figcraft` MCP entry; as for mcp.run-connect, only the person can confirm it)",
+            false,
+            |s, _| {
+                s.request_ui(REMOVE_OLD_DIALOG, json!({}));
+                Ok(json!({"asked": true}))
             }
         ),
         spec!(

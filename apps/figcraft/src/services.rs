@@ -280,6 +280,28 @@ impl Services for Desktop {
             m.configure(settings);
         }
     }
+    fn run_program(&mut self, program: &str, args: &[String]) -> figcraft_ui_egui::ProgramRun {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let (program, args) = (program.to_string(), args.to_vec());
+        // An argument list, never a shell: nothing in `args` is interpreted.
+        let spawned = std::thread::Builder::new().name("scrim-program".into()).spawn(move || {
+            let out = std::process::Command::new(&program).args(&args).stdin(std::process::Stdio::null()).output();
+            let _ = tx.send(out.map_err(|e| format!("{program}: {e}")).map(|o| figcraft_ui_egui::ProgramOutput {
+                code: o.status.code(),
+                stdout: String::from_utf8_lossy(&o.stdout).into_owned(),
+                stderr: String::from_utf8_lossy(&o.stderr).into_owned(),
+            }));
+        });
+        if let Err(e) = spawned {
+            let (tx, rx) = std::sync::mpsc::channel();
+            let _ = tx.send(Err(e.to_string()));
+            return rx;
+        }
+        rx
+    }
+    fn find_program(&self, name: &str) -> Option<String> {
+        find_program(name)
+    }
     fn pick_open(&mut self, title: &str, exts: &[&str]) -> DialogFuture {
         picked(dialog(title).add_filter("Supported files", exts).pick_file())
     }
@@ -359,6 +381,21 @@ pub fn window_icon() -> Option<egui::IconData> {
     let img = image::load_from_memory(bytes).ok()?.to_rgba8();
     let (w, h) = img.dimensions();
     Some(egui::IconData { rgba: img.into_raw(), width: w, height: h })
+}
+
+/// Where `name` is: each folder of `PATH`, then the folders installers use that an app started from
+/// the Finder or a desktop menu doesn't get on its `PATH` (`~/.local/bin`, Homebrew, npm's, …).
+pub(crate) fn find_program(name: &str) -> Option<String> {
+    let exe = if cfg!(windows) { format!("{name}.exe") } else { name.to_string() };
+    let home = std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE")).map(PathBuf::from);
+    let mut dirs: Vec<PathBuf> = std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect()).unwrap_or_default();
+    if let Some(h) = &home {
+        for d in [".local/bin", ".claude/local", ".npm-global/bin", ".bun/bin", ".volta/bin", "bin"] {
+            dirs.push(h.join(d));
+        }
+    }
+    dirs.extend(["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"].iter().map(PathBuf::from));
+    dirs.into_iter().map(|d| d.join(&exe)).find(|p| p.is_file()).map(|p| p.to_string_lossy().into_owned())
 }
 
 #[cfg(test)]

@@ -14,6 +14,9 @@ pub struct ProgramOutput {
     pub stderr: String,
 }
 
+/// A program started by [`Services::run_program`]: its output, once it ends.
+pub type ProgramRun = std::sync::mpsc::Receiver<Result<ProgramOutput, String>>;
+
 impl ProgramOutput {
     pub fn success(&self) -> bool {
         self.code == Some(0)
@@ -84,9 +87,17 @@ pub trait Services {
     }
     /// Apply changed settings (the token, the tools turned off) to the running endpoint.
     fn mcp_configure(&mut self, _settings: &figcraft_engine::settings::McpSettings) {}
-    /// Run `program` with `args` (an argument list, never a shell command line) and wait for it.
-    /// Only the desktop app runs programs, and only after the person confirmed.
-    fn run_program(&mut self, _program: &str, _args: &[String]) -> Result<ProgramOutput, String> {
-        Err("this version of Scrim can't run programs".into())
+    /// Start `program` with `args` (an argument list, never a shell command line) in the
+    /// background; its output arrives on the returned channel. Only the desktop app runs programs,
+    /// and only after the person confirmed (`connect_flow`).
+    fn run_program(&mut self, _program: &str, _args: &[String]) -> ProgramRun {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let _ = tx.send(Err("this version of Scrim can't run programs".into()));
+        rx
+    }
+    /// Where the program `name` is: on the `PATH`, or in a usual install folder (an app started
+    /// from the Finder or a desktop menu gets a short `PATH`). Nothing is run to find it.
+    fn find_program(&self, _name: &str) -> Option<String> {
+        None
     }
 }

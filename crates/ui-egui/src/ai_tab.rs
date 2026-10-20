@@ -40,30 +40,38 @@ fn read(app: &mut FigApp, cmd: &str, p: Value) -> Value {
 
 fn connection(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    let copy = widgets::section_header(ui, tr("Connection"), &[(crate::icons::Icon::Export, tr("Copy the connect command"))], false).is_some();
-    let status = read(app, "ai.status", json!({}));
-    let text = match status["port"].as_u64() {
-        Some(port) => trf("Agents can work in this window: its control channel listens on 127.0.0.1:{port}.", &[("port", &port)]),
-        None => tr("This window has no control channel, so agents work on files headless. To let one work here, start Scrim with --control PORT.")
-            .to_string(),
+    widgets::section_header(ui, tr("Claude Code"), &[], false);
+    let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
+    let st = figcraft_engine::cmd::mcp::status(&app.session, now);
+    let state = st["state"].as_str().unwrap_or("stopped");
+    let (label, color) = match state {
+        "connected" => (tr("Connected"), t.success),
+        "not connected" => (tr("Not connected"), t.text_secondary),
+        _ => (tr("Server stopped"), t.danger),
     };
-    widgets::note(ui, &text, t.text_secondary);
-    let command = status["connectCommand"].as_str().unwrap_or_default().to_string();
-    egui::Frame::NONE
-        .fill(t.field)
-        .corner_radius(CornerRadius::same(6))
-        .inner_margin(egui::Margin::same(8))
-        .outer_margin(egui::Margin::symmetric(16, 0))
-        .show(ui, |ui| {
-            ui.label(egui::RichText::new(&command).monospace().color(t.text));
-        });
-    ui.add_space(4.0);
-    let mut copied = copy;
-    row(ui, 32.0, |ui| {
-        copied |= widgets::button(ui, tr("Copy the connect command"), false, true).clicked();
+    crate::right::row(ui, 28.0, |ui| {
+        let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
+        ui.painter().circle_filled(dot.center(), 4.0, color);
+        let client = st["client"]["name"].as_str().map(|n| format!(" · {n}")).unwrap_or_default();
+        let resp = ui.label(egui::RichText::new(format!("{label}{client}")).color(t.text).font(regular(12.0)));
+        a11y::status(&resp, label, &trf("The MCP endpoint is {state}", &[("state", &label)]));
+        if state == "stopped" && widgets::button(ui, tr("Restart"), false, true).clicked() {
+            app.run("mcp.restart-server", json!({}));
+        }
     });
-    if copied {
-        app.run("ai.copyConnectCommand", json!({}));
+    if app.ui.connect.open {
+        crate::connect_flow::panel(app, ui);
+    } else if state != "connected" {
+        widgets::note(
+            ui,
+            tr("Let Claude Code see and edit this canvas: connect it once, and every Claude Code session can use Scrim."),
+            t.text_secondary,
+        );
+        crate::right::row(ui, 32.0, |ui| {
+            if widgets::button(ui, tr("Connect Claude Code"), true, true).clicked() {
+                app.run("mcp.connect-claude-code", json!({}));
+            }
+        });
     }
 }
 

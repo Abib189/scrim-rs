@@ -11,3 +11,9 @@ The plan: `docs/design/settings-and-connect.md`.
 | File tools over HTTP are confined to the root folder (home by default) | Settings ▸ MCP ▸ Choose folder, then `open_file` outside it | `control.rs` › `handle_request` (manual) |
 | `scrim mcp` (stdio, headless or `--attach`) still works | `claude mcp add scrim -- scrim mcp` | `crates/mcp/tests/protocol.rs` |
 | Restart keeps the port | Settings ▸ MCP ▸ Restart | `a_restart_listens_on_the_same_port_again` |
+| AI tab, not connected: a status row (Not connected / Server stopped with Restart) and Connect Claude Code; connected: "Connected · <client>" | Open the AI tab before and after connecting | `ai_tab_tests.rs` › `the_status_row_says_stopped_not_connected_or_connected` |
+| Connect shows the exact command with Run and Copy; Run asks once; nothing runs before; then `claude mcp get` checks, and `claude mcp add` runs with an argument list | Connect Claude Code, Run, Run | `connect_flow_tests.rs` › `connect_shows_the_command_runs_nothing_until_confirmed_then_adds_scrim` |
+| A `scrim` entry already there is offered for Replace, never overwritten; an old `figcraft` entry can be removed (confirmed) | With an existing entry, Connect | `an_entry_already_there_is_offered_for_replace_never_overwritten` |
+| Without `claude`: Copy only, and why | On a machine without Claude Code | `without_claude_only_copy_is_offered` |
+| An agent can't make Scrim run a program | `run_command {command: "mcp.run-connect"}` over MCP | `an_agent_cannot_make_scrim_run_a_program` |
+| The AI tab shows no "--control" or "scrim mcp" | — | `the_ai_tab_shows_no_control_channel_or_scrim_mcp_copy` |
