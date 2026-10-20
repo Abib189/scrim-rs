@@ -120,3 +120,23 @@ fn a_tool_turned_off_is_hidden_and_refused_over_http() {
     h.configure(&settings);
     assert!(names(&post(port, "", &list).1).iter().any(|n| n == "run_command"), "back on at once");
 }
+
+/// C1.3 over HTTP: with create_node off, run_command and batch can't run node.create either, and
+/// nothing reaches the UI thread.
+#[test]
+fn a_turned_off_tools_command_is_refused_through_run_command_and_batch_over_http() {
+    let queue = Arc::new(Mutex::new(Vec::new()));
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    ui(queue.clone(), seen.clone());
+    let mut h = McpHandle::new(queue, Arc::new(Mutex::new(None)));
+    let settings = McpSettings { port: free_port(), disabled_tools: vec!["create_node".into()], ..Default::default() };
+    let port = h.restart(&settings).unwrap_or_else(|e| panic!("{e}"));
+    let create = json!({"command": "node.create", "params": {"type": "rectangle"}});
+    let run = json!({"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "run_command", "arguments": create}});
+    let batch = json!({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "batch", "arguments": {"commands": [create]}}});
+    for call in [run, batch] {
+        let (_, body) = post(port, "", &call);
+        assert!(body.contains("does what the tool `create_node` does"), "{body}");
+    }
+    assert!(!seen.lock().unwrap_or_else(std::sync::PoisonError::into_inner).iter().any(|(m, _)| m == "engine.execute"), "refused before the UI");
+}

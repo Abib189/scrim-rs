@@ -28,7 +28,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     widgets::label(
         ui,
         tr(
-            "A tool turned off is hidden from agents and refused if they call it. run_command and batch reach every command: turn them off to take the commands away.",
+            "A tool turned off is hidden from agents and refused if they call it, through run_command and batch as well. With a whole group off, run_command and batch can't run commands of that kind either.",
         ),
         t.text_secondary,
     );

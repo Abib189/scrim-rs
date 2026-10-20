@@ -286,3 +286,11 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
 - **Telling a chosen port from a defaulted one:** until C1.2 nothing let the person choose a port (no field, no command), so every saved port came from the default or its fallback. C1.2 adds `mcp.set-port {port}` (the person's alone), which records `port_chosen: true`. On load, a file older than `settings_version` 2 whose port is in 7600–7619 (the first default plus its 20 tries) and not `port_chosen` moves to 7680. A chosen one, or any other port, stays.
 - **The registered address** (`mcp_registration.rs`): while the AI tab or Settings ▸ MCP shows, Scrim asks `claude mcp get scrim` once per address (an argument list, read-only). When Claude Code's entry points elsewhere it says "Registered address is out of date" with **Re-register** (`mcp.reregister`): one confirmation, then `claude mcp remove scrim --scope <its scope>` and the add, as Connect's Replace does. Afterwards it asks again.
 - **A change to C2's rule, for you to overrule:** C2 ran nothing before the confirmation. The check now runs `claude mcp get` (read-only) just by showing the tab; anything that changes Claude Code still waits for the confirmation. The C2 tests now assert that.
+
+### C1.3 Tool access is a boundary
+- **`cmd/access.rs`** classifies every command, Read or Write, from registry metadata: undoable commands (`history`) write; 54 commands are listed as Read and 262 as Write. Before, those 316 were unclassified. The full list and the reasoning are in `docs/design/command-access.md`, and a test fails on any unclassified command.
+- **The server** (`server.rs` › `carried_commands`) checks every command `run_command` and `batch` carry, a batch's steps at any depth included. It refuses:
+  - a command that does what a turned-off tool does (`EQUIVALENT`: `node.create` is `create_node`, the `select.*` changes are `select`, `command.batch` is `batch`, …);
+  - a Read command while every read-only tool is off, and a Write one while every tool that makes changes is off;
+  - an unclassified command (deny by default).
+- **Every route:** this is in `Server`, so HTTP, `--attach` and headless all get it. Each has a test, and refused calls reach neither the window nor the app.

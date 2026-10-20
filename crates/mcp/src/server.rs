@@ -236,8 +236,13 @@ impl Server {
                 if !crate::tools::TOOL_NAMES.contains(&name) {
                     return Err((INVALID_PARAMS, format!("unknown tool `{name}`")));
                 }
-                if self.backend.disabled_tools().iter().any(|d| d == name) {
+                let off = self.backend.disabled_tools();
+                if off.iter().any(|d| d == name) {
                     return Err((INVALID_PARAMS, format!("the tool `{name}` is turned off in Scrim (Settings ▸ Tool access)")));
+                }
+                // run_command and batch are held to the same switches for every command they carry.
+                for id in carried_commands(name, &args) {
+                    figcraft_engine::cmd::access::check(&id, &off).map_err(|e| (INVALID_PARAMS, e))?;
                 }
                 Ok(call_tool(self.backend.as_mut(), name, &args).to_value())
             }
@@ -261,4 +266,27 @@ impl Server {
             other => Err((METHOD_NOT_FOUND, format!("method not found: {other}"))),
         }
     }
+}
+
+/// The commands a `run_command` or `batch` call carries, a batch's steps (at any depth) included.
+fn carried_commands(tool: &str, args: &Value) -> Vec<String> {
+    fn steps(commands: Option<&Value>, out: &mut Vec<String>) {
+        for c in commands.and_then(Value::as_array).into_iter().flatten() {
+            one(c.get("command"), c.get("params"), out);
+        }
+    }
+    fn one(command: Option<&Value>, params: Option<&Value>, out: &mut Vec<String>) {
+        let Some(id) = command.and_then(Value::as_str) else { return };
+        out.push(id.to_string());
+        if id == "command.batch" {
+            steps(params.and_then(|p| p.get("commands")), out);
+        }
+    }
+    let mut out = Vec::new();
+    match tool {
+        "run_command" => one(args.get("command"), args.get("params"), &mut out),
+        "batch" => steps(args.get("commands"), &mut out),
+        _ => {}
+    }
+    out
 }

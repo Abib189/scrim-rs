@@ -1,5 +1,6 @@
 //! The command registry. Each area module exposes `specs()`; [`all_commands`] collects them once.
 
+pub mod access;
 pub mod ai;
 pub mod analyze;
 pub mod appearance;

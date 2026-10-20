@@ -151,7 +151,12 @@ What an agent does over HTTP is what it does over `scrim mcp --attach`:
 - through `scrim mcp --attach`, which asks the app (`mcp.policy`) on every list and call;
 - through headless `scrim mcp`, which reads the app's saved settings when it starts.
 
-Access is per tool. `run_command` and `batch` reach every command, so turning those two off is what takes the commands away.
+`run_command` and `batch` are held to the same switches for every command they carry, nested batches included (`cmd/access.rs`):
+- a command that does what a tool does is refused while that tool is off (`node.create` is `create_node`, the `select.*` changes are `select`, `command.batch` is `batch`);
+- a command that only reads is refused while every read-only tool is off, and one that changes something while every tool that makes changes is off;
+- a command that isn't classified as reading or changing is refused (deny by default).
+
+The classification of every command is in `docs/design/command-access.md`.
 
 **Agents can narrow their access, never widen it.** An agent's call that would turn a tool back on, turn authentication off or change the root folder is refused; only the person makes those changes, in Settings.
 

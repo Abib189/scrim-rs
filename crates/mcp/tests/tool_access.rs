@@ -57,3 +57,45 @@ fn the_engines_tool_list_is_the_servers() {
     let titles: Vec<Value> = defs.iter().map(|d| d["annotations"]["title"].clone()).collect();
     assert_eq!(titles, TOOLS.iter().map(|t| json!(t.1)).collect::<Vec<_>>(), "and their titles");
 }
+
+fn call(server: &mut Server, id: u64, name: &str, arguments: Value) -> Value {
+    server.handle(json!({"jsonrpc": "2.0", "id": id, "method": "tools/call", "params": {"name": name, "arguments": arguments}})).unwrap_or_default()
+}
+
+fn refused(r: &Value) -> String {
+    r["error"]["message"].as_str().unwrap_or_default().to_string()
+}
+
+fn has_rectangle(server: &mut Server) -> bool {
+    call(server, 99, "inspect_document", json!({})).to_string().contains("Rectangle")
+}
+
+/// C1.3: a tool turned off can't be reached through run_command or batch either (headless).
+#[test]
+fn a_turned_off_tools_command_is_refused_through_run_command_and_batch() {
+    let mut server = server_with_off(&["create_node"]);
+    let create = json!({"command": "node.create", "params": {"type": "rectangle", "x": 0, "y": 0, "width": 10, "height": 10}});
+    let r = call(&mut server, 2, "run_command", create.clone());
+    assert!(refused(&r).contains("create_node"), "{r}");
+    let r = call(&mut server, 3, "batch", json!({"commands": [create.clone()]}));
+    assert!(refused(&r).contains("create_node"), "{r}");
+    // A batch inside run_command, and a batch inside a batch.
+    let nested = json!({"command": "command.batch", "params": {"commands": [create.clone()]}});
+    assert!(refused(&call(&mut server, 4, "run_command", nested.clone())).contains("create_node"));
+    assert!(refused(&call(&mut server, 5, "batch", json!({"commands": [nested]}))).contains("create_node"));
+    assert!(!has_rectangle(&mut server), "nothing was created");
+    // Another tool's command still runs.
+    let r = call(&mut server, 6, "run_command", json!({"command": "page.list"}));
+    assert!(r["error"].is_null(), "{r}");
+}
+
+/// C1.3: with every read-only tool off, run_command can't read either.
+#[test]
+fn a_turned_off_group_is_refused_through_run_command() {
+    let reads: Vec<&str> = TOOLS.iter().filter(|t| t.2).map(|t| t.0).collect();
+    let mut server = server_with_off(&reads);
+    let r = call(&mut server, 2, "run_command", json!({"command": "page.list"}));
+    assert!(refused(&r).contains("every read-only tool"), "{r}");
+    let r = call(&mut server, 3, "run_command", json!({"command": "view.zoomIn"}));
+    assert!(r["error"].is_null(), "a change still runs: {r}");
+}
