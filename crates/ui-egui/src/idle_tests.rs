@@ -267,6 +267,7 @@ fn control_requests_and_screenshots_wake_an_idle_ui() {
     // A request is answered in the next frame, which asks for one more to show its effect.
     let (tx, rx) = std::sync::mpsc::channel();
     h.app.control_queue.push(ControlRequest {
+        route: crate::control::ROUTE_CONTROL,
         id: json!(1),
         method: "ui.inspect".into(),
         params: json!({}),
@@ -279,7 +280,14 @@ fn control_requests_and_screenshots_wake_an_idle_ui() {
     // A screenshot keeps frames coming until the window delivers it, then the UI rests again.
     let path = std::env::temp_dir().join(format!("figcraft-idle-shot-{}.png", std::process::id()));
     let params = json!({"path": path.to_string_lossy()});
-    h.app.control_queue.push(ControlRequest { id: json!(2), method: "ui.screenshot".into(), params, reply: tx, cancelled: Default::default() });
+    h.app.control_queue.push(ControlRequest {
+        route: crate::control::ROUTE_CONTROL,
+        id: json!(2),
+        method: "ui.screenshot".into(),
+        params,
+        reply: tx,
+        cancelled: Default::default(),
+    });
     for _ in 0..5 {
         assert_eq!(h.frame(vec![]), Duration::ZERO, "waiting for the screenshot");
     }
@@ -360,6 +368,7 @@ fn a_hidden_window_answers_at_once() {
     h.settle();
     let (tx, rx) = std::sync::mpsc::channel();
     let request = |id: u64, method: &str, params: Value| ControlRequest {
+        route: crate::control::ROUTE_CONTROL,
         id: json!(id),
         method: method.into(),
         params,

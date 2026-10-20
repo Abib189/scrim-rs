@@ -39,7 +39,14 @@ pub struct ControlReply {
     pub result: Result<Value, String>,
 }
 
+/// The agent a request comes from (its author in the change feed and undo labels).
+pub const ROUTE_CONTROL: &str = "control channel";
+/// Requests from the app's MCP endpoint (`figcraft_mcp::http`).
+pub const ROUTE_MCP_HTTP: &str = "mcp (http)";
+
 pub struct ControlRequest {
+    /// Who sends it: [`ROUTE_CONTROL`] or [`ROUTE_MCP_HTTP`].
+    pub route: &'static str,
     pub id: Value,
     pub method: String,
     pub params: Value,
@@ -119,7 +126,7 @@ pub fn drain(app: &mut FigApp, ctx: &Context) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot(egui::UserData::default()));
             continue;
         }
-        let res = handle(app, ctx, &r.method, &r.params);
+        let res = handle_request(app, ctx, &r);
         let _ = r.reply.send(ControlReply { id: r.id, result: res });
         ctx.request_repaint();
     }
@@ -186,7 +193,7 @@ pub fn drain_hidden(app: &mut FigApp, ctx: &Context) {
         // ends in recovery copies and leaves every window its own state.
         let res = crate::windows::as_window(app, target, |app| {
             let mut res = Err("internal error".to_string());
-            crate::windows::guard(app, ctx, |app| res = handle(app, ctx, &r.method, &r.params));
+            crate::windows::guard(app, ctx, |app| res = handle_request(app, ctx, &r));
             res
         });
         let _ = r.reply.send(ControlReply { id: r.id, result: res.unwrap_or_else(|| Err(format!("no window {target}"))) });
@@ -237,7 +244,20 @@ fn b(p: &Value, k: &str) -> bool {
 /// locks bind it and its edits are logged as its own, and `since` (the revision it last read)
 /// guards its edits against changes made since by someone else.
 pub fn handle(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Result<Value, String> {
-    let author = app.session.set_author(figcraft_engine::agents::Author::agent("control channel"));
+    handle_route(app, ctx, ROUTE_CONTROL, method, p)
+}
+
+/// [`handle`] for a queued request: as its route's agent, and over the app's MCP endpoint with file
+/// access confined to the MCP root folder (Settings ▸ MCP), unless the app already runs confined
+/// to its automation roots, which then stay.
+fn handle_request(app: &mut FigApp, ctx: &Context, r: &ControlRequest) -> Result<Value, String> {
+    let roots = if r.route == ROUTE_MCP_HTTP && app.automation_roots.is_none() { app.session.agents.mcp.roots.clone() } else { None };
+    figcraft_engine::file_access::confined(roots.as_ref(), || handle_route(app, ctx, r.route, &r.method, &r.params))
+}
+
+/// [`handle`] as the agent `route`.
+pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, p: &Value) -> Result<Value, String> {
+    let author = app.session.set_author(figcraft_engine::agents::Author::agent(route));
     let since = app.session.set_since(p.get("since").and_then(Value::as_u64));
     let r = handle_method(app, ctx, method, p);
     app.session.set_author(author);
@@ -256,6 +276,8 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
             app.handle_ui_requests();
             r
         }
+        // The app's MCP endpoint saw a client initialize (`figcraft_mcp::http`).
+        "mcp.client" => crate::mcp_ui::client_seen(app, p),
         "engine.commands" => Ok(Value::Array(
             figcraft_engine::all_commands()
                 .iter()

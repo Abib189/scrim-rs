@@ -106,6 +106,28 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
 | Minimal Poster Series | 1 / 5 | none | Yes |
 | Night Bloom Poster | 1 / 1 | none | Yes |
 
+## C1 as built
+
+- **`crates/mcp/src/http.rs`:** the endpoint.
+  - HTTP/1.1 framing (`Content-Length` only, keep-alive, 64 KiB of headers, 32 MiB bodies, idle timeouts);
+  - the Host, Origin and bearer checks, before the body is read;
+  - `POST /mcp` with JSON replies, `202` for notifications, `405` for `GET` / `DELETE`;
+  - one thread owning the `Server`, at most 16 connections;
+  - `Endpoint::start` tries the port, then the next 19;
+  - `stop` joins its accept thread, so a restart gets the same port back.
+- **`apps/figcraft/src/mcp_endpoint.rs`:** the in-app backend. Every MCP tool call is a control request on the same queue as `--control`, with `route: "mcp (http)"`, so the author is `agent (mcp (http))`.
+  - An `initialize` reports its `clientInfo` to the UI through the `mcp.client` control method; the status shows Connected for 10 minutes after.
+  - `Desktop` owns the handle; `Services::mcp_restart` and `mcp_configure` reach it. The `Services` trait moved out of ui-egui's frozen `lib.rs` into `services.rs` (1,730 → 1,675 lines).
+- **File confinement:** HTTP requests run inside `file_access::confined` with the root folder (your home folder by default). An app started with `--automation-*-root` keeps those roots instead, so access is never widened.
+- **The root folder** is a second default the brief left open: "Use default" means your home folder, not the whole disk.
+- **The commands:** `mcp.status`, `mcp.connect-claude-code`, `mcp.copy-command`, `mcp.restart-server`, `mcp.toggle-auth`, `mcp.set-root-dir`, all in `crates/engine/src/cmd/mcp.rs`, with Spanish labels.
+- **The token:** 64 hex digits from std's randomly keyed hasher, which is seeded from the OS. No new dependency.
+- **Tests:**
+  - `crates/mcp/tests/http.rs` (round trip, keep-alive; refused: five foreign Hosts, four Origins and a missing Host; token; 405, 404, 413 and 411; port fallback; same port after a restart; client report);
+  - `apps/figcraft/src/mcp_endpoint_tests.rs` (route, client report; a refused request never reaches the UI; a token applies at once);
+  - `crates/engine/src/cmd/mcp_tests.rs`;
+  - `crates/mcp/tests/connect_docs.rs` (the HTTP command is the one `docs/mcp.md` and the README show).
+
 ## Order of the commits
 
 1. **C0:** this plan.

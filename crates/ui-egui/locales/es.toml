@@ -1785,6 +1785,12 @@ status = "draft — needs native review"
 "⌥ drag" = "⌥ arrastrar"
 
 [commands]
+"mcp.connect-claude-code" = "Conectar Claude Code"
+"mcp.copy-command" = "Copiar el comando de conexión de Claude Code"
+"mcp.restart-server" = "Reiniciar el servidor MCP"
+"mcp.set-root-dir" = "Carpeta para las herramientas de archivos de MCP"
+"mcp.status" = "Estado del servidor MCP"
+"mcp.toggle-auth" = "Exigir autenticación para MCP"
 "fonts.copyMissingNames" = "Copiar los nombres de las fuentes que faltan"
 "fonts.muteMissing" = "No volver a mostrar las fuentes que faltan para este archivo"
 "pref.accent" = "Color de acento"

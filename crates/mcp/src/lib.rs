@@ -15,6 +15,7 @@
 
 mod backend;
 mod headless;
+pub mod http;
 mod prompts;
 mod resources;
 mod server;

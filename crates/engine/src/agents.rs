@@ -47,6 +47,49 @@ impl Author {
     }
 }
 
+/// The app's MCP endpoint (`docs/design/settings-and-connect.md`, C1), as the app reports it.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct McpEndpoint {
+    /// The port it listens on; `None`: stopped (or headless, where there is none).
+    pub port: Option<u16>,
+    /// Why it isn't running, when it failed to start.
+    pub error: Option<String>,
+    /// MCP clients that initialized over it: (name, version, unix seconds), newest last.
+    pub clients: Vec<(String, String, u64)>,
+    /// The folders its requests' file access is confined to (Settings ▸ MCP ▸ root folder).
+    pub roots: Option<std::sync::Arc<crate::file_access::Roots>>,
+}
+
+/// How long after a client's last `initialize` the AI tab still calls it connected.
+pub const CONNECTED_FOR_SECS: u64 = 10 * 60;
+
+impl McpEndpoint {
+    /// The URL a client connects to.
+    pub fn url(&self) -> Option<String> {
+        self.port.map(|p| format!("http://127.0.0.1:{p}/mcp"))
+    }
+}
+
+/// The arguments of `claude` that add the app's HTTP endpoint to Claude Code, for every project
+/// (`--scope user`: run from the app, the default local scope would belong to the app's working
+/// directory). The header follows the name and URL (`--header` takes several values).
+pub fn claude_add_args(port: u16, token: Option<&str>) -> Vec<String> {
+    let mut v: Vec<String> = ["mcp", "add", "--transport", "http", "--scope", "user", "scrim"].iter().map(|s| s.to_string()).collect();
+    v.push(format!("http://127.0.0.1:{port}/mcp"));
+    if let Some(t) = token {
+        v.push("--header".into());
+        v.push(format!("Authorization: Bearer {t}"));
+    }
+    v
+}
+
+/// [`claude_add_args`] as one line to show or copy (`claude ...`, the header quoted).
+pub fn claude_add_command(port: u16, token: Option<&str>) -> String {
+    let args = claude_add_args(port, token);
+    let quoted: Vec<String> = args.iter().map(|a| if a.contains(' ') { format!("\"{a}\"") } else { a.clone() }).collect();
+    format!("claude {}", quoted.join(" "))
+}
+
 /// One logged edit.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Change {
@@ -70,6 +113,8 @@ pub struct Agents {
     /// The app's control channel port when it listens (`--control`): agents attach through it
     /// (`ai.status`). `None`: headless, or the app runs without it.
     pub control_port: Option<u16>,
+    /// The app's MCP endpoint, as the app reports it (`mcp.status`).
+    pub mcp: McpEndpoint,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 

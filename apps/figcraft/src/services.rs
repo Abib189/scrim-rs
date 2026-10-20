@@ -20,6 +20,8 @@ pub struct Desktop {
     language: Option<String>,
     /// Recovery copies of unsaved files (written at once after a panic).
     recovery: crate::recovery::Shared,
+    /// The app's MCP endpoint (set at startup, once the control queue exists).
+    pub mcp: Option<crate::mcp_endpoint::McpHandle>,
 }
 
 /// Where the settings live: `Scrim` under [`base_dir`] (FigCraft's are copied there once,
@@ -61,7 +63,7 @@ impl Desktop {
         let reduce_motion = Arc::new(AtomicBool::new(false));
         let flag = reduce_motion.clone();
         std::thread::spawn(move || flag.store(system_reduce_motion(), Ordering::Relaxed));
-        Self { clipboard: arboard::Clipboard::new().ok(), dir, prefs, reduce_motion, language: system_language(), recovery }
+        Self { clipboard: arboard::Clipboard::new().ok(), dir, prefs, reduce_motion, language: system_language(), recovery, mcp: None }
     }
 }
 
@@ -270,6 +272,14 @@ fn save_filters<'a>(exts: &'a [&'a str]) -> Vec<(&'static str, &'a [&'a str])> {
 }
 
 impl Services for Desktop {
+    fn mcp_restart(&mut self, settings: &figcraft_engine::settings::McpSettings) -> Result<u16, String> {
+        self.mcp.as_mut().ok_or_else(|| "the MCP endpoint isn't set up".to_string())?.restart(settings)
+    }
+    fn mcp_configure(&mut self, settings: &figcraft_engine::settings::McpSettings) {
+        if let Some(m) = self.mcp.as_mut() {
+            m.configure(settings);
+        }
+    }
     fn pick_open(&mut self, title: &str, exts: &[&str]) -> DialogFuture {
         picked(dialog(title).add_filter("Supported files", exts).pick_file())
     }

@@ -29,7 +29,14 @@ fn reply(reader: &mut BufReader<TcpStream>) -> Value {
 }
 
 fn request() -> ControlRequest {
-    ControlRequest { id: json!(0), method: "ui.inspect".into(), params: json!({}), reply: mpsc::channel().0, cancelled: Default::default() }
+    ControlRequest {
+        route: figcraft_ui_egui::control::ROUTE_CONTROL,
+        id: json!(0),
+        method: "ui.inspect".into(),
+        params: json!({}),
+        reply: mpsc::channel().0,
+        cancelled: Default::default(),
+    }
 }
 
 #[test]

@@ -99,7 +99,7 @@ built-in fonts. Attached, the app's own fonts apply. The browser build has no sy
 
 ## Configure a client
 
-The CLI is **`scrim`** (it was `scrim`, which still works as an alias that prints a one-line
+The CLI is **`scrim`** (it was `figcraft-cli`, which still works as an alias that prints a one-line
 note and runs `scrim`). Put it on your `PATH`, or use its absolute path. From source:
 `cargo build --release -p figcraft-cli` builds `target/release/scrim`.
 
@@ -108,9 +108,53 @@ The Linux AppImage bundles the CLI: `Scrim.AppImage cli <args>` runs `scrim <arg
 
 The server announces itself as `scrim` (MCP `serverInfo`). Tool names and parameters are unchanged.
 
-### Claude Code
+### The running app, over HTTP (recommended)
 
-The same commands the app's AI tab offers to copy:
+The desktop app serves MCP itself, over streamable HTTP on **127.0.0.1** only, from the moment it
+starts:
+- **Address:** `http://127.0.0.1:<port>/mcp`. The port is **7600**, or the next free one when 7600 is
+  taken (the app keeps the port it got). Settings ▸ MCP shows the address.
+- **Connecting Claude Code:** one command, which the AI tab's **Connect Claude Code** runs for you
+  after one confirmation:
+
+```sh
+claude mcp add --transport http --scope user scrim http://127.0.0.1:7600/mcp
+```
+
+  `--scope user` makes it available in every project. Without it, Claude Code would add it only for
+  the directory the command runs in.
+
+What an agent does over HTTP is what it does over `scrim mcp --attach`:
+- the same tools and command registry;
+- locks bind it, and the stale-write guard applies;
+- its edits show as "Agent: …" in Edit ▸ Undo and in the AI tab's feed, with the author `agent (mcp (http))`.
+
+**Its file tools** (`open_file`, `save_file`, `export` with a path) may use files only inside the root folder in Settings ▸ MCP, your home folder by default.
+
+**Security:**
+- **Loopback only:** the endpoint binds 127.0.0.1.
+- **Host:** a request whose `Host` isn't `127.0.0.1`, `localhost` or `[::1]` with its port is refused (`403`). This defeats DNS rebinding.
+- **Origin:** a request carrying a web page's `Origin` is refused too (`403`). This defeats a page posting to it.
+- **Token:** turning on **Require authentication** in Settings ▸ MCP (`mcp.toggle-auth`) makes a random token. Requests then need `Authorization: Bearer <token>`, and the connect command carries it:
+
+  ```sh
+  claude mcp add --transport http --scope user scrim http://127.0.0.1:7600/mcp --header "Authorization: Bearer <token>"
+  ```
+- **Framing:** bodies must use `Content-Length` (no chunked encoding) and stay under 32 MiB.
+
+**Commands** (all are MCP routes too, through `run_command`):
+- `mcp.status`
+- `mcp.connect-claude-code`
+- `mcp.copy-command`
+- `mcp.restart-server`
+- `mcp.toggle-auth {on?}`
+- `mcp.set-root-dir {path?}`
+
+### Claude Code, through the `scrim` CLI
+
+`scrim mcp` (stdio) keeps working, headless or attached to an app started with `--control`. It is the
+fallback when the app isn't running, or for clients that only speak stdio. The same commands the app
+offered before the HTTP endpoint:
 
 ```sh
 # headless

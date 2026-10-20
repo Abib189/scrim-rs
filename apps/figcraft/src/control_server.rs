@@ -98,7 +98,14 @@ fn serve(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> s
                     writeln!(out, "{}", json!({"id": id, "ok": false, "error": "control request queue is full"}))?;
                     continue;
                 }
-                pending.push(ControlRequest { id: id.clone(), method, params, reply: tx, cancelled: cancelled.clone() });
+                pending.push(ControlRequest {
+                    route: figcraft_ui_egui::control::ROUTE_CONTROL,
+                    id: id.clone(),
+                    method,
+                    params,
+                    reply: tx,
+                    cancelled: cancelled.clone(),
+                });
                 drop(pending);
                 if let Some(c) = ctx.lock().unwrap_or_else(std::sync::PoisonError::into_inner).as_ref() {
                     c.request_repaint();

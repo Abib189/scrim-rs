@@ -41,6 +41,9 @@ inspect_document / get_node return the layer tree as JSON (check sizes, fills, l
 screenshot returns a PNG of the page or of given layers to look at. undo/redo step through history. \
 Resources: figcraft://document, figcraft://node/{id}, figcraft://command/{id}. prompts/list has workflows.";
 
+/// What [`Server::with_initialize_hook`] calls.
+type InitializeHook = Box<dyn FnMut(&Value)>;
+
 /// An MCP server bound to one backend.
 pub struct Server {
     backend: Box<dyn Backend>,
@@ -48,6 +51,8 @@ pub struct Server {
     /// The automation roots every request's file access is confined to (`--automation-read-root`,
     /// `--automation-write-root`), if any.
     roots: Option<Arc<Roots>>,
+    /// Called with `clientInfo` when a client initializes (the app shows who is connected).
+    on_initialize: Option<InitializeHook>,
 }
 
 fn response(id: Value, result: Value) -> Value {
@@ -64,13 +69,19 @@ fn panic_message(payload: &(dyn std::any::Any + Send)) -> String {
 
 impl Server {
     pub fn new(backend: Box<dyn Backend>) -> Self {
-        Self { backend, initialized: false, roots: None }
+        Self { backend, initialized: false, roots: None, on_initialize: None }
     }
 
     /// Confine the files every request reads and writes to `roots` (see
     /// [`figcraft_engine::file_access`]).
     pub fn with_roots(mut self, roots: Option<Roots>) -> Self {
         self.roots = roots.map(Arc::new);
+        self
+    }
+
+    /// Call `f` with the client's `clientInfo` each time one initializes.
+    pub fn with_initialize_hook(mut self, f: impl FnMut(&Value) + 'static) -> Self {
+        self.on_initialize = Some(Box::new(f));
         self
     }
 
@@ -191,6 +202,9 @@ impl Server {
     fn request(&mut self, method: &str, params: &Value) -> Result<Value, (i64, String)> {
         match method {
             "initialize" => {
+                if let Some(f) = self.on_initialize.as_mut() {
+                    f(params.get("clientInfo").unwrap_or(&Value::Null));
+                }
                 let asked = params.get("protocolVersion").and_then(Value::as_str).unwrap_or(PROTOCOL_VERSION);
                 let version = if SUPPORTED_VERSIONS.contains(&asked) { asked } else { PROTOCOL_VERSION };
                 Ok(json!({

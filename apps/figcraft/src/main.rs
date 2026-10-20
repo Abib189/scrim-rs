@@ -23,6 +23,7 @@ mod gamepad;
 mod graphics;
 #[cfg(target_os = "linux")]
 mod linux_window;
+mod mcp_endpoint;
 mod migrate;
 mod recovery;
 mod services;
@@ -186,7 +187,10 @@ fn main() -> eframe::Result {
     let recovery_root = services::config_dir().map(|d| d.join("Recovery"));
     // The preferences first: they hold the online files a recovered document may be one of.
     let recovery = recovery::Shared::default();
-    let svc = services::Desktop::load(recovery.clone());
+    let mut svc = services::Desktop::load(recovery.clone());
+    // The control queue: the control channel (`--control`) and the MCP endpoint both feed it.
+    let queue: Arc<Mutex<Vec<ControlRequest>>> = Arc::new(Mutex::new(Vec::new()));
+    svc.mcp = Some(mcp_endpoint::McpHandle::new(queue.clone(), ctx_slot.clone()));
     if let Some(prefs) = svc.prefs.clone() {
         session.prefs = prefs;
     }
@@ -214,6 +218,8 @@ fn main() -> eframe::Result {
     figcraft_ui_egui::i18n::set(&session.prefs.language, figcraft_ui_egui::Services::system_language(&svc).as_deref());
     let mut fig = FigApp::new(session, Box::new(svc));
     fig.automation_roots = roots;
+    // MCP over HTTP on 127.0.0.1 (Settings ▸ MCP): Claude Code connects with one URL.
+    figcraft_ui_egui::mcp_ui::restart(&mut fig);
     fig.ui.home = false;
     // Files named on the command line are the user's too: their missing fonts are listed.
     fig.ui.font_checks = opened;
@@ -221,7 +227,6 @@ fn main() -> eframe::Result {
     if let Some(link) = &args.join {
         figcraft_ui_egui::live::open_invite(&mut fig, link);
     }
-    let queue: Arc<Mutex<Vec<ControlRequest>>> = Arc::new(Mutex::new(Vec::new()));
     if let Some(p) = port
         && control_server::start(p, queue.clone(), ctx_slot.clone())
     {

@@ -39,6 +39,7 @@ pub mod layout_panel;
 pub mod list_drag;
 pub mod live;
 pub mod live_text;
+pub mod mcp_ui;
 pub mod measure_overlay;
 pub mod menus;
 pub mod missing_fonts;
@@ -56,6 +57,7 @@ pub mod scale_panel;
 pub mod section_panel;
 pub mod selection_colors;
 mod selection_spacing;
+pub mod services;
 pub mod shortcuts;
 pub mod shortcuts_panel;
 pub mod style_picker;
@@ -233,63 +235,7 @@ use serde_json::{Value, json};
 
 pub use control::{ControlReply, ControlRequest};
 
-/// Platform services the app crate provides (file dialogs, clipboard, URLs).
-pub trait Services {
-    fn pick_open(&mut self, _title: &str, _exts: &[&str]) -> DialogFuture {
-        Box::pin(std::future::ready(None))
-    }
-    fn pick_save(&mut self, _title: &str, _name: &str, _exts: &[&str]) -> DialogFuture {
-        Box::pin(std::future::ready(None))
-    }
-    /// The platform saves files by handing them over as downloads (the browser), not through
-    /// save dialogs.
-    fn downloads(&self) -> bool {
-        false
-    }
-    /// Hand `bytes` over as a download named `name`; false when nothing was delivered.
-    fn download(&mut self, _name: &str, _bytes: &[u8]) -> bool {
-        false
-    }
-    /// A folder to write several files into.
-    fn pick_folder(&mut self, _title: &str) -> DialogFuture {
-        Box::pin(std::future::ready(None))
-    }
-    fn clipboard_set_text(&mut self, _s: &str) {}
-    fn clipboard_get_text(&mut self) -> Option<String> {
-        None
-    }
-    fn clipboard_get_html(&mut self) -> Option<String> {
-        None
-    }
-    fn clipboard_set_png(&mut self, _w: u32, _h: u32, _rgba: &[u8]) {}
-    /// An image on the system clipboard as (width, height, straight RGBA).
-    fn clipboard_get_image(&mut self) -> Option<(u32, u32, Vec<u8>)> {
-        None
-    }
-    fn open_url(&mut self, _url: &str) {}
-    /// Show the file at `path` in the platform's file manager (Finder, Explorer), selected where the
-    /// platform can.
-    fn reveal_path(&mut self, _path: &std::path::Path) {}
-    /// The system asks for reduced motion (its accessibility setting).
-    fn reduce_motion(&self) -> bool {
-        false
-    }
-    /// After a panic in a frame: keep recovery copies of unsaved files.
-    fn emergency_save(&mut self, _session: &Session) {}
-    /// Keep the preferences now (the installed plugins or their settings changed), as the app
-    /// does when it quits.
-    fn save_prefs(&mut self, _prefs: &figcraft_engine::Prefs) {}
-    /// The OS or browser language as a tag ("es-ES"), for the "system" language preference.
-    fn system_language(&self) -> Option<String> {
-        None
-    }
-    /// The controller buttons held now on any controller: bit i is standard gamepad layout index i
-    /// (0 the bottom face button … 16 home; `figcraft_doc::proto::GAMEPAD_BUTTONS`). The prototype
-    /// player asks every frame while its prototype has gamepad triggers.
-    fn gamepad_held(&mut self) -> u32 {
-        0
-    }
-}
+pub use services::{ProgramOutput, Services};
 
 pub type DialogFuture = Pin<Box<dyn Future<Output = Option<PathBuf>>>>;
 type DialogDone = Box<dyn FnOnce(&mut FigApp, PathBuf)>;
