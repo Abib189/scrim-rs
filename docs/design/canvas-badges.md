@@ -193,3 +193,13 @@ It had no sections, no component labels and no handoff status. Labels were 10 px
   - Before, the light theme's #44474C titles on Ridgeline's dark page were 1.79:1.
 - **The "Components" pill** became a quiet title above the section in E1. It is an always-on section name, not a hover or selection label. Here it gets the top priority, so a child label at the section's corner (Landscape) moves along past it, or hides when its frame has no room left.
 - **Hit testing is unchanged:** the label areas still go to `ToolState::labels`, at the labels' new places. A press on any label selects and drags its frame (tested on every Ridgeline label at 22%).
+
+## E3 results
+
+Captures, the method and every number: `docs/scrim-ports/canvas-badges/README.md`.
+
+- **Captures:** 18 views before and after: Ridgeline in dark and light at 10, 22, 50 and 100%; every state at once; a very long title. All real window captures, text visible.
+- **Pixel diff:** 0 px change outside the label regions in all 18, and 0 in the panels.
+- **Geometry:** no two published label areas overlap, on Ridgeline at the four zooms, a 40-step zoom sweep, and the scenario (long, right-to-left, narrow, every state). Each stays within its frame's width just above it.
+- **Contrast:** titles 4.59:1 or more, icons 4.47:1 or more, on both canvases, both default pages and a white section.
+- **Round trip:** the status round-trips through MCP, undo/redo and save/open. The file format is unchanged; no doc, format, engine or MCP code changed.

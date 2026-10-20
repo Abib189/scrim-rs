@@ -17,3 +17,5 @@ The investigation and the plan: `docs/design/canvas-badges.md`.
 | Pressing a label, wherever the layout put it, selects (and drags) its frame | Press each label | `pressing_a_moved_label_still_selects_its_frame` |
 | Label text reads at 4.5:1 on the page behind it, in both themes, on light and dark pages | Light theme on Ridgeline's dark page | `label_text_reads_on_both_canvases_and_both_default_pages` |
 | A label inside a filled section takes the ink that reads on the section's fill, not the page's | Ridgeline's Components section in both themes | `labels_inside_a_section_read_on_its_fill_not_the_page` |
+| A frame's status round-trips unchanged through MCP, undo/redo and save/open (Changed kept); files saved before Stage E open with their status | Mark, edit inside, undo, redo, save, reopen | `crates/mcp/tests/dev_status.rs` › `the_status_round_trips_through_mcp_undo_redo_and_the_file`, `the_example_saved_before_stage_e_opens_with_its_status` |
+| Live in the built app: before/after captures in both themes at 10–100%, 0 px changed outside the label regions | `docs/scrim-ports/canvas-badges/README.md` | E3 captures (manual) |
