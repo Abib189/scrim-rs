@@ -77,7 +77,7 @@ There is **no HTTP server** in the workspace (no hyper, axum or tiny_http). The 
    - **Language** stays reachable: the existing language row moves into General. The brief skips a Language *section*, not the setting, and removing it would take away a working preference.
 9. **Persistence:**
    - **Where:** all Settings live in `Prefs`, saved to `design.scrim.app/state.json`.
-   - **A version:** `state.json` gains `"version": 1`. A missing or invalid key falls back to its default (serde `default`, plus per-field checks on load); an unknown later version is read as far as it goes, never refused.
+   - **A version:** `state.json` gains `"settings_version": 1` (built in C3d; the preferences' keys are snake_case). A missing or invalid key falls back to its default (serde `default`, plus per-field checks on load); an unknown later version is read as far as it goes, never refused.
    - **Commands:** every change is a registry command, so it has an MCP route too.
 10. **The `.figcraft` extension:**
     - **Allowed:** the rebrand test matches "FigCraft" case-sensitively, so the lowercase extension (and the Open file card's "Open .figcraft, .svg or images") passes.
@@ -203,6 +203,27 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
     - A backend that can't answer turns nothing off.
   - **Per tool, not per command:** `run_command` and `batch` reach every command. Settings says so: turning those two off is what takes the commands away.
 - **Agents can't widen their own access (a fix to C1):** before, an agent could call `mcp.toggle-auth {on: false}` or `mcp.set-root-dir` through `run_command`. Now an agent's call that turns a tool back on, turns authentication off or changes the root folder is refused (`person_only`). Narrowing is still allowed.
+
+## C3d as built: Privacy and Diagnostics
+
+- **Privacy (`settings_privacy::privacy`):** a statement, no switches.
+  - Scrim sends no telemetry and has no usage statistics, crash reports or analytics.
+  - It goes on the network only when asked: sharing or joining online, publishing, team libraries or plugins on a chosen server, and showing a file on the local network. (Checked against the code: the only network code is `collab-net` and the loopback MCP endpoint.)
+  - The MCP server is loopback only; diagnostics stay on the computer.
+  - No ping or usage-stats code was added.
+- **Diagnostics (`settings::diagnostics`, `cmd/diagnostics.rs`, `settings_privacy::show`):**
+  - **The events,** kept in the preferences, made only from a typed `Entry`, so nothing free-form gets in:
+    - `reload`: a file reverted to its saved copy (File ▸ Revert);
+    - `fontFallback`: the families a file opened without (family names only, at most 30);
+    - `mcpServer`: started on its port, or couldn't start;
+    - `mcpClient`: a client's name and version as it gave them;
+    - `error`: a failed command's id (only a registered id) and its category, never the message.
+  - **Not recorded, because the fork has nothing to record:** "font retry" (there is no retry action; fonts are bundled or installed, never fetched) and MCP disconnects (HTTP clients never say they leave).
+  - **The section:** Keep for (Don't keep / 1 / 7 / 30 days; a week by default; at most 1000 events), Copy, Save… and Clear; the list newest first.
+  - **The commands:** `diagnostics.events`, `diagnostics.copy`, `diagnostics.save {path?}`, `diagnostics.clear` (the person's alone) and `diagnostics.retention`.
+  - **The test the brief asks for:** `no_secrets_reach_the_events` drives every kind of event with a token, document text, a path and a prompt on hand, including in error messages, then scans what is kept for them and for any long hex run.
+- **Also fixed:** `Settings::sanitized` now runs when the app loads its preferences. Before, it ran only for `scrim mcp`, so an out-of-range value (a port under 1024, an unknown animation mode) was used as written.
+- **Skipped, without placeholder pages:** Usage, Media, Cloud storage and a Language section. They are later work; Language stays reachable in General.
 
 ## Order of the commits
 

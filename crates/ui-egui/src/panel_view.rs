@@ -85,7 +85,8 @@ pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
             return crate::code_tab::request(app, kind, data)
                 || crate::dialogs::appearance_prefs::request(app, kind, data)
                 || crate::mcp_ui::request(app, kind, data)
-                || crate::settings_dialog::request(app, kind, data);
+                || crate::settings_dialog::request(app, kind, data)
+                || crate::settings_privacy::request(app, kind, data);
         }
     }
     true

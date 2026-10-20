@@ -16,6 +16,7 @@ pub fn restart(app: &mut FigApp) {
     let settings = app.session.prefs.settings.mcp.clone();
     match app.services.mcp_restart(&settings) {
         Ok(port) => {
+            crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpStarted(port));
             app.session.agents.mcp.port = Some(port);
             app.session.agents.mcp.error = None;
             if settings.port != port {
@@ -24,6 +25,7 @@ pub fn restart(app: &mut FigApp) {
             }
         }
         Err(e) => {
+            crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpFailed);
             app.session.agents.mcp.port = None;
             app.session.agents.mcp.error = Some(e);
         }
@@ -58,6 +60,7 @@ pub fn client_seen(app: &mut FigApp, p: &Value) -> Result<Value, String> {
     let name = p.get("name").and_then(Value::as_str).unwrap_or("an MCP client").chars().take(80).collect::<String>();
     let version = p.get("version").and_then(Value::as_str).unwrap_or("").chars().take(40).collect::<String>();
     let now = p.get("now").and_then(Value::as_u64).unwrap_or(0);
+    crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpClient { name: &name, version: &version });
     let clients = &mut app.session.agents.mcp.clients;
     clients.push((name, version, now));
     let excess = clients.len().saturating_sub(20);

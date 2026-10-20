@@ -1,0 +1,143 @@
+//! Diagnostics: what each entry says, retention, and the scan the brief asks for: no prompts,
+//! document content, paths or tokens ever reach an event.
+
+use serde_json::json;
+
+use super::{Entry, MAX_EVENTS, record, text, timestamp};
+use crate::agents::Author;
+use crate::{EngineError, Session};
+
+const NOW: u64 = 1_792_500_000;
+
+#[test]
+fn entries_say_only_their_allow_listed_facts() {
+    let mut s = Session::new();
+    let st = &mut s.prefs.settings;
+    record(st, NOW, Entry::Reload);
+    record(st, NOW, Entry::FontFallback(&["Inter".into(), "Bad\u{7}Font".into()]));
+    record(st, NOW, Entry::McpStarted(7601));
+    record(st, NOW, Entry::McpClient { name: "claude-code", version: "2.1.296" });
+    record(st, NOW, Entry::Error { command: "text.set", error: &EngineError::Other("the text was \"hello\"".into()) });
+    record(st, NOW, Entry::Error { command: "not a command at all", error: &EngineError::NoDocument });
+    record(st, NOW, Entry::Error { command: "file.open", error: &EngineError::Waiting });
+    let lines: Vec<(&str, &str)> = st.diagnostics.iter().map(|e| (e.kind.as_str(), e.detail.as_str())).collect();
+    assert_eq!(
+        lines,
+        [
+            ("reload", "a file was reverted to its saved copy"),
+            ("fontFallback", "fonts not on this computer, a fallback used: Inter, BadFont"),
+            ("mcpServer", "started on 127.0.0.1:7601"),
+            ("mcpClient", "claude-code 2.1.296 connected"),
+            ("error", "text.set: failed"),
+            ("error", "a command: no open document"),
+        ],
+        "Waiting isn't an error"
+    );
+    assert_eq!(timestamp(NOW), "2026-10-20 12:40:00 UTC");
+    assert!(text(&st.diagnostics).starts_with("2026-10-20 12:40:00 UTC  reload  "));
+}
+
+#[test]
+fn retention_drops_old_events_and_zero_keeps_none() {
+    let mut s = Session::new();
+    assert_eq!(s.prefs.settings.diagnostics_days, 7, "a week by default");
+    record(&mut s.prefs.settings, NOW - 8 * 86_400, Entry::Reload);
+    record(&mut s.prefs.settings, NOW - 86_400, Entry::McpFailed);
+    record(&mut s.prefs.settings, NOW, Entry::Reload);
+    assert_eq!(s.prefs.settings.diagnostics.len(), 2, "eight days old: gone");
+    s.execute("diagnostics.retention", &json!({"days": 1, "now": NOW})).unwrap();
+    assert_eq!(s.prefs.settings.diagnostics.len(), 2, "one day old is still kept");
+    s.execute("diagnostics.retention", &json!({"days": 0})).unwrap();
+    assert!(s.prefs.settings.diagnostics.is_empty());
+    record(&mut s.prefs.settings, NOW, Entry::Reload);
+    assert!(s.prefs.settings.diagnostics.is_empty(), "0 keeps nothing");
+    assert!(s.execute("diagnostics.retention", &json!({"days": 365})).is_err());
+    s.execute("diagnostics.retention", &json!({"days": 30})).unwrap();
+    for i in 0..MAX_EVENTS + 5 {
+        record(&mut s.prefs.settings, NOW + i as u64, Entry::Reload);
+    }
+    assert_eq!(s.prefs.settings.diagnostics.len(), MAX_EVENTS);
+    // Kept in the preferences, and a bad value read back falls back.
+    let back: crate::Prefs = serde_json::from_value(serde_json::to_value(&s.prefs).unwrap()).unwrap();
+    assert_eq!(back.settings.diagnostics.len(), MAX_EVENTS);
+    let odd: crate::Prefs = serde_json::from_value(json!({"diagnostics_days": 12})).unwrap();
+    assert_eq!(odd.settings.diagnostics_days, 12, "read as written");
+    assert_eq!(odd.settings.sanitized().diagnostics_days, 7, "then put back in range");
+}
+
+#[test]
+fn the_commands_list_copy_save_and_clear_and_only_the_person_clears() {
+    let mut s = Session::new();
+    record(&mut s.prefs.settings, NOW, Entry::McpStarted(7600));
+    record(&mut s.prefs.settings, NOW + 1, Entry::Reload);
+    let st = s.execute("diagnostics.events", &json!({})).unwrap();
+    assert_eq!(st["events"][0]["kind"], "reload", "newest first");
+    s.ui_requests.clear();
+    assert_eq!(s.execute("diagnostics.copy", &json!({})).unwrap()["lines"], 2);
+    assert!(s.ui_requests[0].data["text"].as_str().unwrap().contains("started on 127.0.0.1:7600"));
+    s.ui_requests.clear();
+    assert_eq!(s.execute("diagnostics.save", &json!({})).unwrap()["asked"], true);
+    assert_eq!(s.ui_requests[0].kind, crate::cmd::diagnostics::SAVE_DIALOG);
+    let path = std::env::temp_dir().join(format!("scrim-diagnostics-{}.txt", std::process::id()));
+    s.execute("diagnostics.save", &json!({"path": path.to_string_lossy()})).unwrap();
+    assert_eq!(std::fs::read_to_string(&path).unwrap().lines().count(), 2);
+    let _ = std::fs::remove_file(&path);
+    s.set_author(Author::agent("mcp"));
+    assert!(s.execute("diagnostics.clear", &json!({})).unwrap_err().to_string().contains("an agent can't"));
+    s.set_author(Author::Person);
+    assert_eq!(s.execute("diagnostics.clear", &json!({})).unwrap()["cleared"], 2);
+}
+
+/// The brief: "No prompts, document content or tokens in events". Drive every kind of event with
+/// secrets on hand (a token, document text, a path, a prompt passed as a parameter, an error
+/// message quoting them) and scan what is kept.
+#[test]
+fn no_secrets_reach_the_events() {
+    const DOC: &str = "SECRET-DOC-CONTENT-4417";
+    const PROMPT: &str = "SECRET-PROMPT-make-it-pop";
+    const PATH: &str = "/Users/someone/Private/SECRET-PATH.fig";
+    let mut s = Session::new();
+    s.execute("mcp.toggle-auth", &json!({"on": true})).unwrap();
+    let token = s.prefs.settings.mcp.token.clone();
+    assert!(token.len() >= 32);
+    let t = s.execute("shape.text", &json!({"x": 0, "y": 0, "text": DOC})).ok();
+    // Commands failing with the secrets in their parameters and messages.
+    let failures = [
+        ("text.set", json!({"ids": [999_999], "text": DOC})),
+        ("file.open", json!({"path": PATH})),
+        ("ai.unknown", json!({"prompt": PROMPT})),
+        ("mcp.set-root-dir", json!({"path": format!("relative/{token}")})),
+    ];
+    for (cmd, p) in failures {
+        if let Err(e) = s.execute(cmd, &p) {
+            let msg = e.to_string();
+            record(&mut s.prefs.settings, NOW, Entry::Error { command: cmd, error: &e });
+            let _ = msg;
+        }
+    }
+    // An error whose message quotes everything at once.
+    let loud = EngineError::Other(format!("{DOC} {PROMPT} {PATH} {token}"));
+    record(&mut s.prefs.settings, NOW, Entry::Error { command: PROMPT, error: &loud });
+    record(&mut s.prefs.settings, NOW, Entry::Reload);
+    record(&mut s.prefs.settings, NOW, Entry::McpClient { name: "claude-code", version: "2.1" });
+    record(&mut s.prefs.settings, NOW, Entry::FontFallback(&["Inter".into(), "Geist".into()]));
+    let kept = serde_json::to_string(&s.prefs.settings.diagnostics).unwrap() + &text(&s.prefs.settings.diagnostics);
+    assert!(s.prefs.settings.diagnostics.len() >= 6, "{kept}");
+    for secret in [DOC, PROMPT, PATH, "SECRET", "/Users/", token.as_str()] {
+        assert!(!kept.contains(secret), "{secret:?} reached the events: {kept}");
+    }
+    // Nothing that looks like a token (a long run of hex digits) either.
+    let longest_hex = kept.split(|c: char| !c.is_ascii_hexdigit()).map(str::len).max().unwrap_or(0);
+    assert!(longest_hex < 16, "{kept}");
+    let _ = t;
+}
+
+#[test]
+fn the_settings_carry_a_version_and_odd_values_fall_back() {
+    let s = Session::new();
+    let v = serde_json::to_value(&s.prefs).unwrap();
+    assert_eq!(v["settings_version"], crate::settings::SETTINGS_VERSION);
+    let read: crate::Prefs = serde_json::from_value(json!({"settings_version": 9, "motion": "wobbly", "mcp": {"port": 80}})).unwrap();
+    let s = read.settings.sanitized();
+    assert_eq!((s.settings_version, s.motion.as_str(), s.mcp.port), (crate::settings::SETTINGS_VERSION, "system", crate::settings::DEFAULT_MCP_PORT));
+}

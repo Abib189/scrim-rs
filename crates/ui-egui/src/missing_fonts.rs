@@ -72,6 +72,12 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
         if !app.ui.font_checks.is_empty() && app.ui.import_report.is_none() && app.ui.missing_fonts.is_none() {
             let uid = app.ui.font_checks.remove(0);
             let path = app.session.docs.iter().find(|d| d.uid == uid).and_then(|d| d.path.clone());
+            // Settings ▸ Diagnostics notes the fallback (family names only), shown or not.
+            let families: Vec<String> =
+                app.session.docs.iter().find(|d| d.uid == uid).map(|d| missing(&d.doc)).unwrap_or_default().into_iter().map(|m| m.family).collect();
+            if !families.is_empty() {
+                crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::FontFallback(&families));
+            }
             if figcraft_engine::fonts::muted(&app.session.prefs, path.as_deref()) {
                 // Don't show again for this file.
             } else if list(app, uid).is_some_and(|f| f.is_empty()) {

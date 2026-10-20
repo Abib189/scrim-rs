@@ -26,6 +26,8 @@ pub const SECTIONS: &[(&str, &str)] = &[
     ("ai", tr_noop("AI & agents")),
     ("mcp", tr_noop("MCP")),
     ("tools", tr_noop("Tool access")),
+    ("privacy", tr_noop("Privacy")),
+    ("diagnostics", tr_noop("Diagnostics")),
 ];
 
 /// Open Settings at `section` (`dialog.settings`, `dialog.preferences`).
@@ -105,6 +107,8 @@ fn section(app: &mut FigApp, ui: &mut Ui) {
         "ai" => crate::settings_mcp::ai(app, ui),
         "mcp" => crate::settings_mcp::mcp(app, ui),
         "tools" => crate::settings_tools::show(app, ui),
+        "privacy" => crate::settings_privacy::privacy(app, ui),
+        "diagnostics" => crate::settings_privacy::show(app, ui),
         _ => crate::settings_general::show(app, ui),
     }
 }

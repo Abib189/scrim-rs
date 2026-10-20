@@ -5,6 +5,10 @@
 
 use serde::{Deserialize, Serialize};
 
+// (Here, not in `lib.rs`: that file is at its size cap.)
+#[path = "diagnostics.rs"]
+pub mod diagnostics;
+
 /// The most files the Missing fonts window remembers not to open for.
 pub const MAX_MUTED_FONT_FILES: usize = 500;
 
@@ -66,6 +70,10 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
         .unwrap_or_default()
 }
 
+/// The version of these settings `state.json` holds (`settings_version`). A file from a later
+/// version is read as far as it goes, never refused.
+pub const SETTINGS_VERSION: u32 = 1;
+
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
 
@@ -77,9 +85,15 @@ fn system() -> String {
     "system".into()
 }
 
+fn week() -> u32 {
+    diagnostics::DEFAULT_RETENTION_DAYS
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
+    /// [`SETTINGS_VERSION`] when written.
+    pub settings_version: u32,
     /// The MCP endpoint's settings.
     pub mcp: McpSettings,
     /// Interface animations: `system` (follow the system's reduce-motion setting), `on` or `off`.
@@ -96,17 +110,33 @@ pub struct Settings {
     /// "Don't show again for this file"). Text ▸ Missing fonts still shows it.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fonts_muted: Vec<String>,
+    /// Settings ▸ Diagnostics: what happened, on this computer only (`diagnostics`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub diagnostics: Vec<diagnostics::Event>,
+    /// How many days diagnostics are kept (0: none).
+    #[serde(default = "week")]
+    pub diagnostics_days: u32,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { mcp: McpSettings::default(), motion: system(), preserve_unsaved: true, toolbar: Vec::new(), fonts_muted: Vec::new() }
+        Self {
+            settings_version: SETTINGS_VERSION,
+            mcp: McpSettings::default(),
+            motion: system(),
+            preserve_unsaved: true,
+            toolbar: Vec::new(),
+            fonts_muted: Vec::new(),
+            diagnostics: Vec::new(),
+            diagnostics_days: week(),
+        }
     }
 }
 
 impl Settings {
     /// These settings with anything out of range put back in range.
     pub fn sanitized(mut self) -> Self {
+        self.settings_version = SETTINGS_VERSION;
         if !matches!(self.motion.as_str(), "system" | "on" | "off") {
             self.motion = system();
         }
@@ -118,6 +148,11 @@ impl Settings {
         }
         self.mcp.disabled_tools.sort();
         self.mcp.disabled_tools.dedup();
+        if !diagnostics::RETENTION_DAYS.contains(&self.diagnostics_days) {
+            self.diagnostics_days = week();
+        }
+        let excess = self.diagnostics.len().saturating_sub(diagnostics::MAX_EVENTS);
+        self.diagnostics.drain(..excess);
         self.fonts_muted.retain(|p| !p.trim().is_empty());
         self.fonts_muted.dedup();
         let excess = self.fonts_muted.len().saturating_sub(MAX_MUTED_FONT_FILES);

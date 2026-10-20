@@ -63,6 +63,7 @@ pub mod services;
 pub mod settings_dialog;
 pub mod settings_general;
 pub mod settings_mcp;
+pub mod settings_privacy;
 pub mod settings_toolbar;
 pub mod settings_tools;
 pub mod shortcuts;
@@ -728,6 +729,7 @@ impl FigApp {
     pub fn run(&mut self, id: &str, params: Value) -> Option<Value> {
         let r = self.session.execute(id, &params);
         self.handle_ui_requests();
+        settings_privacy::noted(self, id, r.as_ref().err());
         r.map_err(|e| self.failed(id, &e)).ok()
     }
 

@@ -45,6 +45,8 @@ impl Desktop {
         let state: Value =
             dir.as_ref().and_then(|d| std::fs::read_to_string(d.join(STATE)).ok()).and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(json!({}));
         let prefs = state.get("prefs").and_then(|p| serde_json::from_value::<Prefs>(p.clone()).ok()).map(|mut p| {
+            // Values that read but make no sense fall back (Stage C's settings).
+            p.settings = std::mem::take(&mut p.settings).sanitized();
             // Recent files lived next to the preferences before they moved into them.
             if p.recent_files.is_empty()
                 && let Some(old) = state.get("recents").and_then(Value::as_array)
