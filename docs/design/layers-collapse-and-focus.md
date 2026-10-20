@@ -136,3 +136,13 @@ No old test asserts that a row click reveals. The spec is `~/Scrim/docs/checklis
   - **The fit race:** a focus asked for before the canvas has its real size (when its first sizing re-fits the page) is kept and applied after that sizing.
 - **The hook:** the Layers row click (`layers.rs`, one line, at 1000 of 1000) calls `focus_selection` after selecting. Enter on a keyboard-focused row is a click to egui, so it focuses too: `a11y.rs`, at its cap, needed no change. A hidden layer gets the toast "“Name” is hidden".
 - **Canvas clicks** don't go through it: they never move the camera (tested).
+
+## D3 results
+
+Live in the release build; the captures, numbers and method are in `docs/scrim-ports/layers/README.md`.
+
+- **Collapse all**, on Brand colour system mockups and the Fixture (rebuilt, as scrim-rs can't open the old `.scrim` file): every changed pixel is in the Layers rows, 0 outside them. A second press changes 0 px and the camera never moves.
+- **A row click** (the nested Nav Log) flies from (2000, 1000) to (1159, 3196) at 50%. The Layers panel matches the same state set by commands (0 px). On the canvas, 29 anti-aliased edge pixels differ by at most 16/255. Moving the camera there in steps by command, without the flight, gives the same kind of difference. It comes from the renderer's frame-to-frame state, predates Stage D, and is out of its scope.
+- **A scripted scroll** 0.127 s into the flight stops it at once (x stays at 1896.6, short of 1159). A second focus answers `moved: false` with identical pixels. Canvas clicks never moved the camera.
+- **By keyboard only:** F6, 9 Tabs to the button, Space collapses, then Tab to the rows, arrows, and Enter flies.
+- **Contrast:** the icon 9.33:1 (light) and 8.05:1 (dark) on the panel; the focus ring 5.43:1 and 6.01:1; the toast 16.7:1.
