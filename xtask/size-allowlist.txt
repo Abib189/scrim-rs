@@ -27,7 +27,7 @@
 1323 crates/text/src/layout.rs
 1022 crates/ui-egui/src/a11y.rs
 1125 crates/ui-egui/src/assets_panel.rs
-1530 crates/ui-egui/src/canvas.rs
+1509 crates/ui-egui/src/canvas.rs
 1255 crates/ui-egui/src/colorpicker.rs
 1196 crates/ui-egui/src/comments.rs
 1225 crates/ui-egui/src/icons.rs

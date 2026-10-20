@@ -166,3 +166,12 @@ It had no sections, no component labels and no handoff status. Labels were 10 px
 6. **Labels can now hide** when their frame is too narrow on screen (under 24 px of room). Before, a title never got narrower than 20 px and overflowed a narrow frame. A hidden label can't be clicked; the frame itself still can.
 7. **The Dev Mode panel's list keeps its status pill** (`dev_mode.rs`). It is panel chrome with room for words, not the canvas.
 8. **No zoom threshold of its own.** Labels hide by on-screen room, which covers "below a minimum zoom" and also narrow frames at high zoom.
+
+## E1 as built
+
+- **`dev_icon.rs`** (new): `State` (Ready, Changed, Completed) from the node, the three icons drawn in code, `Ink::for_page` (the theme set that reads on the page's background), the icon's tooltip and AccessKit node (`Image`, named "Ready for dev", "Changed" or "Completed"), and the Dev Mode panel's worded pill. That pill moved out of `canvas.rs`, which shrinks from 1530 to 1509 lines.
+- **`frame_labels::draw`**: the title, then the icon 4 px after it, centred in the title row, 2 px above the frame's top edge. `fit` shares the frame's on-screen width between them: the title is cut first, then the icon goes, then the label (under 20 px).
+  - The icon is part of the label's area, so pressing it selects and drags its frame.
+  - A hidden label publishes no area.
+- **The section title moved above the section** (no pill) in this step. The icon must sit outside the frame and right after the title, which a title inside the section can't give.
+- **Not yet:** the shared layout between labels, and the label text inks (E2).

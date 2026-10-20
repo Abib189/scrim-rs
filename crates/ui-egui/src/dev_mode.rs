@@ -920,7 +920,7 @@ pub fn focus_bar(app: &mut FigApp, ctx: &egui::Context, canvas: Rect) {
         ui.add_space(20.0);
         let name = widgets::elide(ui, &n.name, 260.0);
         ui.label(egui::RichText::new(name).font(semibold(11.0)).color(t.text));
-        if let Some(b) = crate::canvas::status_badge(ui.painter(), n, ui.cursor().min + vec2(0.0, 12.0)) {
+        if let Some(b) = crate::dev_icon::pill(ui.painter(), n, ui.cursor().min + vec2(0.0, 12.0)) {
             ui.add_space(b.width());
         }
         if n.dev_status == DevStatus::ReadyForDev && n.dev_changed && widgets::button(ui, tr("Compare changes"), true, true).clicked() {

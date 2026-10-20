@@ -1,18 +1,20 @@
-//! Name labels of top-level frames and sections on the canvas. A frame's name sits just above its
-//! top edge and a section's name is a pill inside its top-left corner; on a rotated frame or
-//! section the label runs along the top edge as shown, turned with it, and is cut to the edge's
-//! length. Each label's area goes to the engine (`ToolState::labels`), so pressing a label selects
-//! and drags its frame like pressing the frame itself.
+//! Name labels of top-level frames and sections on the canvas. The name sits just above the top
+//! edge, outside the frame or section, followed by its handoff status icon (`dev_icon`, Stage E1);
+//! on a rotated frame or section the label runs along the top edge as shown, turned with it, and
+//! is cut to the edge's length. Each label's area (the status icon included) goes to the engine
+//! (`ToolState::labels`), so pressing a label selects and drags its frame like pressing the frame
+//! itself.
 
 use egui::layers::ShapeIdx;
-use egui::{Align2, Color32, CornerRadius, Painter, Pos2, Rect, Shape, Vec2, emath::Rot2, pos2, vec2};
+use egui::{Align2, Color32, Painter, Pos2, Rect, Shape, Vec2, emath::Rot2, pos2, vec2};
 use figcraft_doc::{Document, NodeId, NodeKind};
 use figcraft_geom::Point;
 
 use crate::FigApp;
-use crate::canvas::status_badge;
+use crate::dev_icon::{self, ICON, ICON_GAP, Ink, State};
 use crate::i18n::tr;
-use crate::theme::{ACCENT, COMPONENT, Tokens, regular, semibold};
+use crate::icons::Icon;
+use crate::theme::{ACCENT, COMPONENT, Tokens, regular};
 
 /// Where a label goes on screen: the corner it starts at, the angle it reads along (radians,
 /// clockwise on screen) and the length of the frame's edge along that direction.
@@ -87,8 +89,39 @@ fn turn(shape: &mut Shape, rot: Rot2, angle: f32, pivot: Pos2) {
     }
 }
 
-/// Draw the label of `id` (a top-level frame or a section); the area it covers on screen (its
-/// corners) for hit testing.
+/// A title is never cut narrower than this (a shorter one shows whole).
+pub const MIN_TITLE: f32 = 20.0;
+/// A lead icon (the component diamond, a hidden section's eye) and the space after it.
+const LEAD: f32 = 14.0;
+
+/// How a title of natural width `title` and a status icon (`icon`) share `room` (screen px after
+/// any lead icon): the title's width and whether the icon shows. The title is cut to end before the
+/// icon; when both can't fit the icon goes first, then the whole label (`None`).
+pub fn fit(room: f32, title: f32, icon: bool) -> Option<(f32, bool)> {
+    if !(room.is_finite() && title.is_finite()) || room <= 0.0 {
+        return None;
+    }
+    let least = MIN_TITLE.min(title);
+    let beside = room - ICON_GAP - ICON;
+    if icon && beside >= least {
+        return Some((title.min(beside), true));
+    }
+    (room >= least).then_some((title.min(room), false))
+}
+
+/// The colour of the page `id` is on (what the canvas shows behind its label).
+pub fn page_colour(painter: &Painter, t: &Tokens, doc: &Document, id: NodeId) -> Color32 {
+    let page = doc.page_of(id).and_then(|p| doc.node(p));
+    match page.map(|p| &p.kind) {
+        Some(NodeKind::Page { background, .. }) => crate::theme::doc_c32(painter.ctx(), *background),
+        _ => t.canvas,
+    }
+}
+
+/// Draw the label of `id` (a top-level frame or a section): its name just above its top edge
+/// (turned with it), after the component diamond or a hidden section's eye, then its handoff
+/// status icon. The area it covers on screen (its corners) for hit testing; `None` when its frame
+/// is too narrow on screen to hold it.
 pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: NodeId, selected: bool, hovered: bool) -> Option<[Pos2; 4]> {
     let n = doc.node(id)?;
     let w = doc.world_transform(id);
@@ -107,39 +140,6 @@ pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: Nod
     } else {
         t.text_secondary
     };
-    // Drawn upright at the corner, then turned with the frame.
-    let from = painter.add(Shape::Noop);
-    let area = if matches!(n.kind, NodeKind::Section { .. }) {
-        // Section titles are pills inside the top-left; a section hiding its contents shows an
-        // eye in its pill and says so in the middle.
-        let hidden = n.hides_contents();
-        let fg = if selected { crate::theme::ACCENT_ON } else { t.text };
-        let eye = if hidden { 16.0 } else { 0.0 };
-        let galley = crate::bidi::name_galley(painter, &n.name, semibold(11.0), fg, (edge.len - 16.0 - eye).clamp(20.0, 480.0));
-        let r = Rect::from_min_size(tl, galley.size() + vec2(16.0 + eye, 8.0));
-        painter.rect_filled(r, CornerRadius::same(4), if selected { ACCENT } else { t.hover });
-        if hidden {
-            let ir = Rect::from_center_size(pos2(r.min.x + 14.0, r.center().y), vec2(12.0, 12.0));
-            crate::icons::paint(painter, ir, crate::icons::Icon::EyeOff, fg);
-        }
-        painter.galley(r.min + vec2(8.0 + eye, 4.0), galley, fg);
-        status_badge(painter, n, pos2(r.max.x + 6.0, r.center().y));
-        r
-    } else {
-        let mut x = tl.x;
-        if is_comp {
-            crate::icons::paint(painter, Rect::from_min_size(pos2(x, tl.y - 16.0), vec2(12.0, 12.0)), crate::icons::Icon::Component, col);
-            x += 14.0;
-        }
-        // Names longer than the frame end in an ellipsis (a right-to-left name keeps its start).
-        let galley = crate::bidi::name_galley(painter, &n.name, regular(11.0), col, (edge.len - (x - tl.x)).max(20.0));
-        let size = galley.size();
-        let end = x + size.x;
-        painter.galley(pos2(x, tl.y - 16.0), galley, col);
-        status_badge(painter, n, pos2(end + 6.0, tl.y - 9.0));
-        Rect::from_min_max(pos2(tl.x, tl.y - 18.0), pos2(end, tl.y - 16.0 + size.y.max(12.0)))
-    };
-    turn_since(painter, from, tl, edge.angle);
     if n.hides_contents() {
         let height = (p01 - p00).length();
         if edge.len > 120.0 && height > 60.0 {
@@ -147,8 +147,45 @@ pub fn draw(app: &FigApp, painter: &Painter, t: &Tokens, doc: &Document, id: Nod
             painter.text(center, Align2::CENTER_CENTER, tr("Contents hidden"), regular(11.0), t.text_tertiary);
         }
     }
+    let lead_icon = if is_comp {
+        Some(Icon::Component)
+    } else if matches!(n.kind, NodeKind::Section { .. }) && n.hides_contents() {
+        Some(Icon::EyeOff)
+    } else {
+        None
+    };
+    let lead = if lead_icon.is_some() { LEAD } else { 0.0 };
+    let state = State::of(n);
+    let font = regular(11.0);
+    let natural = crate::bidi::name_galley(painter, &n.name, font.clone(), col, f32::MAX).size().x;
+    let (title_w, show_icon) = fit(edge.len - lead, natural, state.is_some())?;
+    // Drawn upright at the corner, then turned with the frame.
+    let from = painter.add(Shape::Noop);
+    let top = tl.y - 16.0;
+    if let Some(icon) = lead_icon {
+        crate::icons::paint(painter, Rect::from_min_size(pos2(tl.x, top), vec2(12.0, 12.0)), icon, col);
+    }
+    // Names longer than their room end in an ellipsis (a right-to-left name keeps its start).
+    let galley = crate::bidi::name_galley(painter, &n.name, font, col, title_w.max(1.0));
+    let size = galley.size();
+    let mut end = tl.x + lead + size.x;
+    painter.galley(pos2(tl.x + lead, top), galley, col);
+    let mut bottom = top + size.y.max(12.0);
+    let icon = state.filter(|_| show_icon).map(|s| {
+        let r = Rect::from_min_size(pos2(end + ICON_GAP, tl.y - 2.0 - ICON), vec2(ICON, ICON));
+        dev_icon::paint(painter, r, s, &Ink::for_page(page_colour(painter, t, doc, id)));
+        end = r.max.x;
+        bottom = bottom.max(r.max.y);
+        (r, s)
+    });
+    let area = Rect::from_min_max(pos2(tl.x, tl.y - 18.0), pos2(end, bottom));
+    turn_since(painter, from, tl, edge.angle);
     let rot = Rot2::from_angle(edge.angle);
-    Some([area.left_top(), area.right_top(), area.right_bottom(), area.left_bottom()].map(|p| tl + rot * (p - tl)))
+    let turned = |r: Rect| [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].map(|p| tl + rot * (p - tl));
+    if let Some((r, s)) = icon {
+        dev_icon::annotate(painter, id, Rect::from_points(&turned(r)), s);
+    }
+    Some(turned(area))
 }
 
 /// The field over a frame's or section's name label being renamed (`UiState::rename_label`, from a

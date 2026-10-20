@@ -1466,27 +1466,6 @@ fn boards(doc: &Document, page: NodeId) -> Vec<NodeId> {
     out
 }
 
-/// A frame's or section's handoff status as its badge says it, with the badge colour ("Changed"
-/// once a ready-for-dev layer was edited; `None` without a status).
-pub(crate) fn status_label(n: &figcraft_doc::Node) -> Option<(&'static str, Color32)> {
-    match n.dev_status {
-        figcraft_doc::DevStatus::None => None,
-        figcraft_doc::DevStatus::ReadyForDev if n.dev_changed => Some((tr("Changed"), crate::theme::DEV_CHANGED)),
-        figcraft_doc::DevStatus::ReadyForDev => Some((tr("Ready for dev"), crate::theme::DEV_READY)),
-        figcraft_doc::DevStatus::Completed => Some((tr("Completed"), crate::theme::DEV_COMPLETED)),
-    }
-}
-
-/// A frame's or section's handoff status as a small pill left-centred on `at`; the pill's area.
-pub(crate) fn status_badge(painter: &egui::Painter, n: &figcraft_doc::Node, at: Pos2) -> Option<Rect> {
-    let (label, fill) = status_label(n)?;
-    let galley = painter.layout_no_wrap(label.to_string(), semibold(10.0), Color32::WHITE);
-    let r = Rect::from_min_size(pos2(at.x, at.y - galley.size().y / 2.0 - 2.0), galley.size() + vec2(10.0, 4.0));
-    painter.rect_filled(r, CornerRadius::same(4), fill);
-    painter.galley(r.min + vec2(5.0, 2.0), galley, Color32::WHITE);
-    Some(r)
-}
-
 fn rulers(app: &FigApp, painter: &egui::Painter, t: &Tokens, doc: &Document, sel: &[NodeId]) {
     let r = app.canvas.rect;
     let size = 20.0;
