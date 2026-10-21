@@ -1,0 +1,57 @@
+{"t": 0.0001, "wall": 1792602222.623636, "event": "listening", "port": 64967, "upstream": 7681}
+{"t": 3.4095, "wall": 1792602226.0330172, "event": "open", "conn": 1}
+{"t": 3.4151, "wall": 1792602226.0386078, "event": "request", "conn": 1, "line": "GET /mcp HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4152, "wall": 1792602226.038712, "event": "response", "conn": 1, "line": "HTTP/1.1 405 Method Not Allowed", "session": null, "connection": null}
+{"t": 3.42, "wall": 1792602226.043461, "event": "open", "conn": 2}
+{"t": 3.4201, "wall": 1792602226.0435672, "event": "request", "conn": 2, "line": "GET /.well-known/oauth-protected-resource/mcp HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4201, "wall": 1792602226.0436292, "event": "response", "conn": 2, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4208, "wall": 1792602226.044344, "event": "request", "conn": 1, "line": "GET /.well-known/oauth-protected-resource HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4209, "wall": 1792602226.044418, "event": "response", "conn": 1, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4214, "wall": 1792602226.04486, "event": "request", "conn": 2, "line": "GET /.well-known/oauth-authorization-server/mcp HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4214, "wall": 1792602226.044916, "event": "response", "conn": 2, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4219, "wall": 1792602226.045367, "event": "request", "conn": 1, "line": "GET /.well-known/oauth-authorization-server HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4219, "wall": 1792602226.045422, "event": "response", "conn": 1, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4222, "wall": 1792602226.045755, "event": "request", "conn": 2, "line": "GET /.well-known/openid-configuration/mcp HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4223, "wall": 1792602226.045822, "event": "response", "conn": 2, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4226, "wall": 1792602226.046082, "event": "request", "conn": 1, "line": "GET /mcp/.well-known/openid-configuration HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4226, "wall": 1792602226.046138, "event": "response", "conn": 1, "line": "HTTP/1.1 404 Not Found", "session": null, "connection": null}
+{"t": 3.4233, "wall": 1792602226.0468109, "event": "request", "conn": 1, "line": "GET /mcp HTTP/1.1", "session": null, "connection": "keep-alive"}
+{"t": 3.4234, "wall": 1792602226.046876, "event": "response", "conn": 1, "line": "HTTP/1.1 405 Method Not Allowed", "session": null, "connection": null}
+{"t": 3.4336, "wall": 1792602226.0571258, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": null, "connection": "keep-alive", "messages": [{"rpc": "initialize", "id": 0, "clientInfo": {"name": "mcp-remote-fallback-test", "version": "0.0.0"}}]}
+{"t": 3.4344, "wall": 1792602226.0579221, "event": "response", "conn": 1, "line": "HTTP/1.1 200 OK", "session": "14ab6b51", "connection": null}
+{"t": 3.438, "wall": 1792602226.06147, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": "14ab6b51", "connection": "keep-alive", "messages": [{"rpc": "notifications/initialized", "id": null}]}
+{"t": 3.4381, "wall": 1792602226.061573, "event": "response", "conn": 1, "line": "HTTP/1.1 202 Accepted", "session": null, "connection": null}
+{"t": 3.4401, "wall": 1792602226.063574, "event": "request", "conn": 1, "line": "GET /mcp HTTP/1.1", "session": "14ab6b51", "connection": "keep-alive"}
+{"t": 3.4401, "wall": 1792602226.063648, "event": "response", "conn": 1, "line": "HTTP/1.1 405 Method Not Allowed", "session": null, "connection": null}
+{"t": 3.4404, "wall": 1792602226.063894, "event": "request", "conn": 2, "line": "POST /mcp HTTP/1.1", "session": null, "connection": "keep-alive", "messages": [{"rpc": "initialize", "id": 1, "clientInfo": {"name": "local-agent-mode-scrim (via mcp-remote 0.14.3)", "version": "1.0.0"}}]}
+{"t": 3.4405, "wall": 1792602226.064045, "event": "response", "conn": 2, "line": "HTTP/1.1 200 OK", "session": "8caa29ef", "connection": null}
+{"t": 3.4425, "wall": 1792602226.0659719, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "notifications/initialized", "id": null}]}
+{"t": 3.4425, "wall": 1792602226.066056, "event": "response", "conn": 1, "line": "HTTP/1.1 202 Accepted", "session": null, "connection": null}
+{"t": 3.4433, "wall": 1792602226.066807, "event": "request", "conn": 1, "line": "GET /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive"}
+{"t": 3.4433, "wall": 1792602226.066849, "event": "request", "conn": 2, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/list", "id": 2}]}
+{"t": 3.4434, "wall": 1792602226.066908, "event": "response", "conn": 1, "line": "HTTP/1.1 405 Method Not Allowed", "session": null, "connection": null}
+{"t": 3.4442, "wall": 1792602226.0676968, "event": "response", "conn": 2, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 5.0641, "wall": 1792602227.6876569, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 3, "tool": "run_command", "command": "frame.create"}]}
+{"t": 5.065, "wall": 1792602227.688533, "event": "response", "conn": 1, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 5.0662, "wall": 1792602227.689698, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 4, "tool": "batch", "commands": 5}]}
+{"t": 5.0665, "wall": 1792602227.689995, "event": "response", "conn": 1, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 7.4485, "wall": 1792602230.072047, "event": "close", "conn": 2}
+{"t": 8.0783, "wall": 1792602230.701812, "event": "request", "conn": 1, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 5, "tool": "batch", "commands": 12}]}
+{"t": 8.079, "wall": 1792602230.7024891, "event": "response", "conn": 1, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 12.0812, "wall": 1792602234.7047539, "event": "close", "conn": 1}
+{"t": 13.091, "wall": 1792602235.714575, "event": "open", "conn": 3}
+{"t": 13.0913, "wall": 1792602235.714902, "event": "request", "conn": 3, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 6, "tool": "batch", "commands": 18}]}
+{"t": 13.0921, "wall": 1792602235.715615, "event": "response", "conn": 3, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 17.0947, "wall": 1792602239.718258, "event": "close", "conn": 3}
+{"t": 17.1038, "wall": 1792602239.72736, "event": "open", "conn": 4}
+{"t": 17.104, "wall": 1792602239.7275572, "event": "request", "conn": 4, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 7, "tool": "batch", "commands": 24}]}
+{"t": 17.1055, "wall": 1792602239.729078, "event": "response", "conn": 4, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 20.1171, "wall": 1792602242.7407172, "event": "request", "conn": 4, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 8, "tool": "batch", "commands": 30}]}
+{"t": 20.1187, "wall": 1792602242.742334, "event": "response", "conn": 4, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 24.1213, "wall": 1792602246.7449331, "event": "close", "conn": 4}
+{"t": 25.1304, "wall": 1792602247.754035, "event": "open", "conn": 5}
+{"t": 25.1319, "wall": 1792602247.755559, "event": "request", "conn": 5, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 9, "tool": "batch", "commands": 36}]}
+{"t": 25.1341, "wall": 1792602247.7577002, "event": "response", "conn": 5, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 27.1369, "wall": 1792602249.760531, "event": "request", "conn": 5, "line": "POST /mcp HTTP/1.1", "session": "8caa29ef", "connection": "keep-alive", "messages": [{"rpc": "tools/call", "id": 10, "tool": "finish_working"}]}
+{"t": 27.1385, "wall": 1792602249.762114, "event": "response", "conn": 5, "line": "HTTP/1.1 200 OK", "session": null, "connection": null}
+{"t": 31.1418, "wall": 1792602253.765414, "event": "close", "conn": 5}
