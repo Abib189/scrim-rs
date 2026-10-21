@@ -49,6 +49,15 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {
         app.run("pref.revealAgentWork", json!({}));
     }
+    ui.horizontal(|ui| {
+        ui.label(tr("Reveal speed"));
+        let speeds = [("slow", tr_noop("Slow")), ("normal", tr_noop("Normal")), ("fast", tr_noop("Fast"))];
+        let labels: Vec<&str> = speeds.iter().map(|(_, l)| tr(l)).collect();
+        let current = speeds.iter().position(|(id, _)| prefs.settings.reveal_speed == *id).unwrap_or(1);
+        if let Some(i) = widgets::segmented_text(ui, &labels, current) {
+            app.run("pref.revealSpeed", json!({"speed": speeds[i].0}));
+        }
+    });
     if widgets::checkbox(ui, prefs.settings.working_indicator, tr("Show working indicator")) {
         app.run("pref.workingIndicator", json!({}));
     }

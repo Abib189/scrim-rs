@@ -118,3 +118,28 @@
   - **Follow's "Following {agent}":** names the working client; a nameless one falls back to J1's name for the latest edit.
   - **The load budget:** counts the state as activity.
 - **Settings ▸ General ▸ Agents at work:** "Keep the working indicator for 5 s / 15 s / 30 s / 60 s after the last agent request".
+
+## IC as built
+
+- **`Settings.reveal_speed`** is `slow | normal | fast`, normal by default; any other value reads normal (`settings_version` 6). `pref.revealSpeed {speed}` has its MCP route. Settings ▸ General shows "Reveal speed: Slow / Normal / Fast" under "Reveal agent work".
+- **`reveal::Speed`:**
+
+  | Speed | Entrance | Stagger | Cap |
+  |---|---|---|---|
+  | `FAST` | 220 ms | 40 ms | 1.2 s |
+  | `NORMAL` | 480 ms | 110 ms | 4 s |
+  | `SLOW` | 700 ms | 180 ms | 6 s |
+
+  `FAST` is Stage I2's constants exactly.
+- **Each entrance keeps its own duration,** so changing the speed mid-reveal never warps one already running.
+- **Degradation step 3 halves the speed's cap** (0.6 s at Fast, as before). The stagger shrinks first; the entrance is never shortened for load.
+- **Steps queue:** a batch landing mid-reveal starts one stagger after the running batch's last entrance. None of the running entrances restart or are cut.
+- **The camera flight is unchanged** (320 ms). It and the first entrance both start when a batch lands, and at every speed the entrance (220–700 ms) is still running when the flight ends. Nothing finishes "before the first reveal ticks", so there was nothing to lengthen.
+- **Tests:**
+  - **`reveal_tests.rs`:** Stage I2's tests now run at Fast and still pass unchanged, which proves Fast is the old behaviour. New:
+    - the speed table;
+    - every speed and its degraded cap, for 1, 6, 36 and 60 layers;
+    - 36 layers at Normal last over 2 s and at most 4 s;
+    - a step mid-reveal queues behind, at every speed;
+    - render-only at Normal and Slow.
+  - **`crates/mcp/tests/follow_agent.rs`:** both new settings and `finish_working` over MCP, none of it touching the document.

@@ -239,6 +239,7 @@ pub const WRITE: &[&str] = &[
     "pref.reduceMotion",
     "pref.renameDuplicates",
     "pref.revealAgentWork",
+    "pref.revealSpeed",
     "pref.showDimensions",
     "pref.theme",
     "pref.userName",

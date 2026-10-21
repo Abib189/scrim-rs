@@ -25,7 +25,7 @@ fn settings_opens_from_its_command_cmd_comma_and_closes_with_done_or_escape() {
     let shapes = h.frames(2);
     assert!(h.app.ui.preferences && h.app.ui.settings_section == "general");
     // (The pane scrolls: the sections further down aren't drawn until scrolled to.)
-    for t in ["Settings", "General", "Appearance", "Theme", "Animations", "Shared rooms", "Done"] {
+    for t in ["Settings", "General", "Appearance", "Theme", "Animations", "Agents at work", "Done"] {
         assert!(has_text(&shapes, t), "Settings shows {t:?}");
     }
     h.click(text_center(&shapes, "Done"));

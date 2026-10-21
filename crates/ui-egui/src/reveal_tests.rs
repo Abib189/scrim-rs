@@ -11,15 +11,36 @@ use std::sync::Arc;
 use figcraft_doc::{Document, NodeId};
 use serde_json::{Value, json};
 
-use super::{CAP, CAP_DEGRADED, ENTER, STAGGER, canvas_doc, entering, schedule};
+use super::{CAP, CAP_DEGRADED, ENTER, FAST, STAGGER, canvas_doc, entering, schedule};
 use crate::follow_agent::tests::{agent, frames, id, poster, scene};
 use crate::layers_drag_tests::Ui;
 
-/// The scene with the frame budget pinned (debug builds' frame times aren't the app's).
+/// The scene with the frame budget pinned (debug builds' frame times aren't the app's), at Fast:
+/// Stage I2's timing, which these tests pin and Fast must keep exactly (Stage I.1).
 fn calm() -> (Ui, NodeId) {
-    let (mut u, home) = scene();
+    let (mut u, home) = at("fast");
     u.app.ui.agent_view.budget.frozen = true;
     (u, home)
+}
+
+/// The scene at reveal speed `speed`.
+fn at(speed: &str) -> (Ui, NodeId) {
+    let (mut u, home) = scene();
+    u.app.ui.agent_view.budget.frozen = true;
+    u.app.session.execute("pref.revealSpeed", &json!({"speed": speed})).unwrap();
+    (u, home)
+}
+
+/// `n` layers in a new frame by an agent, all landing before the next frame. Returns their ids,
+/// the frame first.
+fn batch(u: &mut Ui, x: f64, n: usize) -> Vec<NodeId> {
+    let p = id(&agent(u, "frame.create", json!({"x": x, "y": 0, "width": 600, "height": 800, "name": "Step"})));
+    let mut ids = vec![p];
+    for i in 1..n {
+        let r = agent(u, "shape.rectangle", json!({"x": 10 + (i % 10) * 50, "y": 10 + (i / 10) * 50, "width": 40, "height": 40, "parent": p.0}));
+        ids.push(id(&r));
+    }
+    ids
 }
 
 /// A poster built by an agent in one go, far to the right: the frame, then 15 layers in it (rules,
@@ -49,19 +70,19 @@ fn opacity(d: &Document, id: NodeId) -> f32 {
 #[test]
 fn a_batch_is_staggered_in_creation_order_within_the_cap() {
     let ids: Vec<NodeId> = (1..=16).map(NodeId).collect();
-    let s = schedule(&ids, 10.0, 10.0, CAP);
+    let s = schedule(&ids, 10.0, 10.0, FAST);
     assert_eq!(s.iter().map(|(i, _)| *i).collect::<Vec<_>>(), ids, "creation order");
     assert!(s.windows(2).all(|w| (w[1].1 - w[0].1 - STAGGER).abs() < 1e-9), "40 ms apart: {s:?}");
     // 100 layers: the stagger shrinks so the last ends within the cap.
     let many: Vec<NodeId> = (1..=100).map(NodeId).collect();
-    let s = schedule(&many, 10.0, 10.0, CAP);
+    let s = schedule(&many, 10.0, 10.0, FAST);
     let last = s.last().unwrap().1;
     assert!(last + ENTER <= 10.0 + CAP + 1e-9, "{last}");
     assert!(s.windows(2).all(|w| w[1].1 >= w[0].1), "still in order");
-    let s = schedule(&many, 10.0, 10.0, CAP_DEGRADED);
+    let s = schedule(&many, 10.0, 10.0, FAST.degraded());
     assert!(s.last().unwrap().1 + ENTER <= 10.0 + CAP_DEGRADED + 1e-9);
     // A batch queued behind another never starts later than the cap allows.
-    let s = schedule(&ids, 10.0, 50.0, CAP);
+    let s = schedule(&ids, 10.0, 50.0, FAST);
     assert!(s.iter().all(|(_, t)| *t + ENTER <= 10.0 + CAP + 1e-9));
 }
 
@@ -336,4 +357,101 @@ fn one_slow_render_doesnt_degrade() {
         u.app.ui.render_ms = 220.0;
     }
     assert_eq!(u.app.ui.agent_view.budget.level, 0, "one render, counted once");
+}
+
+// ---------- Stage I.1: the reveal's speed ----------
+
+#[test]
+fn each_speed_has_its_timing_and_fast_is_the_old_one_exactly() {
+    use super::{NORMAL, SLOW, Speed};
+    assert_eq!(FAST, Speed { enter: 0.22, stagger: 0.04, cap: 1.2 }, "Stage I2's values");
+    assert_eq!((ENTER, STAGGER, CAP, CAP_DEGRADED), (0.22, 0.04, 1.2, 0.6));
+    assert_eq!(FAST.degraded().cap, CAP_DEGRADED);
+    assert_eq!(NORMAL, Speed { enter: 0.48, stagger: 0.11, cap: 4.0 });
+    assert_eq!(SLOW, Speed { enter: 0.70, stagger: 0.18, cap: 6.0 });
+    assert_eq!(Speed::of("slow"), SLOW);
+    assert_eq!(Speed::of("normal"), NORMAL);
+    assert_eq!(Speed::of("fast"), FAST);
+    assert_eq!(Speed::of("nonsense"), NORMAL, "the default");
+    assert_eq!(figcraft_engine::settings::Settings::default().reveal_speed, "normal");
+    // Degrading drops the cap first, never the entrance.
+    for s in [SLOW, NORMAL, FAST] {
+        assert_eq!((s.degraded().enter, s.degraded().cap), (s.enter, s.cap / 2.0));
+    }
+}
+
+#[test]
+fn every_speed_keeps_a_batch_within_its_cap() {
+    use super::{NORMAL, SLOW};
+    for speed in [SLOW, NORMAL, FAST, SLOW.degraded(), NORMAL.degraded(), FAST.degraded()] {
+        for n in [1usize, 6, 36, 60] {
+            let ids: Vec<NodeId> = (1..=n as u64).map(NodeId).collect();
+            let s = schedule(&ids, 10.0, 10.0, speed);
+            let end = s.last().unwrap().1 + speed.enter;
+            assert!(end <= 10.0 + speed.cap + 1e-9, "{speed:?} × {n}: ends at {end}");
+            let step = speed.stagger.min(if n > 1 { (speed.cap - speed.enter) / (n - 1) as f64 } else { 0.0 });
+            assert!(s.windows(2).all(|w| (w[1].1 - w[0].1 - step).abs() < 1e-9), "{speed:?} × {n}: the stagger shrinks only to fit");
+        }
+    }
+}
+
+#[test]
+fn a_36_layer_batch_at_normal_takes_over_2_s_and_at_most_4_s() {
+    let (mut u, _) = at("normal");
+    let ids = batch(&mut u, 300.0, 36);
+    u.frame(vec![]);
+    let q: Vec<(NodeId, f64)> = u.app.ui.agent_view.reveal.entering().collect();
+    assert_eq!(q.len(), ids.len());
+    let total = q.last().unwrap().1 + super::NORMAL.enter - q[0].1;
+    assert!(total > 2.0 && total <= 4.0 + 1e-9, "{total} s");
+    // Halfway, it is still revealing; after 4 s, done.
+    frames(&mut u, 120);
+    assert!(canvas_doc(&u.app).is_some(), "still revealing at 2 s");
+    frames(&mut u, 130);
+    assert!(canvas_doc(&u.app).is_none(), "done by 4.2 s");
+}
+
+#[test]
+fn a_step_landing_mid_reveal_queues_behind_it_instead_of_restarting_it() {
+    for speed in ["slow", "normal", "fast"] {
+        let (mut u, _) = at(speed);
+        let sp = super::Speed::of(speed);
+        let first = batch(&mut u, 300.0, 6);
+        u.frame(vec![]);
+        let before: Vec<(NodeId, f64)> = u.app.ui.agent_view.reveal.entering().collect();
+        frames(&mut u, 6);
+        let second = batch(&mut u, 1000.0, 6);
+        u.frame(vec![]);
+        let all: Vec<(NodeId, f64)> = u.app.ui.agent_view.reveal.entering().collect();
+        // The first step's entrances keep their times (none restarted or cut) …
+        for (id, t) in before.iter().filter(|(id, _)| first.contains(id)) {
+            if let Some((_, now_t)) = all.iter().find(|(i, _)| i == id) {
+                assert_eq!(t, now_t, "{speed}: {id:?} kept its start");
+            }
+        }
+        // … and the second starts one stagger after the first's last.
+        let last_first = before.last().unwrap().1;
+        let start_second = all.iter().find(|(i, _)| *i == second[0]).unwrap().1;
+        assert!((start_second - (last_first + sp.stagger)).abs() < 1e-9, "{speed}: {start_second} after {last_first}");
+    }
+}
+
+#[test]
+fn at_normal_and_slow_the_reveal_is_still_render_only() {
+    for speed in ["normal", "slow"] {
+        let (mut u, _) = at(speed);
+        let ids = batch(&mut u, 300.0, 12);
+        frames(&mut u, 30);
+        assert!(canvas_doc(&u.app).is_some(), "{speed}: mid-reveal");
+        let ctx = u.ctx.clone();
+        let take = |u: &mut Ui| -> (Value, Value) {
+            let shot = crate::control::handle_route(&mut u.app, &ctx, "mcp (http)", "ui.render", &json!({"scale": 1, "ids": [ids[0].0]})).unwrap();
+            let inspect = crate::control::handle_route(&mut u.app, &ctx, "mcp (http)", "document.inspect", &json!({})).unwrap();
+            (shot, inspect)
+        };
+        let mid = take(&mut u);
+        frames(&mut u, 60 * 7);
+        assert!(canvas_doc(&u.app).is_none(), "{speed}: after");
+        assert_eq!(mid, take(&mut u), "{speed}: the render and inspect_document, mid-reveal and after");
+    }
 }

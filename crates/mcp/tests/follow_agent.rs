@@ -21,13 +21,22 @@ fn the_switches_answer_their_state_over_mcp_and_leave_the_document_alone() {
     assert_eq!(c.run("pref.revealAgentWork", json!({})), json!({"on": true}));
     assert_eq!(c.run("pref.workingIndicator", json!({"on": false})), json!({"on": false}));
     assert_eq!(c.run("pref.workingIndicator", json!({"on": true})), json!({"on": true}));
+    // Stage I.1: the grace period and the reveal's speed.
+    assert_eq!(c.run("pref.agentGrace", json!({"seconds": 30})), json!({"seconds": 30}));
+    assert_eq!(c.run("pref.revealSpeed", json!({"speed": "slow"})), json!({"speed": "slow"}));
+    assert_eq!(c.run("pref.revealSpeed", json!({"speed": "fast"})), json!({"speed": "fast"}));
+    // `finish_working` (the tool, and its command) changes nothing either.
+    assert_eq!(c.ok("finish_working", json!({}))["finished"], true);
+    assert_eq!(c.run("agent.finish-working", json!({}))["finished"], true);
     // `fit` on the focus command.
     let r = c.run("camera.focus-layer", json!({"ids": [doc["pages"][0]["children"][0]["id"].clone()], "fit": true}));
     assert!(r["view"]["zoom"].is_number(), "{r}");
     assert_eq!(c.doc(), doc, "none of it is in the document");
     // Listed with their labels for agents to find.
     let list = c.ok("list_commands", json!({"filter": "agent"})).to_string();
-    for id in ["camera.follow-agents", "pref.revealAgentWork", "pref.workingIndicator"] {
+    for id in ["camera.follow-agents", "pref.revealAgentWork", "pref.workingIndicator", "pref.agentGrace", "agent.finish-working"] {
         assert!(list.contains(id), "{id} listed: {list}");
     }
+    let list = c.ok("list_commands", json!({"filter": "reveal"})).to_string();
+    assert!(list.contains("pref.revealSpeed"), "{list}");
 }

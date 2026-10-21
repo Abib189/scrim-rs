@@ -14,7 +14,7 @@
 //! current zoom are fitted instead: the zoom goes down just enough, never up.
 //! `camera.follow-agents` turns following agents' edits on or off, or resumes it.
 //! `pref.revealAgentWork` and `pref.workingIndicator` switch the canvas's reveal of an agent's new
-//! layers and its working indicator (Stage I2).
+//! layers and its working indicator (Stage I2); `pref.revealSpeed` sets the reveal's pace (I.1).
 
 use figcraft_doc::NodeId;
 use figcraft_doc::geom::Rect;
@@ -153,6 +153,21 @@ pub fn specs() -> Vec<CommandSpec> {
                 let on = boolean(p, "on").unwrap_or(!s.prefs.settings.reveal_agent_work);
                 s.prefs.settings.reveal_agent_work = on;
                 Ok(json!({"on": on}))
+            }
+        ),
+        spec!(
+            "pref.revealSpeed",
+            "Reveal speed",
+            "{speed: slow|normal|fast} → {speed}  (how fast an agent's new layers enter on the canvas: fast is 220 ms each, 40 ms apart, a batch within 1.2 s; normal 480 ms, 110 ms, 4 s; slow 700 ms, 180 ms, 6 s. Drawing only. Saved in Settings)",
+            false,
+            |s, p| {
+                let speed =
+                    p.get("speed").and_then(Value::as_str).ok_or_else(|| bad("pref.revealSpeed", "`speed` is required: slow, normal or fast"))?;
+                if !crate::settings::REVEAL_SPEEDS.contains(&speed) {
+                    return Err(bad("pref.revealSpeed", format!("`speed` is slow, normal or fast, not {speed}")));
+                }
+                s.prefs.settings.reveal_speed = speed.to_string();
+                Ok(json!({"speed": speed}))
             }
         ),
         spec!(

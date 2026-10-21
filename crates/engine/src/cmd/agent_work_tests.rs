@@ -44,7 +44,7 @@ fn the_grace_period_is_one_of_four_saved_and_never_under_5_s() {
     }
     assert_eq!(s.prefs.settings.agent_grace_secs, 60);
     let v = serde_json::to_value(&s.prefs.settings).unwrap();
-    assert_eq!((v["agent_grace_secs"].clone(), v["settings_version"].clone()), (json!(60), json!(5)));
+    assert_eq!((v["agent_grace_secs"].clone(), v["settings_version"].clone()), (json!(60), json!(crate::settings::SETTINGS_VERSION)));
     let back: crate::settings::Settings = serde_json::from_value(v).unwrap();
     assert_eq!(back.sanitized().agent_grace_secs, 60, "round-trips");
     let old: crate::settings::Settings = serde_json::from_value(json!({"settings_version": 4})).unwrap();

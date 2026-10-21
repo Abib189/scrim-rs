@@ -94,7 +94,15 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 3: `follow_agents` (Stage I), on by default.
 /// - 4: `reveal_agent_work` and `working_indicator` (Stage I2), on by default.
 /// - 5: `agent_grace_secs` (Stage I.1), 15 s by default.
-pub const SETTINGS_VERSION: u32 = 5;
+/// - 6: `reveal_speed` (Stage I.1), normal by default.
+pub const SETTINGS_VERSION: u32 = 6;
+
+/// How fast an agent's new layers enter (`pref.revealSpeed`), slowest first.
+pub const REVEAL_SPEEDS: [&str; 3] = ["slow", "normal", "fast"];
+
+fn normal() -> String {
+    "normal".into()
+}
 
 /// How long the working indicator stays after an agent's last request (`pref.agentGrace`): the
 /// choices Settings offers, never under 5 s.
@@ -149,6 +157,10 @@ pub struct Settings {
     /// `finish_working` or its session ends (`pref.agentGrace`; one of [`AGENT_GRACE_SECS`]).
     #[serde(default = "grace")]
     pub agent_grace_secs: u32,
+    /// How fast an agent's new layers enter: `slow`, `normal` or `fast` (`pref.revealSpeed`; fast
+    /// is Stage I2's timing).
+    #[serde(default = "normal")]
+    pub reveal_speed: String,
     /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub toolbar: crate::cmd::toolbar::Layout,
@@ -175,6 +187,7 @@ impl Default for Settings {
             reveal_agent_work: true,
             working_indicator: true,
             agent_grace_secs: grace(),
+            reveal_speed: normal(),
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
             diagnostics: Vec::new(),
@@ -203,6 +216,9 @@ impl Settings {
         }
         self.mcp.disabled_tools.sort();
         self.mcp.disabled_tools.dedup();
+        if !REVEAL_SPEEDS.contains(&self.reveal_speed.as_str()) {
+            self.reveal_speed = normal();
+        }
         if !AGENT_GRACE_SECS.contains(&self.agent_grace_secs) {
             // Never under 5 s; another value goes to the nearest choice.
             let g = self.agent_grace_secs;

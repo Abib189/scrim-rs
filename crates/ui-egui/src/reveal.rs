@@ -1,9 +1,12 @@
 //! The reveal (Stage I2, `docs/design/follow-agent.md`): layers an agent creates arrive with a
 //! short, quiet entrance instead of popping in, on the canvas only.
-//! - **The entrance:** [`ENTER`] (220 ms), opacity 0 → 1 and scale 96% → 100% about the layer's
-//!   centre, ease-out. A batch is staggered in creation order (ascending ids), [`STAGGER`] apart,
-//!   the stagger shrunk so the batch ends within [`CAP`] (0.6 s once frames run over budget). Over
-//!   [`super::MANY`] layers, only the roots of what was created (their top-level groups) enter.
+//! - **The entrance:** opacity 0 → 1 and scale 96% → 100% about the layer's centre, ease-out. A
+//!   batch is staggered in creation order (ascending ids), the stagger shrunk so the batch ends
+//!   within the speed's cap (half that once frames run over budget). Over [`super::MANY`] layers,
+//!   only the roots of what was created (their top-level groups) enter.
+//! - **The speed** (Settings ▸ General, Stage I.1): [`FAST`] is Stage I2's 220 ms entrance, 40 ms
+//!   apart, within 1.2 s; [`NORMAL`] (the default) 480 ms, 110 ms, 4 s; [`SLOW`] 700 ms, 180 ms, 6 s.
+//!   A batch landing mid-reveal queues behind the running stagger, so each step reads as its own.
 //! - **A move** by an agent that changed only a layer's position tweens over [`TWEEN`]; other
 //!   property edits change at once. **Deleted layers** fade out over [`TWEEN`] when the edit only
 //!   deleted (the document before it draws meanwhile).
@@ -31,14 +34,44 @@ use figcraft_doc::{Document, NodeId};
 use super::Landed;
 use crate::FigApp;
 
-/// How long a layer's entrance takes (seconds).
+/// How long a layer's entrance takes (seconds), at [`FAST`].
 pub const ENTER: f64 = 0.22;
-/// Between two layers' entrances in a batch.
+/// Between two layers' entrances in a batch, at [`FAST`].
 pub const STAGGER: f64 = 0.04;
-/// A batch's entrances all end within this.
+/// A batch's entrances all end within this, at [`FAST`].
 pub const CAP: f64 = 1.2;
-/// … and within this once frames run over budget (the third degradation step).
+/// … and within this once frames run over budget (the third degradation step), at [`FAST`]: half
+/// the cap, as at every speed.
 pub const CAP_DEGRADED: f64 = 0.6;
+
+/// A reveal's pace: each layer's entrance, the stagger between two, and the cap a batch ends within.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Speed {
+    pub enter: f64,
+    pub stagger: f64,
+    pub cap: f64,
+}
+
+pub const FAST: Speed = Speed { enter: ENTER, stagger: STAGGER, cap: CAP };
+pub const NORMAL: Speed = Speed { enter: 0.48, stagger: 0.11, cap: 4.0 };
+pub const SLOW: Speed = Speed { enter: 0.70, stagger: 0.18, cap: 6.0 };
+
+impl Speed {
+    /// The setting's speed (`slow`, `normal`, `fast`; anything else is normal).
+    pub fn of(setting: &str) -> Speed {
+        match setting {
+            "slow" => SLOW,
+            "fast" => FAST,
+            _ => NORMAL,
+        }
+    }
+
+    /// This speed with the third degradation step taken: the cap halved (the stagger shrinks first;
+    /// the entrance itself is kept).
+    pub fn degraded(self) -> Speed {
+        Speed { cap: self.cap / 2.0, ..self }
+    }
+}
 /// A move's tween, and a deleted layer's fade.
 pub const TWEEN: f64 = 0.16;
 /// The scale an entrance starts at.
@@ -62,6 +95,8 @@ enum Kind {
 struct Item {
     id: NodeId,
     start: f64,
+    /// How long it takes (an entrance keeps the speed it was queued at).
+    dur: f64,
     kind: Kind,
 }
 
@@ -112,14 +147,14 @@ fn ease_out_cubic(t: f64) -> f64 {
     1.0 - (1.0 - t.clamp(0.0, 1.0)).powi(3)
 }
 
-/// When each of `ids` (in creation order) starts: [`STAGGER`] apart from `first` (now, or after the
-/// last entrance queued), the stagger shrunk so the last ends within `cap` of `now`.
-pub fn schedule(ids: &[NodeId], now: f64, first: f64, cap: f64) -> Vec<(NodeId, f64)> {
-    let latest_start = now + (cap - ENTER).max(0.0);
+/// When each of `ids` (in creation order) starts: the speed's stagger apart from `first` (now, or
+/// after the last entrance queued), the stagger shrunk so the last ends within the cap of `now`.
+pub fn schedule(ids: &[NodeId], now: f64, first: f64, speed: Speed) -> Vec<(NodeId, f64)> {
+    let latest_start = now + (speed.cap - speed.enter).max(0.0);
     let first = first.max(now).min(latest_start);
     let step = match ids.len() {
         0 | 1 => 0.0,
-        n => STAGGER.min((latest_start - first) / (n - 1) as f64),
+        n => speed.stagger.min((latest_start - first) / (n - 1) as f64),
     };
     ids.iter().enumerate().map(|(i, id)| (*id, first + step * i as f64)).collect()
 }
@@ -157,7 +192,8 @@ fn view_rect(app: &FigApp) -> Option<(NodeId, figcraft_doc::geom::Rect)> {
 /// what's done, and make this frame's render-only document.
 pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Landed]) {
     let animate = app.session.prefs.settings.reveal_agent_work && !app.reduce_motion();
-    let cap = if app.ui.agent_view.budget.level >= 3 { CAP_DEGRADED } else { CAP };
+    let speed = Speed::of(&app.session.prefs.settings.reveal_speed);
+    let speed = if app.ui.agent_view.budget.level >= 3 { speed.degraded() } else { speed };
     let following = figcraft_engine::cmd::camera::follow_state(&app.session) == "following";
     let view = view_rect(app);
     let Ok(doc) = app.session.ds().map(|d| d.doc.clone()) else {
@@ -197,10 +233,11 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
             continue;
         }
         let new: Vec<NodeId> = entering(&doc, &l.created).into_iter().filter(|id| seen(*id)).collect();
-        let first = if st.items.iter().any(|i| i.kind == Kind::Enter) { st.last_start + STAGGER } else { now };
-        for (id, start) in schedule(&new, now, first, cap) {
+        // Behind the running stagger: a step landing mid-reveal never restarts or cuts it.
+        let first = if st.items.iter().any(|i| i.kind == Kind::Enter) { st.last_start + speed.stagger } else { now };
+        for (id, start) in schedule(&new, now, first, speed) {
             st.items.retain(|i| i.id != id);
-            st.items.push(Item { id, start, kind: Kind::Enter });
+            st.items.push(Item { id, start, dur: speed.enter, kind: Kind::Enter });
             st.last_start = start;
             st.fresh = true;
         }
@@ -216,7 +253,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
                 moved.transform = b.transform;
                 if moved == *b {
                     st.items.retain(|i| i.id != id);
-                    st.items.push(Item { id, start: now, kind: Kind::Move(a.transform.translation()) });
+                    st.items.push(Item { id, start: now, dur: TWEEN, kind: Kind::Move(a.transform.translation()) });
                 }
             }
         }
@@ -232,10 +269,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
             st.fade = Some(Fade { before: before.clone(), after: doc.clone(), ids: roots, start: now });
         }
     }
-    st.items.retain(|i| {
-        let dur = if i.kind == Kind::Enter { ENTER } else { TWEEN };
-        now < i.start + dur && doc.contains(i.id)
-    });
+    st.items.retain(|i| now < i.start + i.dur && doc.contains(i.id));
     if st.fade.as_ref().is_some_and(|f| now >= f.start + TWEEN || !Arc::ptr_eq(&f.after, &doc)) {
         st.fade = None;
     }
@@ -257,7 +291,7 @@ fn render_doc(st: &State, doc: &Arc<Document>, now: f64) -> Arc<Document> {
         let Some(n) = d.node_mut(it.id) else { continue };
         match it.kind {
             Kind::Enter => {
-                let e = ease_out_cubic((now - it.start) / ENTER);
+                let e = ease_out_cubic((now - it.start) / it.dur);
                 n.opacity *= e as f32;
                 let s = START_SCALE + (1.0 - START_SCALE) * e;
                 let c = Vec2::new(n.width / 2.0, n.height / 2.0);
