@@ -4,6 +4,7 @@
 - **The app:** the release build, started with a scratch `HOME` (`<scratch>/home-j3`). Every client configuration it read or wrote is a file inside that folder. Nothing was read or written in your real `~/.codex`, `~/.cursor` or `~/.config`, or in any other app's real configuration.
 - **Captures:** `ui.screenshot`, the window's own pixels.
   - Captures 01–14 are 2880 × 1800 (2×); the display changed scale between runs, so 15–25 are 1440 × 900 (1×).
+  - **04, 07, 12 and 14 were retaken in Stage K3** (1440 × 900, 1×). They come from the build with the current wording and K1's two labels, on a fresh scratch home (`home-k3`), through the same flows, clicked in the window. The backup in 12 is therefore named `…-150731`.
 - **The endpoint** listened on 127.0.0.1:**7681**: another Scrim held 7680, so the fallback picked the next port. Every command and entry uses that live port.
 - **Driving the window:**
   - Every Connect, Run, Write and Re-register was **clicked in the window** (`ui.input`), like the person's own clicks.
@@ -35,7 +36,7 @@
 |---|---|
 | `09-cursor-panel.png`, `10-cursor-panel-buttons.png` | Cursor: the exact file (`~/.cursor/mcp.json`) and entry; Write, Copy, Close |
 | `11-cursor-confirmation.png` | One confirmation, naming the file. Before it was answered, the file was byte-for-byte what it had been |
-| `12-cursor-written.png` | After Write: Configured, and "…The previous file was kept as mcp.json.scrim-backup-20261021-130023." The file kept its `// my servers` comment and its `github` server as written; Scrim's entry was added beside them; the backup is the original byte for byte |
+| `12-cursor-written.png` | After Write: Configured, and "…The previous file was kept as mcp.json.scrim-backup-20261021-150731" (K3's retake) The file kept its `// my servers` comment and its `github` server as written; Scrim's entry was added beside them; the backup is the original byte for byte |
 | `13-every-status.png` | Every status at once: Codex and Cursor **Configured**, VS Code **Not configured**, Zed **Can't read its configuration** (an invalid file; Zed was found by its folder), Goose **Not checked** (a YAML client, Copy only) |
 | `14-zed-unreadable-copy-only.png` | Zed's panel for the invalid file: the parse error in red, Copy and Close, no Write. The file's checksum was unchanged and no backup was made |
 | `15-zed-token-warning.png` | Authentication on, Zed (no documented way to read a token from elsewhere): the entry shows **`Bearer <token>`** (the window never paints the token itself) and the amber warning |
@@ -61,7 +62,7 @@ An MCP client connected to the real endpoint announcing Codex's `clientInfo` nam
 - **The panel painted the MCP token** in a literal-token entry (Zed): the window now masks it as `<token>`, as Claude Code's command does. Write and Copy still use the real token. The capture that showed it was deleted, not kept.
 - **"points to http://127.0.0.1:7681/mcp; this window is at http://127.0.0.1:7681/mcp"** for an entry missing only the token: it now says "has this address but not the token".
 - **"Scrim will run / will add…"** showed even when Scrim wouldn't (Configured, Can't read): the intro now says it only when it will.
-  - Captures `04`, `07`, `12` and `14` were taken before this change and show the earlier wording.
+  - Captures `04`, `07`, `12` and `14` were first taken before this change. They were retaken in Stage K3 with the current wording: "Codex's own command, which adds Scrim for your user:" and "Scrim's entry in Cursor's / Zed's configuration file:".
 - **Stage I's Resume button** was pushed out of the AI tab whenever the tab scrolled (its Follow switch takes the width): Resume now sits at the row's end. Covered by `follow_agent_tests.rs` › `resume_stays_inside_the_ai_tab_when_it_scrolls`.
 
 ## Not verified
