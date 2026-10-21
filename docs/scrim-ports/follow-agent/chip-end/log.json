@@ -1,0 +1,2957 @@
+{
+ "url": "http://127.0.0.1:7680/mcp",
+ "events": [
+  {
+   "t": 4.4606,
+   "what": "batch",
+   "i": 1
+  },
+  {
+   "t": 4.4606,
+   "what": "call",
+   "tool": "run_command"
+  },
+  {
+   "t": 4.4842,
+   "what": "answer",
+   "tool": "run_command",
+   "error": false
+  },
+  {
+   "t": 4.4842,
+   "what": "call",
+   "tool": "batch"
+  },
+  {
+   "t": 4.5119,
+   "what": "answer",
+   "tool": "batch",
+   "error": false
+  },
+  {
+   "t": 7.5156,
+   "what": "batch",
+   "i": 2
+  },
+  {
+   "t": 7.5156,
+   "what": "call",
+   "tool": "batch"
+  },
+  {
+   "t": 7.5192,
+   "what": "answer",
+   "tool": "batch",
+   "error": false
+  },
+  {
+   "t": 9.0242,
+   "what": "scroll"
+  },
+  {
+   "t": 11.0798,
+   "what": "batch",
+   "i": 3
+  },
+  {
+   "t": 11.0799,
+   "what": "call",
+   "tool": "batch"
+  },
+  {
+   "t": 11.1157,
+   "what": "answer",
+   "tool": "batch",
+   "error": false
+  },
+  {
+   "t": 13.6208,
+   "what": "finish"
+  },
+  {
+   "t": 13.6208,
+   "what": "call",
+   "tool": "finish_working"
+  },
+  {
+   "t": 13.6395,
+   "what": "answer",
+   "tool": "finish_working",
+   "error": false
+  },
+  {
+   "t": 13.6395,
+   "what": "finish-done"
+  },
+  {
+   "t": 16.6445,
+   "what": "second-build"
+  },
+  {
+   "t": 16.6445,
+   "what": "call",
+   "tool": "run_command"
+  },
+  {
+   "t": 16.6593,
+   "what": "answer",
+   "tool": "run_command",
+   "error": false
+  },
+  {
+   "t": 16.6594,
+   "what": "call",
+   "tool": "batch"
+  },
+  {
+   "t": 16.6792,
+   "what": "answer",
+   "tool": "batch",
+   "error": false
+  },
+  {
+   "t": 16.6792,
+   "what": "second-build-done"
+  },
+  {
+   "t": 19.6843,
+   "what": "call",
+   "tool": "finish_working"
+  },
+  {
+   "t": 19.6994,
+   "what": "answer",
+   "tool": "finish_working",
+   "error": false
+  }
+ ],
+ "captures": [
+  {
+   "k": 0,
+   "t": 3.9583,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    352.0,
+    330.0,
+    1.0
+   ]
+  },
+  {
+   "k": 1,
+   "t": 4.0632,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    352.0,
+    330.0,
+    1.0
+   ]
+  },
+  {
+   "k": 2,
+   "t": 4.1792,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    352.0,
+    330.0,
+    1.0
+   ]
+  },
+  {
+   "k": 3,
+   "t": 4.2993,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    352.0,
+    330.0,
+    1.0
+   ]
+  },
+  {
+   "k": 4,
+   "t": 4.423,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 0.12988776250000278,
+   "view": [
+    353.33636851821166,
+    332.45237839778207,
+    0.9962519831720983
+   ]
+  },
+  {
+   "k": 5,
+   "t": 4.5394,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 0.8661737000000058,
+   "view": [
+    440.0251531995794,
+    491.53552049922814,
+    0.7808738724565785
+   ]
+  },
+  {
+   "k": 6,
+   "t": 4.6587,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    538.1306791669383,
+    671.5695974074134,
+    0.5927348660660893
+   ]
+  },
+  {
+   "k": 7,
+   "t": 4.7791,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 8,
+   "t": 4.8987,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 9,
+   "t": 5.019,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 10,
+   "t": 5.1394,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 11,
+   "t": 5.2591,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 12,
+   "t": 5.379,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 13,
+   "t": 5.4992,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 14,
+   "t": 5.6193,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 15,
+   "t": 5.7389,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 16,
+   "t": 5.859,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 17,
+   "t": 5.9789,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 18,
+   "t": 6.099,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 19,
+   "t": 6.2189,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 20,
+   "t": 6.339,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 21,
+   "t": 6.4588,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 22,
+   "t": 6.5785,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 23,
+   "t": 6.6987,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 24,
+   "t": 6.8187,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 25,
+   "t": 6.9387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 26,
+   "t": 7.0588,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 27,
+   "t": 7.179,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 28,
+   "t": 7.2988,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 29,
+   "t": 7.4187,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 30,
+   "t": 7.5387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 31,
+   "t": 7.6588,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 32,
+   "t": 7.7788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 33,
+   "t": 7.899,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 34,
+   "t": 8.0189,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 35,
+   "t": 8.139,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 36,
+   "t": 8.2591,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 37,
+   "t": 8.3792,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 38,
+   "t": 8.499,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 39,
+   "t": 8.619,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 40,
+   "t": 8.7389,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 41,
+   "t": 8.8589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 42,
+   "t": 8.9789,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    767.0053762407159,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 43,
+   "t": 9.0992,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    998.6280557198739,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 44,
+   "t": 9.2194,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 45,
+   "t": 9.3389,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 46,
+   "t": 9.4584,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 47,
+   "t": 9.5789,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 48,
+   "t": 9.6989,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 49,
+   "t": 9.8189,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 50,
+   "t": 9.939,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 51,
+   "t": 10.0591,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 52,
+   "t": 10.1791,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 53,
+   "t": 10.2988,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 54,
+   "t": 10.4189,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 55,
+   "t": 10.5388,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 56,
+   "t": 10.659,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 57,
+   "t": 10.779,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 58,
+   "t": 10.899,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 59,
+   "t": 11.0189,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 60,
+   "t": 11.1385,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 61,
+   "t": 11.2588,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 62,
+   "t": 11.3787,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 63,
+   "t": 11.4987,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 64,
+   "t": 11.6188,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 65,
+   "t": 11.7387,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 66,
+   "t": 11.8587,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 67,
+   "t": 11.9787,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 68,
+   "t": 12.0987,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 69,
+   "t": 12.2187,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 70,
+   "t": 12.3386,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 71,
+   "t": 12.4589,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 72,
+   "t": 12.5786,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 73,
+   "t": 12.6988,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 74,
+   "t": 12.819,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 75,
+   "t": 12.9388,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 76,
+   "t": 13.0589,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 77,
+   "t": 13.1788,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 78,
+   "t": 13.2988,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 79,
+   "t": 13.4188,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 80,
+   "t": 13.5388,
+   "ok": true,
+   "follow": "paused",
+   "pausedBy": "the person's press, scroll or pinch on the canvas",
+   "chip": {
+    "rect": [
+     699.1875,
+     52.0,
+     796.8125,
+     78.0
+    ],
+    "shown": true
+   },
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 81,
+   "t": 13.659,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": {
+    "fading": 0.310111939907074,
+    "shown": false
+   },
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.7412919774999995,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 82,
+   "t": 13.7789,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.4425474999999981,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 83,
+   "t": 13.8986,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.14057114500000267,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 84,
+   "t": 14.0188,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 85,
+   "t": 14.1388,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 86,
+   "t": 14.2589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 87,
+   "t": 14.3788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 88,
+   "t": 14.4988,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 89,
+   "t": 14.6186,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 90,
+   "t": 14.7387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 91,
+   "t": 14.8587,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 92,
+   "t": 14.9785,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 93,
+   "t": 15.0986,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 94,
+   "t": 15.2188,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 95,
+   "t": 15.3389,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 96,
+   "t": 15.4586,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 97,
+   "t": 15.5788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 98,
+   "t": 15.6989,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 99,
+   "t": 15.8191,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 100,
+   "t": 15.9392,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 101,
+   "t": 16.0589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 102,
+   "t": 16.1788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 103,
+   "t": 16.2989,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 104,
+   "t": 16.419,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 105,
+   "t": 16.5386,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": null,
+   "alpha": 0.0,
+   "view": [
+    540.0,
+    1014.1959680721687,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 106,
+   "t": 16.6587,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 0.519514587500014,
+   "view": [
+    1031.6507876771752,
+    972.5044768522678,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 107,
+   "t": 16.7788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4054.075178614912,
+    716.2059350500026,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 108,
+   "t": 16.8988,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 109,
+   "t": 17.0201,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 110,
+   "t": 17.1387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 111,
+   "t": 17.2587,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 112,
+   "t": 17.3786,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 113,
+   "t": 17.4986,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 114,
+   "t": 17.6186,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 115,
+   "t": 17.7389,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 116,
+   "t": 17.8587,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 117,
+   "t": 17.9787,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 118,
+   "t": 18.0985,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 119,
+   "t": 18.2187,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 120,
+   "t": 18.3387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 121,
+   "t": 18.4589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 122,
+   "t": 18.5789,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 123,
+   "t": 18.6989,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 124,
+   "t": 18.8188,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 125,
+   "t": 18.9388,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 126,
+   "t": 19.0589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 127,
+   "t": 19.1785,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 128,
+   "t": 19.2988,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 129,
+   "t": 19.4194,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 130,
+   "t": 19.5387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster 2",
+   "finished": null,
+   "alpha": 1.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 131,
+   "t": 19.659,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.8907340625000018,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 132,
+   "t": 19.7789,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.589948542500002,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 133,
+   "t": 19.8989,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.2906059375000005,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 134,
+   "t": 20.0187,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 135,
+   "t": 20.1387,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 136,
+   "t": 20.2585,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 137,
+   "t": 20.3786,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 138,
+   "t": 20.4987,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 139,
+   "t": 20.6188,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 140,
+   "t": 20.7388,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 141,
+   "t": 20.8589,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 142,
+   "t": 20.9788,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  },
+  {
+   "k": 143,
+   "t": 21.0986,
+   "ok": true,
+   "follow": "following",
+   "pausedBy": null,
+   "chip": null,
+   "working": null,
+   "finished": "local-agent-mode-scrim (via mcp-\u2026 finished",
+   "alpha": 0.0,
+   "view": [
+    4540.0,
+    675.0,
+    0.5896296296296296
+   ]
+  }
+ ],
+ "stderr": [
+  {
+   "t": 2.9129,
+   "line": "[30207] Using callback port derived from the server URL: 13440"
+  },
+  {
+   "t": 2.9137,
+   "line": "[30207] Discovering OAuth server configuration..."
+  },
+  {
+   "t": 2.9306,
+   "line": "[30207] [30207] Connecting to remote server: http://127.0.0.1:7680/mcp"
+  },
+  {
+   "t": 2.9306,
+   "line": "[30207] Using transport strategy: http-first"
+  },
+  {
+   "t": 2.946,
+   "line": "[30207] Connected to remote server using StreamableHTTPClientTransport"
+  },
+  {
+   "t": 2.9462,
+   "line": "[30207] Local STDIO server running"
+  },
+  {
+   "t": 2.9463,
+   "line": "[30207] Proxy established successfully between local STDIO and remote StreamableHTTPClientTransport"
+  },
+  {
+   "t": 2.9463,
+   "line": "[30207] Press Ctrl+C to exit"
+  },
+  {
+   "t": 2.9466,
+   "line": "[30207] [Local\u2192Remote] initialize"
+  },
+  {
+   "t": 2.9466,
+   "line": "[30207] {"
+  },
+  {
+   "t": 2.9466,
+   "line": "  \"jsonrpc\": \"2.0\","
+  },
+  {
+   "t": 2.9466,
+   "line": "  \"id\": 1,"
+  },
+  {
+   "t": 2.9466,
+   "line": "  \"method\": \"initialize\","
+  },
+  {
+   "t": 2.9466,
+   "line": "  \"params\": {"
+  },
+  {
+   "t": 2.9466,
+   "line": "    \"protocolVersion\": \"2025-06-18\","
+  },
+  {
+   "t": 2.9466,
+   "line": "    \"capabilities\": {},"
+  },
+  {
+   "t": 2.9466,
+   "line": "    \"clientInfo\": {"
+  },
+  {
+   "t": 2.9466,
+   "line": "      \"name\": \"local-agent-mode-scrim (via mcp-remote 0.14.3)\","
+  },
+  {
+   "t": 2.9466,
+   "line": "      \"version\": \"1.0.0\""
+  },
+  {
+   "t": 2.9466,
+   "line": "    }"
+  },
+  {
+   "t": 2.9466,
+   "line": "  }"
+  },
+  {
+   "t": 2.9466,
+   "line": "}"
+  },
+  {
+   "t": 2.9489,
+   "line": "[30207] [Remote\u2192Local] 1"
+  },
+  {
+   "t": 2.9492,
+   "line": "[30207] [Local\u2192Remote] notifications/initialized"
+  },
+  {
+   "t": 2.9493,
+   "line": "[30207] [Local\u2192Remote] tools/list"
+  },
+  {
+   "t": 2.9514,
+   "line": "[30207] [Remote\u2192Local] 2"
+  },
+  {
+   "t": 4.4615,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 4.4835,
+   "line": "[30207] [Remote\u2192Local] 3"
+  },
+  {
+   "t": 4.4847,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 4.5117,
+   "line": "[30207] [Remote\u2192Local] 4"
+  },
+  {
+   "t": 7.5159,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 7.5191,
+   "line": "[30207] [Remote\u2192Local] 5"
+  },
+  {
+   "t": 11.0819,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 11.1156,
+   "line": "[30207] [Remote\u2192Local] 6"
+  },
+  {
+   "t": 13.6213,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 13.6394,
+   "line": "[30207] [Remote\u2192Local] 7"
+  },
+  {
+   "t": 16.6449,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 16.6593,
+   "line": "[30207] [Remote\u2192Local] 8"
+  },
+  {
+   "t": 16.6595,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 16.6792,
+   "line": "[30207] [Remote\u2192Local] 9"
+  },
+  {
+   "t": 19.6847,
+   "line": "[30207] [Local\u2192Remote] tools/call"
+  },
+  {
+   "t": 19.6993,
+   "line": "[30207] [Remote\u2192Local] 10"
+  },
+  {
+   "t": 21.2395,
+   "line": "[30207]"
+  },
+  {
+   "t": 21.2395,
+   "line": "Shutting down..."
+  }
+ ],
+ "diagnostics": [
+  {
+   "at": 1792609874,
+   "detail": "end: local-agent-mode-scrim (via mcp-remote 0.14.3) (session b23cec22\u2026), finish_working; the dots fade out",
+   "kind": "working",
+   "time": "2026-10-21 19:11:14 UTC"
+  },
+  {
+   "at": 1792609871,
+   "detail": "begin: local-agent-mode-scrim (via mcp-remote 0.14.3) (session b23cec22\u2026), first request; the dots are on",
+   "kind": "working",
+   "time": "2026-10-21 19:11:11 UTC"
+  },
+  {
+   "at": 1792609868,
+   "detail": "follow pause cleared: the agent finished",
+   "kind": "follow",
+   "time": "2026-10-21 19:11:08 UTC"
+  },
+  {
+   "at": 1792609868,
+   "detail": "end: local-agent-mode-scrim (via mcp-remote 0.14.3) (session b23cec22\u2026), finish_working; the dots fade out",
+   "kind": "working",
+   "time": "2026-10-21 19:11:08 UTC"
+  },
+  {
+   "at": 1792609863,
+   "detail": "following paused: the person's press, scroll or pinch on the canvas",
+   "kind": "follow",
+   "time": "2026-10-21 19:11:03 UTC"
+  },
+  {
+   "at": 1792609859,
+   "detail": "begin: local-agent-mode-scrim (via mcp-remote 0.14.3) (session b23cec22\u2026), first request; the dots are on",
+   "kind": "working",
+   "time": "2026-10-21 19:10:59 UTC"
+  }
+ ]
+}

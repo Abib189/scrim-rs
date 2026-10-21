@@ -65,6 +65,15 @@ pub fn settle(app: &mut FigApp, now: f64, ended: Option<Cause>) {
     app.ui.agent_view.end.fade = (!app.reduce_motion()).then_some((now, chip));
 }
 
+/// For `ui.inspect` › `agent.chip`: shown (pressable), or fading with its opacity, else null.
+pub fn inspect(app: &FigApp) -> serde_json::Value {
+    match (shown(app), fading(app, now(app))) {
+        (true, _) => json!({"shown": true, "rect": app.ui.agent_view.follow.chip.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y])}),
+        (false, Some(a)) => json!({"shown": false, "fading": a}),
+        (false, None) => serde_json::Value::Null,
+    }
+}
+
 /// A resume (`camera.follow-agents` while paused): noted in Settings ▸ Diagnostics.
 pub fn resumed(app: &mut FigApp) {
     app.ui.agent_view.end.fade = None;

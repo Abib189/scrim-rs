@@ -65,10 +65,12 @@ fn finish_working_fades_the_chip_out_clears_the_pause_and_the_next_build_is_foll
     assert!(!shown(&u.app));
     let now = u.time;
     assert!(fading(&u.app, now).is_some(), "fading out");
+    assert_eq!(crate::follow_agent::inspect(&u.app)["chip"]["shown"], false, "ui.inspect says it fades");
     assert_eq!(chip_node(&mut u), None, "out of the AccessKit tree while it fades");
     assert!(u.app.ui.agent_view.follow.chip.is_none(), "not pressable");
     frames(&mut u, (FADE * 60.0).ceil() as usize + 1);
     assert!(fading(&u.app, u.time).is_none(), "gone within {FADE} s");
+    assert!(crate::follow_agent::inspect(&u.app)["chip"].is_null());
     assert_eq!(written(&u), before, "no revision, undo step or change-log entry");
     assert!(follow_events(&u).contains(&"follow pause cleared: the agent finished".to_string()), "{:?}", follow_events(&u));
     // The camera stays where the person left it until the next build, which it follows unasked.
