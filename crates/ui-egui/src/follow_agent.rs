@@ -15,6 +15,9 @@
 //! - **Never mid-gesture:** with the pointer down, a text edit open, a canvas interaction or
 //!   someone else's flight in progress, the move waits and goes after.
 //! - Nothing here writes to the document: the camera is view state.
+//!
+//! The reveal of new layers ([`reveal`]) and the working indicator ([`working_indicator`]) read the
+//! same edits; under load they degrade in a fixed order ([`Budget`]).
 
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -27,6 +30,11 @@ use serde_json::json;
 use crate::FigApp;
 use crate::i18n::{tr, trf};
 use crate::theme::{Tokens, ink, regular, semibold};
+
+#[path = "reveal.rs"]
+pub mod reveal;
+#[path = "working_indicator.rs"]
+pub mod working_indicator;
 
 /// While edits keep coming, at most one new flight this often (seconds).
 pub const FLIGHT_EVERY: f64 = 0.4;
@@ -56,7 +64,55 @@ pub struct State {
     seen: Option<(u64, u64)>,
     /// The document as last seen, to tell created, changed and deleted layers apart.
     last_doc: Option<Arc<Document>>,
+    /// The document before this frame's new edits (the reveal compares moves with it).
+    pub(crate) before: Option<Arc<Document>>,
     follow: Follow,
+    pub reveal: reveal::State,
+    pub indicator: working_indicator::State,
+    pub budget: Budget,
+}
+
+/// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
+/// frames in a row while something animates, the next step down is taken.
+pub const FRAME_BUDGET_MS: f64 = 1000.0 / 60.0;
+pub const RENDER_BUDGET_MS: f64 = 1000.0 / 30.0;
+
+/// Degrading under load, in a fixed order, a step at a time and only while still over budget:
+/// 1. the dot wave becomes the static row; 2. the outline's pulse stops; 3. the reveal's stagger is
+///    capped at 0.6 s. The layer fade itself is never dropped for load (only for a hidden window,
+///    badly dropped frames, the setting or reduced motion). Back to 0 after 2 s with nothing
+///    animating.
+#[derive(Default, Debug)]
+pub struct Budget {
+    pub level: u8,
+    over: u8,
+    stepped: f64,
+    active_at: f64,
+    /// Tests pin the level (debug builds' frame times aren't the app's).
+    pub(crate) frozen: bool,
+}
+
+fn budget(app: &mut FigApp, now: f64) {
+    let active = app.ui.agent_view.reveal.active() || app.ui.agent_view.indicator.artboard().is_some();
+    let over = app.ui.frame_ms > FRAME_BUDGET_MS || app.ui.render_ms > RENDER_BUDGET_MS;
+    let b = &mut app.ui.agent_view.budget;
+    if b.frozen {
+        return;
+    }
+    if !active {
+        b.over = 0;
+        if now - b.active_at > 2.0 {
+            b.level = 0;
+        }
+        return;
+    }
+    b.active_at = now;
+    b.over = if over { b.over.saturating_add(1) } else { 0 };
+    if b.over >= 3 && b.level < 3 && now - b.stepped >= 0.25 {
+        b.level += 1;
+        b.stepped = now;
+        b.over = 0;
+    }
 }
 
 #[derive(Default)]
@@ -113,7 +169,10 @@ fn scan(app: &mut FigApp) -> Vec<Landed> {
         return Vec::new();
     }
     let before = st.last_doc.replace(doc.clone()).unwrap_or_else(|| doc.clone());
+    st.before = Some(before.clone());
     st.seen = Some((uid, newest));
+    // A layer created by one of these edits is "changed" in the later ones that list it.
+    let mut made: BTreeSet<NodeId> = BTreeSet::new();
     app.session
         .agents
         .edits_after(uid, since)
@@ -129,8 +188,8 @@ fn scan(app: &mut FigApp) -> Vec<Landed> {
             };
             for &id in &c.ids {
                 match (before.contains(id), doc.contains(id)) {
-                    (false, true) => l.created.push(id),
-                    (true, true) => l.changed.push(id),
+                    (false, true) if made.insert(id) => l.created.push(id),
+                    (false, true) | (true, true) => l.changed.push(id),
                     (true, false) => l.deleted.push(id),
                     (false, false) => {}
                 }
@@ -174,11 +233,37 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let now = ctx.input(|i| i.time);
     let landed = scan(app);
     follow(app, ctx, now, &landed);
+    reveal::tick(app, ctx, now, &landed);
+    working_indicator::tick(app, ctx, now, &landed);
+    budget(app, now);
 }
 
-/// Every frame, after the canvas: the paused chip.
+/// Every frame, after the canvas: the paused chip, and the working indicator's AccessKit node.
 pub fn after_canvas(app: &mut FigApp, ui: &mut Ui) {
     chip(app, ui);
+    working_indicator::accessibility(app, ui);
+}
+
+/// "Claude is working on Poster": the working indicator's name for screen readers, from the same
+/// agent and artboard as the AI tab's "Following …".
+pub fn working_text(app: &FigApp) -> Option<String> {
+    let id = app.ui.agent_view.indicator.artboard()?;
+    let name = app.session.doc().ok()?.node(id)?.name.clone();
+    let agent = &app.ui.agent_view.follow.agent;
+    Some(trf("{agent} is working on {artboard}", &[("agent", agent), ("artboard", &name)]))
+}
+
+/// For `ui.inspect`: following, the reveal, the indicator and the degradation step.
+pub fn inspect(app: &FigApp) -> serde_json::Value {
+    let v = &app.ui.agent_view;
+    json!({
+        "follow": follow_state(&app.session),
+        "revealing": v.reveal.entering().count(),
+        "indicator": v.indicator.drawn.get().map(|(r, cols)| json!({"columns": cols, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]})),
+        "outline": v.indicator.outlined.get().is_some(),
+        "working": working_text(app),
+        "degraded": v.budget.level,
+    })
 }
 
 /// The view now: document, page, centre and zoom.
@@ -393,4 +478,4 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
 
 #[cfg(test)]
 #[path = "follow_agent_tests.rs"]
-mod tests;
+pub(crate) mod tests;

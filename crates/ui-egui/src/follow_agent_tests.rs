@@ -13,28 +13,28 @@ use serde_json::{Value, json};
 use super::{FLIGHT_EVERY, Landed, target};
 use crate::layers_drag_tests::Ui;
 
-fn id(v: &Value) -> NodeId {
+pub(crate) fn id(v: &Value) -> NodeId {
     figcraft_engine::params::id_of(&v["id"]).unwrap()
 }
 
 /// Run `cmd` as an agent over the app's MCP endpoint route (the control queue's handler).
-fn agent(u: &mut Ui, cmd: &str, params: Value) -> Value {
+pub(crate) fn agent(u: &mut Ui, cmd: &str, params: Value) -> Value {
     let ctx = u.ctx.clone();
     crate::control::handle_route(&mut u.app, &ctx, "mcp (http)", "engine.execute", &json!({"command": cmd, "params": params})).unwrap()
 }
 
-fn view(u: &Ui) -> (f64, f64, f64) {
+pub(crate) fn view(u: &Ui) -> (f64, f64, f64) {
     let v = &u.app.session.ds().unwrap().view;
     (v.cx, v.cy, v.zoom)
 }
 
-fn click(u: &mut Ui, p: Pos2) {
+pub(crate) fn click(u: &mut Ui, p: Pos2) {
     u.frame(vec![Event::PointerMoved(p)]);
     u.frame(vec![Event::PointerButton { pos: p, button: PointerButton::Primary, pressed: true, modifiers: Modifiers::NONE }]);
     u.frame(vec![Event::PointerButton { pos: p, button: PointerButton::Primary, pressed: false, modifiers: Modifiers::NONE }]);
 }
 
-fn frames(u: &mut Ui, n: usize) {
+pub(crate) fn frames(u: &mut Ui, n: usize) {
     for _ in 0..n {
         u.frame(vec![]);
     }
@@ -42,7 +42,7 @@ fn frames(u: &mut Ui, n: usize) {
 
 /// A frame "Home" at the origin with the camera on it at 100%, the canvas sized, an MCP client
 /// named like Claude's connected.
-fn scene() -> (Ui, NodeId) {
+pub(crate) fn scene() -> (Ui, NodeId) {
     let mut s = Session::new();
     let home = id(&s.execute("frame.create", &json!({"x": 0, "y": 0, "width": 200, "height": 200, "name": "Home"})).unwrap());
     s.execute("select.none", &json!({})).unwrap();
@@ -58,7 +58,7 @@ fn scene() -> (Ui, NodeId) {
 }
 
 /// The agent puts a frame "Poster" far to the right.
-fn poster(u: &mut Ui, x: f64) -> NodeId {
+pub(crate) fn poster(u: &mut Ui, x: f64) -> NodeId {
     id(&agent(u, "frame.create", json!({"x": x, "y": 0, "width": 400, "height": 300, "name": "Poster"})))
 }
 

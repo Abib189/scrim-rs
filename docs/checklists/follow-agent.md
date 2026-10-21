@@ -20,3 +20,19 @@ The plan, and what the code held: `docs/design/follow-agent.md`. Tests are in `c
 | The AI tab says "Following Claude · Poster"; `camera.follow-agents` answers the state (MCP route) | Watch the AI tab while Claude works | `the_ai_tab_says_who_and_what_it_follows_and_the_command_answers_the_state` |
 | The switch is saved (Settings ▸ General, the AI tab, the palette); on by default | Turn it off, restart | `cmd/camera_tests.rs` › `follow_agents_turns_on_off_and_resumes` |
 | An Activity row click selects and focuses its layers (D2) | Click an agent's change in the AI tab | `an_activity_row_click_selects_and_focuses_its_layers` |
+| I2: an agent's 16-layer batch enters in creation order, 40 ms apart (fade and 4% scale, 220 ms), within 1.2 s | Watch an agent build a poster | `reveal_tests.rs` › `a_16_layer_batch_enters_in_order_and_the_document_never_sees_it`, `a_batch_is_staggered_in_creation_order_within_the_cap` |
+| Over 60 layers, only the top-level groups enter | Agent: 70 shapes at once | `over_60_layers_only_the_roots_of_what_was_created_enter` |
+| Render-only: MCP `screenshot`, an export and `inspect_document` mid-reveal equal those after; the document, its revision and undo history are untouched | Agent: screenshot mid-build | `screenshot_export_and_inspect_mid_reveal_equal_those_after`, `a_16_layer_batch_…` |
+| No entrance for the person's edits, undo or redo, file open, Animations Off, or "Reveal agent work" off | Each in turn | `the_persons_edits_undo_redo_a_file_open_animations_off_and_the_switch_skip_it` |
+| Paused: work in view still enters; work off screen is drawn final and never half-faded | Scroll away, let the agent work, scroll to it | `while_paused_work_in_view_reveals_and_work_off_screen_is_never_left_hidden` |
+| A move tweens; a delete fades out; dropped frames finish the reveal | Agent: move, delete; hide the window mid-reveal | `a_move_tweens_a_delete_fades_and_dropped_frames_finish_it` |
+| The reveal and the working indicator run in the same frames | Watch a batch | `the_reveal_and_the_working_indicator_run_in_the_same_frames` |
+| Under load: static row, then no pulse, then a 0.6 s cap, in that order; the fade stays | A large file | `under_load_the_steps_come_in_order_and_the_fade_stays` |
+| The dots' wave is deterministic, smooth and loops (1.6 s) | — | `working_indicator_tests.rs` › `the_wave_is_deterministic_smooth_and_loops` |
+| It fades in over 160 ms, out over 400 ms after 600 ms idle; with motion off it shows still | Watch the agent stop | `it_fades_in_over_160_ms_and_out_over_400_ms_after_600_ms_idle`, `it_fades_out_once_the_agent_is_idle_and_the_dots_switch_is_its_own` |
+| The row never overlaps a label (Ridgeline at 10, 22, 50, 100%), drops columns on a narrow artboard, then hides, and stays on its artboard | Zoom out while an agent works | `on_ridgeline_at_four_zooms_…`, `the_row_drops_columns_on_a_narrow_artboard_then_hides_and_never_touches_a_label` |
+| The outline has no handles and no hit area; the person's selection wins | Click the outline; select the artboard | `the_outline_has_no_handles_and_no_hit_area_and_the_persons_selection_wins` |
+| One polite status for screen readers: "Claude is working on Poster" | VoiceOver | `one_polite_status_names_the_agent_and_the_artboard` |
+| Animations Off: the static row | Animations: Off | `with_animations_off_the_row_is_still_and_with_motion_it_moves` |
+| Brightest dot at 3:1 on the canvas and both pages, both themes | — | `at_its_brightest_the_row_reads_at_3_to_1_in_both_themes` |
+| The two switches are saved and answer over the route | Turn them off, restart | `the_switches_are_saved_and_answer_over_the_route` |

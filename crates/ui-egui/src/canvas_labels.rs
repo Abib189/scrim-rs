@@ -11,7 +11,9 @@
 //!   room a gap before it. In the stretch it gets, the title is cut first, then the status icon
 //!   dropped, then the label hidden (`frame_labels::fit`).
 //!
-//! The layout is pure (rectangles in, rectangles out); [`draw`] measures, lays out and paints.
+//! The layout is pure (rectangles in, rectangles out); [`draw`] measures, lays out and paints. The
+//! agent's working indicator is placed after the labels, in the room they leave
+//! (`follow_agent::working_indicator::place`).
 
 use egui::{Painter, Pos2, Rect, pos2};
 use figcraft_doc::{Document, NodeId};
@@ -146,7 +148,11 @@ pub fn draw(
     let labels: Vec<frame_labels::Label> =
         ids.iter().filter_map(|id| frame_labels::prepare(app, painter, t, doc, *id, sel.contains(id), hover == Some(*id))).collect();
     let items: Vec<Item> = labels.iter().map(|l| l.item).collect();
-    labels.iter().zip(layout(&items)).filter_map(|(l, p)| Some((l.id, frame_labels::paint(painter, l, p?)))).collect()
+    let placed = layout(&items);
+    // The working indicator (Stage I) takes the room the labels leave.
+    let taken: Vec<Rect> = placed.iter().flatten().map(|p| p.rect).collect();
+    crate::follow_agent::working_indicator::paint(app, painter, doc, sel, &taken);
+    labels.iter().zip(placed).filter_map(|(l, p)| Some((l.id, frame_labels::paint(painter, l, p?)))).collect()
 }
 
 #[cfg(test)]

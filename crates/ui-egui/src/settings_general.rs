@@ -46,6 +46,17 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         app.run("camera.follow-agents", json!({"on": !prefs.settings.follow_agents}));
     }
     widgets::label(ui, tr("The camera goes to an agent's edits as they land. Your own scroll, zoom or edit pauses it."), t.text_secondary);
+    if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {
+        app.run("pref.revealAgentWork", json!({}));
+    }
+    if widgets::checkbox(ui, prefs.settings.working_indicator, tr("Show working indicator")) {
+        app.run("pref.workingIndicator", json!({}));
+    }
+    widgets::label(
+        ui,
+        tr("New layers fade in as an agent adds them, and dots above the artboard show it is working. Animations Off shows them still."),
+        t.text_secondary,
+    );
 
     heading(ui, tr("Shared rooms"));
     ui.horizontal(|ui| {

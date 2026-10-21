@@ -195,3 +195,42 @@ Two amendments to the brief (read before I2). The reveal still plays, and a **wo
   - the mid-gesture wait;
   - the size wait;
   - the agent-camera hook.
+
+## I2 as built: the reveal and the working indicator
+
+- **Settings:** "Reveal agent work" (`pref.revealAgentWork`) and "Show working indicator" (`pref.workingIndicator`) in Settings ▸ General ▸ Agents at work. Both are on by default and saved, with `settings_version` 4; a version-3 file reads them on.
+- **The reveal** (`crates/ui-egui/src/reveal.rs`):
+  - **The entrance:** 220 ms, opacity 0 → 1 and scale 96% → 100%, ease-out cubic.
+  - **The stagger:** 40 ms apart in id order, the batch capped at 1.2 s (0.6 s at degradation step 3). Over 60 layers, only the roots of what was created enter.
+  - **Moves and deletes:** a move that changed only the position tweens over 160 ms. A delete-only edit fades the deleted layers over 160 ms, drawn from the document before the delete.
+  - **The render-only document:** the canvas job's document (`canvas.rs`, the one line that already chose the live text edit's document; still 1509 lines). It is a copy with the revealing layers eased.
+  - **Classifying:** the scanner counts a layer as created only in the first edit of a frame that lists it, so a frame built child by child enters once, first.
+- **Where it plays:**
+  - while following, everywhere (the camera is on its way);
+  - while paused or off, only for layers in view when they land. Others are drawn final at once and stay final when scrolled to.
+- **The working indicator** (`crates/ui-egui/src/working_indicator.rs`), painted in E2's label step (`canvas_labels::draw`) from the labels' placed rectangles:
+  - **The row:** 2 × 20 dots in groups of five; 149 × 11 pt; 12 pt above the artboard and right-aligned to it.
+  - **Placement:**
+    1. columns are dropped from the left where a label is in the way;
+    2. when not even five columns fit there, it goes one row higher, 27 pt above the artboard, clear of the label row;
+    3. failing that, it hides.
+
+    That second place is an addition: without it, a long title hid the row at most zooms.
+  - **The wave:** `wave(seed, row, col, t)`, a cosine with a 1.6 s loop and a phase per column (splitmix64 of the artboard id and the column). The fades follow `alpha`. The static row is `still` (the wave at a fixed moment).
+  - **The outline:** `ink::overlay()`, 2 px. It is skipped when the artboard is in the selection, including when the agent's own new frame is selected.
+  - **AccessKit:** one `Status` node with `Live::Polite`: "Claude is working on Poster".
+- **Under load** (`follow_agent::Budget`): over 16.7 ms a frame, or 33 ms a canvas render, for three frames in a row while something animates, steps are taken one at a time, at least 250 ms apart:
+  1. the static row;
+  2. no outline pulse;
+  3. the 0.6 s cap.
+
+  It returns to 0 after 2 s idle. The fade is never dropped for load.
+- **`ui.inspect`:** `agent: {follow, revealing, indicator, outline, working, degraded}`.
+- **A correction to I0:** I0 said a window capture would end a reveal first. It doesn't: I4 has to capture the reveal in the real window, and a window capture is "what the person sees". MCP `screenshot` without `window` (the render), exports and `inspect_document` are what never see it, and a test pins that.
+- **Tests:** `reveal_tests.rs` (9) and `working_indicator_tests.rs` (11). Breaking each of these in turn fails a test:
+  - skipping undo;
+  - skipping the person's edits;
+  - the off-screen rule;
+  - a time-independent wave;
+  - the selection rule;
+  - the label clearance.

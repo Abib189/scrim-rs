@@ -357,7 +357,7 @@ fn request_render(app: &mut FigApp, worker: &mut Worker, ppp: f32, max_texture_s
         (ds.view.zoom * f64::from(ppp), (rect.width() * ppp).ceil().max(1.0) as u32, (rect.height() * ppp).ceil().max(1.0) as u32)
     };
     // The edited text is drawn live (an IME composition included); the caret is an overlay.
-    let doc = app.preedit_view().map(|p| p.doc.clone()).unwrap_or_else(|| ds.doc.clone());
+    let doc = app.preedit_view().map(|p| p.doc.clone()).or_else(|| crate::follow_agent::reveal::canvas_doc(app)).unwrap_or_else(|| ds.doc.clone());
     let outlined = if ds.view.outlines_selection { ds.selection.clone() } else { vec![] };
     let proof = ds.view.proof_srgb && !doc.color_profile.is_srgb();
     let outline_extras = figcraft_render::Outline { hidden: ds.view.outline_hidden, bounds: ds.view.outline_bounds, light: false };

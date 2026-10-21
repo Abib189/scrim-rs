@@ -1675,6 +1675,7 @@ impl FigApp {
         state["panelMode"] = json!(if self.ui.panel_animate { "animate" } else { "design" });
         state["pendingOpens"] = json!(self.ui.pending_opens.len());
         state["layers"] = layers_restore::inspect(self);
+        state["agent"] = follow_agent::inspect(self);
         state["missingFonts"] = json!(self.ui.missing_fonts.as_ref().map(missing_fonts::Shown::inspect));
         state
     }

@@ -13,6 +13,8 @@
 //! With `fit` (Stage I's follow, `docs/design/follow-agent.md`), layers that don't fit at the
 //! current zoom are fitted instead: the zoom goes down just enough, never up.
 //! `camera.follow-agents` turns following agents' edits on or off, or resumes it.
+//! `pref.revealAgentWork` and `pref.workingIndicator` switch the canvas's reveal of an agent's new
+//! layers and its working indicator (Stage I2).
 
 use figcraft_doc::NodeId;
 use figcraft_doc::geom::Rect;
@@ -134,6 +136,28 @@ pub fn specs() -> Vec<CommandSpec> {
             "{id? | ids? (default: the selection), fit? (zoom out to fit when they don't fit at this zoom)} → {moved, page, switched, hidden: [ids], view: {cx, cy, zoom}}  (the least camera move that brings the layers into view with a 32 px margin, the zoom kept; a layer bigger than the view gets its leading edge at the margin, or with `fit` the zoom goes down just enough to fit; another page is shown first; hidden layers are focused and listed)",
             false,
             focus
+        ),
+        spec!(
+            "pref.revealAgentWork",
+            "Reveal agent work",
+            "{on? (default: toggle)} → {on}  (layers an agent creates arrive with a short entrance on the canvas; drawing only, never in the document. Animations Off or reduced motion shows them at once anyway. Saved in Settings)",
+            false,
+            |s, p| {
+                let on = boolean(p, "on").unwrap_or(!s.prefs.settings.reveal_agent_work);
+                s.prefs.settings.reveal_agent_work = on;
+                Ok(json!({"on": on}))
+            }
+        ),
+        spec!(
+            "pref.workingIndicator",
+            "Show working indicator",
+            "{on? (default: toggle)} → {on}  (the row of dots above the artboard an agent is working on; drawing only. Saved in Settings)",
+            false,
+            |s, p| {
+                let on = boolean(p, "on").unwrap_or(!s.prefs.settings.working_indicator);
+                s.prefs.settings.working_indicator = on;
+                Ok(json!({"on": on}))
+            }
         ),
         spec!(
             "camera.follow-agents",

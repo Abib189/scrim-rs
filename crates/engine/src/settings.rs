@@ -92,7 +92,8 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 1: Stage C.
 /// - 2: the MCP port's default moved from 7600 to 7680 (C1.2).
 /// - 3: `follow_agents` (Stage I), on by default.
-pub const SETTINGS_VERSION: u32 = 3;
+/// - 4: `reveal_agent_work` and `working_indicator` (Stage I2), on by default.
+pub const SETTINGS_VERSION: u32 = 4;
 
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
@@ -128,6 +129,12 @@ pub struct Settings {
     /// window's own state and isn't saved.
     #[serde(default = "yes")]
     pub follow_agents: bool,
+    /// Layers an agent creates arrive with a short entrance on the canvas (`pref.revealAgentWork`).
+    #[serde(default = "yes")]
+    pub reveal_agent_work: bool,
+    /// The dot row above the artboard an agent works on (`pref.workingIndicator`).
+    #[serde(default = "yes")]
+    pub working_indicator: bool,
     /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub toolbar: crate::cmd::toolbar::Layout,
@@ -151,6 +158,8 @@ impl Default for Settings {
             motion: system(),
             preserve_unsaved: true,
             follow_agents: true,
+            reveal_agent_work: true,
+            working_indicator: true,
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
             diagnostics: Vec::new(),
