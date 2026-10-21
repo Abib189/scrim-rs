@@ -62,6 +62,9 @@ pub struct McpEndpoint {
     /// platform's place. `None` (the browser, headless, tests unless they point it at a scratch
     /// file): there's no file, so nothing reads or writes the real one.
     pub desktop_config: Option<std::path::PathBuf>,
+    /// Where other agents' configurations are (`cmd::agent_clients`): set by the desktop app. `None`
+    /// (the browser, headless, tests unless they give a scratch one): no client's file is read.
+    pub client_env: Option<crate::cmd::agent_clients::PathEnv>,
 }
 
 /// How long after a client's last `initialize` the AI tab still calls it connected.
@@ -94,28 +97,11 @@ pub fn claude_add_command(port: u16, token: Option<&str>) -> String {
     format!("claude {}", quoted.join(" "))
 }
 
-/// The friendly names of MCP clients by the `clientInfo.name` they announce
-/// (`docs/design/connect-any-agent.md`, J0: each read from the client's source or install).
-const FRIENDLY: [(&str, &str); 12] = [
-    ("claude-code", "Claude Code"),
-    ("codex-mcp-client", "Codex"),
-    ("gemini-cli-mcp-client", "Gemini CLI"),
-    ("opencode", "OpenCode"),
-    ("Visual Studio Code", "VS Code"),
-    ("Code - OSS", "VS Code"),
-    ("Cline", "Cline"),
-    ("@cline/core", "Cline"),
-    ("Zed", "Zed"),
-    ("goose-cli", "Goose"),
-    ("goose-desktop", "Goose"),
-    ("continue-client", "Continue"),
-];
-/// Clients whose name carries more after a known start (Grok Build: `grok-shell-<server name>`).
-const FRIENDLY_PREFIX: [(&str, &str); 1] = [("grok-shell-", "Grok")];
 /// The longest client name shown as announced; longer ones end in "…".
 pub const NAME_MAX: usize = 32;
 
-/// The name a person sees for an MCP client that announced `raw`: its friendly name when known,
+/// The name a person sees for an MCP client that announced `raw`: its friendly name when its profile
+/// knows it (`docs/design/connect-any-agent.md`),
 /// else `raw` as announced (control characters left out, at most [`NAME_MAX`] characters, then
 /// "…"). `None` when it announced no name: callers say "an agent", never a guess.
 pub fn client_display_name(raw: &str) -> Option<String> {
@@ -123,11 +109,9 @@ pub fn client_display_name(raw: &str) -> Option<String> {
     if raw.is_empty() {
         return None;
     }
-    if let Some((_, f)) = FRIENDLY.iter().find(|(k, _)| k.eq_ignore_ascii_case(raw)) {
-        return Some((*f).to_string());
-    }
-    if let Some((_, f)) = FRIENDLY_PREFIX.iter().find(|(k, _)| raw.starts_with(k)) {
-        return Some((*f).to_string());
+    // The clients' profiles (`cmd::agent_clients`, `clients.json`) say what each announces.
+    if let Some(f) = crate::cmd::agent_clients::friendly(raw) {
+        return Some(f.to_string());
     }
     let clean: String = raw.chars().filter(|c| !c.is_control()).collect();
     let clean = clean.trim();

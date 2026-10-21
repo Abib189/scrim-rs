@@ -1,0 +1,315 @@
+[
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "display": "Claude Code",
+    "client_names": ["claude-code"],
+    "docs": ["https://docs.claude.com/en/docs/claude-code/mcp"],
+    "verified": "2026-10-20",
+    "verification": "verified-live",
+    "builtin": "claude-code",
+    "notes": ["Connected through its own flow above (Stage C)."]
+  },
+  {
+    "id": "claude-desktop",
+    "name": "Claude Desktop",
+    "display": "Claude Desktop",
+    "docs": ["https://modelcontextprotocol.io/docs/develop/connect-local-servers"],
+    "verified": "2026-10-20",
+    "verification": "docs-only",
+    "builtin": "claude-desktop",
+    "bridge": true,
+    "notes": ["Connected through its own flow above (Stage F). The bridge was verified live; Claude Desktop itself wasn't."]
+  },
+  {
+    "id": "codex",
+    "name": "Codex CLI",
+    "display": "Codex",
+    "client_names": ["codex-mcp-client"],
+    "docs": ["https://learn.chatgpt.com/docs/extend/mcp?surface=cli", "https://learn.chatgpt.com/docs/config-file/config-reference"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["codex"], "dirs": ["{env:CODEX_HOME|{home}/.codex}"]},
+    "cli": {
+      "program": "codex",
+      "add": ["mcp", "add", "{key}", "--url", "{url}"],
+      "add_token": ["--bearer-token-env-var", "{token_var}"],
+      "remove": ["mcp", "remove", "{key}"]
+    },
+    "file": {
+      "format": "toml",
+      "paths": {"mac": ["{env:CODEX_HOME|{home}/.codex}/config.toml"], "linux": ["{env:CODEX_HOME|{home}/.codex}/config.toml"], "windows": ["{env:CODEX_HOME|{home}/.codex}/config.toml"]},
+      "documented": {"mac": true, "linux": true, "windows": false},
+      "container": ["mcp_servers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url"],
+      "token": {"style": "env-ref", "set": {"bearer_token_env_var": "{token_var}"}},
+      "write": true
+    },
+    "notes": ["Codex reads the token from the environment variable named in its entry: set it where Codex runs."]
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini CLI",
+    "display": "Gemini CLI",
+    "client_names": ["gemini-cli-mcp-client"],
+    "docs": ["https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md", "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["gemini"], "dirs": ["{env:GEMINI_CLI_HOME|{home}}/.gemini"]},
+    "cli": {
+      "program": "gemini",
+      "add": ["mcp", "add", "-s", "user", "--transport", "http", "{key}", "{url}"],
+      "add_token": ["-H", "Authorization: Bearer ${{token_var}}"],
+      "remove": ["mcp", "remove", "-s", "user", "{key}"]
+    },
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{env:GEMINI_CLI_HOME|{home}}/.gemini/settings.json"], "linux": ["{env:GEMINI_CLI_HOME|{home}}/.gemini/settings.json"], "windows": ["{env:GEMINI_CLI_HOME|{home}}/.gemini/settings.json"]},
+      "documented": {"mac": true, "linux": true, "windows": false},
+      "container": ["mcpServers"],
+      "entry": {"url": "{url}", "type": "http"},
+      "url_keys": ["url", "httpUrl"],
+      "token": {"style": "env-ref", "set": {"headers": {"Authorization": "Bearer ${{token_var}}"}}},
+      "write": false
+    },
+    "notes": ["Gemini CLI adds servers to the current project unless told otherwise: Scrim adds it for your user (-s user)."]
+  },
+  {
+    "id": "opencode",
+    "name": "OpenCode",
+    "display": "OpenCode",
+    "client_names": ["opencode"],
+    "docs": ["https://opencode.ai/docs/mcp-servers/", "https://opencode.ai/docs/config/"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["opencode"], "dirs": ["{xdg_config}/opencode"]},
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{xdg_config}/opencode/opencode.json", "{xdg_config}/opencode/opencode.jsonc"], "linux": ["{xdg_config}/opencode/opencode.json", "{xdg_config}/opencode/opencode.jsonc"], "windows": ["{xdg_config}/opencode/opencode.json", "{xdg_config}/opencode/opencode.jsonc"]},
+      "documented": {"mac": true, "linux": true, "windows": false},
+      "container": ["mcp"],
+      "entry": {"type": "remote", "url": "{url}", "enabled": true},
+      "url_keys": ["url"],
+      "token": {"style": "env-ref", "set": {"headers": {"Authorization": "Bearer {env:{token_var}}"}}},
+      "write": true
+    },
+    "notes": ["OpenCode has no command to remove a server: Scrim edits its file."]
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "display": "Cursor",
+    "docs": ["https://cursor.com/docs/mcp"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["cursor"], "dirs": ["{home}/.cursor"]},
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{home}/.cursor/mcp.json"], "linux": ["{home}/.cursor/mcp.json"], "windows": ["{home}/.cursor/mcp.json"]},
+      "documented": {"mac": true, "linux": true, "windows": true},
+      "container": ["mcpServers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url"],
+      "token": {"style": "env-ref", "set": {"headers": {"Authorization": "Bearer ${env:{token_var}}"}}},
+      "write": true
+    },
+    "notes": ["Cursor reads this file when it starts: restart Cursor after connecting."]
+  },
+  {
+    "id": "vscode",
+    "name": "VS Code",
+    "display": "VS Code",
+    "client_names": ["Visual Studio Code", "Code - OSS"],
+    "docs": ["https://code.visualstudio.com/docs/agents/reference/mcp-configuration", "https://code.visualstudio.com/docs/agents/run/manage-mcp-servers"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["code"], "dirs": []},
+    "cli": {
+      "program": "code",
+      "add": ["--add-mcp", {"name": "{key}", "type": "http", "url": "{url}"}],
+      "add_token": [],
+      "token_json": {"headers": {"Authorization": "Bearer ${env:{token_var}}"}},
+      "remove": []
+    },
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{home}/Library/Application Support/Code/User/mcp.json"], "linux": ["{home}/.config/Code/User/mcp.json"], "windows": ["{appdata}/Code/User/mcp.json"]},
+      "documented": {"mac": false, "linux": false, "windows": false},
+      "container": ["servers"],
+      "entry": {"type": "http", "url": "{url}"},
+      "url_keys": ["url"],
+      "write": false
+    },
+    "notes": ["VS Code adds the server to your user profile. To remove it: MCP: List Servers, then Uninstall.", "The status is read from where VS Code keeps the profile's mcp.json beside settings.json; VS Code's docs don't name that file."]
+  },
+  {
+    "id": "cline",
+    "name": "Cline",
+    "display": "Cline",
+    "client_names": ["Cline", "@cline/core"],
+    "docs": ["https://docs.cline.bot/mcp/mcp-overview", "https://docs.cline.bot/cli/cli-reference", "https://docs.cline.bot/getting-started/config"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["cline"], "dirs": ["{env:CLINE_DIR|{home}/.cline}"]},
+    "cli": {
+      "program": "cline",
+      "add": ["mcp", "add", "{key}", "{url}", "--transport", "http", "--yes"],
+      "add_token": ["--header", "Authorization: Bearer {token}"],
+      "remove": ["mcp", "remove", "{key}"]
+    },
+    "file": {
+      "format": "json",
+      "paths": {"mac": ["{env:CLINE_MCP_SETTINGS_PATH}", "{env:CLINE_DIR|{home}/.cline}/data/settings/cline_mcp_settings.json"], "linux": ["{env:CLINE_MCP_SETTINGS_PATH}", "{env:CLINE_DIR|{home}/.cline}/data/settings/cline_mcp_settings.json"], "windows": ["{env:CLINE_MCP_SETTINGS_PATH}", "{env:CLINE_DIR|{home}/.cline}/data/settings/cline_mcp_settings.json"]},
+      "documented": {"mac": true, "linux": true, "windows": false},
+      "container": ["mcpServers"],
+      "entry": {"type": "streamableHttp", "url": "{url}"},
+      "url_keys": ["url"],
+      "token": {"style": "literal", "set": {"headers": {"Authorization": "Bearer {token}"}}},
+      "write": true
+    },
+    "notes": ["The file is shared by Cline's VS Code extension, its CLI and JetBrains."]
+  },
+  {
+    "id": "zed",
+    "name": "Zed",
+    "display": "Zed",
+    "client_names": ["Zed"],
+    "docs": ["https://zed.dev/docs/ai/mcp", "https://zed.dev/docs/configuring-zed"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": [], "dirs": ["{home}/.config/zed", "{appdata}/Zed"]},
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{home}/.config/zed/settings.json"], "linux": ["{env:XDG_CONFIG_HOME|{home}/.config}/zed/settings.json"], "windows": ["{appdata}/Zed/settings.json"]},
+      "documented": {"mac": true, "linux": true, "windows": true},
+      "container": ["context_servers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url"],
+      "token": {"style": "literal", "set": {"headers": {"Authorization": "Bearer {token}"}}},
+      "write": true
+    },
+    "notes": ["Zed picks the change up from its settings file."]
+  },
+  {
+    "id": "grok",
+    "name": "Grok Build",
+    "display": "Grok",
+    "client_prefixes": ["grok-shell-"],
+    "docs": ["https://docs.x.ai/build/features/mcp-servers", "https://docs.x.ai/build/settings"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["grok"], "dirs": ["{env:GROK_HOME|{home}/.grok}"]},
+    "cli": {
+      "program": "grok",
+      "add": ["mcp", "add", "--transport", "http", "{key}", "{url}"],
+      "add_token": ["--header", "Authorization: Bearer ${{token_var}}"],
+      "remove": ["mcp", "remove", "{key}"]
+    },
+    "file": {
+      "format": "toml",
+      "paths": {"mac": ["{env:GROK_HOME|{home}/.grok}/config.toml"], "linux": ["{env:GROK_HOME|{home}/.grok}/config.toml"], "windows": ["{env:GROK_HOME|{home}/.grok}/config.toml"]},
+      "documented": {"mac": true, "linux": true, "windows": true},
+      "container": ["mcp_servers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url"],
+      "token": {"style": "env-ref", "set": {"bearer_token_env_var": "{token_var}"}},
+      "write": true
+    },
+    "notes": ["This is Grok Build, the grok command. grok.com's connectors call from xAI's servers and can't reach this computer."]
+  },
+  {
+    "id": "devin",
+    "name": "Devin CLI",
+    "display": "Devin",
+    "docs": ["https://docs.devin.ai/cli/extensibility/mcp/configuration"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["devin"], "dirs": ["{xdg_config}/devin"]},
+    "cli": {
+      "program": "devin",
+      "add": ["mcp", "add", "{key}", "--url", "{url}", "-s", "user"],
+      "remove": ["mcp", "remove", "{key}"]
+    },
+    "file": {
+      "format": "json",
+      "paths": {"mac": ["{xdg_config}/devin/mcp_config.json"], "linux": ["{xdg_config}/devin/mcp_config.json"], "windows": ["{appdata}/devin/mcp_config.json"]},
+      "documented": {"mac": true, "linux": true, "windows": true},
+      "container": ["mcpServers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url", "serverUrl"],
+      "write": false
+    },
+    "notes": ["Devin's CLI documents no header option: with MCP authentication on, copy the entry instead."]
+  },
+  {
+    "id": "windsurf",
+    "name": "Windsurf (Devin Desktop)",
+    "display": "Windsurf",
+    "docs": ["https://docs.devin.ai/desktop/cascade/mcp", "https://docs.devin.ai/desktop/devin-desktop-faq"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["windsurf"], "dirs": ["{home}/.codeium"]},
+    "snippet": {"format": "json", "value": {"mcpServers": {"{key}": {"serverUrl": "{url}"}}}, "token_set": {"headers": {"Authorization": "Bearer ${env:{token_var}}"}}},
+    "notes": ["Windsurf is now Devin Desktop, and its documentation names four different places for this file, so Scrim doesn't write it. In the Cascade panel: ... (Actions) menu, then Open MCP config file, and add the entry under mcpServers."]
+  },
+  {
+    "id": "amp",
+    "name": "Amp",
+    "display": "Amp",
+    "docs": ["https://ampcode.com/docs/customize/mcp", "https://ampcode.com/docs/cli/settings"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["amp"], "dirs": ["{home}/.config/amp"]},
+    "cli": {
+      "program": "amp",
+      "add": ["mcp", "add", "{key}", "{url}"],
+      "remove": []
+    },
+    "file": {
+      "format": "jsonc",
+      "paths": {"mac": ["{home}/.config/amp/settings.json", "{home}/.config/amp/settings.jsonc"], "linux": ["{home}/.config/amp/settings.json", "{home}/.config/amp/settings.jsonc"], "windows": ["{home}/.config/amp/settings.json", "{home}/.config/amp/settings.jsonc"]},
+      "documented": {"mac": true, "linux": true, "windows": true},
+      "container": ["amp.mcpServers"],
+      "entry": {"url": "{url}"},
+      "url_keys": ["url"],
+      "write": false
+    },
+    "notes": ["Amp's docs don't say which transport a url entry uses.", "Amp's CLI documents no header option for local servers: with MCP authentication on, copy the entry instead."]
+  },
+  {
+    "id": "goose",
+    "name": "Goose",
+    "display": "Goose",
+    "client_names": ["goose-cli", "goose-desktop"],
+    "docs": ["https://goose-docs.ai/docs/guides/config-files", "https://goose-docs.ai/docs/getting-started/using-extensions"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": ["goose"], "dirs": ["{home}/.config/goose"]},
+    "snippet": {"format": "yaml", "text": "extensions:\n  {key}:\n    type: streamable_http\n    name: {key}\n    enabled: true\n    uri: \"{url}\"\n    headers: {}\n    timeout: 300\n"},
+    "notes": ["Goose adds servers interactively: goose configure, Add Extension, Remote Extension (Streamable HTTP). Its file is YAML (config.yaml), which Scrim doesn't edit."]
+  },
+  {
+    "id": "continue",
+    "name": "Continue",
+    "display": "Continue",
+    "client_names": ["continue-client"],
+    "docs": ["https://docs.continue.dev/customize/deep-dives/mcp"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": [], "dirs": ["{home}/.continue"]},
+    "snippet": {"format": "yaml", "text": "mcpServers:\n  - name: {key}\n    type: streamable-http\n    url: {url}\n"},
+    "notes": ["Continue's configuration is YAML (~/.continue/config.yaml), which Scrim doesn't edit: add this under mcpServers."]
+  },
+  {
+    "id": "lmstudio",
+    "name": "LM Studio",
+    "display": "LM Studio",
+    "docs": ["https://lmstudio.ai/docs/app/mcp"],
+    "verified": "2026-10-21",
+    "verification": "docs-only",
+    "detect": {"programs": [], "dirs": []},
+    "snippet": {"format": "json", "value": {"mcpServers": {"{key}": {"url": "{url}"}}}},
+    "notes": ["LM Studio edits its mcp.json in the app (Program tab, Install, Edit mcp.json); its docs don't say where the file is."]
+  }
+]

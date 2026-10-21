@@ -194,6 +194,7 @@ pub fn show(app: &mut FigApp, ctx: &Context) {
     crate::missing_fonts::show(app, ctx);
     crate::connect_flow::dialogs(app, ctx);
     crate::desktop_flow::dialogs(app, ctx);
+    crate::connect_flow::agent_clients_ui::dialogs(app, ctx);
     let t = Tokens::get(ctx);
     if app.ui.about {
         let mut open = true;

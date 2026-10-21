@@ -87,6 +87,8 @@ pub struct Flow {
     old: Option<Entry>,
     /// What Claude Code's `scrim` entry says (`mcp_registration`).
     pub(crate) registered: crate::mcp_registration::Check,
+    /// Connect other agents (`agent_clients_ui`, Stage J).
+    pub(crate) others: agent_clients_ui::Others,
 }
 
 impl Flow {
@@ -99,7 +101,8 @@ impl Flow {
 /// Open the flow (`mcp.connect-claude-code`).
 pub fn open(app: &mut FigApp) {
     let registered = std::mem::take(&mut app.ui.connect.registered);
-    app.ui.connect = Flow { open: true, registered, ..Flow::default() };
+    let others = std::mem::take(&mut app.ui.connect.others);
+    app.ui.connect = Flow { open: true, registered, others, ..Flow::default() };
 }
 
 /// Act on the confirmations' requests; `false` when `kind` isn't one.
@@ -367,6 +370,10 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
         }
     }
 }
+
+// Here, not in `lib.rs` (at its size cap): the other agents' section shares this flow's state.
+#[path = "agent_clients_ui.rs"]
+pub mod agent_clients_ui;
 
 #[cfg(test)]
 #[path = "connect_flow_tests.rs"]

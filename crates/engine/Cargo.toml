@@ -24,6 +24,8 @@ craft-docpath = { workspace = true }
 figcraft-plugin = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+# Connect other agents (Stage J): writes Codex's and Grok's config.toml keeping comments and order.
+toml_edit = "0.25"
 thiserror = { workspace = true }
 log = { workspace = true }
 base64 = { workspace = true }

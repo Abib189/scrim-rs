@@ -177,6 +177,15 @@ fn overused_font_findings_are_grouped_by_family() {
         h.app.session.execute("text.create", &json!({"text": "Hello", "x": 0, "y": 300 + 40 * i, "props": {"fontFamily": family}})).unwrap();
     }
     let shapes = h.frames(2);
+    // The lint is below the connect sections: scroll the tab to it, as a person would.
+    h.frame(vec![egui::Event::PointerMoved(text_center(&shapes, "Design lint"))]);
+    h.frame(vec![egui::Event::MouseWheel {
+        unit: egui::MouseWheelUnit::Point,
+        delta: egui::vec2(0.0, -400.0),
+        phase: egui::TouchPhase::Move,
+        modifiers: Default::default(),
+    }]);
+    let shapes = h.frames(3);
     h.click(text_center(&shapes, "Overused font"));
     let shapes = h.frames(2);
     assert!(has_text(&shapes, "Inter") && has_text(&shapes, "Geist"), "a row per family");

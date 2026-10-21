@@ -107,6 +107,7 @@ pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
         app.run("mcp.connect-claude-code", json!({}));
     }
     crate::desktop_flow::section(app, ui);
+    crate::connect_flow::agent_clients_ui::section(app, ui);
 }
 
 #[cfg(test)]

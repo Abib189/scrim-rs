@@ -312,3 +312,18 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
   - `crates/mcp/tests/sessions.rs`: attribution per session, the fallback, nameless clients, stdio, and the real header;
   - `client_names_tests.rs`: seven names across every place above, and identical follow, reveal and dots for each, with several clients the latest to edit named.
   - Making the window ignore the edit's client fails the several-clients test.
+
+## J2 as built: Connect other agents
+
+- **The profiles** are data: `crates/engine/src/cmd/agent_clients/clients.json` (16 clients), embedded at build time. Adding a client is a JSON entry: its docs, the date they were read, its label, how it's found, its command, its file (format, paths per OS, whether the docs name them, the servers' key path, the entry, how a token goes in, whether Scrim may write it) or its snippet. Claude Code and Claude Desktop are `builtin` rows that keep their own flows (C2, F1).
+- **The engine** (`cmd/agent_clients.rs`, `agent_clients/jsonc.rs`, `agent_clients/tomlfile.rs`):
+  - `report` is everything about one client for this window: the plan (the command, the file and entry, the snippet), the status from its file, the notes. Files are read only where the desktop app says (`McpEndpoint::client_env`, set from `Services::agent_client_env`); tests, the headless app and the browser read none. Inside an agent's request a file reads as unreadable (through `file_access`).
+  - `changed` makes one change in a file's text: TOML through `toml_edit` (comments and order kept); JSON and JSONC by a splice that changes only Scrim's member and is checked by parsing the result. A JSONC file whose comments can't be kept is refused, never pretty-printed over.
+  - `apply` is F1's safe write: refused inside an agent's request or for a read-only profile, a backup named `<file>.scrim-backup-<time>`, a temporary file, then a rename.
+  - Commands: `mcp.agent-clients` and `mcp.client-status` (read-only, on the MCP routes), `mcp.connect-client` (shows the panel), `mcp.copy-client-entry`, `mcp.copy-agent-snippet`, and the confirm-only `mcp.write-client`, `mcp.reregister-client`, `mcp.remove-old-client-entry`, which refuse an agent and only ask the person.
+- **The window** (`crates/ui-egui/src/agent_clients_ui.rs`, shared by the AI tab and Settings ▸ MCP):
+  - **How a client is changed:** its own command when the program is found (Codex, Gemini CLI, Grok, Cline, Devin, Amp, VS Code's `--add-mcp`); else its file when the profile allows writing and the docs name the path on this system; else Copy. Re-register through a CLI is its remove, then its add; a CLI without a remove command falls back to the file or Copy.
+  - **The rows:** found clients first (a program on the `PATH`, or the configuration folder in the desktop app; looked for every ten seconds, nothing run); the rest under More; the card for any other agent behind Other agent.
+  - **The panel:** the exact command lines or the file path and entry, the profile's notes, the token note (the env-var to set, or a warning that the token is written in plain text), the state's note, Run / Write / Re-register, Copy, Documentation, Close, the outcome, and Remove the old entry.
+  - **The confirmations** read the file again, aren't shown when there's nothing to do, show the command or the path, say that Scrim doesn't restart the client, and for a plain token say so and are answered with "Write the token".
+- **Not built:** reading a CLI's own list command for the status (`status.args` in the J0 sketch); the files carry the status for every CLI client here. YAML clients stay Copy only.

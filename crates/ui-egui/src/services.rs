@@ -105,4 +105,9 @@ pub trait Services {
     fn claude_desktop_config(&self) -> Option<std::path::PathBuf> {
         None
     }
+    /// Where other agents' configurations are found (`cmd::agent_clients`): the home folder and the
+    /// environment. Only the desktop app gives it; elsewhere nothing reads a real configuration.
+    fn agent_client_env(&self) -> Option<figcraft_engine::cmd::agent_clients::PathEnv> {
+        None
+    }
 }

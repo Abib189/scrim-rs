@@ -1536,6 +1536,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
+ "toml_edit",
  "wat",
  "web-time",
 ]
@@ -4610,6 +4611,7 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "toml_parser",
+ "toml_writer",
  "winnow",
 ]
 

@@ -299,6 +299,9 @@ impl Services for Desktop {
         use figcraft_engine::cmd::claude_desktop::{Env, Os, config_path};
         config_path(Os::this(), &Env::this())
     }
+    fn agent_client_env(&self) -> Option<figcraft_engine::cmd::agent_clients::PathEnv> {
+        Some(figcraft_engine::cmd::agent_clients::PathEnv::this())
+    }
     fn find_program(&self, name: &str) -> Option<String> {
         find_program(name)
     }

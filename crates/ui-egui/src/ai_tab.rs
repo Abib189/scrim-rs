@@ -85,6 +85,7 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
         });
     }
     crate::desktop_flow::section(app, ui);
+    crate::connect_flow::agent_clients_ui::section(app, ui);
 }
 
 fn activity(app: &mut FigApp, ui: &mut Ui) {
