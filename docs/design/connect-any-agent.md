@@ -334,3 +334,22 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
 - **File clients** (Cursor, Zed): written and refused live on scratch files; the apps weren't started.
 - **Fixes from the live run:** the row and button layout, the token masked in everything the window paints, the "address but not the token" wording, the panel's intro only when Scrim will act, and Stage I's Resume button inside a scrolling AI tab.
 - **Not verified:** a Codex session using the tools (it needs the owner's sign-in); VS Code's `--add-mcp` (it talks to the running VS Code); the GUI clients reading what was written; the clients that aren't installed; Windows and Linux beyond path resolution.
+
+## K1: two verifications per client
+
+- **The single label is gone.** In its place, every profile has two independent fields:
+  - **`registration`:** `untested`, `docs-only` or `verified-live`. It records whether adding Scrim to the client was checked.
+  - **`tool-use`:** `untested` or `verified-live`. It records whether an agent in that client was seen using Scrim's tools.
+
+  Each field carries its `date` (when the docs were read, or the live run) and, when live, its `evidence`: the doc that records it.
+- **The levels now:**
+
+  | Client | Registration | Tool use |
+  |---|---|---|
+  | Claude Code | live, 20 Oct 2026 (`docs/scrim-ports/settings/README.md`, the real Connect) | live, 21 Oct 2026 (`docs/scrim-ports/connect-agents/tool-use.md`: an `inspect_ui` call in the Stage K session) |
+  | Claude Desktop | docs only, 20 Oct 2026 (no live Connect against Claude Desktop itself is recorded) | live, 21 Oct 2026 (the owner's report, recorded in `tool-use.md`; not observed here) |
+  | Codex | live, 21 Oct 2026 (J3) | untested |
+  | Every other client | docs only, 21 Oct 2026 | untested |
+
+- **The panel** shows both, in plain words, under each client: "Not configured · Registered live, 21 Oct", then "Tools not yet used live". Claude Code and Claude Desktop keep their own sections, which don't show the labels; `mcp.agent-clients` and `mcp.client-status` return both for every client.
+- **The test:** `agent_clients_tests.rs` › `every_profile_is_well_formed_and_labelled_honestly` passes a level of `verified-live` only when its evidence file exists in the repository and names the client and the date. Only these three clients may claim a live run.

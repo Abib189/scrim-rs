@@ -46,23 +46,52 @@ fn names(d: &Path) -> Vec<String> {
     v
 }
 
+/// A live verification's record: the doc it names exists in the repository and mentions the client
+/// and the date ("2026-10-21" or "21 Oct 2026").
+fn recorded(id: &str, name: &str, what: &str, c: &super::Check) {
+    let doc = c.evidence.as_deref().unwrap_or_else(|| panic!("{id}: {what} is verified live with no record named"));
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(doc);
+    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{id}: {what}'s record {doc}: {e}"));
+    let date = c.date.as_deref().unwrap_or_default();
+    let (y, m, d) = (&date[..4], &date[5..7], date[8..].trim_start_matches('0'));
+    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let long = format!("{d} {} {y}", months[m.parse::<usize>().unwrap() - 1]);
+    assert!(text.contains(date) || text.contains(&long), "{id}: {doc} doesn't record {date}");
+    let display = name.split(' ').next().unwrap_or(name);
+    assert!(text.contains(display), "{id}: {doc} doesn't name {display}");
+}
+
 #[test]
 fn every_profile_is_well_formed_and_labelled_honestly() {
     let all = profiles();
     assert!(all.len() >= 16, "{}", all.len());
     for p in all {
         assert!(!p.docs.is_empty() && p.docs.iter().all(|d| d.starts_with("https://")), "{}: its docs", p.id);
-        assert!(["verified-live", "docs-only", "untested"].contains(&p.verification.as_str()), "{}", p.id);
-        assert_eq!(p.verified.len(), 10, "{}: a date", p.id);
-        // Only a recorded live run makes "verified live" (`docs/design/connect-any-agent.md`).
-        if p.verification == "verified-live" {
-            assert!(["claude-code", "codex"].contains(&p.id.as_str()), "{} claims a live run that isn't recorded", p.id);
+        // Two independent verifications (Stage K), each with its date; a live one only with a record
+        // in the docs that names the client and the date.
+        assert!(["verified-live", "docs-only", "untested"].contains(&p.registration.level.as_str()), "{}: registration", p.id);
+        assert!(["verified-live", "untested"].contains(&p.tool_use.level.as_str()), "{}: tool use is live or untested", p.id);
+        for (what, c) in [("registration", &p.registration), ("tool use", &p.tool_use)] {
+            if c.level != "untested" {
+                assert!(c.date.as_ref().is_some_and(|d| d.len() == 10), "{}: {what} has a date", p.id);
+            }
+            if c.level == "verified-live" {
+                recorded(&p.id, &p.name, what, c);
+            }
         }
         assert!(p.builtin.is_some() || p.cli.is_some() || p.file.is_some() || p.snippet.is_some(), "{}: some way to connect", p.id);
         if let Some(f) = &p.file {
             assert!(["json", "jsonc", "toml"].contains(&f.format.as_str()) && !f.container.is_empty() && !f.url_keys.is_empty(), "{}", p.id);
         }
     }
+    // The levels the docs record (Stage K).
+    let level = |id: &str| profile(id).map(|p| (p.registration.level.as_str(), p.tool_use.level.as_str()));
+    assert_eq!(level("claude-code"), Some(("verified-live", "verified-live")));
+    assert_eq!(level("claude-desktop"), Some(("docs-only", "verified-live")));
+    assert_eq!(level("codex"), Some(("verified-live", "untested")));
+    let live: Vec<&str> =
+        all.iter().filter(|p| p.registration.level == "verified-live" || p.tool_use.level == "verified-live").map(|p| p.id.as_str()).collect();
+    assert_eq!(live, ["claude-code", "claude-desktop", "codex"], "no other client claims a live run");
     let ids: Vec<&str> = all.iter().map(|p| p.id.as_str()).collect();
     for id in ["codex", "gemini", "cursor", "windsurf", "vscode", "cline", "zed", "opencode", "grok"] {
         assert!(ids.contains(&id), "{id} has a profile");

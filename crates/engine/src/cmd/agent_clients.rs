@@ -2,8 +2,9 @@
 //! knows is a **profile**, data in `agent_clients/clients.json`, never a code path of its own.
 //! - **What a profile says:** how the client adds a server (its CLI, its JSON/JSONC or TOML file,
 //!   or by hand), where its file is per OS (and whether that path is documented), the entry's
-//!   shape, how a token is passed, which `clientInfo.name` it announces, and what was verified
-//!   (verified live, docs only, untested) and when.
+//!   shape, how a token is passed, which `clientInfo.name` it announces, and two verifications
+//!   (Stage K): registration (verified live, docs only, untested) and tool use (verified live,
+//!   untested), each with its date and, when live, the doc that records it.
 //! - **The status** comes from the client's own file, read through `file_access` (an agent's
 //!   request can't read it): Configured, Not configured, Out of date (another address, or the old
 //!   `figcraft` entry), Can't read. Never "connected": only the endpoint knows that.
@@ -136,6 +137,17 @@ pub struct Snippet {
     pub token_set: Option<Value>,
 }
 
+/// One verification of a client (Stage K): its level, the date (when its docs were read, or the
+/// live run), and the doc that records a live run. `verified-live` needs that record.
+#[derive(Clone, Debug, Default, Deserialize, serde::Serialize, PartialEq)]
+pub struct Check {
+    pub level: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<String>,
+}
+
 /// One client.
 #[derive(Clone, Debug, Default, Deserialize)]
 pub struct Profile {
@@ -150,9 +162,11 @@ pub struct Profile {
     pub client_prefixes: Vec<String>,
     #[serde(default)]
     pub docs: Vec<String>,
-    /// When its docs were read, and what was verified: `verified-live`, `docs-only`, `untested`.
-    pub verified: String,
-    pub verification: String,
+    /// How far adding Scrim to it was verified (`untested`, `docs-only`, `verified-live`), and when.
+    pub registration: Check,
+    /// Whether an agent in it was seen using Scrim's tools (`untested`, `verified-live`), and when.
+    #[serde(rename = "tool-use")]
+    pub tool_use: Check,
     #[serde(default)]
     pub detect: Detect,
     #[serde(default)]
@@ -495,7 +509,7 @@ pub fn report(s: &Session, id: &str) -> crate::Result<Value> {
     let os = Os::this();
     let mut r = json!({
         "id": p.id, "name": p.name, "display": if p.display.is_empty() { &p.name } else { &p.display },
-        "docs": p.docs, "verified": p.verified, "verification": p.verification, "notes": p.notes,
+        "docs": p.docs, "registration": p.registration, "toolUse": p.tool_use, "notes": p.notes,
         "builtin": p.builtin, "bridge": p.bridge, "cloud": p.cloud, "url": url,
         // `cliPlain` / `filePlain`: the token itself goes into the client's configuration (the
         // panel warns, and the confirmation says so), not a reference to [`TOKEN_VAR`].
@@ -715,14 +729,14 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "mcp.agent-clients",
             "MCP clients Scrim can connect",
-            "{} → {clients: [{id, name, display, verification, verified, docs, state, builtin}]}  (every client with its status read from its own configuration; never \"connected\")",
+            "{} → {clients: [{id, name, display, registration: {level, date?, evidence?}, toolUse: {level, date?, evidence?}, docs, state, builtin}]}  (every client with its status read from its own configuration, and how far adding Scrim to it and using Scrim's tools from it were verified; never \"connected\")",
             false,
             |s, _| {
                 let list: Vec<Value> = profiles()
                     .iter()
                     .map(|p| {
                         let r = report(s, &p.id).unwrap_or_else(|_| json!({"state": State::Unknown.id()}));
-                        json!({"id": p.id, "name": p.name, "display": r["display"], "verification": p.verification, "verified": p.verified, "docs": p.docs, "state": r["state"], "builtin": p.builtin})
+                        json!({"id": p.id, "name": p.name, "display": r["display"], "registration": p.registration, "toolUse": p.tool_use, "docs": p.docs, "state": r["state"], "builtin": p.builtin})
                     })
                     .collect();
                 Ok(json!({"clients": list}))
@@ -731,7 +745,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "mcp.client-status",
             "Agent client status",
-            "{client} → {id, name, docs, verification, verified, cli?: {program, add, remove}, file?: {path, documented, format, writable, entry, text}, snippet?, state: configured|not configured|out of date|unreadable|unknown, registered?, error?, old, token, notes}  (read from the client's own file; an agent's request can't read it)",
+            "{client} → {id, name, docs, registration, toolUse, cli?: {program, add, remove}, file?: {path, documented, format, writable, entry, text}, snippet?, state: configured|not configured|out of date|unreadable|unknown, registered?, error?, old, token, notes}  (read from the client's own file; an agent's request can't read it)",
             false,
             |s, p| report(s, &client_of("mcp.client-status", p)?)
         ),

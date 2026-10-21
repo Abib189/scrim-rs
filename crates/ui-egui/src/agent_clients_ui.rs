@@ -6,7 +6,7 @@
 //!   configuration folder); the rest are under More. Each row shows:
 //!   - the status read from the client's own configuration: Configured, Not configured, Out of
 //!     date, Can't read. Never "Connected", which only the endpoint can see;
-//!   - how the profile was verified, and when;
+//!   - how adding Scrim to it was verified, and whether its tools were used live, with dates;
 //!   - Connect.
 //! - **The panel** shows exactly what will happen, with the live address:
 //!   - the client's own command (an argument list, run without a shell), or the file and its entry;
@@ -332,13 +332,31 @@ fn state_label(state: &str) -> &'static str {
     }
 }
 
-/// How the profile was verified, and when.
-fn verification(r: &Value) -> String {
-    let date = r["verified"].as_str().unwrap_or_default();
-    match r["verification"].as_str() {
-        Some("verified-live") => trf("Verified live · {date}", &[("date", &date)]),
-        Some("docs-only") => trf("Docs only · {date}", &[("date", &date)]),
-        _ => tr("Untested").to_string(),
+/// "21 Oct" from "2026-10-21" (the month in the interface's language).
+fn short_date(date: &str) -> String {
+    const MONTHS: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let month = date.get(5..7).and_then(|m| m.parse::<usize>().ok()).and_then(|m| m.checked_sub(1)).and_then(|m| MONTHS.get(m));
+    match (date.get(8..10).map(|d| d.trim_start_matches('0')), month) {
+        (Some(day), Some(m)) => format!("{day} {}", tr(m)),
+        _ => date.to_string(),
+    }
+}
+
+/// How adding Scrim to the client was verified, and when (Stage K).
+fn registration(r: &Value) -> String {
+    let date = short_date(r["registration"]["date"].as_str().unwrap_or_default());
+    match r["registration"]["level"].as_str() {
+        Some("verified-live") => trf("Registered live, {date}", &[("date", &date)]),
+        Some("docs-only") => trf("Registration from its docs, {date}", &[("date", &date)]),
+        _ => tr("Registration untested").to_string(),
+    }
+}
+
+/// Whether an agent in the client was seen using Scrim's tools, and when (Stage K).
+fn tool_use(r: &Value) -> String {
+    match r["toolUse"]["level"].as_str() {
+        Some("verified-live") => trf("Tools used live, {date}", &[("date", &short_date(r["toolUse"]["date"].as_str().unwrap_or_default()))]),
+        _ => tr("Tools not yet used live").to_string(),
     }
 }
 
@@ -403,8 +421,9 @@ fn row(app: &mut FigApp, ui: &mut Ui, id: &str, now: f64) {
             }
         });
     });
-    // The status, then how the profile was verified.
-    widgets::note(ui, &format!("{label} · {}", verification(&r)), t.text_secondary);
+    // The status with how adding it was verified; then whether its tools were used live.
+    widgets::note(ui, &format!("{label} · {}", registration(&r)), t.text_secondary);
+    widgets::note(ui, &tool_use(&r), t.text_secondary);
     if open {
         panel(app, ui, &r);
     }

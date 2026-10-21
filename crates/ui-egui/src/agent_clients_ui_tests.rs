@@ -141,8 +141,11 @@ fn found_clients_come_first_with_their_status_and_the_rest_under_more() {
     assert!(has_text(&shapes, "Connect other agents"), "{:?}", texts_containing(&shapes, "agents"));
     assert!(has_text(&shapes, "Codex") && has_text(&shapes, "Cursor"), "{:?}", texts_containing(&shapes, " · "));
     // The status, then how it was verified, and when.
-    assert!(has_text(&shapes, "Not configured · Verified live · 2026-10-21"), "{:?}", texts_containing(&shapes, " · "));
-    assert!(has_text(&shapes, "Configured · Docs only · 2026-10-21"));
+    assert!(has_text(&shapes, "Not configured · Registered live, 21 Oct"), "{:?}", texts_containing(&shapes, " · "));
+    assert!(has_text(&shapes, "Configured · Registration from its docs, 21 Oct"));
+    // Tool use, its own line (Stage K): Codex's registration is live, its tools not yet.
+    assert!(has_text(&shapes, "Tools not yet used live"));
+    assert!(super::short_date("2026-10-21") == "21 Oct" && super::short_date("2026-01-05") == "5 Jan" && super::short_date("bad") == "bad");
     assert!(!has_text(&shapes, "Zed"), "the rest wait under More");
     let more = figcraft_engine::cmd::agent_clients::profiles().len() - 4;
     assert!(has_text(&shapes, &format!("More ({more})")));
