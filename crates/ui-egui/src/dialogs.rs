@@ -645,3 +645,11 @@ fn export_dialog(app: &mut FigApp, ctx: &Context) {
         app.ui.export_preview = false;
     }
 }
+
+// Here, not in `lib.rs` (at its size cap): it serves the dialogs.
+#[path = "modal_input.rs"]
+pub mod modal_input;
+
+#[cfg(test)]
+#[path = "modal_scroll_tests.rs"]
+mod modal_scroll_tests;

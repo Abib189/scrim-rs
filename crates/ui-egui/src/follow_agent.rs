@@ -359,10 +359,13 @@ fn pause(app: &mut FigApp) {
 fn person_on_canvas(app: &FigApp, ctx: &Context) -> bool {
     let r = app.canvas.rect;
     let chip = app.ui.agent_view.follow.chip;
-    ctx.input(|i| {
+    let (over, acted) = ctx.input(|i| {
         let over = i.pointer.hover_pos().filter(|p| r.contains(*p) && p.y < r.max.y - TOOLBAR_BAND && !chip.is_some_and(|c| c.contains(*p)));
-        over.is_some() && (i.pointer.any_pressed() || i.events.iter().any(|e| matches!(e, egui::Event::MouseWheel { .. } | egui::Event::Zoom(_))))
-    })
+        (over, i.pointer.any_pressed() || i.events.iter().any(|e| matches!(e, egui::Event::MouseWheel { .. } | egui::Event::Zoom(_))))
+    });
+    // Not when a modal or a dialog covers the canvas there (K2). Asked outside `input`: it reads
+    // egui's memory, which can't be locked inside it.
+    acted && over.is_some_and(|p| !crate::dialogs::modal_input::canvas_covered(ctx, p))
 }
 
 /// Something the person is in the middle of: a move now would pull the canvas from under them.

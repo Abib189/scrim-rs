@@ -172,3 +172,25 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 - **Reveal durations** match the speed table: Fast 1.09 and 1.15 s, Normal 2.98 and 3.98 s, Slow 4.78 and 5.98 s, for 24 and 36 layers.
 - **The 782-layer Fixture:** about 3 ms frames at Normal and Slow, and no degradation step.
 - **Fixed during IE,** with a stricter window test: the row now waits for the new artboard's top-right corner to be inside the canvas before it moves.
+
+## K2: the modal scroll leak (fixed)
+
+- **What leaked:** while Settings (the one modal, `set_modal_layer`) was open, the wheel, trackpad scroll and a pinch over the canvas beside the dialog still panned and zoomed the camera. Follow's own check also saw the scroll as the person's, and paused following.
+  - **The cause:** both read the frame's raw scroll and zoom once the pointer was over the canvas rectangle.
+  - **The fix:** `dialogs::modal_input::canvas_covered` is now asked first, by the canvas's zoom and pan (one line in the frozen `canvas.rs`, not longer) and by follow's check. It says no under a modal, or under a dialog, menu or popup drawn above the canvas there.
+  - **Found on the way:** the first version asked inside egui's input lock and deadlocked. It is asked after the lock now.
+- **The dialogs checked** (`modal_scroll_tests.rs`, wheel, trackpad scroll and pinch over each):
+
+  | Dialog | Leak before | Now |
+  |---|---|---|
+  | Settings (modal) | **yes:** the camera, and follow's pause | blocked over the whole window; works again once closed |
+  | Missing fonts | no (egui's hover test) | no |
+  | Local variables | no | no |
+  | Export | no | no |
+  | A Connect confirmation ("Run this command?") | no | no |
+
+  The side panels' scroll areas never leaked: egui's hover test already counts a modal.
+- **Tests:**
+  - `with_settings_open_nothing_behind_it_scrolls_zooms_or_pauses` checks over the dialog, the canvas beside it, and both side panels. It failed before the fix.
+  - `under_settings_a_scroll_on_the_canvas_doesnt_pause_following` runs on follow's harness, the only one that sizes the canvas for following. It fails with follow's check removed.
+  - `over_a_dialog_the_wheel_and_pinch_dont_reach_the_canvas` covers the four floating dialogs.

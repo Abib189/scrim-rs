@@ -546,8 +546,8 @@ fn input(app: &mut FigApp, ui: &mut Ui, resp: &egui::Response) -> bool {
         app.ui.layers_focus = false;
         app.ui.key_box = None;
     }
-    // Zoom (pinch, Cmd/Ctrl+scroll) about the pointer; plain scroll pans.
-    if resp.hovered() {
+    // Zoom (pinch, Cmd/Ctrl+scroll) about the pointer; plain scroll pans. Never under a modal (K2).
+    if resp.hovered() && !crate::dialogs::modal_input::canvas_covered(&ctx, pos) {
         if (zoom_delta - 1.0).abs() > 1e-4 {
             let anchor = app.to_page(pos);
             if let Ok(ds) = app.session.ds_mut() {
