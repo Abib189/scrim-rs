@@ -331,3 +331,33 @@ fn the_systems_reduced_motion_is_a_jump_no_entrance_and_the_static_row() {
     frames(&mut u, 5);
     assert_eq!(u.app.ui.agent_view.indicator.drawn.get(), drawn, "the static row: nothing moves");
 }
+
+/// Paused, the AI tab's Resume sits inside the panel, also when the tab scrolls (its scrollbar
+/// takes width): the switch leaves it room.
+#[test]
+fn resume_stays_inside_the_ai_tab_when_it_scrolls() {
+    let (mut h, _) = crate::live_tests::Harness::new();
+    h.app.session.agents.mcp.port = Some(7601);
+    h.app.session.agents.mcp.clients.push(("codex-mcp-client".into(), "1".into(), 0));
+    h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
+    h.app.handle_ui_requests();
+    h.frames(3);
+    let ctx = h.ctx.clone();
+    crate::control::handle_route(
+        &mut h.app,
+        &ctx,
+        "mcp (http)",
+        "engine.execute",
+        &json!({"command": "frame.create", "params": {"x": 0, "y": 0, "width": 100, "height": 100}}),
+    )
+    .unwrap();
+    h.frames(30);
+    h.app.run("frame.create", json!({"x": 400, "y": 0, "width": 100, "height": 100, "name": "Mine"}));
+    h.frames(30);
+    assert_eq!(figcraft_engine::cmd::camera::follow_state(&h.app.session), "paused");
+    let shapes = h.frames(2);
+    let (_, p, s) = crate::live_tests::texts(&shapes).into_iter().find(|(t, _, _)| t == "Resume").expect("Resume");
+    let right = 1440.0; // The harness window's width.
+
+    assert!(p.x + s.x <= right - 4.0, "Resume ends at {} of {right}", p.x + s.x);
+}

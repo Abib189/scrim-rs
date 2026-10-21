@@ -484,13 +484,19 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
         None => (tr("Off: the camera stays where you leave it while agents work.").to_string(), t.text_secondary),
     };
     // The switch and Resume while paused; then what it is doing now.
+    // Resume first, at the row's end, so the switch (as wide as it may be) can't push it out of a
+    // narrow or scrolling panel.
     crate::right::row(ui, 30.0, |ui| {
-        if crate::widgets::checkbox(ui, on, tr("Follow agent")) {
-            app.run("camera.follow-agents", json!({"on": !on}));
-        }
-        if paused && crate::widgets::button(ui, tr("Resume"), true, true).clicked() {
-            app.run("camera.follow-agents", json!({"on": true}));
-        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if paused && crate::widgets::button(ui, tr("Resume"), true, true).clicked() {
+                app.run("camera.follow-agents", json!({"on": true}));
+            }
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                if crate::widgets::checkbox(ui, on, tr("Follow agent")) {
+                    app.run("camera.follow-agents", json!({"on": !on}));
+                }
+            });
+        });
     });
     crate::right::row(ui, 20.0, |ui| {
         let resp = ui.add(egui::Label::new(egui::RichText::new(&s).color(color).font(regular(11.0))).truncate()).on_hover_text(&s);
