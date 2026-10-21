@@ -3,7 +3,7 @@
 
 use serde_json::json;
 
-use super::{Cause, Change, Entry, MAX_EVENTS, Pause, Skip, record, text, timestamp};
+use super::{Cause, Change, Cleared, Entry, MAX_EVENTS, Pause, Skip, record, text, timestamp};
 use crate::agents::Author;
 use crate::{EngineError, Session};
 
@@ -21,6 +21,7 @@ fn entries_say_only_their_allow_listed_facts() {
     record(st, NOW, Entry::Error { command: "not a command at all", error: &EngineError::NoDocument });
     record(st, NOW, Entry::Error { command: "file.open", error: &EngineError::Waiting });
     record(st, NOW, Entry::FollowPaused(Pause::CanvasInput));
+    record(st, NOW, Entry::FollowCleared(Cleared::AgentFinished));
     record(st, NOW, Entry::Reveal { entered: 20, skipped: &[(Skip::OffScreenPaused, 16), (Skip::CutShort, 2)] });
     let raw = "local-agent-mode-scrim (via mcp-remote 0.14.3)";
     let w = |change, cause, client, session, run| Entry::Working { change, cause, client, session, run };
@@ -38,6 +39,7 @@ fn entries_say_only_their_allow_listed_facts() {
             ("error", "text.set: failed"),
             ("error", "a command: no open document"),
             ("follow", "following paused: the person's press, scroll or pinch on the canvas"),
+            ("follow", "follow pause cleared: the agent finished"),
             (
                 "reveal",
                 "agent layers: 20 entered, 18 drawn final at once (off screen, follow paused: 16; entrance cut short (dropped frames, a hidden window or a window capture): 2)"
@@ -137,6 +139,7 @@ fn no_secrets_reach_the_events() {
     record(&mut s.prefs.settings, NOW, Entry::McpClient { name: "claude-code", version: "2.1" });
     record(&mut s.prefs.settings, NOW, Entry::FontFallback(&["Inter".into(), "Geist".into()]));
     record(&mut s.prefs.settings, NOW, Entry::FollowPaused(Pause::PersonEdit));
+    record(&mut s.prefs.settings, NOW, Entry::FollowCleared(Cleared::Resumed));
     record(&mut s.prefs.settings, NOW, Entry::Reveal { entered: 3, skipped: &[(Skip::OffScreenOff, 2)] });
     // A working transition on a session id as long as a token: 8 characters of it are kept. (The
     // client's name is what it announced, kept as `mcpClient` keeps it.)

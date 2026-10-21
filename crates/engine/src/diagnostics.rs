@@ -9,7 +9,7 @@
 //! - an MCP client connecting (its name and version as it gave them);
 //! - a command failing (its id, when it is a registered command, and the error's category; never
 //!   the message, which can quote the document);
-//! - following an agent pausing, and why ([`Pause`]), and the reveal drawing an agent's new layers
+//! - following an agent pausing, and why ([`Pause`]), and the pause clearing ([`Cleared`], Fix N), and the reveal drawing an agent's new layers
 //!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2);
 //! - the working state's transitions: a client beginning, ending or being held, with the cause
 //!   ([`Change`], [`Cause`]) and the client as it named itself, with its session id cut to 8
@@ -58,6 +58,8 @@ pub enum Entry<'a> {
     Error { command: &'a str, error: &'a EngineError },
     /// Following the agent paused, for this reason.
     FollowPaused(Pause),
+    /// The pause was cleared, for this reason (Fix N).
+    FollowCleared(Cleared),
     /// Agents' new layers since the last such event: how many entered, and how many were drawn
     /// final at once, by reason.
     Reveal { entered: usize, skipped: &'a [(Skip, usize)] },
@@ -120,6 +122,26 @@ impl Pause {
     }
 }
 
+/// Why a pause of following was cleared (Fix N): the work it paused ended, or the person resumed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Cleared {
+    AgentFinished,
+    GraceExpired,
+    Disconnected,
+    Resumed,
+}
+
+impl Cleared {
+    pub fn text(self) -> &'static str {
+        match self {
+            Cleared::AgentFinished => "the agent finished",
+            Cleared::GraceExpired => "the grace period expired",
+            Cleared::Disconnected => "the agent disconnected",
+            Cleared::Resumed => "resumed",
+        }
+    }
+}
+
 /// Why an agent's new layer was drawn final at once instead of entering (Stage I2's rules).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Skip {
@@ -173,7 +195,7 @@ impl Entry<'_> {
             Entry::McpStarted(_) | Entry::McpFailed => "mcpServer",
             Entry::McpClient { .. } => "mcpClient",
             Entry::Error { .. } => "error",
-            Entry::FollowPaused(_) => "follow",
+            Entry::FollowPaused(_) | Entry::FollowCleared(_) => "follow",
             Entry::Reveal { .. } => "reveal",
             Entry::Working { .. } => "working",
         }
@@ -202,6 +224,7 @@ impl Entry<'_> {
                 format!("{id}: {}", category(error))
             }
             Entry::FollowPaused(why) => format!("following paused: {}", why.text()),
+            Entry::FollowCleared(why) => format!("follow pause cleared: {}", why.text()),
             Entry::Reveal { entered, skipped } => {
                 let n: usize = skipped.iter().map(|s| s.1).sum();
                 let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();

@@ -275,3 +275,28 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
   - the final frames are identical after a fresh render (0 px). Before it, 163 px of path-dependent edge pixels differ, at most 16/255.
 - **The 782-layer Fixture,** five runs: about 2 ms a frame and 3 ms a render while it reveals; **no degradation step reached**. The landing frame (the batch itself) is 150–170 ms.
 - **Fixed on the way:** five follow-ups, each with a regression test (listed in the README).
+
+## Fix N: a pause lasts only while an agent works (21 Oct 2026)
+
+**The report:** the person scrolled mid-build, so follow paused and the "Follow agent" chip appeared. The agent called `finish_working`, but the chip stayed, pointing at nothing, and the pause carried over to the next build.
+
+- **Shown only while it means something:** the chip and the AI tab's paused row with Resume show while following is paused **and** an agent is working (Stage I.1's working state). `follow_end::shown`.
+- **Paused only while an agent works:** a scroll, press or edit with no one working pauses nothing.
+- **When the work ends for every client:** `finish_working`, the grace period, or a session closing or a disconnect. Fix M's hold isn't built (M1 wasn't shipped), so a session closing ends at once.
+  - **The pause is cleared** (`follow_end::settle`, after the working state's tick). The next build is followed from its first edit, with no press.
+  - **Not a resume:** the camera stays where the person left it, and doesn't fly back to the finished work.
+  - **The chip and the paused row fade out over 150 ms,** or vanish at once with Animations Off or reduced motion. A fading chip is only painted: no hit area, no AccessKit node.
+  - **The AI tab's status** ends as before ("{name} finished" for 2 s, Stage I.1).
+- **Several clients:** the chip stays until the last one has finished.
+- **Unchanged:**
+  - **"Follow agents" Off:** never a chip, nothing follows, and a pause never changes the saved setting.
+  - **Resume mid-work:** flies to the latest work and clears the pause.
+- **The chip:**
+  - its text stays "Follow agent";
+  - its tooltip and AccessKit name say what it does: "Jump back to {name}'s work", or "Jump back to the agent's work" with no name (Stage J's naming rules).
+- **Diagnostics:**
+  - "following paused: {reason}", as in L2;
+  - a new "follow pause cleared: the agent finished / the grace period expired / the agent disconnected / resumed".
+- **Window state only:** nothing reaches the document, undo, the change log, MCP results, screenshots or exports. The revision moves only as any view change moves it: the person's scroll easing.
+- **Tests:** `follow_end_tests.rs` (7).
+

@@ -243,4 +243,4 @@ mod window_tests;
 
 #[cfg(test)]
 #[path = "working_gap_tests.rs"]
-mod gap_tests;
+pub(crate) mod gap_tests;

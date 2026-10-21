@@ -22,7 +22,7 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
-use egui::{Context, CornerRadius, Id, Rect, Sense, Stroke, Ui, pos2, vec2};
+use egui::{Context, Rect, Ui};
 use figcraft_doc::{Document, NodeId};
 use figcraft_engine::cmd::camera::follow_state;
 use figcraft_engine::settings::diagnostics::Pause;
@@ -30,8 +30,10 @@ use serde_json::json;
 
 use crate::FigApp;
 use crate::i18n::{tr, trf};
-use crate::theme::{Tokens, ink, regular, semibold};
+use crate::theme::{Tokens, regular};
 
+#[path = "follow_end.rs"]
+pub mod follow_end;
 #[path = "reveal.rs"]
 pub mod reveal;
 #[path = "working_indicator.rs"]
@@ -82,6 +84,8 @@ pub struct State {
     /// Whether agents are working (Stage I.1): the one source everything here reads.
     pub working: working_state::State,
     pub budget: Budget,
+    /// A pause's end: the chip's and the paused row's fade out (Fix N).
+    pub end: follow_end::State,
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -259,7 +263,12 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let (grace, motion) = (grace(app), !app.reduce_motion());
     app.ui.agent_view.working.tick(now, grace, motion);
     // Each transition, with its cause, into Settings ▸ Diagnostics (Fix M0).
+    // The cause of the last client's end this tick, if the run ended (Fix N clears a pause then).
+    let mut ended = None;
     for t in app.ui.agent_view.working.transitions() {
+        if t.change == figcraft_engine::settings::diagnostics::Change::End {
+            ended = Some(t.cause);
+        }
         let e = figcraft_engine::settings::diagnostics::Entry::Working {
             change: t.change,
             cause: t.cause,
@@ -269,6 +278,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
         };
         crate::settings_privacy::record(app, e);
     }
+    follow_end::settle(app, now, ended);
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
     working_indicator::tick(app, ctx, now, &landed);
@@ -278,7 +288,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
 
 /// Every frame, after the canvas: the paused chip, and the working indicator's AccessKit node.
 pub fn after_canvas(app: &mut FigApp, ui: &mut Ui) {
-    chip(app, ui);
+    follow_end::chip(app, ui);
     working_indicator::accessibility(app, ui);
 }
 
@@ -416,6 +426,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         };
     }
     let f = &mut app.ui.agent_view.follow;
+    let resumed = state == "following" && f.was == "paused";
     if state == "following" && f.was != "following" {
         // Resumed (or turned on): to the latest work.
         f.pending = f.latest.clone();
@@ -427,6 +438,9 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     if state != "following" {
         f.pending = None;
         return;
+    }
+    if resumed {
+        follow_end::resumed(app);
     }
     if !crate::camera_flight::sized(app) {
         app.ui.agent_view.follow.expected = None;
@@ -463,7 +477,11 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     } else {
         None
     };
-    if following_work && let Some(why) = why {
+    // A pause lasts only while an agent works (Fix N): with no one working, there's nothing to pause.
+    if following_work
+        && app.ui.agent_view.working.working()
+        && let Some(why) = why
+    {
         pause(app, why);
         return;
     }
@@ -523,34 +541,6 @@ pub fn working_on(app: &FigApp) -> (Option<String>, Option<NodeId>) {
     (f.agent.clone(), f.artboard)
 }
 
-/// The paused chip at the top of the canvas: one click resumes.
-fn chip(app: &mut FigApp, ui: &mut Ui) {
-    app.ui.agent_view.follow.chip = None;
-    if follow_state(&app.session) != "paused" || app.canvas.rect.width() < 200.0 {
-        return;
-    }
-    let t = Tokens::get(ui.ctx());
-    let label = tr("Follow agent");
-    let galley = ui.painter().layout_no_wrap(label.to_string(), semibold(11.0), t.text);
-    let size = vec2(galley.size().x + 34.0, 26.0);
-    let r = Rect::from_center_size(pos2(app.canvas.rect.center().x, app.canvas.rect.min.y + 12.0 + size.y / 2.0), size);
-    let resp = ui.interact(r, Id::new("follow_agent_chip"), Sense::click()).on_hover_text(tr("Follow the agent again and go to its latest work"));
-    crate::a11y::button(&resp, label);
-    let p = ui.painter();
-    p.rect_filled(r.translate(vec2(0.0, 1.0)), CornerRadius::same(13), egui::Color32::from_black_alpha(24));
-    p.rect_filled(r, CornerRadius::same(13), if resp.hovered() { t.hover } else { t.panel });
-    p.rect_stroke(r, CornerRadius::same(13), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-    p.circle_filled(pos2(r.min.x + 13.0, r.center().y), 4.0, ink::fill());
-    p.galley(pos2(r.min.x + 23.0, r.center().y - galley.size().y / 2.0), galley, t.text);
-    if resp.has_focus() {
-        p.rect_stroke(r, CornerRadius::same(13), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
-    }
-    app.ui.agent_view.follow.chip = Some(r);
-    if resp.clicked() {
-        app.run("camera.follow-agents", json!({"on": true}));
-    }
-}
-
 /// The AI tab's Follow row: the switch, Resume while paused, and what it is doing.
 /// Shown once there's an agent to follow (an MCP client connected, or an agent's edit seen), and
 /// whenever following is paused or off (so it can be turned back on here). Settings ▸ General and
@@ -558,15 +548,18 @@ fn chip(app: &mut FigApp, ui: &mut Ui) {
 pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let on = app.session.prefs.settings.follow_agents;
-    let paused = follow_state(&app.session) == "paused";
+    // Paused while an agent works; fading out for FADE once that work has ended (Fix N).
+    let paused = follow_end::shown(app);
+    let fade = if paused { None } else { follow_end::fading(app, now(app)) };
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
     let connected = figcraft_engine::cmd::mcp::status(&app.session, now)["state"] == "connected";
     if follow_state(&app.session) == "following" && !connected && !app.ui.agent_view.follow.seen_agent {
         return;
     }
-    let (s, color) = match status(app) {
-        Some(s) => (s, if paused { t.text_secondary } else { t.text }),
-        None => (tr("Off: the camera stays where you leave it while agents work.").to_string(), t.text_secondary),
+    let (s, color) = match (fade, status(app)) {
+        (Some(a), _) => (tr("Paused: you moved the camera or edited").to_string(), t.text_secondary.gamma_multiply(a)),
+        (None, Some(s)) => (s, if paused { t.text_secondary } else { t.text }),
+        (None, None) => (tr("Off: the camera stays where you leave it while agents work.").to_string(), t.text_secondary),
     };
     // The switch and Resume while paused; then what it is doing now.
     // Resume first, at the row's end, so the switch (as wide as it may be) can't push it out of a
@@ -575,6 +568,15 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if paused && crate::widgets::button(ui, tr("Resume"), true, true).clicked() {
                 app.run("camera.follow-agents", json!({"on": true}));
+            }
+            if let Some(a) = fade {
+                // Fading out: painted, not pressable.
+                ui.ctx().request_repaint();
+                ui.scope(|ui| {
+                    ui.multiply_opacity(a);
+                    ui.disable();
+                    crate::widgets::button(ui, tr("Resume"), true, true);
+                });
             }
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 if crate::widgets::checkbox(ui, on, tr("Follow agent")) {
