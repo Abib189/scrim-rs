@@ -165,3 +165,7 @@ fn fade_out(since: f64, motion: bool) -> f64 {
 #[cfg(test)]
 #[path = "working_state_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "working_state_window_tests.rs"]
+mod window_tests;

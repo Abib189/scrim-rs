@@ -60,6 +60,9 @@ pub struct State {
     pub(crate) outlined: Cell<Option<Rect>>,
     /// Where the row was last drawn: "{agent} finished" is said there once it has faded.
     last_drawn: Cell<Option<Rect>>,
+    /// The agent's newest artboard while it is still out of view (the camera on its way): the row
+    /// stays on the one shown until this one is in view, so it never blinks out between steps.
+    next: Option<(u64, NodeId)>,
 }
 
 impl State {
@@ -135,20 +138,36 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let motion = !app.reduce_motion();
     let grace = super::grace(app);
     let w = &app.ui.agent_view.working;
-    let (working, alpha, next) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
+    let (working, alpha, expiry) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
     let finished = w.finished(now).is_some();
+    let in_view = |id: NodeId| {
+        app.session.doc().ok().and_then(|d| d.world_bounds(id)).is_some_and(|b| {
+            let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
+            r.is_finite() && r.intersects(app.canvas.rect)
+        })
+    };
+    let next = match (uid, artboard) {
+        (Some(uid), Some(art)) if landed.iter().any(|l| l.agent) => Some((uid, art)),
+        _ => app.ui.agent_view.indicator.next,
+    };
+    let on = app.ui.agent_view.indicator.on;
+    let (next_in, on_in) = (next.is_some_and(|(_, a)| in_view(a)), on.is_some_and(|(_, a)| in_view(a)));
     let st = &mut app.ui.agent_view.indicator;
-    if let (Some(uid), Some(art)) = (uid, artboard)
-        && landed.iter().any(|l| l.agent)
+    st.next = next;
+    // Move to the newest artboard once it is in view (or when the one shown isn't either).
+    if let Some((uid, art)) = st.next
+        && (st.on.is_none_or(|(u, a)| u != uid || a == art) || next_in || !on_in)
     {
         st.on = Some((uid, art));
+        st.next = None;
     }
     if !working && alpha <= 0.0 {
         st.on = None;
+        st.next = None;
     }
     if (working || alpha > 0.0) && motion && st.on.is_some() {
         ctx.request_repaint();
-    } else if let Some(t) = next {
+    } else if let Some(t) = expiry {
         // The grace period running out ends the state: be there for it.
         ctx.request_repaint_after(std::time::Duration::from_secs_f64(t.max(0.01)));
     } else if alpha > 0.0 || finished {

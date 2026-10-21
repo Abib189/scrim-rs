@@ -12,7 +12,7 @@ use crate::{FigApp, NoServices};
 pub(crate) struct Ui {
     pub(crate) ctx: egui::Context,
     pub(crate) app: FigApp,
-    time: f64,
+    pub(crate) time: f64,
 }
 
 impl Ui {

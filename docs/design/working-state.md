@@ -143,3 +143,22 @@
     - a step mid-reveal queues behind, at every speed;
     - render-only at Normal and Slow.
   - **`crates/mcp/tests/follow_agent.rs`:** both new settings and `finish_working` over MCP, none of it touching the document.
+
+## ID: the tests
+
+- **In the window, on the real request path** (`working_state_window_tests.rs`: requests on the control queue with route, client and session, as the HTTP endpoint queues them):
+  - six steps of 6–36 layers 2.5 s apart keep the dots drawn in **every** frame; `finish_working` then fades them out in 400 ms ("Codex finished");
+  - read-only calls (the screenshot's render, `inspect_document`, `lint_design`) keep it alive 12.5 s past the last edit with a 5 s grace period;
+  - with no finish, it ends at the grace period exactly (5 s and 15 s), its fade counting from then;
+  - a session closing (`mcp.session-ended`) ends it;
+  - with two clients, one finishing leaves it on for the other, named after the latest;
+  - an unknown name is shown as announced, and a missing one reads "An agent";
+  - `finish_working` adds no revision or undo step.
+- **Found by the first test:** a step landing on an artboard outside the view had no dots for the frames before the camera arrived. The row now stays on the artboard shown until the new one is in view.
+- **Elsewhere:**
+  - `working_state_tests.rs`: the state's own clock;
+  - `agent_work_tests.rs`: the commands, Read, no revision;
+  - `crates/mcp/tests/working.rs`: the tool, the hint, restricted access, sessions, `DELETE`;
+  - `control_server_tests.rs`: `--attach`;
+  - `reveal_tests.rs`: the speeds;
+  - `crates/mcp/tests/follow_agent.rs`: the MCP routes.
