@@ -271,9 +271,10 @@ fn the_app_notes_where_it_is_and_what_it_lists_and_takes_the_note_away() {
     assert!(!dir.join(ENDPOINT_FILE).exists());
     // A note naming another computer is ignored; the port saved in Settings is the fallback.
     std::fs::write(dir.join(ENDPOINT_FILE), json!({"address": "10.0.0.5", "port": 7700}).to_string()).unwrap();
-    std::fs::write(dir.join("state.json"), json!({"prefs": {"settings": {"mcp": {"port": 7699}}}}).to_string()).unwrap();
-    let saved = figcraft_engine::settings::saved_mcp(&dir).port;
-    assert_eq!(endpoint(&dir), SocketAddr::from(([127, 0, 0, 1], saved)), "only loopback");
+    std::fs::write(dir.join("state.json"), json!({"prefs": {"mcp": {"port": 7699, "port_chosen": true}, "settings_version": 6}}).to_string())
+        .unwrap();
+    assert_eq!(figcraft_engine::settings::saved_mcp(&dir).port, 7699, "the port saved in Settings ▸ MCP");
+    assert_eq!(endpoint(&dir), SocketAddr::from(([127, 0, 0, 1], 7699)), "only loopback: the saved port instead");
     // The tools the app listed.
     assert!(tools(&dir).is_none());
     write_tools(&dir, &json!({"tools": [{"name": "batch"}]})).unwrap();
