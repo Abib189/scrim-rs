@@ -1,0 +1,1676 @@
+{
+ "mode": "speed",
+ "arg": "fast",
+ "events": [],
+ "captures": [],
+ "mcp_port": 7681,
+ "session": true,
+ "reveals": [
+  {
+   "layers": 24,
+   "batch_reply_s": 0.011,
+   "first": 0.027,
+   "last": 1.121,
+   "duration_s": 1.094,
+   "samples": [
+    {
+     "t": 0.027,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.07,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.122,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.17,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.219,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.27,
+     "revealing": 23,
+     "follow": "following"
+    },
+    {
+     "t": 0.321,
+     "revealing": 22,
+     "follow": "following"
+    },
+    {
+     "t": 0.37,
+     "revealing": 20,
+     "follow": "following"
+    },
+    {
+     "t": 0.421,
+     "revealing": 19,
+     "follow": "following"
+    },
+    {
+     "t": 0.47,
+     "revealing": 18,
+     "follow": "following"
+    },
+    {
+     "t": 0.522,
+     "revealing": 17,
+     "follow": "following"
+    },
+    {
+     "t": 0.57,
+     "revealing": 15,
+     "follow": "following"
+    },
+    {
+     "t": 0.62,
+     "revealing": 14,
+     "follow": "following"
+    },
+    {
+     "t": 0.67,
+     "revealing": 13,
+     "follow": "following"
+    },
+    {
+     "t": 0.721,
+     "revealing": 12,
+     "follow": "following"
+    },
+    {
+     "t": 0.77,
+     "revealing": 10,
+     "follow": "following"
+    },
+    {
+     "t": 0.822,
+     "revealing": 9,
+     "follow": "following"
+    },
+    {
+     "t": 0.87,
+     "revealing": 8,
+     "follow": "following"
+    },
+    {
+     "t": 0.922,
+     "revealing": 7,
+     "follow": "following"
+    },
+    {
+     "t": 0.97,
+     "revealing": 5,
+     "follow": "following"
+    },
+    {
+     "t": 1.02,
+     "revealing": 4,
+     "follow": "following"
+    },
+    {
+     "t": 1.07,
+     "revealing": 3,
+     "follow": "following"
+    },
+    {
+     "t": 1.121,
+     "revealing": 1,
+     "follow": "following"
+    },
+    {
+     "t": 1.171,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.221,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.253,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.303,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.356,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.406,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.455,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.504,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.555,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.605,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.655,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.707,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.756,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.805,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.853,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.905,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.955,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.009,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.057,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.107,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.156,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.207,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.257,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.306,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.356,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.405,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.455,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.504,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.555,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.605,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.655,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.705,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.755,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.804,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.853,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.892,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.938,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.973,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.021,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.071,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.107,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.154,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.205,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.255,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.305,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.356,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.404,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.455,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.503,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.554,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.605,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.655,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.704,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.755,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.807,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.856,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.904,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.955,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.004,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.057,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.106,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.157,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.207,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.255,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.303,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.353,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.403,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.454,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.505,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.555,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.606,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.654,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.704,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.756,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.806,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.854,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.906,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.004,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.054,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.104,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.155,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.205,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.256,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.306,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.356,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.405,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.455,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.504,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.554,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.605,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.654,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.704,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.755,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.806,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.854,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.906,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.955,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.004,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.054,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.104,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.139,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.187,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.238,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.288,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.338,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.388,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.438,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.488,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.537,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.588,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.638,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.688,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.737,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.788,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.838,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.889,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.938,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.988,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.041,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.087,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.137,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.187,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.239,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.287,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.338,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.388,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.438,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.488,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.538,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.587,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.625,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.671,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.724,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.771,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.822,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.871,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.924,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.971,
+     "revealing": 0,
+     "follow": "following"
+    }
+   ]
+  },
+  {
+   "layers": 36,
+   "batch_reply_s": 0.018,
+   "first": 0.036,
+   "last": 1.185,
+   "duration_s": 1.149,
+   "samples": [
+    {
+     "t": 0.036,
+     "revealing": 36,
+     "follow": "following"
+    },
+    {
+     "t": 0.084,
+     "revealing": 36,
+     "follow": "following"
+    },
+    {
+     "t": 0.118,
+     "revealing": 36,
+     "follow": "following"
+    },
+    {
+     "t": 0.168,
+     "revealing": 36,
+     "follow": "following"
+    },
+    {
+     "t": 0.218,
+     "revealing": 36,
+     "follow": "following"
+    },
+    {
+     "t": 0.268,
+     "revealing": 35,
+     "follow": "following"
+    },
+    {
+     "t": 0.319,
+     "revealing": 34,
+     "follow": "following"
+    },
+    {
+     "t": 0.352,
+     "revealing": 33,
+     "follow": "following"
+    },
+    {
+     "t": 0.403,
+     "revealing": 31,
+     "follow": "following"
+    },
+    {
+     "t": 0.452,
+     "revealing": 30,
+     "follow": "following"
+    },
+    {
+     "t": 0.503,
+     "revealing": 29,
+     "follow": "following"
+    },
+    {
+     "t": 0.552,
+     "revealing": 28,
+     "follow": "following"
+    },
+    {
+     "t": 0.602,
+     "revealing": 26,
+     "follow": "following"
+    },
+    {
+     "t": 0.652,
+     "revealing": 25,
+     "follow": "following"
+    },
+    {
+     "t": 0.703,
+     "revealing": 24,
+     "follow": "following"
+    },
+    {
+     "t": 0.752,
+     "revealing": 23,
+     "follow": "following"
+    },
+    {
+     "t": 0.803,
+     "revealing": 21,
+     "follow": "following"
+    },
+    {
+     "t": 0.835,
+     "revealing": 21,
+     "follow": "following"
+    },
+    {
+     "t": 0.885,
+     "revealing": 19,
+     "follow": "following"
+    },
+    {
+     "t": 0.935,
+     "revealing": 18,
+     "follow": "following"
+    },
+    {
+     "t": 0.985,
+     "revealing": 17,
+     "follow": "following"
+    },
+    {
+     "t": 1.035,
+     "revealing": 16,
+     "follow": "following"
+    },
+    {
+     "t": 1.085,
+     "revealing": 14,
+     "follow": "following"
+    },
+    {
+     "t": 1.135,
+     "revealing": 13,
+     "follow": "following"
+    },
+    {
+     "t": 1.185,
+     "revealing": 12,
+     "follow": "following"
+    },
+    {
+     "t": 1.235,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.285,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.335,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.369,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.42,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.469,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.505,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.553,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.605,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.653,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.705,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.753,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.802,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.852,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.905,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 1.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.004,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.052,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.104,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.152,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.202,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.252,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.305,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.353,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.405,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.453,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.505,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.553,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.602,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.652,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.708,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.753,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.805,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.852,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.905,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 2.952,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.002,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.052,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.105,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.153,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.204,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.252,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.305,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.352,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.402,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.452,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.505,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.552,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.604,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.652,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.704,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.762,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.804,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.852,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.91,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 3.952,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.005,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.053,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.105,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.153,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.202,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.252,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.305,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.352,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.404,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.452,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.504,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.553,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.602,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.652,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.709,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.753,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.804,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.852,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.908,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 4.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.002,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.053,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.105,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.153,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.204,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.252,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.307,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.353,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.403,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.453,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.508,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.552,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.604,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.653,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.713,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.753,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.802,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.853,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.908,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 5.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.004,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.052,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.105,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.153,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.202,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.253,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.304,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.352,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.403,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.452,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.505,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.552,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.587,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.636,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.686,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.736,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.788,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.836,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.87,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.906,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 6.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.002,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.052,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.106,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.153,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.206,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.253,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.305,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.352,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.402,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.452,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.486,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.536,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.587,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.636,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.685,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.719,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.769,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.819,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.87,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.908,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 7.953,
+     "revealing": 0,
+     "follow": "following"
+    },
+    {
+     "t": 8.007,
+     "revealing": 0,
+     "follow": "following"
+    }
+   ]
+  }
+ ],
+ "history": [
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Run several commands"
+  ]
+ ]
+}

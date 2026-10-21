@@ -39,15 +39,18 @@ fn run(u: &mut Ui, session: Option<&str>, client: Option<&str>, command: &str, p
 
 /// One step of a build: an artboard, then `n - 1` layers in it as one batch.
 fn step(u: &mut Ui, session: Option<&str>, client: Option<&str>, i: usize, n: usize) {
-    let r = run(u, session, client, "frame.create", json!({"x": 400 * i, "y": 0, "width": 300, "height": 300, "name": format!("Step {i}")}));
+    let r = run(u, session, client, "frame.create", json!({"x": 760 * i, "y": 0, "width": 640, "height": 480, "name": format!("Step {i}")}));
     let parent = r["id"].clone();
     let commands: Vec<Value> =
         (1..n).map(|k| json!({"command": "shape.rectangle", "params": {"x": 10 * k, "y": 10, "width": 8, "height": 8, "parent": parent}})).collect();
     run(u, session, client, "command.batch", json!({"commands": commands}));
 }
 
+/// The dots are drawn, and where the person can see them: the row's right end (the artboard's
+/// top-right corner it hangs from) inside the canvas, not clipped off it.
 fn shown(u: &Ui) -> bool {
-    u.app.ui.agent_view.indicator.drawn.get().is_some()
+    let canvas = u.app.canvas.rect;
+    u.app.ui.agent_view.indicator.drawn.get().is_some_and(|(r, _)| canvas.contains(r.right_bottom()) && canvas.contains(r.left_top()))
 }
 
 fn calm() -> Ui {
@@ -140,7 +143,7 @@ fn with_two_clients_one_finishing_leaves_it_on_for_the_other() {
     let mut u = calm();
     step(&mut u, Some("a"), Some("codex-mcp-client"), 0, 6);
     step(&mut u, Some("b"), Some("gemini-cli-mcp-client"), 1, 6);
-    frames(&mut u, 12);
+    frames(&mut u, 40); // the camera's flight to Step 1 (320 ms)
     assert_eq!(crate::follow_agent::working_text(&u.app).as_deref(), Some("Gemini CLI is working on Step 1"), "the latest");
     let _ = run(&mut u, Some("a"), Some("codex-mcp-client"), "agent.finish-working", json!({}));
     on_for(&mut u, 1.0, "Gemini CLI still works");

@@ -162,3 +162,13 @@
   - `control_server_tests.rs`: `--attach`;
   - `reveal_tests.rs`: the speeds;
   - `crates/mcp/tests/follow_agent.rs`: the MCP routes.
+
+## IE: verified live
+
+The record, captures, logs and scripts are in `docs/scrim-ports/working-state/README.md`. All runs used the release build and the app's real HTTP endpoint, with an MCP client announcing Codex's name.
+- **Six steps 2.5 s apart:** the dots were present in 59 of 59 captures (every 255 ms) up to `finish_working`, and gone 0.46 s after it.
+- **No finish, a 5 s grace period:** the dots were present in 68 of 68 captures; the state ended at +5.0 s and the dots were gone by +5.5 s.
+- **Pixels:** 0 px changed outside the canvas, dots and reveal on vs off, at seven moments.
+- **Reveal durations** match the speed table: Fast 1.09 and 1.15 s, Normal 2.98 and 3.98 s, Slow 4.78 and 5.98 s, for 24 and 36 layers.
+- **The 782-layer Fixture:** about 3 ms frames at Normal and Slow, and no degradation step.
+- **Fixed during IE,** with a stricter window test: the row now waits for the new artboard's top-right corner to be inside the canvas before it moves.

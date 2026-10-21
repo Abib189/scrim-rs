@@ -1,0 +1,57 @@
+{
+ "mode": "sync",
+ "arg": "ON",
+ "events": [
+  {
+   "t": 3.867,
+   "what": "shot",
+   "i": 0
+  },
+  {
+   "t": 6.497,
+   "what": "shot",
+   "i": 1
+  },
+  {
+   "t": 9.127,
+   "what": "shot",
+   "i": 2
+  },
+  {
+   "t": 11.76,
+   "what": "shot",
+   "i": 3
+  },
+  {
+   "t": 14.389,
+   "what": "shot",
+   "i": 4
+  },
+  {
+   "t": 17.001,
+   "what": "shot",
+   "i": 5
+  }
+ ],
+ "captures": [],
+ "mcp_port": 7681,
+ "session": true,
+ "history": [
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Run several commands"
+  ]
+ ]
+}

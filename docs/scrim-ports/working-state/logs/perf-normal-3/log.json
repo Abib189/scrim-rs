@@ -1,0 +1,3015 @@
+{
+ "mode": "perf",
+ "arg": "normal",
+ "events": [],
+ "captures": [],
+ "mcp_port": 7681,
+ "session": true,
+ "target": {
+  "element": "FRAME",
+  "id": 2,
+  "name": "Poster \u2014 The Moon Is Late",
+  "parentId": 1,
+  "rect": {
+   "h": 1260.0,
+   "w": 900.0,
+   "x": 4901.0,
+   "y": 1189.0
+  },
+  "stale": false,
+  "type": "frame"
+ },
+ "batch_s": 0.003,
+ "perf": [
+  {
+   "t": 0.076,
+   "frameMs": 72.008459,
+   "renderMs": 22.280874999999998,
+   "indicator": null,
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.146,
+   "frameMs": 1.936625,
+   "renderMs": 3.632958,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.185,
+   "frameMs": 1.9922920000000002,
+   "renderMs": 2.1241250000000003,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.235,
+   "frameMs": 1.6958749999999998,
+   "renderMs": 2.182458,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.285,
+   "frameMs": 1.901792,
+   "renderMs": 2.2375410000000002,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.335,
+   "frameMs": 1.961709,
+   "renderMs": 2.571084,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.385,
+   "frameMs": 2.184917,
+   "renderMs": 2.7119169999999997,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.435,
+   "frameMs": 2.326541,
+   "renderMs": 2.926125,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.485,
+   "frameMs": 2.443166,
+   "renderMs": 3.143417,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 16,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.535,
+   "frameMs": 2.526416,
+   "renderMs": 3.156625,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 15,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.585,
+   "frameMs": 2.42225,
+   "renderMs": 3.2138750000000003,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 15,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.635,
+   "frameMs": 2.398041,
+   "renderMs": 3.110208,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 14,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.685,
+   "frameMs": 2.3471249999999997,
+   "renderMs": 3.1360419999999998,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 14,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.735,
+   "frameMs": 2.305625,
+   "renderMs": 3.116542,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 13,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.785,
+   "frameMs": 2.314333,
+   "renderMs": 3.14475,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 13,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.835,
+   "frameMs": 2.608791,
+   "renderMs": 3.25175,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 12,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.885,
+   "frameMs": 2.317666,
+   "renderMs": 3.138292,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 12,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.935,
+   "frameMs": 2.334,
+   "renderMs": 3.113833,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 12,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 0.985,
+   "frameMs": 2.4459999999999997,
+   "renderMs": 3.1502079999999997,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 11,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.035,
+   "frameMs": 2.321625,
+   "renderMs": 3.118875,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 11,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.085,
+   "frameMs": 2.287042,
+   "renderMs": 3.149209,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 10,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.135,
+   "frameMs": 2.364042,
+   "renderMs": 3.2119169999999997,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 10,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.186,
+   "frameMs": 2.5867080000000002,
+   "renderMs": 3.165,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 9,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.235,
+   "frameMs": 2.353291,
+   "renderMs": 3.1601250000000003,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 9,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.287,
+   "frameMs": 2.449708,
+   "renderMs": 3.146167,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 8,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.335,
+   "frameMs": 2.1376670000000004,
+   "renderMs": 2.8180829999999997,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 8,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.385,
+   "frameMs": 2.49525,
+   "renderMs": 2.2165000000000004,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 7,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.435,
+   "frameMs": 2.6200419999999998,
+   "renderMs": 3.347041,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 7,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.485,
+   "frameMs": 2.650916,
+   "renderMs": 3.2891660000000003,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 7,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.535,
+   "frameMs": 2.317958,
+   "renderMs": 3.180083,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 6,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.585,
+   "frameMs": 2.1757920000000004,
+   "renderMs": 3.213209,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 6,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.635,
+   "frameMs": 1.931833,
+   "renderMs": 2.0643749999999996,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 5,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.685,
+   "frameMs": 2.7472909999999997,
+   "renderMs": 2.251125,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 5,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.735,
+   "frameMs": 2.617208,
+   "renderMs": 3.4965,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 4,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.785,
+   "frameMs": 2.716166,
+   "renderMs": 3.351791,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 4,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.835,
+   "frameMs": 2.62025,
+   "renderMs": 3.194,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 3,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.885,
+   "frameMs": 2.342416,
+   "renderMs": 3.1410829999999996,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 3,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.935,
+   "frameMs": 2.348125,
+   "renderMs": 3.168125,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 2,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 1.985,
+   "frameMs": 2.333667,
+   "renderMs": 3.1458329999999997,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 2,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.035,
+   "frameMs": 2.3466250000000004,
+   "renderMs": 3.086291,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 2,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.085,
+   "frameMs": 2.461291,
+   "renderMs": 3.159416,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 1,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.135,
+   "frameMs": 2.0270829999999997,
+   "renderMs": 2.729083,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 1,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.185,
+   "frameMs": 2.070167,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.236,
+   "frameMs": 2.763583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.286,
+   "frameMs": 3.6,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.336,
+   "frameMs": 3.6339580000000002,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.386,
+   "frameMs": 3.854667,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.436,
+   "frameMs": 3.1202080000000003,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.487,
+   "frameMs": 3.601292,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.537,
+   "frameMs": 3.426833,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.586,
+   "frameMs": 4.189834,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.636,
+   "frameMs": 3.383833,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.689,
+   "frameMs": 3.560958,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.738,
+   "frameMs": 3.603042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.788,
+   "frameMs": 3.572083,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.838,
+   "frameMs": 3.5335,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.886,
+   "frameMs": 3.9822499999999996,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.936,
+   "frameMs": 3.072959,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 2.988,
+   "frameMs": 3.719708,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.036,
+   "frameMs": 3.4182919999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.087,
+   "frameMs": 3.579708,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.138,
+   "frameMs": 3.6611249999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.185,
+   "frameMs": 3.0049590000000004,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.234,
+   "frameMs": 1.494958,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.285,
+   "frameMs": 1.662625,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.335,
+   "frameMs": 1.986792,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.386,
+   "frameMs": 2.566916,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.436,
+   "frameMs": 3.0274579999999998,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.487,
+   "frameMs": 3.242625,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.537,
+   "frameMs": 3.5270829999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.586,
+   "frameMs": 3.4975,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.636,
+   "frameMs": 4.185959,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.688,
+   "frameMs": 3.7061249999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.736,
+   "frameMs": 4.1610830000000005,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.786,
+   "frameMs": 4.173292,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.836,
+   "frameMs": 4.432958,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.886,
+   "frameMs": 4.450375,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.937,
+   "frameMs": 3.517583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 3.987,
+   "frameMs": 3.541833,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.036,
+   "frameMs": 3.360042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.088,
+   "frameMs": 3.578584,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.136,
+   "frameMs": 3.516416,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.186,
+   "frameMs": 4.0004159999999995,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.235,
+   "frameMs": 1.997333,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.285,
+   "frameMs": 1.925208,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.335,
+   "frameMs": 2.589375,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.386,
+   "frameMs": 3.122083,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.436,
+   "frameMs": 3.550083,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.488,
+   "frameMs": 3.9497079999999998,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.536,
+   "frameMs": 4.663208,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.586,
+   "frameMs": 3.6640420000000002,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.636,
+   "frameMs": 4.438417,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.686,
+   "frameMs": 3.508125,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.736,
+   "frameMs": 3.3430410000000004,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.787,
+   "frameMs": 3.663208,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.837,
+   "frameMs": 3.8289169999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.888,
+   "frameMs": 3.554625,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.936,
+   "frameMs": 3.1957079999999998,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 4.986,
+   "frameMs": 3.2127079999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.036,
+   "frameMs": 4.040916999999999,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.087,
+   "frameMs": 4.532042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.137,
+   "frameMs": 4.083833,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.187,
+   "frameMs": 4.299792,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.236,
+   "frameMs": 4.034000000000001,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.286,
+   "frameMs": 5.042708,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.337,
+   "frameMs": 4.6719170000000005,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.387,
+   "frameMs": 4.569625,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.436,
+   "frameMs": 3.7635419999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.486,
+   "frameMs": 3.4997499999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.537,
+   "frameMs": 3.609958,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.588,
+   "frameMs": 3.5896660000000002,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.636,
+   "frameMs": 3.482458,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.687,
+   "frameMs": 3.519209,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.736,
+   "frameMs": 4.062583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.786,
+   "frameMs": 3.516792,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.838,
+   "frameMs": 3.532042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.887,
+   "frameMs": 3.581,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.936,
+   "frameMs": 4.528333,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 5.986,
+   "frameMs": 4.498042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.036,
+   "frameMs": 4.532375,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.088,
+   "frameMs": 3.3977500000000003,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.136,
+   "frameMs": 4.406458000000001,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.186,
+   "frameMs": 3.49175,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.236,
+   "frameMs": 4.136417,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.287,
+   "frameMs": 4.389667,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.336,
+   "frameMs": 4.974458,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.385,
+   "frameMs": 2.35125,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.436,
+   "frameMs": 2.74675,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.486,
+   "frameMs": 3.0534160000000004,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.537,
+   "frameMs": 3.887041,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.586,
+   "frameMs": 4.372375000000001,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.637,
+   "frameMs": 3.4914579999999997,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.686,
+   "frameMs": 3.235291,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.739,
+   "frameMs": 3.739542,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.787,
+   "frameMs": 4.470792,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.838,
+   "frameMs": 3.7765,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.887,
+   "frameMs": 3.543,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.936,
+   "frameMs": 3.706458,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 6.986,
+   "frameMs": 3.558,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.036,
+   "frameMs": 4.43575,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.086,
+   "frameMs": 4.0748750000000005,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.136,
+   "frameMs": 3.570875,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.188,
+   "frameMs": 3.536583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.237,
+   "frameMs": 3.991583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.286,
+   "frameMs": 3.272459,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.337,
+   "frameMs": 3.558042,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.387,
+   "frameMs": 3.5353339999999998,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.436,
+   "frameMs": 3.203208,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  },
+  {
+   "t": 7.488,
+   "frameMs": 3.544583,
+   "renderMs": 2.632583,
+   "indicator": {
+    "columns": 8,
+    "rect": [
+     878.9320068359375,
+     66.0,
+     934.9320068359375,
+     77.0
+    ]
+   },
+   "working": "Codex is working on Poster \u2014 The Moon Is Late",
+   "finished": null,
+   "revealing": 0,
+   "clients": 1,
+   "follow": "following",
+   "degraded": 0
+  }
+ ],
+ "history": [
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Rectangle"
+  ],
+  [
+   "agent (mcp (http))",
+   "Run several commands"
+  ]
+ ]
+}

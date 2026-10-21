@@ -140,10 +140,12 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let w = &app.ui.agent_view.working;
     let (working, alpha, expiry) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
     let finished = w.finished(now).is_some();
+    // Where the row can be seen: its artboard's top-right corner, which it hangs from, inside the
+    // canvas (an artboard only partly in view can have that corner off screen).
     let in_view = |id: NodeId| {
         app.session.doc().ok().and_then(|d| d.world_bounds(id)).is_some_and(|b| {
-            let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
-            r.is_finite() && r.intersects(app.canvas.rect)
+            let corner = app.to_screen(b.x1, b.y0);
+            corner.is_finite() && app.canvas.rect.contains(corner)
         })
     };
     let next = match (uid, artboard) {
