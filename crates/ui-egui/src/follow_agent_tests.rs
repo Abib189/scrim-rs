@@ -310,3 +310,24 @@ fn an_activity_row_click_selects_and_focuses_its_layers() {
     assert_eq!(u.app.session.selection(), [p]);
     assert!(view(&u).0 > before.0 + 5000.0, "focused: {:?}", view(&u));
 }
+
+/// The system's reduced motion (Animations: Follow system): follow jumps, new layers appear final,
+/// and the working indicator shows the static row, as with Animations Off.
+#[test]
+fn the_systems_reduced_motion_is_a_jump_no_entrance_and_the_static_row() {
+    let (mut u, _) = scene();
+    u.app.ui.agent_view.budget.frozen = true;
+    u.app.session.prefs.settings.motion = "system".into();
+    u.app.session.prefs.reduce_motion = true;
+    assert!(u.app.reduce_motion());
+    let p = poster(&mut u, 8000.0);
+    agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 30, "height": 30, "parent": p}));
+    u.app.run("select.none", json!({}));
+    frames(&mut u, 2);
+    assert!(!u.app.ui.camera.flying() && view(&u).0 > 7000.0, "a jump cut");
+    assert!(super::reveal::canvas_doc(&u.app).is_none(), "no entrance: final at once");
+    let drawn = u.app.ui.agent_view.indicator.drawn.get();
+    assert!(drawn.is_some(), "the indicator still shows");
+    frames(&mut u, 5);
+    assert_eq!(u.app.ui.agent_view.indicator.drawn.get(), drawn, "the static row: nothing moves");
+}

@@ -234,3 +234,11 @@ Two amendments to the brief (read before I2). The reveal still plays, and a **wo
   - a time-independent wave;
   - the selection rule;
   - the label clearance.
+
+## I3: the tests
+
+Most of I3's list landed with the code it covers, in I1 and I2, as the repo's rule asks; `docs/checklists/follow-agent.md` maps each item to its test. I3 adds two:
+- **The MCP route:** `run_command` answers each switch's state, `list_commands` lists them, and none of them touches the document (`crates/mcp/tests/follow_agent.rs`).
+- **The system's reduced motion** (Animations: Follow system): a jump cut, no entrance, and the static row, as with Animations Off.
+
+Over I1–I3 that is 38 tests in the window (`follow_agent_tests.rs` 15, `reveal_tests.rs` 9, `working_indicator_tests.rs` 11), plus two engine tests and one MCP test. Breaking each guarantee in turn (11 in all) fails at least one of them.

@@ -36,3 +36,5 @@ The plan, and what the code held: `docs/design/follow-agent.md`. Tests are in `c
 | Animations Off: the static row | Animations: Off | `with_animations_off_the_row_is_still_and_with_motion_it_moves` |
 | Brightest dot at 3:1 on the canvas and both pages, both themes | — | `at_its_brightest_the_row_reads_at_3_to_1_in_both_themes` |
 | The two switches are saved and answer over the route | Turn them off, restart | `the_switches_are_saved_and_answer_over_the_route` |
+| I3: the switches and `fit` answer their state over MCP's `run_command`, are listed by `list_commands`, and never touch the document | MCP: run each | `crates/mcp/tests/follow_agent.rs` › `the_switches_answer_their_state_over_mcp_and_leave_the_document_alone` |
+| I3: the system's reduced motion (Animations: Follow system): a jump cut, no entrance, the static row | System Settings ▸ Accessibility ▸ Reduce motion | `follow_agent_tests.rs` › `the_systems_reduced_motion_is_a_jump_no_entrance_and_the_static_row` |
