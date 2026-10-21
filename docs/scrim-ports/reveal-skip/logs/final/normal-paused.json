@@ -1,0 +1,2485 @@
+{
+ "speed": "normal",
+ "camera": "paused",
+ "sequence": "brief",
+ "steps": [
+  {
+   "layers": 6,
+   "x": 0,
+   "view": [
+    320,
+    240,
+    0.6
+   ],
+   "frame": 2,
+   "reply_s": 0.024,
+   "follow_before": "following",
+   "reveals": {
+    "entered": 6,
+    "recent": [
+     {
+      "at": 4.463900083,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     },
+     {
+      "at": 4.484285042,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     },
+     {
+      "at": 4.484285042,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     },
+     {
+      "at": 4.484285042,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     },
+     {
+      "at": 4.484285042,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     },
+     {
+      "at": 4.484285042,
+      "created": 1,
+      "entered": 1,
+      "follow": "following",
+      "skipped": {},
+      "withGroup": 0
+     }
+    ],
+    "skipped": {}
+   },
+   "samples": [
+    {
+     "t": 0.023,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.081,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.12,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.161,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.201,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.241,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.28,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.322,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.36,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.402,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.443,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.482,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 6
+    },
+    {
+     "t": 0.523,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 5
+    },
+    {
+     "t": 0.583,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 5
+    },
+    {
+     "t": 0.623,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 4
+    },
+    {
+     "t": 0.685,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 4
+    },
+    {
+     "t": 0.743,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 3
+    },
+    {
+     "t": 0.785,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 3
+    },
+    {
+     "t": 0.843,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 2
+    },
+    {
+     "t": 0.902,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 2
+    },
+    {
+     "t": 0.943,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 1
+    },
+    {
+     "t": 1.002,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 1
+    },
+    {
+     "t": 1.04,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.08,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.12,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.163,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.22,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.26,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.3,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.346,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.4,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.441,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.48,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.52,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.56,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.603,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.653,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.7,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.74,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.78,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.82,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.86,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.901,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.942,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 1.98,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.023,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.084,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.142,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.183,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.247,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.305,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.344,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.404,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.463,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.525,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.586,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.645,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.704,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.764,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.826,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.883,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.925,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 2.982,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.026,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.085,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.123,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.185,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.22,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.264,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.32,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.36,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.4,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.444,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.503,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.546,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.604,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.665,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.722,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.765,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.824,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.884,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.924,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 3.963,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.004,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.06,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.101,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.145,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.185,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.249,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.303,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.342,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.382,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.424,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.483,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.524,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.581,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.624,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.681,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.724,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.78,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.821,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.863,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.905,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 4.965,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.024,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.086,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.14,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.186,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.243,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.281,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.324,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.366,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.428,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.48,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.52,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.559,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.601,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.647,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.702,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.741,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.781,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.821,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.86,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.9,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.941,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 5.98,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.02,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.06,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.101,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.14,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.18,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.222,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.26,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.3,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.34,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.38,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.42,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.461,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.515,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.561,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.603,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.641,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.68,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.722,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.76,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.802,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.86,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.9,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.942,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 6.98,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.021,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.064,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.123,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.164,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.221,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.261,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.299,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.342,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.384,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.423,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.489,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.54,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.581,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.619,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.659,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.7,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.769,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.826,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.886,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.94,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    },
+    {
+     "t": 7.987,
+     "follow": "following",
+     "pausedBy": null,
+     "revealing": 0
+    }
+   ],
+   "view_after": {
+    "comments": true,
+    "cx": 320.0,
+    "cy": 240.0,
+    "frame_outlines": false,
+    "layout_grids": true,
+    "mask_outlines": false,
+    "multiplayer_cursors": true,
+    "outline_bounds": false,
+    "outline_hidden": false,
+    "outlines": false,
+    "outlines_selection": false,
+    "pixel_grid": true,
+    "pixel_preview": false,
+    "pixel_scale": 1,
+    "proof_srgb": false,
+    "rulers": false,
+    "show_slices": false,
+    "snap_geometry": true,
+    "snap_objects": true,
+    "snap_pixel": true,
+    "ui_hidden": false,
+    "vh": 860.0,
+    "vw": 904.0,
+    "zoom": 0.6
+   }
+  },
+  {
+   "layers": 36,
+   "x": 20000,
+   "view": "the person scrolled",
+   "frame": 8,
+   "reply_s": 0.036,
+   "follow_before": "paused",
+   "reveals": {
+    "entered": 6,
+    "recent": [
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     },
+     {
+      "at": 13.2239695,
+      "created": 1,
+      "entered": 0,
+      "follow": "paused",
+      "skipped": {
+       "off screen, follow paused": 1
+      },
+      "withGroup": 0
+     }
+    ],
+    "skipped": {
+     "off screen, follow paused": 36
+    }
+   },
+   "samples": [
+    {
+     "t": 0.019,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.059,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.099,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.139,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.179,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.224,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.279,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.318,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.358,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.399,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.443,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.5,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.539,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.579,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.62,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.662,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.719,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.759,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.802,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.86,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.901,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.939,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 0.979,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.017,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.058,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.099,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.138,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.179,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.219,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.261,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.32,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.357,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.397,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.437,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.479,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.521,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.559,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.599,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.64,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.679,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.719,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.759,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.801,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.842,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.9,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.939,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 1.98,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.019,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.06,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.101,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.16,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.202,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.26,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.299,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.339,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.379,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.419,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.459,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.499,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.539,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.579,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.621,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.659,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.699,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.739,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.779,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.819,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.859,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.899,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.939,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 2.979,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.018,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.059,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.099,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.137,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.178,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.217,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.258,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.299,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.339,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.379,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.419,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.459,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.499,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.539,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.579,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.618,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.659,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.699,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.74,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.78,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.819,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.859,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.899,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 3.944,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.0,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.039,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.081,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.14,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.182,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.239,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.279,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.319,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.36,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.399,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.44,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.48,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.519,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.56,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.599,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.639,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.679,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.719,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.762,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.819,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.86,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.902,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 4.962,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.019,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.059,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.099,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.139,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.179,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.219,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.258,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.299,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.338,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.378,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.419,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.459,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.499,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.539,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.581,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.619,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.659,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.708,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.763,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.801,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.858,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.901,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.959,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 5.999,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.038,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.082,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.14,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.179,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.219,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.259,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.299,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.339,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.379,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.419,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.461,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.501,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.539,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.58,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.619,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.659,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.703,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.759,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.801,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.839,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.881,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.919,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 6.96,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.003,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.059,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.099,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.141,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.199,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.239,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.28,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.32,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.36,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.398,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.438,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.478,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.518,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.558,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.6,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.639,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.679,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.719,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.759,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.799,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.839,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.879,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.918,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.958,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    },
+    {
+     "t": 7.999,
+     "follow": "paused",
+     "pausedBy": "the person's press, scroll or pinch on the canvas",
+     "revealing": 0
+    }
+   ],
+   "view_after": {
+    "comments": true,
+    "cx": 320.0,
+    "cy": 306.6666656732559,
+    "frame_outlines": false,
+    "layout_grids": true,
+    "mask_outlines": false,
+    "multiplayer_cursors": true,
+    "outline_bounds": false,
+    "outline_hidden": false,
+    "outlines": false,
+    "outlines_selection": false,
+    "pixel_grid": true,
+    "pixel_preview": false,
+    "pixel_scale": 1,
+    "proof_srgb": false,
+    "rulers": false,
+    "show_slices": false,
+    "snap_geometry": true,
+    "snap_objects": true,
+    "snap_pixel": true,
+    "ui_hidden": false,
+    "vh": 860.0,
+    "vw": 904.0,
+    "zoom": 0.6
+   }
+  }
+ ],
+ "diagnostics": [
+  {
+   "at": 1792598996,
+   "detail": "agent layers: 6 entered, 36 drawn final at once (off screen, follow paused: 36)",
+   "kind": "reveal",
+   "time": "2026-10-21 16:09:56 UTC"
+  },
+  {
+   "at": 1792598993,
+   "detail": "following paused: the person's press, scroll or pinch on the canvas",
+   "kind": "follow",
+   "time": "2026-10-21 16:09:53 UTC"
+  }
+ ]
+}
