@@ -49,15 +49,19 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {
         app.run("pref.revealAgentWork", json!({}));
     }
-    ui.horizontal(|ui| {
-        ui.label(tr("Reveal speed"));
-        let speeds = [("slow", tr_noop("Slow")), ("normal", tr_noop("Normal")), ("fast", tr_noop("Fast"))];
-        let labels: Vec<&str> = speeds.iter().map(|(_, l)| tr(l)).collect();
-        let current = speeds.iter().position(|(id, _)| prefs.settings.reveal_speed == *id).unwrap_or(1);
-        if let Some(i) = widgets::segmented_text(ui, &labels, current) {
-            app.run("pref.revealSpeed", json!({"speed": speeds[i].0}));
+    // Each speed with its timing (Fix M3), one a row: too long for a segmented control.
+    ui.label(tr("Reveal speed"));
+    let speeds = [
+        ("fast", tr_noop("Fast (0.2 s per layer, about 1 s per step)")),
+        ("normal", tr_noop("Normal (0.5 s per layer, about 4 s per step)")),
+        ("slow", tr_noop("Slow (0.7 s per layer, about 6 s per step)")),
+    ];
+    let current = speeds.iter().position(|(id, _)| prefs.settings.reveal_speed == *id).unwrap_or(1);
+    for (i, (id, label)) in speeds.iter().enumerate() {
+        if widgets::radio(ui, i == current, tr(label)) && i != current {
+            app.run("pref.revealSpeed", json!({"speed": id}));
         }
-    });
+    }
     if widgets::checkbox(ui, prefs.settings.working_indicator, tr("Show working indicator")) {
         app.run("pref.workingIndicator", json!({}));
     }

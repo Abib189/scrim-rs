@@ -213,3 +213,16 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
   - an exact allow-list: it fails if any other tool carries the reminder, or one of the five loses it;
   - a size budget: it fails if `tools/list` grows more than 2% over 29,554 characters, unless the baseline in the test is changed on purpose.
   - Each was checked by breaking it on purpose: adding `select`, dropping `type_text`, and a longer reminder each fail.
+
+## M3: each reveal speed shows its timing (Fix M)
+
+- **Settings ▸ General ▸ Reveal speed** lists the three speeds one a row, each with its timing:
+  - "Fast (0.2 s per layer, about 1 s per step)";
+  - "Normal (0.5 s per layer, about 4 s per step)";
+  - "Slow (0.7 s per layer, about 6 s per step)".
+- **The control:** radio rows replace the segmented control, which these labels don't fit.
+- **Unchanged:** the saved values (`fast`, `normal`, `slow`), `pref.revealSpeed` and the default.
+- **Translations:** the Spanish catalog has all three. The old one-word "Fast" and "Slow" keys are gone; "Normal" stays, because other labels use it.
+- **The test:** `settings_tests.rs` › `each_reveal_speed_shows_its_timing_and_saves_the_same_value`.
+- **The release build's window:** `docs/scrim-ports/working-gap/m3-reveal-speed-labels.png`.
+

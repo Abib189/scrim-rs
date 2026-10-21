@@ -147,3 +147,39 @@ fn the_home_sidebar_has_settings_pinned_at_the_bottom() {
         "the rail's current section"
     );
 }
+
+/// Fix M3: each reveal speed shows its timing; choosing one saves the same value as before.
+#[test]
+fn each_reveal_speed_shows_its_timing_and_saves_the_same_value() {
+    let (mut h, _) = Harness::new();
+    h.app.run("settings.open", json!({}));
+    h.app.handle_ui_requests();
+    let mut shapes = h.frames(3);
+    assert!(h.app.ui.preferences, "Settings is open");
+    let labels =
+        ["Fast (0.2 s per layer, about 1 s per step)", "Normal (0.5 s per layer, about 4 s per step)", "Slow (0.7 s per layer, about 6 s per step)"];
+    // Further down General when the dialog is short: scroll until they're drawn.
+    for _ in 0..20 {
+        if labels.iter().all(|l| has_text(&shapes, l)) {
+            break;
+        }
+        let at = text_center(&shapes, "Settings") + egui::vec2(0.0, 250.0);
+        h.frame(vec![Event::PointerMoved(at)]);
+        h.frame(vec![Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Point,
+            delta: egui::vec2(0.0, -120.0),
+            phase: egui::TouchPhase::Move,
+            modifiers: egui::Modifiers::NONE,
+        }]);
+        shapes = h.frames(2);
+    }
+    for l in labels {
+        assert!(has_text(&shapes, l), "{l} is shown");
+    }
+    assert_eq!(h.app.session.prefs.settings.reveal_speed, "normal", "Normal by default");
+    for (label, saved) in [(labels[2], "slow"), (labels[0], "fast"), (labels[1], "normal")] {
+        h.click(text_center(&shapes, label));
+        shapes = h.frames(2);
+        assert_eq!(h.app.session.prefs.settings.reveal_speed, saved, "{label}");
+    }
+}
