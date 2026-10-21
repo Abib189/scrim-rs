@@ -463,7 +463,7 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
         Some(s) => (s, if paused { t.text_secondary } else { t.text }),
         None => (tr("Off: the camera stays where you leave it while agents work.").to_string(), t.text_secondary),
     };
-    // One row: the switch, Resume while paused, and what it does now.
+    // The switch and Resume while paused; then what it is doing now.
     crate::right::row(ui, 30.0, |ui| {
         if crate::widgets::checkbox(ui, on, tr("Follow agent")) {
             app.run("camera.follow-agents", json!({"on": !on}));
@@ -471,6 +471,8 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
         if paused && crate::widgets::button(ui, tr("Resume"), true, true).clicked() {
             app.run("camera.follow-agents", json!({"on": true}));
         }
+    });
+    crate::right::row(ui, 20.0, |ui| {
         let resp = ui.add(egui::Label::new(egui::RichText::new(&s).color(color).font(regular(11.0))).truncate()).on_hover_text(&s);
         crate::a11y::status(&resp, &s, &s);
     });

@@ -111,6 +111,8 @@ fn fit_zooms_out_only_when_the_layers_dont_fit() {
     let (cx, cy, z) = super::reveal_or_fit(&v, Rect::new(0.0, 0.0, 3000.0, 1000.0));
     assert_eq!((cx, cy), (1500.0, 500.0));
     assert!((z - (1000.0 - 2.0 * REVEAL_MARGIN) / 3000.0).abs() < 1e-12, "{z}");
+    // Out of view entirely: centred on it, not parked on the far edge.
+    assert_eq!(super::reveal_or_fit(&v, Rect::new(5000.0, 3000.0, 5100.0, 3100.0)), (5050.0, 3050.0, 1.0));
     // A small layer at a low zoom isn't zoomed into.
     let low = view(0.0, 0.0, 0.1);
     assert_eq!(super::reveal_or_fit(&low, Rect::new(0.0, 0.0, 10.0, 10.0)).2, 0.1);

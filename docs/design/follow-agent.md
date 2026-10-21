@@ -242,3 +242,13 @@ Most of I3's list landed with the code it covers, in I1 and I2, as the repo's ru
 - **The system's reduced motion** (Animations: Follow system): a jump cut, no entrance, and the static row, as with Animations Off.
 
 Over I1–I3 that is 38 tests in the window (`follow_agent_tests.rs` 15, `reveal_tests.rs` 9, `working_indicator_tests.rs` 11), plus two engine tests and one MCP test. Breaking each guarantee in turn (11 in all) fails at least one of them.
+
+## A follow-up from I4's first run
+
+- **Work entirely out of view is centred.** With `fit`, D2's least move parked a poster arriving from far away on the canvas's far edge, partly under the floating toolbar. The brief's least move is for work already visible. Now:
+  - partly in view: the least move;
+  - out of view: centred on it;
+  - too big: fitted and centred.
+
+  D2's Layers click (no `fit`) is unchanged.
+- **The AI tab's status has its own line** again, under the switch. Beside the switch it was cut down to "…". The row shows only when an agent is around, so the tab's other sections keep their place otherwise.

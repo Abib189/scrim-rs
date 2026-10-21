@@ -50,13 +50,20 @@ pub fn reveal(view: &ViewState, r: Rect) -> (f64, f64) {
     (axis(view.cx, view.vw, r.x0, r.x1), axis(view.cy, view.vh, r.y0, r.y1))
 }
 
-/// The view (centre and zoom) that shows `r`: [`reveal`] when it fits at the current zoom, else the
-/// zoom that fits it with the margin (lower, never higher), centred on it.
+/// The view (centre and zoom) that shows `r` (Stage I's follow):
+/// - **Partly in view and it fits:** [`reveal`], the least move, the zoom kept.
+/// - **Out of view entirely:** centred on it (a least move would leave it on the far edge).
+/// - **Too big at this zoom:** the zoom that fits it with the margin (lower, never higher), centred.
 pub fn reveal_or_fit(view: &ViewState, r: Rect) -> (f64, f64, f64) {
     let zoom = view.zoom.max(1e-9);
     let room = |screen: f64| (screen - 2.0 * REVEAL_MARGIN).max(1.0);
     let fit = (room(view.vw) / r.width().max(1e-9)).min(room(view.vh) / r.height().max(1e-9));
     if fit >= zoom || !fit.is_finite() {
+        let (hw, hh) = (view.vw / 2.0 / zoom, view.vh / 2.0 / zoom);
+        let seen = r.x1 >= view.cx - hw && r.x0 <= view.cx + hw && r.y1 >= view.cy - hh && r.y0 <= view.cy + hh;
+        if !seen {
+            return (r.center().x, r.center().y, zoom);
+        }
         let (cx, cy) = reveal(view, r);
         return (cx, cy, zoom);
     }
