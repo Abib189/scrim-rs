@@ -252,3 +252,8 @@ Over I1–I3 that is 38 tests in the window (`follow_agent_tests.rs` 15, `reveal
 
   D2's Layers click (no `fit`) is unchanged.
 - **The AI tab's status has its own line** again, under the switch. Beside the switch it was cut down to "…". The row shows only when an agent is around, so the tab's other sections keep their place otherwise.
+- **One long frame no longer drops the reveal.** On the 782-layer Fixture, an agent's 15-command batch took one 495 ms frame to run. The reveal treated that gap as frames being dropped and finished at once, so it never played there. Now:
+  - the first stall in a reveal re-times it by the gap;
+  - a second stall (frames really being dropped), or a gap over 1 s (the window hidden), finishes it.
+
+  Tested in `one_long_frame_delays_the_reveal_and_a_second_finishes_it`. (Overrule if you'd rather any long frame finish it.)

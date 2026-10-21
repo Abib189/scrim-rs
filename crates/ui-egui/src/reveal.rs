@@ -11,8 +11,9 @@
 //!   follows the agent). Layers created off screen are drawn final at once: nothing is ever left
 //!   hidden or half-faded.
 //! - **Skipped:** the person's edits; undo and redo; opening a file; Settings ▸ "Reveal agent work"
-//!   off; Animations Off or reduced motion. **Finished at once** when frames stop (the window hidden,
-//!   or a gap over [`GAP`]).
+//!   off; Animations Off or reduced motion. **Finished at once** when the window was hidden (a gap
+//!   over [`HIDDEN`]) or frames are being dropped (a second gap over [`GAP`] in one reveal). One
+//!   long frame (the edit itself, on a big file) only delays it: the reveal is re-timed by the gap.
 //! - **Render-only:** the canvas draws [`canvas_doc`], a copy of the document with the revealing
 //!   layers' opacity and transform eased (`imbl` shares every other node). Nothing else reads it: the
 //!   session's document, hit-testing, selection, undo, the change log, `inspect_document`, MCP
@@ -40,8 +41,11 @@ pub const CAP_DEGRADED: f64 = 0.6;
 pub const TWEEN: f64 = 0.16;
 /// The scale an entrance starts at.
 pub const START_SCALE: f64 = 0.96;
-/// A longer gap between frames means the window was hidden or frames dropped badly: finish.
+/// A gap between frames longer than this is a stall: the first in a reveal re-times it, a second
+/// finishes it (frames are being dropped).
 pub const GAP: f64 = 0.25;
+/// A gap longer than this: the window was hidden. Finish.
+pub const HIDDEN: f64 = 1.0;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Kind {
@@ -76,6 +80,8 @@ pub struct State {
     /// This frame's render-only document, and the session document it stands in for.
     frame_doc: Option<(Arc<Document>, Arc<Document>)>,
     last_tick: Option<f64>,
+    /// This reveal has had its one stall already.
+    stalled: bool,
 }
 
 impl State {
@@ -153,9 +159,22 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     };
     let before = app.ui.agent_view.before.clone();
     let st = &mut app.ui.agent_view.reveal;
-    let gap = st.last_tick.is_some_and(|t| now - t > GAP);
+    let gap = st.last_tick.map(|t| now - t).filter(|g| *g > GAP);
     st.last_tick = Some(now);
-    if gap || !animate {
+    match gap {
+        Some(g) if g <= HIDDEN && !st.stalled && st.active() => {
+            // One long frame (the edit itself): the reveal waits for it.
+            st.stalled = true;
+            st.last_start += g;
+            st.items.iter_mut().for_each(|i| i.start += g);
+            if let Some(f) = st.fade.as_mut() {
+                f.start += g;
+            }
+        }
+        Some(_) => st.finish(),
+        None => {}
+    }
+    if !animate {
         st.finish();
     }
     // In view now, or on its way into view (the camera follows the agent there).
@@ -211,6 +230,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     }
     if !st.active() {
         st.frame_doc = None;
+        st.stalled = false;
         return;
     }
     st.frame_doc = Some((render_doc(st, &doc, now), doc));

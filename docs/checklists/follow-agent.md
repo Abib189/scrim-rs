@@ -38,3 +38,4 @@ The plan, and what the code held: `docs/design/follow-agent.md`. Tests are in `c
 | The two switches are saved and answer over the route | Turn them off, restart | `the_switches_are_saved_and_answer_over_the_route` |
 | I3: the switches and `fit` answer their state over MCP's `run_command`, are listed by `list_commands`, and never touch the document | MCP: run each | `crates/mcp/tests/follow_agent.rs` › `the_switches_answer_their_state_over_mcp_and_leave_the_document_alone` |
 | I3: the system's reduced motion (Animations: Follow system): a jump cut, no entrance, the static row | System Settings ▸ Accessibility ▸ Reduce motion | `follow_agent_tests.rs` › `the_systems_reduced_motion_is_a_jump_no_entrance_and_the_static_row` |
+| One long frame (the edit itself on a big file) delays the reveal; a second, or a hidden window, finishes it | An agent batch on the Fixture | `reveal_tests.rs` › `one_long_frame_delays_the_reveal_and_a_second_finishes_it` |
