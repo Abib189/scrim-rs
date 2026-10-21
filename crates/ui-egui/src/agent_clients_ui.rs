@@ -292,6 +292,13 @@ fn poll(app: &mut FigApp, ctx: &Context) {
     }
 }
 
+/// `text` as the window shows it: the MCP token masked, as Claude Code's command shows it. Write
+/// and Copy use the real one; only what is painted (and could be seen or captured) is masked.
+fn shown(app: &FigApp, text: &str) -> String {
+    let m = &app.session.prefs.settings.mcp;
+    if m.require_auth && !m.token.is_empty() { text.replace(m.token.as_str(), "<token>") } else { text.to_string() }
+}
+
 fn mono(ui: &mut Ui, text: &str) {
     let t = Tokens::get(ui.ctx());
     egui::Frame::NONE
@@ -302,6 +309,16 @@ fn mono(ui: &mut Ui, text: &str) {
         .show(ui, |ui| {
             ui.label(RichText::new(text).monospace().color(t.text));
         });
+}
+
+/// An out-of-date entry with this window's address: what it lacks is the token.
+fn no_token(r: &Value) -> bool {
+    r["registered"].is_string() && r["registered"] == r["url"]
+}
+
+/// Where an out-of-date entry points, as a confirmation says it.
+fn registered(r: &Value) -> String {
+    if no_token(r) { tr("this address, without the token").to_string() } else { r["registered"].as_str().unwrap_or_default().to_string() }
 }
 
 /// The status row's words for a state.
@@ -320,7 +337,7 @@ fn verification(r: &Value) -> String {
     let date = r["verified"].as_str().unwrap_or_default();
     match r["verification"].as_str() {
         Some("verified-live") => trf("Verified live · {date}", &[("date", &date)]),
-        Some("docs-only") => trf("From its documentation only · {date}", &[("date", &date)]),
+        Some("docs-only") => trf("Docs only · {date}", &[("date", &date)]),
         _ => tr("Untested").to_string(),
     }
 }
@@ -377,13 +394,17 @@ fn row(app: &mut FigApp, ui: &mut Ui, id: &str, now: f64) {
     crate::right::row(ui, 28.0, |ui| {
         let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
         ui.painter().circle_filled(dot.center(), 4.0, color);
-        let resp = ui.label(RichText::new(format!("{n} · {label}")).color(t.text).font(regular(12.0)));
+        let resp = ui.label(RichText::new(&n).color(t.text).font(regular(12.0)));
         crate::a11y::status(&resp, label, &trf("{name}: {state}", &[("name", &n), ("state", &label)]));
-        if !open && widgets::button(ui, tr("Connect"), false, true).clicked() {
-            app.run("mcp.connect-client", json!({"client": id}));
-        }
+        // At the row's end, so a long name or status can't push it out of the panel.
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if !open && widgets::button(ui, tr("Connect"), false, true).clicked() {
+                app.run("mcp.connect-client", json!({"client": id}));
+            }
+        });
     });
-    widgets::note(ui, &verification(&r), t.text_secondary);
+    // The status, then how the profile was verified.
+    widgets::note(ui, &format!("{label} · {}", verification(&r)), t.text_secondary);
     if open {
         panel(app, ui, &r);
     }
@@ -417,20 +438,32 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
     let state = r["state"].as_str().unwrap_or_default().to_string();
     let c = if state == "out of date" { Confirm::Reregister } else { Confirm::Write };
     let h = how(app, r, c);
+    let can = h != How::Copy && matches!(state.as_str(), "not configured" | "out of date" | "unknown");
+    // "Scrim will…" only when it will; otherwise what the command or entry is.
     match &h {
         How::Run(_, runs) => {
-            widgets::note(ui, &trf("Scrim will run {name}'s own command, which adds Scrim for your user:", &[("name", &n)]), t.text_secondary);
-            mono(ui, &lines(r, runs));
+            let intro = if can {
+                trf("Scrim will run {name}'s own command, which adds Scrim for your user:", &[("name", &n)])
+            } else {
+                trf("{name}'s own command, which adds Scrim for your user:", &[("name", &n)])
+            };
+            widgets::note(ui, &intro, t.text_secondary);
+            mono(ui, &shown(app, &lines(r, runs)));
         }
         How::Write(path, _) => {
-            widgets::note(ui, &trf("Scrim will add this entry to {name}'s configuration file:", &[("name", &n)]), t.text_secondary);
+            let intro = if can {
+                trf("Scrim will add this entry to {name}'s configuration file:", &[("name", &n)])
+            } else {
+                trf("Scrim's entry in {name}'s configuration file:", &[("name", &n)])
+            };
+            widgets::note(ui, &intro, t.text_secondary);
             mono(ui, &path.to_string_lossy());
             ui.add_space(4.0);
-            mono(ui, r["file"]["text"].as_str().unwrap_or_default());
+            mono(ui, &shown(app, r["file"]["text"].as_str().unwrap_or_default()));
         }
         How::Copy => {
             widgets::note(ui, &trf("Add this to {name} yourself:", &[("name", &n)]), t.text_secondary);
-            mono(ui, &ac::copy_text(r));
+            mono(ui, &shown(app, &ac::copy_text(r)));
             if let Some(why) = why_copy(app, r, &n) {
                 widgets::note(ui, &why, t.text_secondary);
             }
@@ -469,6 +502,10 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
             t.danger,
         ),
         "configured" => widgets::note(ui, &trf("{name} already has Scrim at this address.", &[("name", &n)]), t.text),
+        // The right address without the token (authentication was turned on since) is out of date too.
+        "out of date" if no_token(r) => {
+            widgets::note(ui, &trf("{name} has this address but not the token, and MCP authentication is on.", &[("name", &n)]), t.warning);
+        }
         "out of date" => {
             widgets::note(ui, tr("Registered address is out of date"), t.warning);
             let (old, new) = (r["registered"].as_str().unwrap_or_default(), r["url"].as_str().unwrap_or_default());
@@ -481,7 +518,6 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
         _ => {}
     }
     let busy = app.ui.connect.others.running.is_some();
-    let can = h != How::Copy && matches!(state.as_str(), "not configured" | "out of date" | "unknown");
     crate::right::row(ui, 32.0, |ui| {
         if can {
             let (label, cmd) = match (c, &h) {
@@ -496,15 +532,18 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
         if widgets::button(ui, tr("Copy"), !can, true).clicked() {
             app.run("mcp.copy-client-entry", json!({"client": id}));
         }
-        if let Some(doc) = r["docs"][0].as_str()
-            && widgets::button(ui, tr("Documentation"), false, true).clicked()
-        {
-            app.services.open_url(doc);
-        }
         if widgets::button(ui, tr("Close"), false, !busy).clicked() {
             app.ui.connect.others.open = None;
         }
     });
+    // On a row of its own: with it, the row above is wider than the panel.
+    if let Some(doc) = r["docs"][0].as_str() {
+        crate::right::row(ui, 32.0, |ui| {
+            if widgets::button(ui, tr("Documentation"), false, true).clicked() {
+                app.services.open_url(doc);
+            }
+        });
+    }
     if busy {
         widgets::note(ui, &trf("Running {name}'s command…", &[("name", &n)]), t.text_secondary);
     }
@@ -614,7 +653,7 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
         (How::Run(_, runs), Confirm::Reregister) => (
             trf(
                 "Scrim will run {name}'s own command to replace its scrim entry, which points to {old}, with this window's address.",
-                &[("name", &n), ("old", &r["registered"].as_str().unwrap_or_default())],
+                &[("name", &n), ("old", &registered(&r))],
             ),
             lines(&r, runs),
         ),
@@ -631,7 +670,7 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
         (How::Write(path, _), Confirm::Reregister) => (
             trf(
                 "Scrim will replace {name}'s scrim entry, which points to {old}, with this window's address. It keeps a copy of the file first.",
-                &[("name", &n), ("old", &r["registered"].as_str().unwrap_or_default())],
+                &[("name", &n), ("old", &registered(&r))],
             ),
             path.to_string_lossy().into_owned(),
         ),
@@ -641,6 +680,7 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
         ),
         (How::Copy, _) => return,
     };
+    let detail = shown(app, &detail);
     let plain = c != Confirm::RemoveOld && plain_token(&r, &h);
     let go_label = match c {
         _ if plain => tr("Write the token"),

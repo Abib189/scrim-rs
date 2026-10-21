@@ -139,9 +139,11 @@ fn found_clients_come_first_with_their_status_and_the_rest_under_more() {
     h.app.handle_ui_requests();
     let shapes = h.frames(3);
     assert!(has_text(&shapes, "Connect other agents"), "{:?}", texts_containing(&shapes, "agents"));
-    assert!(has_text(&shapes, "Codex · Not configured") && has_text(&shapes, "Cursor · Configured"), "{:?}", texts_containing(&shapes, " · "));
-    assert!(has_text(&shapes, "From its documentation only · 2026-10-21"), "how it was verified, and when");
-    assert!(!has_text(&shapes, "Zed · Not configured"), "the rest wait under More");
+    assert!(has_text(&shapes, "Codex") && has_text(&shapes, "Cursor"), "{:?}", texts_containing(&shapes, " · "));
+    // The status, then how it was verified, and when.
+    assert!(has_text(&shapes, "Not configured · Verified live · 2026-10-21"), "{:?}", texts_containing(&shapes, " · "));
+    assert!(has_text(&shapes, "Configured · Docs only · 2026-10-21"));
+    assert!(!has_text(&shapes, "Zed"), "the rest wait under More");
     let more = figcraft_engine::cmd::agent_clients::profiles().len() - 4;
     assert!(has_text(&shapes, &format!("More ({more})")));
     assert!(!crate::live_tests::texts(&shapes).iter().any(|(t, _, _)| t.contains(" · Connected")), "a file never says Connected");
@@ -267,6 +269,9 @@ fn a_token_in_plain_text_is_warned_about_and_an_env_reference_is_used_elsewhere(
     h.app.session.prefs.settings.mcp.token = "tok123".into();
     // Zed has no documented reference: the token itself, said first.
     run(&mut h, "mcp.connect-client", "zed");
+    // The window never paints the token: it's masked as in Claude Code's command.
+    assert_eq!(super::shown(&h.app, "Bearer tok123"), "Bearer <token>");
+    assert!(texts_containing(&h.frames(2), "tok123").is_empty());
     run(&mut h, "mcp.write-client", "zed");
     let shapes = h.frames(2);
     assert_eq!(texts_containing(&shapes, "the token itself will be stored in its configuration as plain text").len(), 1, "warned");
@@ -282,6 +287,16 @@ fn a_token_in_plain_text_is_warned_about_and_an_env_reference_is_used_elsewhere(
     confirm(&mut h, "Add Scrim to Cursor?", "Write");
     let text = std::fs::read_to_string(home.join(".cursor/mcp.json")).unwrap();
     assert!(text.contains("${env:SCRIM_MCP_TOKEN}") && !text.contains("tok123"), "{text}");
+    // An entry with this address but no token: out of date, and said as such (not "points to" itself).
+    put(&home.join(".cursor/mcp.json"), &json!({"mcpServers": {"scrim": {"url": URL}}}).to_string());
+    let r = report(&h.app.session, "cursor").unwrap();
+    assert_eq!(r["state"], "out of date");
+    assert!(super::no_token(&r) && super::registered(&r) == "this address, without the token");
+    run(&mut h, "mcp.reregister-client", "cursor");
+    let shapes = h.frames(2);
+    assert_eq!(texts_containing(&shapes, "which points to this address, without the token").len(), 1);
+    confirm(&mut h, "Re-register Scrim in Cursor?", "Re-register");
+    assert_eq!(report(&h.app.session, "cursor").unwrap()["state"], "configured");
     let _ = std::fs::remove_dir_all(&home);
 }
 

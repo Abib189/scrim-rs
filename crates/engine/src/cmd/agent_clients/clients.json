@@ -28,7 +28,7 @@
     "client_names": ["codex-mcp-client"],
     "docs": ["https://learn.chatgpt.com/docs/extend/mcp?surface=cli", "https://learn.chatgpt.com/docs/config-file/config-reference"],
     "verified": "2026-10-21",
-    "verification": "docs-only",
+    "verification": "verified-live",
     "detect": {"programs": ["codex"], "dirs": ["{env:CODEX_HOME|{home}/.codex}"]},
     "cli": {
       "program": "codex",

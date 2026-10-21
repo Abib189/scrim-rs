@@ -327,3 +327,10 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
   - **The panel:** the exact command lines or the file path and entry, the profile's notes, the token note (the env-var to set, or a warning that the token is written in plain text), the state's note, Run / Write / Re-register, Copy, Documentation, Close, the outcome, and Remove the old entry.
   - **The confirmations** read the file again, aren't shown when there's nothing to do, show the command or the path, say that Scrim doesn't restart the client, and for a plain token say so and are answered with "Write the token".
 - **Not built:** reading a CLI's own list command for the status (`status.args` in the J0 sketch); the files carry the status for every CLI client here. YAML clients stay Copy only.
+
+## J3 as built: verification
+
+- **Live, on a scratch home** (`docs/scrim-ports/connect-agents/README.md`): the release build's real Connect for **Codex**, clicked in the window, with Codex's own `mcp list --json` and `mcp get` before and after: add, Re-register (remove, then add), and Re-register with authentication on (`--bearer-token-env-var`). Codex is now labelled **verified live**; every other client stays **docs only**.
+- **File clients** (Cursor, Zed): written and refused live on scratch files; the apps weren't started.
+- **Fixes from the live run:** the row and button layout, the token masked in everything the window paints, the "address but not the token" wording, the panel's intro only when Scrim will act, and Stage I's Resume button inside a scrolling AI tab.
+- **Not verified:** a Codex session using the tools (it needs the owner's sign-in); VS Code's `--add-mcp` (it talks to the running VS Code); the GUI clients reading what was written; the clients that aren't installed; Windows and Linux beyond path resolution.

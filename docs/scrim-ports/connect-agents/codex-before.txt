@@ -1,0 +1,3 @@
+$ HOME=<scratch> codex mcp list --json
+[]
+exit 0

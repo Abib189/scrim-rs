@@ -22,3 +22,7 @@ The plan and the clients' documentation: `docs/design/connect-any-agent.md`.
 | J2: a token in plain text is warned about and confirmed as "Write the token"; an env-var client's file never holds the token | Authentication on, connect Zed and Cursor | `a_token_in_plain_text_is_warned_about_and_an_env_reference_is_used_elsewhere` |
 | J2: Copy only for manual clients and clients without a token option; the card for any other agent (address, JSON, TOML, stdio, the cloud note) | Open Windsurf, then Other agent | `copy_only_when_scrim_cant_and_the_card_for_any_other_agent` |
 | J2: the generic snippets (JSON, TOML, the stdio command with and without the control port) | — | `agent_clients_tests.rs` › `the_generic_card` |
+| J3: the window never paints the MCP token (masked as `<token>`); Write and Copy use the real one | Authentication on, open Zed | `agent_clients_ui_tests.rs` › `a_token_in_plain_text_is_warned_about_and_an_env_reference_is_used_elsewhere` |
+| J3: an entry with this address but no token reads "has this address but not the token", and Re-register adds it | Turn authentication on with Cursor configured | same test |
+| J3: live: Codex's own CLI before and after Connect, Re-register and the token option, on a scratch home | `docs/scrim-ports/connect-agents/README.md` | `codex-before.txt`, `codex-after.txt` |
+| I follow-up: paused, Resume stays inside the AI tab when it scrolls | Pause following with the AI tab scrolled | `follow_agent_tests.rs` › `resume_stays_inside_the_ai_tab_when_it_scrolls` |

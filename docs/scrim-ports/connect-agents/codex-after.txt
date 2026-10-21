@@ -1,0 +1,55 @@
+$ HOME=<scratch> codex mcp list --json
+[
+  {
+    "name": "scrim",
+    "enabled": true,
+    "disabled_reason": null,
+    "transport": {
+      "type": "streamable_http",
+      "url": "http://127.0.0.1:7681/mcp",
+      "bearer_token_env_var": null,
+      "http_headers": null,
+      "env_http_headers": null,
+      "http_headers_helper": null
+    },
+    "startup_timeout_sec": null,
+    "tool_timeout_sec": null,
+    "auth_status": "unsupported"
+  }
+]
+exit 0
+
+$ HOME=<scratch> codex mcp get scrim
+scrim
+  enabled: true
+  transport: streamable_http
+  url: http://127.0.0.1:7681/mcp
+  bearer_token_env_var: -
+  http_headers: -
+  env_http_headers: -
+  http_headers_helper: -
+  remove: codex mcp remove scrim
+exit 0
+
+$ cat <scratch>/.codex/config.toml
+[mcp_servers.scrim]
+url = "http://127.0.0.1:7681/mcp"
+$ HOME=<scratch> codex mcp list --json   (after Re-register)
+[["scrim", "http://127.0.0.1:7681/mcp"]]
+exit 0
+
+$ HOME=<scratch> codex mcp get scrim   (after Re-register with MCP authentication on)
+scrim
+  enabled: true
+  transport: streamable_http
+  url: http://127.0.0.1:7681/mcp
+  bearer_token_env_var: SCRIM_MCP_TOKEN
+  http_headers: -
+  env_http_headers: -
+  http_headers_helper: -
+  remove: codex mcp remove scrim
+exit 0
+$ cat <scratch>/.codex/config.toml
+[mcp_servers.scrim]
+url = "http://127.0.0.1:7681/mcp"
+bearer_token_env_var = "SCRIM_MCP_TOKEN"
