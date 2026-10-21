@@ -75,7 +75,7 @@ pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
     widgets::label(
         ui,
         if auth {
-            tr("Clients send a token Scrim made for this computer. Connect Claude Code again so it has the token.")
+            tr("Clients send a token Scrim made for this computer. Connect your agents again so they have the token.")
         } else {
             tr("Off: any program on this computer can use the server.")
         },

@@ -28,7 +28,7 @@ fn clicks_switch_tabs_and_modes_and_never_touch_the_document() {
     h.click(text_center(&shapes, "AI"));
     let shapes = h.frames(2);
     assert_eq!(h.app.ui.right_tab, RightTab::Ai);
-    assert!(has_text(&shapes, "Claude Code") && has_text(&shapes, "Activity"), "the AI tab's sections");
+    assert!(has_text(&shapes, "Agents") && has_text(&shapes, "Activity"), "the AI tab's sections");
     // Animate: a placeholder, without the tabs; back to Design comes back to the AI tab.
     h.click(text_center(&shapes, "Animate"));
     let shapes = h.frames(2);

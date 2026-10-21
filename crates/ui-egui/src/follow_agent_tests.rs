@@ -286,7 +286,7 @@ fn the_ai_tab_says_who_and_what_it_follows_and_the_command_answers_the_state() {
     let (mut u, _) = scene();
     poster(&mut u, 8000.0);
     frames(&mut u, 5);
-    assert_eq!(super::status(&u.app).as_deref(), Some("Following Claude · Poster"));
+    assert_eq!(super::status(&u.app).as_deref(), Some("Following Claude Code · Poster"));
     let r = agent(&mut u, "camera.follow-agents", json!({"on": false}));
     assert_eq!(r["state"], "off", "{r}");
     frames(&mut u, 2);

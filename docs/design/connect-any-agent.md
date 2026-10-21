@@ -287,3 +287,28 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
 ## New dependency (J2)
 
 `toml_edit` (MIT OR Apache-2.0; already in `Cargo.lock` through `toml`) becomes a direct dependency of `figcraft-engine`, for writing Codex's and Grok's `config.toml` with comments and ordering kept. It is the format-preserving editor the brief names. Codex and Grok are written through their own CLIs when present; the file writer is the fallback when the CLI isn't installed.
+
+## J1 as built: agent-neutral names
+
+- **Sessions on the endpoint** (`crates/mcp`):
+  - **Issuing them:** `Server::handle_session` is the HTTP transport's entry. An `initialize` issues an `Mcp-Session-Id` (64 hex digits, from `settings::new_token`), sent in the response header and remembered with its `clientInfo` (the last 32).
+  - **Attributing requests:** before every message, the backend is told which client it comes from (`Backend::set_client`): the session's, or the newest to initialize for a request without a known session. Lenient: a client that ignores the header, or one carrying a session from before a restart, is not refused.
+  - **stdio** (`handle_line`) issues no session.
+- **The client on each edit:** `ControlRequest.client` (the app's backend sets it) → `Agents.client` for the request → `Change.client` in the change log, for agents' edits only. `history.changes` gains `client`. `Author::is_agent()` is unchanged, and still the only test of "an agent's edit".
+- **Names** (`agents::client_display_name`):
+  - the friendly name when the table knows it: `claude-code` → Claude Code, `codex-mcp-client` → Codex, `gemini-cli-mcp-client` → Gemini CLI, `opencode`, Visual Studio Code / Code - OSS → VS Code, Cline / `@cline/core`, Zed, `goose-cli` / `goose-desktop` → Goose, `continue-client` → Continue, `grok-shell-…` → Grok;
+  - else the name as announced (control characters out, cut at 32 characters with "…");
+  - `None` for no name, which reads "an agent" (or "An agent" at the start of a sentence). Never "Claude" for another client.
+- **Where it shows:**
+  - **The AI tab:** the header is "Agents". The status row is "Connected · Claude Code, Codex": every client connected in the last 10 minutes, newest first (`mcp.status` gains `clients`, each with `display`). The empty state is agent-neutral.
+  - **Following and the indicator:** "Following Codex · Poster"; "Codex is working on Poster" (the indicator's AccessKit name).
+  - **Activity rows:** "Codex: Create frame" when the client is known, else the route as before.
+  - **Settings ▸ MCP:** the token note says "Connect your agents again".
+  - **Diagnostics:** "<name as announced> <version> connected", or "an agent … connected".
+  - **Undo labels:** "Agent: …", unchanged.
+  - **"Most recently active"** is the client of the latest edit; the status row lists all.
+- **Tests:**
+  - `agents_tests.rs`: the name rules, and the change log's client;
+  - `crates/mcp/tests/sessions.rs`: attribution per session, the fallback, nameless clients, stdio, and the real header;
+  - `client_names_tests.rs`: seven names across every place above, and identical follow, reveal and dots for each, with several clients the latest to edit named.
+  - Making the window ignore the edit's client fails the several-clients test.

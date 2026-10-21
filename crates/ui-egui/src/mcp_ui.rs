@@ -94,7 +94,8 @@ pub fn request(app: &mut FigApp, kind: &str, _data: &Value) -> bool {
 
 /// The control method `mcp.client`: the endpoint saw a client initialize (`{name, version, now}`).
 pub fn client_seen(app: &mut FigApp, p: &Value) -> Result<Value, String> {
-    let name = p.get("name").and_then(Value::as_str).unwrap_or("an MCP client").chars().take(80).collect::<String>();
+    // As announced; a client that announced no name is kept nameless (shown as "an agent").
+    let name = p.get("name").and_then(Value::as_str).unwrap_or("").chars().take(80).collect::<String>();
     let version = p.get("version").and_then(Value::as_str).unwrap_or("").chars().take(40).collect::<String>();
     let now = p.get("now").and_then(Value::as_u64).unwrap_or(0);
     crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpClient { name: &name, version: &version });

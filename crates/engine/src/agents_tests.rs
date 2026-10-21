@@ -166,3 +166,45 @@ fn the_newest_edits_are_listed_however_far_the_revision_moved() {
     assert!(feed["revision"].as_u64().unwrap() > 300, "the revision moved on");
     assert_eq!(s.execute("history.changes", &json!({})).unwrap()["changes"].as_array().unwrap().len(), 5);
 }
+
+/// Stage J: the name a person sees for an MCP client: friendly when known, as announced otherwise
+/// (cleaned, cut with an ellipsis), and nothing (the caller says "an agent") when none was given.
+#[test]
+fn client_names_are_friendly_when_known_verbatim_otherwise_and_never_guessed() {
+    use super::{NAME_MAX, client_display_name as name};
+    assert_eq!(name("claude-code").as_deref(), Some("Claude Code"));
+    assert_eq!(name("codex-mcp-client").as_deref(), Some("Codex"));
+    assert_eq!(name("gemini-cli-mcp-client").as_deref(), Some("Gemini CLI"));
+    assert_eq!(name("grok-shell-scrim").as_deref(), Some("Grok"), "Grok Build names itself after the server");
+    assert_eq!(name("Visual Studio Code").as_deref(), Some("VS Code"));
+    // Unknown: as announced, never "Claude".
+    assert_eq!(name("Cursor").as_deref(), Some("Cursor"));
+    assert_eq!(name("my-agent 0.1").as_deref(), Some("my-agent 0.1"));
+    assert_eq!(name("claude-something-else").as_deref(), Some("claude-something-else"), "no guessing from a substring");
+    // Nothing announced.
+    assert_eq!(name(""), None);
+    assert_eq!(name("   "), None);
+    assert_eq!(name("\u{7}\u{1b}"), None, "only control characters");
+    // Very long: cut, with an ellipsis.
+    let long = "x".repeat(300);
+    let shown = name(&long).unwrap();
+    assert_eq!(shown.chars().count(), NAME_MAX + 1);
+    assert!(shown.ends_with('…'));
+    assert_eq!(name("bad\u{0}name").as_deref(), Some("badname"), "control characters dropped");
+}
+
+/// Stage J: an agent's edit records the MCP client it came from; the person's never does, and
+/// whether it's an agent's edit is still the author alone.
+#[test]
+fn the_change_log_names_the_client_of_an_agents_edit() {
+    let mut s = Session::new();
+    s.agents.client = Some("codex-mcp-client".into());
+    s.execute_as(Author::agent("mcp (http)"), None, "frame.create", &json!({"x": 0, "y": 0, "width": 10, "height": 10})).unwrap();
+    // The person's edit while a client is remembered: no client.
+    s.execute("frame.create", &json!({"x": 20, "y": 0, "width": 10, "height": 10})).unwrap();
+    let feed = s.execute("history.changes", &json!({})).unwrap();
+    let changes = feed["changes"].as_array().unwrap();
+    let (a, p) = (&changes[changes.len() - 2], &changes[changes.len() - 1]);
+    assert_eq!((a["agent"].clone(), a["client"].clone()), (json!(true), json!("codex-mcp-client")));
+    assert_eq!((p["agent"].clone(), p["client"].clone()), (json!(false), Value::Null));
+}

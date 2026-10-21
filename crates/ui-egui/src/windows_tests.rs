@@ -28,6 +28,7 @@ fn frame(ctx: &egui::Context, app: &mut FigApp, close: bool) {
 fn request(app: &mut FigApp, method: &str, params: Value) -> Receiver<ControlReply> {
     let (reply, rx) = channel();
     app.control_queue.push(ControlRequest {
+        client: None,
         route: crate::control::ROUTE_CONTROL,
         id: json!(1),
         method: method.into(),

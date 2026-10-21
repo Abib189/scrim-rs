@@ -50,6 +50,8 @@ pub struct Landed {
     pub agent: bool,
     /// The agent's route ("mcp (http)", "control channel").
     pub route: String,
+    /// The MCP client it came from (its `clientInfo.name`), when the route knows.
+    pub client: Option<String>,
     /// An undo or redo.
     pub undo: bool,
     pub created: Vec<NodeId>,
@@ -139,22 +141,22 @@ struct Follow {
     flying: bool,
     /// The state last frame (a change to `following` is a resume).
     was: &'static str,
-    /// Who worked last, and the artboard (top-level frame) of their latest work.
-    agent: String,
+    /// An agent's edit has been seen; the name of who made the latest (`None`: it announced none),
+    /// and the artboard (top-level frame) of their latest work.
+    seen_agent: bool,
+    agent: Option<String>,
     artboard: Option<NodeId>,
     /// The paused chip, where it was drawn (a press on it isn't a press on the canvas).
     chip: Option<Rect>,
 }
 
-/// A person's name for the agent: Claude's MCP clients read "Claude", another client its own name,
-/// anything else "An agent". Never hard-coded to one agent.
-pub fn agent_name(app: &FigApp, route: &str) -> String {
-    if route.starts_with("mcp")
-        && let Some((name, _, _)) = app.session.agents.mcp.clients.last()
-    {
-        return if name.to_ascii_lowercase().contains("claude") { "Claude".into() } else { name.clone() };
-    }
-    tr("An agent").to_string()
+/// The name a person sees for the agent that made an edit (Stage J): the MCP client it came from
+/// (`client`, by its session), else over MCP the newest client to connect, mapped to its friendly
+/// name (`agents::client_display_name`) or shown as announced. `None`: no name was announced, and
+/// the caller says "an agent". Never a guess, and never one agent's name for another.
+pub fn agent_name(app: &FigApp, route: &str, client: Option<&str>) -> Option<String> {
+    let newest = || route.starts_with("mcp").then(|| app.session.agents.mcp.clients.last().map(|c| c.0.clone())).flatten();
+    client.map(str::to_string).or_else(newest).and_then(|raw| figcraft_engine::agents::client_display_name(&raw))
 }
 
 /// The edits logged since last frame. Nothing new costs one comparison and allocates nothing.
@@ -193,6 +195,7 @@ fn scan(app: &mut FigApp) -> Vec<Landed> {
                     figcraft_engine::agents::Author::Person => String::new(),
                 },
                 undo: matches!(c.command.as_str(), "edit.undo" | "edit.redo"),
+                client: c.client.clone(),
                 ..Landed::default()
             };
             for &id in &c.ids {
@@ -260,8 +263,10 @@ pub fn after_canvas(app: &mut FigApp, ui: &mut Ui) {
 pub fn working_text(app: &FigApp) -> Option<String> {
     let id = app.ui.agent_view.indicator.artboard()?;
     let name = app.session.doc().ok()?.node(id)?.name.clone();
-    let agent = &app.ui.agent_view.follow.agent;
-    Some(trf("{agent} is working on {artboard}", &[("agent", agent), ("artboard", &name)]))
+    Some(match &app.ui.agent_view.follow.agent {
+        Some(agent) => trf("{agent} is working on {artboard}", &[("agent", agent), ("artboard", &name)]),
+        None => trf("An agent is working on {artboard}", &[("artboard", &name)]),
+    })
 }
 
 /// For `ui.inspect`: following, the reveal, the indicator and the degradation step.
@@ -321,8 +326,9 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     if let Ok(doc) = app.session.doc().cloned()
         && let Some((page, ids)) = target(&doc, landed)
     {
-        let name = landed.iter().rev().find(|l| l.agent).map(|l| agent_name(app, &l.route)).unwrap_or_default();
+        let name = landed.iter().rev().find(|l| l.agent).and_then(|l| agent_name(app, &l.route, l.client.as_deref()));
         let f = &mut app.ui.agent_view.follow;
+        f.seen_agent = true;
         f.agent = name;
         f.artboard = ids.iter().next_back().and_then(|id| doc.top_level_frame(*id));
         f.latest = Some((page, ids.clone()));
@@ -413,18 +419,21 @@ pub fn status(app: &FigApp) -> Option<String> {
     let f = &app.ui.agent_view.follow;
     let artboard = f.artboard.and_then(|id| app.session.doc().ok().and_then(|d| d.node(id).map(|n| n.name.clone())));
     match follow_state(&app.session) {
-        "following" if f.agent.is_empty() => Some(tr("Following agents: waiting for their next edit").to_string()),
-        "following" => Some(match artboard {
-            Some(a) => trf("Following {agent} · {artboard}", &[("agent", &f.agent), ("artboard", &a)]),
-            None => trf("Following {agent}", &[("agent", &f.agent)]),
-        }),
+        "following" if !f.seen_agent => Some(tr("Following agents: waiting for their next edit").to_string()),
+        "following" => {
+            let agent = f.agent.clone().unwrap_or_else(|| tr("an agent").to_string());
+            Some(match artboard {
+                Some(a) => trf("Following {agent} · {artboard}", &[("agent", &agent), ("artboard", &a)]),
+                None => trf("Following {agent}", &[("agent", &agent)]),
+            })
+        }
         "paused" => Some(tr("Paused: you moved the camera or edited").to_string()),
         _ => None,
     }
 }
 
 /// The agent and the artboard of its latest work (the working indicator names them).
-pub fn working_on(app: &FigApp) -> (String, Option<NodeId>) {
+pub fn working_on(app: &FigApp) -> (Option<String>, Option<NodeId>) {
     let f = &app.ui.agent_view.follow;
     (f.agent.clone(), f.artboard)
 }
@@ -467,7 +476,7 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
     let paused = follow_state(&app.session) == "paused";
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
     let connected = figcraft_engine::cmd::mcp::status(&app.session, now)["state"] == "connected";
-    if follow_state(&app.session) == "following" && !connected && app.ui.agent_view.follow.agent.is_empty() {
+    if follow_state(&app.session) == "following" && !connected && !app.ui.agent_view.follow.seen_agent {
         return;
     }
     let (s, color) = match status(app) {
@@ -492,3 +501,7 @@ pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
 #[cfg(test)]
 #[path = "follow_agent_tests.rs"]
 pub(crate) mod tests;
+
+#[cfg(test)]
+#[path = "client_names_tests.rs"]
+mod client_names_tests;

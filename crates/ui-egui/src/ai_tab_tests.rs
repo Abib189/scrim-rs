@@ -51,7 +51,7 @@ fn the_status_row_says_stopped_not_connected_or_connected() {
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap();
     h.app.session.agents.mcp.clients.push(("claude-code".into(), "2.1.296".into(), now));
     let shapes = h.frames(2);
-    assert!(has_text(&shapes, "Connected · claude-code"), "connected, and by whom");
+    assert!(has_text(&shapes, "Connected · Claude Code"), "connected, and by whom (its friendly name)");
     assert!(!has_text(&shapes, "Connect Claude Code"), "no Connect button once connected");
 }
 

@@ -30,6 +30,7 @@ fn reply(reader: &mut BufReader<TcpStream>) -> Value {
 
 fn request() -> ControlRequest {
     ControlRequest {
+        client: None,
         route: figcraft_ui_egui::control::ROUTE_CONTROL,
         id: json!(0),
         method: "ui.inspect".into(),

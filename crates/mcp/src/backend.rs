@@ -15,6 +15,10 @@ pub trait Backend {
     /// Call one method. `Ok` carries the `result`, `Err` the error message.
     fn call(&mut self, method: &str, params: Value) -> Result<Value, String>;
 
+    /// The MCP client the next calls come from (its `clientInfo.name`), when the transport knows
+    /// (the HTTP endpoint's sessions). The default ignores it.
+    fn set_client(&mut self, _client: Option<&str>) {}
+
     /// True when a real UI window is attached (`ui.screenshot` captures the window).
     fn has_ui(&self) -> bool;
 

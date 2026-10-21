@@ -184,15 +184,18 @@ fn respond(out: &mut impl Write, status: u16, content_type: Option<&str>, body: 
     out.flush()
 }
 
-/// A JSON-RPC message for the server thread and where its reply goes (`None`: no reply).
-type Job = (String, Sender<Option<String>>);
+/// A JSON-RPC message for the server thread with its `Mcp-Session-Id`, and where its reply goes:
+/// the reply (`None`: none) and a session id the reply issues.
+type Job = (String, Option<String>, Sender<Answer>);
+/// The server's answer: the reply (`None`: none), and the session id an `initialize` issued.
+pub type Answer = (Option<String>, Option<String>);
 
 /// Serve one connection until it closes: requests checked, `POST /mcp` answered by `answer`.
 pub fn serve_connection(
     stream: TcpStream,
     port: u16,
     config: &RwLock<Config>,
-    answer: &dyn Fn(String) -> Option<Option<String>>,
+    answer: &dyn Fn(String, Option<String>) -> Option<Answer>,
 ) -> std::io::Result<()> {
     stream.set_read_timeout(Some(IDLE))?;
     stream.set_write_timeout(Some(IDLE))?;
@@ -214,9 +217,12 @@ pub fn serve_connection(
             return Ok(());
         }
         match (req.method.as_str(), req.path.split('?').next().unwrap_or_default()) {
-            ("POST", PATH) => match answer(String::from_utf8_lossy(&req.body).into_owned()) {
-                Some(Some(reply)) => respond(&mut out, 200, Some("application/json"), reply.as_bytes(), &[])?,
-                Some(None) => respond(&mut out, 202, None, b"", &[])?,
+            ("POST", PATH) => match answer(String::from_utf8_lossy(&req.body).into_owned(), req.header("mcp-session-id").map(str::to_string)) {
+                Some((Some(reply), session)) => {
+                    let header: Vec<(&str, &str)> = session.as_deref().map(|s| ("Mcp-Session-Id", s)).into_iter().collect();
+                    respond(&mut out, 200, Some("application/json"), reply.as_bytes(), &header)?
+                }
+                Some((None, _)) => respond(&mut out, 202, None, b"", &[])?,
                 None => respond(&mut out, 503, Some("text/plain; charset=utf-8"), b"the app didn't answer in time", &[])?,
             },
             ("GET" | "DELETE", PATH) => {
@@ -260,8 +266,8 @@ impl Endpoint {
             .name("scrim-mcp-server".into())
             .spawn(move || {
                 let mut server = make();
-                for (message, reply) in inbox {
-                    let _ = reply.send(server.handle_line(&message));
+                for (message, session, reply) in inbox {
+                    let _ = reply.send(server.handle_session(&message, session.as_deref()));
                 }
             })
             .map_err(|e| e.to_string())?;
@@ -283,9 +289,9 @@ impl Endpoint {
                     let (jobs, config, mine) = (jobs.clone(), config.clone(), open.clone());
                     open.fetch_add(1, Ordering::Relaxed);
                     let spawned = std::thread::Builder::new().name("scrim-mcp-conn".into()).spawn(move || {
-                        let answer = |message: String| {
+                        let answer = |message: String, session: Option<String>| {
                             let (tx, rx) = channel();
-                            jobs.send((message, tx)).ok()?;
+                            jobs.send((message, session, tx)).ok()?;
                             rx.recv_timeout(ANSWER).ok()
                         };
                         let _ = serve_connection(stream, port, &config, &answer);

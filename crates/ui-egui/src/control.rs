@@ -47,6 +47,8 @@ pub const ROUTE_MCP_HTTP: &str = "mcp (http)";
 pub struct ControlRequest {
     /// Who sends it: [`ROUTE_CONTROL`] or [`ROUTE_MCP_HTTP`].
     pub route: &'static str,
+    /// The MCP client it comes from (its `clientInfo.name`), when the route knows (Stage J).
+    pub client: Option<String>,
     pub id: Value,
     pub method: String,
     pub params: Value,
@@ -257,7 +259,10 @@ fn handle_request(app: &mut FigApp, ctx: &Context, r: &ControlRequest) -> Result
         crate::mcp_ui::ensure_root(app, &r.params);
     }
     let roots = if r.route == ROUTE_MCP_HTTP && app.automation_roots.is_none() { app.session.agents.mcp.roots.clone() } else { None };
-    figcraft_engine::file_access::confined(roots.as_ref(), || handle_route(app, ctx, r.route, &r.method, &r.params))
+    let client = std::mem::replace(&mut app.session.agents.client, r.client.clone());
+    let res = figcraft_engine::file_access::confined(roots.as_ref(), || handle_route(app, ctx, r.route, &r.method, &r.params));
+    app.session.agents.client = client;
+    res
 }
 
 /// [`handle`] as the agent `route`.

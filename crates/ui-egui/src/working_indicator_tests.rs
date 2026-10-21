@@ -147,7 +147,7 @@ fn one_polite_status_names_the_agent_and_the_artboard() {
     frames(&mut u, 3);
     let out = u.frame_output(vec![]);
     let nodes: Vec<egui::accesskit::Node> = out.platform_output.accesskit_update.expect("a tree").nodes.into_iter().map(|(_, n)| n).collect();
-    let status: Vec<&egui::accesskit::Node> = nodes.iter().filter(|n| n.label() == Some("Claude is working on Poster")).collect();
+    let status: Vec<&egui::accesskit::Node> = nodes.iter().filter(|n| n.label() == Some("Claude Code is working on Poster")).collect();
     assert_eq!(status.len(), 1, "one node, not one per dot");
     assert_eq!(status[0].role(), egui::accesskit::Role::Status);
     assert_eq!(status[0].live(), Some(egui::accesskit::Live::Polite));

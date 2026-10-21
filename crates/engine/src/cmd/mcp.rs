@@ -51,6 +51,28 @@ fn connected(s: &Session, now: Option<u64>) -> Option<(String, String)> {
     (now.saturating_sub(*at) <= CONNECTED_FOR_SECS).then(|| (name.clone(), version.clone()))
 }
 
+/// Every client that initialized within [`CONNECTED_FOR_SECS`] of `now`, newest first, each name
+/// once: its `clientInfo.name` as announced, the name a person sees (`agents::client_display_name`,
+/// `null` when it announced none), and its version.
+fn connected_all(s: &Session, now: Option<u64>) -> Vec<Value> {
+    let Some((_, _, newest)) = s.agents.mcp.clients.last() else { return Vec::new() };
+    let now = now.unwrap_or(*newest);
+    let mut seen: Vec<&str> = Vec::new();
+    s.agents
+        .mcp
+        .clients
+        .iter()
+        .rev()
+        .filter(|(_, _, at)| now.saturating_sub(*at) <= CONNECTED_FOR_SECS)
+        .filter(|(name, _, _)| {
+            let fresh = !seen.contains(&name.as_str());
+            seen.push(name);
+            fresh
+        })
+        .map(|(name, version, _)| json!({"name": name, "display": crate::agents::client_display_name(name), "version": version}))
+        .collect()
+}
+
 /// `mcp.status`: everything Settings ▸ MCP and the AI tab show.
 pub fn status(s: &Session, now: Option<u64>) -> Value {
     let m = &s.prefs.settings.mcp;
@@ -69,7 +91,8 @@ pub fn status(s: &Session, now: Option<u64>) -> Value {
         "requireAuth": m.require_auth,
         "rootDir": m.root_dir,
         "defaultRootDir": crate::settings::default_mcp_root().map(|p| p.to_string_lossy().into_owned()),
-        "client": connected(s, now).map(|(name, version)| json!({"name": name, "version": version})),
+        "client": connected(s, now).map(|(name, version)| json!({"name": name, "display": crate::agents::client_display_name(&name), "version": version})),
+        "clients": connected_all(s, now),
         "command": command(s, false),
         "args": e.port.map(|p| claude_add_args(p, token(s))),
         "disabledTools": m.disabled_tools,

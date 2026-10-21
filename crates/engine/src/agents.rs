@@ -94,11 +94,62 @@ pub fn claude_add_command(port: u16, token: Option<&str>) -> String {
     format!("claude {}", quoted.join(" "))
 }
 
+/// The friendly names of MCP clients by the `clientInfo.name` they announce
+/// (`docs/design/connect-any-agent.md`, J0: each read from the client's source or install).
+const FRIENDLY: [(&str, &str); 12] = [
+    ("claude-code", "Claude Code"),
+    ("codex-mcp-client", "Codex"),
+    ("gemini-cli-mcp-client", "Gemini CLI"),
+    ("opencode", "OpenCode"),
+    ("Visual Studio Code", "VS Code"),
+    ("Code - OSS", "VS Code"),
+    ("Cline", "Cline"),
+    ("@cline/core", "Cline"),
+    ("Zed", "Zed"),
+    ("goose-cli", "Goose"),
+    ("goose-desktop", "Goose"),
+    ("continue-client", "Continue"),
+];
+/// Clients whose name carries more after a known start (Grok Build: `grok-shell-<server name>`).
+const FRIENDLY_PREFIX: [(&str, &str); 1] = [("grok-shell-", "Grok")];
+/// The longest client name shown as announced; longer ones end in "…".
+pub const NAME_MAX: usize = 32;
+
+/// The name a person sees for an MCP client that announced `raw`: its friendly name when known,
+/// else `raw` as announced (control characters left out, at most [`NAME_MAX`] characters, then
+/// "…"). `None` when it announced no name: callers say "an agent", never a guess.
+pub fn client_display_name(raw: &str) -> Option<String> {
+    let raw = raw.trim();
+    if raw.is_empty() {
+        return None;
+    }
+    if let Some((_, f)) = FRIENDLY.iter().find(|(k, _)| k.eq_ignore_ascii_case(raw)) {
+        return Some((*f).to_string());
+    }
+    if let Some((_, f)) = FRIENDLY_PREFIX.iter().find(|(k, _)| raw.starts_with(k)) {
+        return Some((*f).to_string());
+    }
+    let clean: String = raw.chars().filter(|c| !c.is_control()).collect();
+    let clean = clean.trim();
+    if clean.is_empty() {
+        return None;
+    }
+    Some(if clean.chars().count() > NAME_MAX {
+        format!("{}…", clean.chars().take(NAME_MAX).collect::<String>().trim_end())
+    } else {
+        clean.to_string()
+    })
+}
+
 /// One logged edit.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Change {
     pub revision: u64,
     pub author: Author,
+    /// The MCP client the edit came from (its `clientInfo.name`), when the route knows it (Stage J):
+    /// the app's HTTP endpoint names each request's client by its session. `author` alone says
+    /// whether it was an agent's edit.
+    pub client: Option<String>,
     pub command: String,
     pub label: String,
     /// The layers the edit added, changed or removed.
@@ -113,6 +164,8 @@ const LOG_LIMIT: usize = 2000;
 #[derive(Clone, Debug, Default)]
 pub struct Agents {
     pub author: Author,
+    /// The MCP client running the current commands (its `clientInfo.name`), when the route knows.
+    pub client: Option<String>,
     pub since: Option<u64>,
     /// The app's control channel port when it listens (`--control`): agents attach through it
     /// (`ai.status`). `None`: headless, or the app runs without it.
@@ -271,6 +324,7 @@ impl Session {
         let change = Change {
             revision: ds.revision,
             author: self.agents.author.clone(),
+            client: self.agents.client.clone().filter(|_| self.agents.author.is_agent()),
             command: command.to_string(),
             label: label.to_string(),
             ids: changed_ids(bdoc, &ds.doc),
@@ -302,7 +356,7 @@ impl Session {
             .skip(last.map_or(0, |n| newer.saturating_sub(n)))
             .map(|c| {
                 let layers: Vec<Value> = c.ids.iter().map(|i| json!({"id": i.0, "name": ds.doc.node(*i).map(|n| n.name.clone())})).collect();
-                json!({"revision": c.revision, "author": c.author.describe(), "agent": c.author.is_agent(), "command": c.command, "label": c.label, "layers": layers})
+                json!({"revision": c.revision, "author": c.author.describe(), "agent": c.author.is_agent(), "client": c.client, "command": c.command, "label": c.label, "layers": layers})
             })
             .collect();
         // The log keeps the last edits only: say so when `since` is older than it reaches.
@@ -321,7 +375,7 @@ pub fn specs() -> Vec<CommandSpec> {
     vec![spec!(
         "history.changes",
         "Changes since a revision",
-        "{since? (revision; default 0), last? (only the newest n)} → {revision (now), since, complete (false: older edits left the log), changes: [{revision, author (\"person\" | \"agent (route)\"), agent, command, label, layers: [{id, name}]}]}, oldest first",
+        "{since? (revision; default 0), last? (only the newest n)} → {revision (now), since, complete (false: older edits left the log), changes: [{revision, author (\"person\" | \"agent (route)\"), agent, client (the MCP client's clientInfo.name, when known), command, label, layers: [{id, name}]}]}, oldest first",
         false,
         changes_cmd
     )]

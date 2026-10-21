@@ -95,7 +95,11 @@ impl Entry<'_> {
             }
             Entry::McpStarted(port) => format!("started on 127.0.0.1:{port}"),
             Entry::McpFailed => "couldn't start".into(),
-            Entry::McpClient { name, version } => format!("{} {} connected", clean(name, 80), clean(version, 40)).replace("  ", " "),
+            Entry::McpClient { name, version } => {
+                // As announced (cleaned); a client that announced no name is "an agent", never a guess.
+                let name = Some(clean(name, 80)).filter(|n| !n.trim().is_empty()).unwrap_or_else(|| "an agent".into());
+                format!("{name} {} connected", clean(version, 40)).replace("  ", " ")
+            }
             Entry::Error { command, error } => {
                 // Only a registered command's id: anything else could be text someone typed.
                 let id = if crate::find_command(command).is_some() { *command } else { "a command" };

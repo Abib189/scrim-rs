@@ -17,3 +17,4 @@ The Scrim ports add their own areas (`agent-safety.md`, `fig-import.md`, `query.
 - `layers.md`: Stage D, the Layers panel's collapse all and click to focus.
 - `canvas-labels.md`: Stage E, frame, section and component labels on the canvas and the handoff status icons.
 - `follow-agent.md`: Stage I, following an agent's work with the camera, the reveal and the working indicator.
+- `connect-agents.md`: Stage J, connecting any MCP client and naming it.

@@ -39,10 +39,11 @@ fn read(app: &mut FigApp, cmd: &str, p: Value) -> Value {
     figcraft_engine::find_command(cmd).and_then(|c| (c.run)(&mut app.session, &p).ok()).unwrap_or(Value::Null)
 }
 
-/// Claude Code's status and the connect flow (Settings ▸ AI & agents shows it too).
+/// Who is connected (any MCP client, by name) and the connect flows (Settings ▸ AI & agents shows
+/// it too).
 pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    widgets::section_header(ui, tr("Claude Code"), &[], false);
+    widgets::section_header(ui, tr("Agents"), &[], false);
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
     let st = figcraft_engine::cmd::mcp::status(&app.session, now);
     let state = st["state"].as_str().unwrap_or("stopped");
@@ -54,7 +55,14 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
     crate::right::row(ui, 28.0, |ui| {
         let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
         ui.painter().circle_filled(dot.center(), 4.0, color);
-        let client = st["client"]["name"].as_str().map(|n| format!(" · {n}")).unwrap_or_default();
+        // Every client connected now, by the name a person knows it by (Stage J).
+        let names: Vec<String> = st["clients"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|c| c["display"].as_str().map(str::to_string).unwrap_or_else(|| tr("an agent").to_string()))
+            .collect();
+        let client = if names.is_empty() { String::new() } else { format!(" · {}", names.join(", ")) };
         let resp = ui.label(egui::RichText::new(format!("{label}{client}")).color(t.text).font(regular(12.0)));
         a11y::status(&resp, label, &trf("The MCP endpoint is {state}", &[("state", &label)]));
         if state == "stopped" && widgets::button(ui, tr("Restart"), false, true).clicked() {
@@ -67,7 +75,7 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
     } else if state != "connected" {
         widgets::note(
             ui,
-            tr("Let Claude Code see and edit this canvas: connect it once, and every Claude Code session can use Scrim."),
+            tr("Any MCP client can see and edit this canvas through Scrim: connect it once, and every session of it can use Scrim."),
             t.text_secondary,
         );
         crate::right::row(ui, 32.0, |ui| {
@@ -95,7 +103,12 @@ fn activity(app: &mut FigApp, ui: &mut Ui) {
     for c in changes {
         let revision = c["revision"].as_u64().unwrap_or_default();
         let agent = c["agent"] == true;
-        let who = if agent { c["author"].as_str().unwrap_or_default().replacen("agent", tr("Agent"), 1) } else { tr("You").to_string() };
+        // The client that made it when known (Stage J), else the agent's route.
+        let who = match (agent, c["client"].as_str().and_then(figcraft_engine::agents::client_display_name)) {
+            (true, Some(name)) => name,
+            (true, None) => c["author"].as_str().unwrap_or_default().replacen("agent", tr("Agent"), 1),
+            (false, _) => tr("You").to_string(),
+        };
         let label = c["label"].as_str().unwrap_or_default();
         let layers: Vec<&str> = c["layers"].as_array().into_iter().flatten().filter_map(|l| l["name"].as_str()).take(3).collect();
         let (r, resp) = ui.allocate_exact_size(vec2(w, 40.0), Sense::click());

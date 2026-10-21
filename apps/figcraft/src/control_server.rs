@@ -99,6 +99,7 @@ fn serve(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> s
                     continue;
                 }
                 pending.push(ControlRequest {
+                    client: None,
                     route: figcraft_ui_egui::control::ROUTE_CONTROL,
                     id: id.clone(),
                     method,

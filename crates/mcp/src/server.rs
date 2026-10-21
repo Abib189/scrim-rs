@@ -53,7 +53,19 @@ pub struct Server {
     roots: Option<Arc<Roots>>,
     /// Called with `clientInfo` when a client initializes (the app shows who is connected).
     on_initialize: Option<InitializeHook>,
+    /// HTTP sessions (Stage J): the `Mcp-Session-Id`s issued on `initialize`, newest last, each
+    /// with its client's `clientInfo`.
+    sessions: std::collections::VecDeque<(String, Value)>,
+    /// The newest client to initialize: who a request without a known session is taken to be.
+    last_client: Option<Value>,
+    /// A session id issued by the message being handled (for the transport's header).
+    issued: Option<String>,
+    /// Issue session ids (the HTTP transport; stdio has one client per process).
+    issue_sessions: bool,
 }
+
+/// How many HTTP sessions are remembered.
+const MAX_SESSIONS: usize = 32;
 
 fn response(id: Value, result: Value) -> Value {
     json!({"jsonrpc": "2.0", "id": id, "result": result})
@@ -69,7 +81,16 @@ fn panic_message(payload: &(dyn std::any::Any + Send)) -> String {
 
 impl Server {
     pub fn new(backend: Box<dyn Backend>) -> Self {
-        Self { backend, initialized: false, roots: None, on_initialize: None }
+        Self {
+            backend,
+            initialized: false,
+            roots: None,
+            on_initialize: None,
+            sessions: std::collections::VecDeque::new(),
+            last_client: None,
+            issued: None,
+            issue_sessions: false,
+        }
     }
 
     /// Confine the files every request reads and writes to `roots` (see
@@ -151,6 +172,18 @@ impl Server {
         reply.map(|r| r.to_string())
     }
 
+    /// [`Self::handle_line`] for the HTTP transport, which has many clients on one server: `session`
+    /// is the request's `Mcp-Session-Id` header. The backend is told which client the message
+    /// comes from (that session's, else the newest to initialize). Returns the reply and, for an
+    /// `initialize`, the new session's id for the response's `Mcp-Session-Id` header.
+    pub fn handle_session(&mut self, line: &str, session: Option<&str>) -> (Option<String>, Option<String>) {
+        let client = session.and_then(|s| self.sessions.iter().find(|(id, _)| id == s).map(|(_, c)| c.clone())).or_else(|| self.last_client.clone());
+        self.backend.set_client(client.as_ref().and_then(|c| c.get("name")).and_then(Value::as_str));
+        self.issue_sessions = true;
+        let reply = self.handle_line(line);
+        (reply, self.issued.take())
+    }
+
     /// Handle one JSON-RPC message; `None` for notifications and responses.
     pub fn handle(&mut self, msg: Value) -> Option<Value> {
         let Value::Object(o) = &msg else { return Some(error(Value::Null, INVALID_REQUEST, "message must be a JSON object")) };
@@ -202,9 +235,19 @@ impl Server {
     fn request(&mut self, method: &str, params: &Value) -> Result<Value, (i64, String)> {
         match method {
             "initialize" => {
+                let info = params.get("clientInfo").cloned().unwrap_or(Value::Null);
                 if let Some(f) = self.on_initialize.as_mut() {
-                    f(params.get("clientInfo").unwrap_or(&Value::Null));
+                    f(&info);
                 }
+                if self.issue_sessions {
+                    let id = figcraft_engine::settings::new_token();
+                    self.sessions.push_back((id.clone(), info.clone()));
+                    while self.sessions.len() > MAX_SESSIONS {
+                        self.sessions.pop_front();
+                    }
+                    self.issued = Some(id);
+                }
+                self.last_client = Some(info);
                 let asked = params.get("protocolVersion").and_then(Value::as_str).unwrap_or(PROTOCOL_VERSION);
                 let version = if SUPPORTED_VERSIONS.contains(&asked) { asked } else { PROTOCOL_VERSION };
                 Ok(json!({

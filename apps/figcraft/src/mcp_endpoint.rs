@@ -32,6 +32,8 @@ struct InApp {
     queue: Queue,
     ctx: CtxSlot,
     disabled: Disabled,
+    /// The client the server says the current request comes from (by its session).
+    client: Option<String>,
 }
 
 impl InApp {
@@ -47,6 +49,7 @@ impl InApp {
             }
             pending.push(ControlRequest {
                 route: ROUTE_MCP_HTTP,
+                client: self.client.clone(),
                 id: json!(0),
                 method: method.to_string(),
                 params,
@@ -73,6 +76,9 @@ impl InApp {
 impl Backend for InApp {
     fn call(&mut self, method: &str, params: Value) -> Result<Value, String> {
         self.send(method, params, true).unwrap_or_else(|| Err("no answer".into()))
+    }
+    fn set_client(&mut self, client: Option<&str>) {
+        self.client = client.map(str::to_string);
     }
     fn has_ui(&self) -> bool {
         true
@@ -107,8 +113,8 @@ impl McpHandle {
         self.configure(settings);
         let (queue, ctx, disabled) = (self.queue.clone(), self.ctx.clone(), self.disabled.clone());
         let endpoint = Endpoint::start(settings.port, TRIES, self.config.clone(), move || {
-            let notify = InApp { queue: queue.clone(), ctx: ctx.clone(), disabled: disabled.clone() };
-            Server::new(Box::new(InApp { queue, ctx, disabled })).with_initialize_hook(move |info| {
+            let notify = InApp { queue: queue.clone(), ctx: ctx.clone(), disabled: disabled.clone(), client: None };
+            Server::new(Box::new(InApp { queue, ctx, disabled, client: None })).with_initialize_hook(move |info| {
                 let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
                 let params = json!({"name": info.get("name"), "version": info.get("version"), "now": now});
                 // Told to the UI thread without waiting for it.
