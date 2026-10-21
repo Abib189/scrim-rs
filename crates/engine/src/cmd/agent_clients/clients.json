@@ -19,7 +19,7 @@
     "tool-use": {"level": "verified-live", "date": "2026-10-21", "evidence": "docs/scrim-ports/connect-agents/tool-use.md"},
     "builtin": "claude-desktop",
     "bridge": true,
-    "notes": ["Connected through its own flow above (Stage F). Its registration was checked through the bridge, not in Claude Desktop itself; an agent used Scrim's tools through Claude Desktop on 21 Oct 2026 (the owner's report)."]
+    "notes": ["Connected through its own flow above (Stage F). Its registration was checked through the bridge, not in Claude Desktop itself; an agent in Claude Desktop used Scrim's tools on 21 Oct 2026, by its own first-hand account (tool-use.md)."]
   },
   {
     "id": "codex",

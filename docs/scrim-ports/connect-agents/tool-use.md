@@ -15,10 +15,6 @@ The record behind each client profile whose `tool-use` is `verified-live` (`crat
 
 ## Claude Desktop, 2026-10-21 (21 Oct 2026)
 
-- **What happened:** an agent called Scrim's tools through Claude Desktop on 21 Oct 2026.
-- **Source:** **the owner's report**, recorded at their request (the Stage K brief). It wasn't observed in a Scrim session here: no capture or log of it exists in this repository.
-- **What that leaves unverified:**
-  - which tools were called;
-  - how Claude Desktop was registered (by Connect Claude Desktop, or by hand);
-  - whether it went through the `mcp-remote` bridge.
-- **Its registration stays docs-only:** no live run of Connect Claude Desktop against Claude Desktop's own configuration is recorded. Stage F checked the bridge with a scratch configuration, not Claude Desktop itself.
+- **The record:** Claude Desktop, 21 Oct 2026, roughly 00:12 to 12:44 local time, first-hand by the agent in the chat: used Scrim's tools through the `scrim` server in Claude Desktop: inspect_document, batch, set_properties, screenshot, set_lint_profile, lint_design, ignore_lint, run_command (edit.duplicate, file.export, file.saveAs). Built two posters of about 100 layers in total and wrote PDF, PNG and .figcraft exports. The agent observed the scrim entry appear in Desktop's server list between 00:06 and 00:08; how that entry was written (Scrim's Connect Claude Desktop button or by hand) is unknown.
+- **How it reached this page:** the owner passed on the Desktop agent's own account in the Fix L brief (it replaces Stage K's entry, which rested on the owner's report alone). No file names, paths or document content are recorded. No capture or log of the session is in this repository.
+- **Its registration stays docs-only:** how the `scrim` entry was written is unknown, and no live run of Connect Claude Desktop against Claude Desktop's own configuration is recorded. Stage F checked the bridge with a scratch configuration, not Claude Desktop itself. It changes only if the owner confirms Scrim's button wrote the entry.

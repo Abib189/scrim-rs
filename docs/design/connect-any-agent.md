@@ -347,7 +347,7 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
   | Client | Registration | Tool use |
   |---|---|---|
   | Claude Code | live, 20 Oct 2026 (`docs/scrim-ports/settings/README.md`, the real Connect) | live, 21 Oct 2026 (`docs/scrim-ports/connect-agents/tool-use.md`: an `inspect_ui` call in the Stage K session) |
-  | Claude Desktop | docs only, 20 Oct 2026 (no live Connect against Claude Desktop itself is recorded) | live, 21 Oct 2026 (the owner's report, recorded in `tool-use.md`; not observed here) |
+  | Claude Desktop | docs only, 20 Oct 2026 (no live Connect against Claude Desktop itself is recorded) | live, 21 Oct 2026 (`tool-use.md`: the Desktop agent's first-hand account, passed on in the Fix L brief; not observed here) |
   | Codex | live, 21 Oct 2026 (J3) | untested |
   | Every other client | docs only, 21 Oct 2026 | untested |
 
