@@ -9,6 +9,9 @@
 //!   - changes only `mcpServers.scrim`;
 //!   - keeps a timestamped backup;
 //!   - writes by rename.
+//! - **Scrim's own bridge** (Fix P) is the entry when the app knows its binary: `<binary>
+//!   mcp-bridge`, Configured · waits for Scrim to start. Without it, the `mcp-remote` entry is offered
+//!   as Copy only. An entry that runs `mcp-remote` is offered the upgrade through Re-register.
 //! - **An entry for another address** is Out of date. Re-register replaces it after one confirmation;
 //!   it is never overwritten silently. An old `figcraft` entry can be removed (asks again).
 //! - **The status row** reads the file (Configured, Not configured, Out of date, Can't read), never
@@ -127,9 +130,10 @@ fn act(app: &mut FigApp, c: Confirm, r: &Value) {
     app.ui.desktop.outcome = Some((said, after));
 }
 
-/// The status row's words for a state.
-fn state_label(state: &str) -> &'static str {
+/// The status row's words for a state (`bridge`: the entry is Scrim's own bridge, Fix P).
+fn state_label(state: &str, bridge: bool) -> &'static str {
     match state {
+        "configured" if bridge => tr("Configured · waits for Scrim to start"),
         "configured" => tr("Configured"),
         "out of date" => tr("Out of date"),
         "unreadable" => tr("Can't read its configuration"),
@@ -149,7 +153,7 @@ pub fn section(app: &mut FigApp, ui: &mut Ui) {
     };
     let state = r["state"].as_str().unwrap_or_default().to_string();
     let (label, color) = (
-        state_label(&state),
+        state_label(&state, r["bridge"] == true),
         match state.as_str() {
             "configured" => t.success,
             "out of date" => t.warning,
@@ -163,9 +167,29 @@ pub fn section(app: &mut FigApp, ui: &mut Ui) {
         let resp = ui.label(RichText::new(label).color(t.text).font(regular(12.0)));
         crate::a11y::status(&resp, label, &trf("Claude Desktop: {state}", &[("state", &label)]));
     });
-    if state == "out of date" {
+    if state == "out of date" && r["upgrade"] == true {
+        // An entry from before Fix P: npx's mcp-remote, which gives up when Scrim isn't open yet.
+        widgets::note(ui, tr("Claude Desktop uses the npx bridge"), t.warning);
+        widgets::note(
+            ui,
+            tr(
+                "It fails when Claude Desktop starts before Scrim, or when Scrim moves to another port. Re-register to use Scrim's own bridge, which waits for Scrim.",
+            ),
+            t.text_secondary,
+        );
+        crate::right::row(ui, 32.0, |ui| {
+            if widgets::button(ui, tr("Re-register"), true, r["path"].is_string()).clicked() {
+                app.run("mcp.reregister-claude-desktop", json!({}));
+            }
+        });
+    } else if state == "out of date" {
         let old = r["registered"].as_str().unwrap_or_default();
-        let new = r["url"].as_str().unwrap_or_default();
+        // Scrim's own bridge has no address in it: the binary it runs is what differs.
+        let new = if r["bridge"] == true {
+            format!("{} {}", r["entry"][KEY]["command"].as_str().unwrap_or_default(), cd::BRIDGE_ARG)
+        } else {
+            r["url"].as_str().unwrap_or_default().to_string()
+        };
         widgets::note(ui, tr("Registered address is out of date"), t.warning);
         widgets::note(ui, &trf("Claude Desktop points to {old}; this window is at {new}.", &[("old", &old), ("new", &new)]), t.text_secondary);
         crate::right::row(ui, 32.0, |ui| {
@@ -227,8 +251,15 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
             t.text_secondary,
         );
     }
-    let npx = r["npx"] == true;
-    if !npx {
+    let (npx, bridge) = (r["npx"] == true, r["bridge"] == true);
+    if !bridge {
+        widgets::note(
+            ui,
+            tr("Scrim's own bridge isn't available here, so this entry uses Node.js's mcp-remote: copy it and add it yourself."),
+            t.text_secondary,
+        );
+    }
+    if !bridge && !npx {
         widgets::note(
             ui,
             tr(
@@ -249,10 +280,11 @@ fn panel(app: &mut FigApp, ui: &mut Ui, r: &Value) {
             ),
             t.danger,
         ),
+        "configured" if bridge => widgets::note(ui, tr("Claude Desktop already starts Scrim's bridge, which waits for Scrim to start."), t.text),
         "configured" => widgets::note(ui, tr("Claude Desktop already has Scrim at this address."), t.text),
         _ => {}
     }
-    let can_write = npx && path.is_some() && matches!(state, "not configured" | "out of date");
+    let can_write = r["write"] == true && path.is_some() && matches!(state, "not configured" | "out of date");
     crate::right::row(ui, 32.0, |ui| {
         if can_write {
             let (label, cmd) =

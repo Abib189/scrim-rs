@@ -30,6 +30,7 @@ USAGE:
   scrim run <script.json|script.jsonl> [--in <file>] [--out <file>]
   scrim commands [--json] [--filter TEXT]
   scrim mcp [--attach PORT] [--automation-read-root DIR]... [--automation-write-root DIR]...
+  scrim mcp-bridge                (stdio MCP to the running app; waits while it's closed)
   scrim plugin publish <folder> --server ws://host:port/[?key=KEY]
   scrim perf [--layers N[,N...]] [--instances N[,N...]]
   scrim help | --help | --version
@@ -175,6 +176,17 @@ fn run(argv: &[String]) -> CliResult<ExitCode> {
                 (false, None) => Some(figcraft_engine::file_access::Roots::new(read, write).map_err(CliError::Failed)?),
             };
             mcp(a.value("attach").as_deref(), roots)
+        }
+        // A stdio MCP server forwarding to the running app's endpoint, waiting for it while it's
+        // closed (Fix P, `figcraft_mcp::bridge`): what Claude Desktop's entry runs.
+        "mcp-bridge" => {
+            let a = Args::parse(rest, &[], &[])?;
+            if !a.positional.is_empty() {
+                return Err(CliError::Usage("mcp-bridge takes no arguments (the token comes in SCRIM_MCP_AUTH)".into()));
+            }
+            let cfg = figcraft_mcp::bridge::Config::from_env(None);
+            figcraft_mcp::bridge::run(std::io::stdin().lock(), Box::new(std::io::stdout()), cfg).map_err(|e| CliError::Failed(e.to_string()))?;
+            Ok(ExitCode::SUCCESS)
         }
         "plugin" => {
             let a = Args::parse(rest, &["server"], &[])?;

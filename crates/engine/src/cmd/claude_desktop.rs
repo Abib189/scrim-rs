@@ -5,7 +5,11 @@
 //!   (the docs name no Linux path).
 //! - **The entry:** Claude Desktop starts local servers as programs (stdio); a URL in this file isn't
 //!   one, and its Connectors reach servers from Anthropic's cloud, not this computer. So the entry
-//!   runs `mcp-remote` (pinned), which forwards to the window's live HTTP address.
+//!   runs a bridge to the window's HTTP endpoint:
+//!   - **Scrim's own** (Fix P) when the app knows its binary: `<binary> mcp-bridge`, which finds the
+//!     app wherever it listens and waits for it while it's closed ([`bridge_entry`]);
+//!   - else `mcp-remote` (pinned) to the live address, offered as Copy only. Entries written with
+//!     it are Out of date when Scrim's own bridge is available, and Re-register upgrades them.
 //! - **Writing** only ever happens after the person confirms in the window (`dialog.*` requests,
 //!   which an agent's commands never open):
 //!   - an invalid file is refused, never overwritten;
@@ -26,6 +30,8 @@ use crate::{Session, bad, spec};
 /// The bridge, pinned: `npx -y` would otherwise fetch the newest version every time Claude Desktop
 /// starts. Re-register updates entries written with an older pin.
 pub const MCP_REMOTE: &str = "mcp-remote@0.14.3";
+/// The argument that runs Scrim's binary as a stdio bridge to the app (Fix P).
+pub const BRIDGE_ARG: &str = "mcp-bridge";
 /// The key Scrim's entry has under `mcpServers`.
 pub const KEY: &str = "scrim";
 /// The keys the entry had before the rename.
@@ -135,6 +141,28 @@ pub fn entry(url: &str, token: Option<&str>, npx: (String, Option<String>)) -> V
     Value::Object(e)
 }
 
+/// Scrim's own bridge (Fix P): `exe mcp-bridge`, with the token when authentication is on. No
+/// address: the bridge reads where the app listens each time it connects.
+pub fn bridge_entry(exe: &str, token: Option<&str>) -> Value {
+    let mut e = Map::new();
+    e.insert("command".into(), json!(exe));
+    e.insert("args".into(), json!([BRIDGE_ARG]));
+    if let Some(t) = token {
+        e.insert("env".into(), json!({TOKEN_VAR: format!("Bearer {t}")}));
+    }
+    Value::Object(e)
+}
+
+/// Whether `e` runs Scrim's own bridge.
+pub fn is_bridge(e: &Value) -> bool {
+    e["args"] == json!([BRIDGE_ARG])
+}
+
+/// Whether `e` runs `mcp-remote` (any version): an entry from before Fix P.
+pub fn is_mcp_remote(e: &Value) -> bool {
+    e["args"].as_array().is_some_and(|a| a.iter().filter_map(Value::as_str).any(|x| x == "mcp-remote" || x.starts_with("mcp-remote@")))
+}
+
 /// What the file says about Scrim.
 #[derive(Clone, Debug, PartialEq)]
 pub enum State {
@@ -164,6 +192,8 @@ impl State {
 pub struct Found {
     pub state: State,
     pub old: Vec<String>,
+    /// Scrim's entry runs `mcp-remote` (Re-register can move it to Scrim's own bridge).
+    pub mcp_remote: bool,
 }
 
 /// The file's text parsed: `None` for a missing or blank file; an error for anything that isn't a
@@ -192,18 +222,25 @@ fn target(e: &Value) -> String {
 pub fn inspect(text: Option<&str>, want: &Value) -> Found {
     let map = match parse(text) {
         Ok(m) => m.unwrap_or_default(),
-        Err(error) => return Found { state: State::Unreadable { error }, old: Vec::new() },
+        Err(error) => return Found { state: State::Unreadable { error }, old: Vec::new(), mcp_remote: false },
     };
     let servers = map.get("mcpServers").and_then(Value::as_object);
     let old = OLD_KEYS.iter().filter(|k| servers.is_some_and(|s| s.contains_key(**k))).map(|k| k.to_string()).collect();
-    let state = match servers.and_then(|s| s.get(KEY)) {
+    let current = servers.and_then(|s| s.get(KEY));
+    let state = match current {
         None => State::NotConfigured,
         // The same bridge, address and token (its npx path may differ: where node lives is the
-        // person's business).
-        Some(e) if e["args"] == want["args"] && e["env"][TOKEN_VAR] == want["env"][TOKEN_VAR] => State::Configured,
+        // person's business); Scrim's own bridge only from this binary.
+        Some(e)
+            if e["args"] == want["args"]
+                && e["env"][TOKEN_VAR] == want["env"][TOKEN_VAR]
+                && (!is_bridge(want) || e["command"] == want["command"]) =>
+        {
+            State::Configured
+        }
         Some(e) => State::OutOfDate { target: target(e) },
     };
-    Found { state, old }
+    Found { state, old, mcp_remote: current.is_some_and(is_mcp_remote) }
 }
 
 /// A change to `mcpServers`.
@@ -324,20 +361,25 @@ pub fn report(s: &Session, npx: Option<&str>) -> crate::Result<Value> {
     let cmd = "mcp.connect-claude-desktop";
     let url = s.agents.mcp.url().ok_or_else(|| bad(cmd, "the MCP endpoint isn't running: restart it from Settings, under MCP"))?;
     let os = Os::this();
-    let want = entry(&url, super::mcp::token(s), npx_command(os, npx));
+    // Scrim's own bridge when the app knows its binary (Fix P); else mcp-remote, to copy.
+    let bridge = s.agents.mcp.bridge.as_deref();
+    let want = match bridge {
+        Some(exe) => bridge_entry(exe, super::mcp::token(s)),
+        None => entry(&url, super::mcp::token(s), npx_command(os, npx)),
+    };
     let path = s.agents.mcp.desktop_config.clone();
     // Read through `file_access`: inside an agent's request (confined to its folders) the file
     // isn't read, so an agent can't look at Claude Desktop's configuration.
     let found = match &path {
         None => inspect(None, &want),
         Some(p) if !crate::file_access::allowed(p, crate::file_access::Access::Read) => {
-            Found { state: State::Unreadable { error: "it is outside the folders this request may read".into() }, old: Vec::new() }
+            Found { state: State::Unreadable { error: "it is outside the folders this request may read".into() }, old: Vec::new(), mcp_remote: false }
         }
         Some(p) if !crate::file_access::exists(p) => inspect(None, &want),
         Some(p) => match crate::file_access::read(p).map(String::from_utf8) {
             Ok(Ok(text)) => inspect(Some(&text), &want),
-            Ok(Err(_)) => Found { state: State::Unreadable { error: "it isn't UTF-8 text".into() }, old: Vec::new() },
-            Err(e) => Found { state: State::Unreadable { error: e.to_string() }, old: Vec::new() },
+            Ok(Err(_)) => Found { state: State::Unreadable { error: "it isn't UTF-8 text".into() }, old: Vec::new(), mcp_remote: false },
+            Err(e) => Found { state: State::Unreadable { error: e.to_string() }, old: Vec::new(), mcp_remote: false },
         },
     };
     let (registered, error) = match &found.state {
@@ -355,6 +397,11 @@ pub fn report(s: &Session, npx: Option<&str>) -> crate::Result<Value> {
         "error": error,
         "old": found.old,
         "npx": npx.is_some(),
+        // Scrim's own bridge is the entry, and so the panel may write it (Fix P); without it, Copy.
+        "bridge": bridge.is_some(),
+        "write": bridge.is_some(),
+        // The file's entry runs mcp-remote, and Scrim's own bridge can replace it.
+        "upgrade": bridge.is_some() && found.mcp_remote && matches!(found.state, State::OutOfDate { .. }),
         "restart": "Quit Claude Desktop completely and open it again: it reads this file when it starts.",
     }))
 }
@@ -368,7 +415,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "mcp.connect-claude-desktop",
             "Connect Claude Desktop",
-            "{npx?} → {path, documentedPath, url, entry, state: configured|not configured|out of date|unreadable, registered?, error?, old: [keys], npx, restart}  (shows the panel in the app; the file is only written after the person confirms there)",
+            "{npx?} → {path, documentedPath, url, entry, state: configured|not configured|out of date|unreadable, registered?, error?, old: [keys], npx, bridge, write, upgrade, restart}  (shows the panel in the app; the file is only written after the person confirms there. The entry runs Scrim's own `mcp-bridge` when the app knows its binary, which waits for the app; else mcp-remote, to copy)",
             false,
             |s, p| {
                 let r = report(s, npx_of(p))?;

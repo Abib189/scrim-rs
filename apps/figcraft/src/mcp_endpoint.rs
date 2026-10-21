@@ -104,17 +104,41 @@ pub struct McpHandle {
     config: Arc<RwLock<Config>>,
     disabled: Disabled,
     endpoint: Option<Endpoint>,
+    /// The settings folder, where `scrim mcp-bridge` looks for the endpoint and its tools (Fix P,
+    /// `figcraft_mcp::discovery`). `None` (tests): nothing is noted.
+    dir: Option<std::path::PathBuf>,
 }
 
 impl McpHandle {
     pub fn new(queue: Queue, ctx: CtxSlot) -> Self {
-        Self { queue, ctx, config: Arc::new(RwLock::new(Config::default())), disabled: Disabled::default(), endpoint: None }
+        Self { queue, ctx, config: Arc::new(RwLock::new(Config::default())), disabled: Disabled::default(), endpoint: None, dir: None }
+    }
+
+    /// Note the endpoint and its tools in `dir` for bridges (the desktop app's settings folder).
+    pub fn with_dir(mut self, dir: Option<std::path::PathBuf>) -> Self {
+        self.dir = dir;
+        self
+    }
+
+    /// The tools the endpoint lists (Tool access applied), noted for bridges while it runs.
+    fn note_tools(&self, settings: &McpSettings) {
+        let Some(dir) = self.dir.as_deref().filter(|_| self.endpoint.is_some()) else { return };
+        let tools: Vec<Value> = figcraft_mcp::tool_definitions()
+            .into_iter()
+            .filter(|t| !settings.disabled_tools.iter().any(|d| Some(d.as_str()) == t["name"].as_str()))
+            .collect();
+        if let Err(e) = figcraft_mcp::discovery::write_tools(dir, &json!({"tools": tools})) {
+            log::warn!("MCP: couldn't note the tools for bridges: {e}");
+        }
     }
 
     /// Stop the endpoint if it runs, and start it with `settings`. Returns its port.
     pub fn restart(&mut self, settings: &McpSettings) -> Result<u16, String> {
         if let Some(mut e) = self.endpoint.take() {
             e.stop();
+            if let Some(dir) = self.dir.as_deref() {
+                figcraft_mcp::discovery::remove_endpoint(dir);
+            }
         }
         self.configure(settings);
         let (queue, ctx, disabled) = (self.queue.clone(), self.ctx.clone(), self.disabled.clone());
@@ -136,6 +160,13 @@ impl McpHandle {
         let port = endpoint.port;
         self.endpoint = Some(endpoint);
         log::info!("MCP endpoint on http://127.0.0.1:{port}/mcp");
+        // Where bridges find it (Fix P): the port it got, which may be a fallback.
+        if let Some(dir) = self.dir.as_deref()
+            && let Err(e) = figcraft_mcp::discovery::write_endpoint(dir, port)
+        {
+            log::warn!("MCP: couldn't note the endpoint for bridges: {e}");
+        }
+        self.note_tools(settings);
         Ok(port)
     }
 
@@ -145,8 +176,17 @@ impl McpHandle {
         if let Ok(mut c) = self.config.write() {
             c.token = token;
         }
-        let mut d = self.disabled.write().unwrap_or_else(std::sync::PoisonError::into_inner);
-        d.clone_from(&settings.disabled_tools);
+        self.disabled.write().unwrap_or_else(std::sync::PoisonError::into_inner).clone_from(&settings.disabled_tools);
+        self.note_tools(settings);
+    }
+}
+
+impl Drop for McpHandle {
+    /// The app is quitting: bridges stop looking here.
+    fn drop(&mut self) {
+        if let (Some(dir), Some(_)) = (self.dir.as_deref(), self.endpoint.as_ref()) {
+            figcraft_mcp::discovery::remove_endpoint(dir);
+        }
     }
 }
 

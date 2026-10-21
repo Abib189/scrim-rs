@@ -134,6 +134,19 @@ impl eframe::App for App {
 fn main() -> eframe::Result {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
     let args: Vec<String> = std::env::args().skip(1).collect();
+    // `figcraft mcp-bridge` (Fix P): Claude Desktop's entry runs this binary as a stdio MCP server
+    // that waits for the app; no window is opened.
+    if args.first().map(String::as_str) == Some("mcp-bridge") {
+        let cfg = figcraft_mcp::bridge::Config::from_env(services::config_dir());
+        let code = match figcraft_mcp::bridge::run(std::io::stdin().lock(), Box::new(std::io::stdout()), cfg) {
+            Ok(()) => 0,
+            Err(e) => {
+                eprintln!("scrim mcp-bridge: {e}");
+                1
+            }
+        };
+        std::process::exit(code);
+    }
     if args.iter().any(|a| a == "--version" || a == "-V") {
         println!(
             "Scrim {}{}",
@@ -199,7 +212,7 @@ fn main() -> eframe::Result {
     let mut svc = services::Desktop::load(recovery.clone());
     // The control queue: the control channel (`--control`) and the MCP endpoint both feed it.
     let queue: Arc<Mutex<Vec<ControlRequest>>> = Arc::new(Mutex::new(Vec::new()));
-    svc.mcp = Some(mcp_endpoint::McpHandle::new(queue.clone(), ctx_slot.clone()));
+    svc.mcp = Some(mcp_endpoint::McpHandle::new(queue.clone(), ctx_slot.clone()).with_dir(services::config_dir()));
     if let Some(prefs) = svc.prefs.clone() {
         session.prefs = prefs;
     }

@@ -100,6 +100,11 @@ pub trait Services {
     fn find_program(&self, _name: &str) -> Option<String> {
         None
     }
+    /// The binary that runs `mcp-bridge` (Fix P): the desktop app's own executable. Elsewhere (the
+    /// browser, tests) none, so Claude Desktop's entry falls back to `mcp-remote`, to copy.
+    fn bridge_command(&self) -> Option<String> {
+        None
+    }
     /// Claude Desktop's configuration file on this computer (`cmd::claude_desktop`). Only the desktop
     /// app knows it; elsewhere (the browser, tests) there is none, so nothing reads the real file.
     fn claude_desktop_config(&self) -> Option<std::path::PathBuf> {

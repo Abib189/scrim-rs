@@ -19,6 +19,7 @@ pub fn restart(app: &mut FigApp) {
         Ok(port) => {
             crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::McpStarted(port));
             app.session.agents.mcp.desktop_config = app.services.claude_desktop_config();
+            app.session.agents.mcp.bridge = app.services.bridge_command();
             app.session.agents.mcp.client_env = app.services.agent_client_env();
             app.session.agents.mcp.port = Some(port);
             app.session.agents.mcp.error = None;

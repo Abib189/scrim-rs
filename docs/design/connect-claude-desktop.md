@@ -111,3 +111,49 @@ Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
 - **The written entry, started as Claude Desktop starts it,** reached Scrim through `mcp-remote@0.14.3` on the live port (7681 here): `initialize`, 24 tools, `inspect_document`.
 - **Found and fixed in F2:** a write's message stayed on screen after the file changed (it showed "Scrim was added" under the "can't be read" error). A message now shows only while the file is in the state the write left.
 - **Not verified:** a real Claude Desktop (no live test was run against it); Windows and Linux beyond unit tests; no npx, and authentication on, live.
+
+## Fix P: a bridge that waits for Scrim (22 Oct 2026)
+
+**The report:** Claude Desktop started before Scrim. Its entry, `npx -y mcp-remote@0.14.3 http://127.0.0.1:7680/mcp`, found nothing listening and exited, and Desktop said "scrim couldn't start". The same failure would follow a port fallback, because the entry names the port it was written with.
+
+**P0, from Desktop's log** (`~/Library/Logs/Claude/mcp-server-scrim.log`, read for this, not copied): **start order.**
+- **22:56:56 UTC on 21 Oct:** Desktop started the server. Three `mcp-remote` processes in turn were refused on 127.0.0.1:7680 (`ECONNREFUSED`), each ended with a fatal error, and Desktop reported "Couldn't start".
+- **22:58:30 UTC:** the Scrim app launched (its recovery lock was made then).
+- **Afterwards:** the next `mcp-remote` connected to the same port 7680. So Scrim was on its usual port, not a fallback.
+- **A port change wasn't the cause this time.** It would fail the same way, which is why the bridge follows the port too.
+
+**What changed:**
+- **`scrim mcp-bridge`** (`figcraft_mcp::bridge`; also the app's own binary, `figcraft mcp-bridge`, which opens no window): a stdio MCP server forwarding to the app's HTTP endpoint.
+  - **It finds the app before every connection attempt:** `mcp-endpoint.json` in the settings folder, else the port saved in Settings ▸ MCP.
+    - The app writes the note (address, port, pid) atomically when its endpoint starts, and removes it when it stops or quits cleanly. Only the process that wrote it removes it.
+    - It holds no token.
+  - **While the app is closed, it waits:**
+    - it answers `initialize` (with `tools.listChanged`), and `tools/list` from `mcp-tools.json` (the app's list, noted on each start and when Tool access changes), else an empty list;
+    - each tool call gets the tool error "Scrim is not running. Open the Scrim app and try again.";
+    - it tries every 2 s. Once the app is up, it initializes there for the client and sends `notifications/tools/list_changed`.
+  - **The app restarting,** on the same port or another, is found by the next request or the retry.
+  - **The client's name** reaches the app as `<name> (via scrim mcp-bridge)`, as `mcp-remote` added its own.
+  - **The token:** it comes from `SCRIM_MCP_AUTH`, the same variable the entry already used, goes in each request's header, and is never printed.
+  - **When stdin closes,** it ends its session at the app (`DELETE /mcp`) and exits.
+  - **No Node.js:** it is Scrim's own binary.
+- **Connect Claude Desktop writes Scrim's bridge** when the app knows its binary (`Services::bridge_command`: the app's own executable, by its real path):
+  - **The entry:** `{"command": "<binary>", "args": ["mcp-bridge"]}`, plus `env.SCRIM_MCP_AUTH` with authentication on.
+  - **The status:** "Configured · waits for Scrim to start".
+  - **An entry from another copy of the binary** is Out of date, with Re-register.
+  - **Without the binary** (the browser, headless): the `mcp-remote` entry, Copy only.
+- **An existing `mcp-remote` entry** (any pin) is Out of date, with "Claude Desktop uses the npx bridge", and Re-register upgrades it. As before, that takes one confirmation, makes a backup and writes atomically.
+- **The other clients:** every file-based one has a URL entry, so none changes. The generic "stdio" snippet names the bridge when the binary is known.
+
+**Decisions (overrule any):**
+1. **The entry runs the app's binary,** not a separate `scrim` CLI. The CLI isn't shipped in the app bundle (F decision 9), and the app always knows its own path. `scrim mcp-bridge` does the same, for people who install the CLI.
+2. **The tool list while the app is closed** is the app's last list, else empty, as the brief says. It isn't compiled into the bridge, so that Tool access stays the app's.
+3. **The note's address is loopback only:** anything else is ignored, and the saved port is used.
+4. **A tool call while the app is closed is not queued until it comes up:** it is answered with the error at once, and the agent can try again.
+
+**Tests:**
+- `crates/mcp/tests/bridge.rs`: down then up, a new port, the token, stdin closing, the discovery files;
+- `claude_desktop_tests.rs` (2 new): the entry, the upgrade, the report;
+- `desktop_flow_tests.rs`: writing the bridge, the upgrade with backup, a moved binary, Copy only without it;
+- `mcp_endpoint_tests.rs`: the app's note, which follows a restart and goes away when the endpoint is dropped;
+- `agent_clients_tests.rs`: the stdio snippet.
+

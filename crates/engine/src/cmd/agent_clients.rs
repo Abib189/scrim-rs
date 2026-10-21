@@ -677,9 +677,13 @@ pub fn generic(s: &Session, format: &str) -> crate::Result<String> {
             }
             t
         }
-        "stdio" => match s.agents.control_port {
-            Some(port) => crate::agents::connect_command(Some(port)).replacen("claude mcp add scrim-app -- ", "", 1),
-            None => format!("npx -y {} {url}", super::claude_desktop::MCP_REMOTE),
+        // Scrim's own bridge when the app knows its binary (Fix P): it waits for the app and
+        // follows its port; else the control channel's attach, or mcp-remote.
+        "stdio" => match (s.agents.mcp.bridge.as_deref(), s.agents.control_port) {
+            (Some(exe), _) if exe.contains(' ') => format!("\"{exe}\" {}", super::claude_desktop::BRIDGE_ARG),
+            (Some(exe), _) => format!("{exe} {}", super::claude_desktop::BRIDGE_ARG),
+            (None, Some(port)) => crate::agents::connect_command(Some(port)).replacen("claude mcp add scrim-app -- ", "", 1),
+            (None, None) => format!("npx -y {} {url}", super::claude_desktop::MCP_REMOTE),
         },
         other => return Err(bad(cmd, format!("`format` is json, toml or stdio, not {other}"))),
     })

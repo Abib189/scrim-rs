@@ -72,7 +72,7 @@ fn the_entry_runs_the_pinned_bridge_to_the_live_address() {
 #[test]
 fn the_status_is_read_from_the_file() {
     let w = want();
-    let not = Found { state: State::NotConfigured, old: vec![] };
+    let not = Found { state: State::NotConfigured, old: vec![], mcp_remote: false };
     assert_eq!(inspect(None, &w), not, "missing");
     assert_eq!(inspect(Some("  \n"), &w), not, "empty");
     assert_eq!(inspect(Some(r#"{"mcpServers": {"other": {"command": "x"}}}"#), &w), not);
@@ -271,5 +271,53 @@ fn inside_an_agents_request_the_file_is_neither_read_nor_written() {
     assert!(err.contains("only written by the person"), "{err}");
     assert_eq!(std::fs::read_to_string(&path).unwrap(), text);
     assert_eq!(files(&d), vec!["claude_desktop_config.json".to_string(), "work".to_string()]);
+    let _ = std::fs::remove_dir_all(&d);
+}
+
+/// Fix P: Scrim's own bridge as the entry; an mcp-remote entry is the old kind, upgradable; one from
+/// another copy of the binary is out of date.
+#[test]
+fn scrims_bridge_is_the_entry_and_an_mcp_remote_one_is_upgradable() {
+    let exe = "/Applications/Scrim.app/Contents/MacOS/figcraft";
+    let w = bridge_entry(exe, None);
+    assert_eq!(w, json!({"command": exe, "args": ["mcp-bridge"]}), "no address: the bridge finds the app");
+    assert!(is_bridge(&w) && !is_mcp_remote(&w));
+    let t = bridge_entry(exe, Some("abc"));
+    assert_eq!(t["env"], json!({TOKEN_VAR: "Bearer abc"}), "the token in the environment, as before");
+    let file = |e: &Value| json!({"mcpServers": {"scrim": e}}).to_string();
+    assert_eq!(inspect(Some(&file(&w)), &w), Found { state: State::Configured, old: vec![], mcp_remote: false });
+    // Another copy of Scrim's binary: out of date, pointing at it.
+    let moved = bridge_entry("/Volumes/Old/figcraft", None);
+    assert_eq!(inspect(Some(&file(&moved)), &w).state, State::OutOfDate { target: "/Volumes/Old/figcraft mcp-bridge".into() });
+    // The token changed: out of date.
+    assert!(matches!(inspect(Some(&file(&t)), &w).state, State::OutOfDate { .. }));
+    // An entry from before Fix P: mcp-remote, any pin.
+    for pin in [MCP_REMOTE, "mcp-remote@0.1.0", "mcp-remote"] {
+        let old = json!({"command": "npx", "args": ["-y", pin, URL]});
+        let f = inspect(Some(&file(&old)), &w);
+        assert!(f.mcp_remote && matches!(f.state, State::OutOfDate { .. }), "{pin}: {f:?}");
+    }
+}
+
+#[test]
+fn the_report_offers_scrims_bridge_when_the_binary_is_known_and_copy_otherwise() {
+    let d = scratch("report-bridge");
+    let path = d.join("claude_desktop_config.json");
+    std::fs::write(&path, json!({"mcpServers": {"scrim": {"command": "npx", "args": ["-y", MCP_REMOTE, URL]}}}).to_string()).unwrap();
+    let mut s = Session::new();
+    s.agents.mcp.port = Some(7681);
+    s.agents.mcp.desktop_config = Some(path.clone());
+    let r = report(&s, None).unwrap();
+    assert_eq!(
+        (r["bridge"].as_bool(), r["write"].as_bool(), r["upgrade"].as_bool()),
+        (Some(false), Some(false), Some(false)),
+        "no binary: Copy only"
+    );
+    assert_eq!(r["entry"]["scrim"]["args"][1], MCP_REMOTE);
+    s.agents.mcp.bridge = Some("/opt/scrim/figcraft".into());
+    let r = report(&s, None).unwrap();
+    assert_eq!((r["bridge"].as_bool(), r["write"].as_bool(), r["upgrade"].as_bool()), (Some(true), Some(true), Some(true)));
+    assert_eq!(r["entry"]["scrim"], json!({"command": "/opt/scrim/figcraft", "args": ["mcp-bridge"]}));
+    assert_eq!(r["state"], "out of date");
     let _ = std::fs::remove_dir_all(&d);
 }

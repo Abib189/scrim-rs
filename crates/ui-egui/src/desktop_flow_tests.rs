@@ -6,7 +6,9 @@
 //! - **Invalid JSON** is refused and left untouched.
 //! - **An out-of-date entry** shows Re-register and is replaced only after its confirmation.
 //! - **An old figcraft entry** can be removed.
-//! - **Without npx,** Copy only.
+//! - **Scrim's own bridge** (Fix P) is the entry the desktop app writes; an `mcp-remote` entry is
+//!   offered the upgrade through Re-register; without the bridge's binary, Copy only.
+//! - **Without npx,** it says so.
 //! - **An agent can't make Scrim write,** and the button is in Settings ▸ MCP and the palette too.
 
 use std::path::{Path, PathBuf};
@@ -19,6 +21,8 @@ use figcraft_engine::cmd::claude_desktop::MCP_REMOTE;
 
 const URL: &str = "http://127.0.0.1:7601/mcp";
 const NPX: &str = "/Users/me/.nvm/versions/node/v24/bin/npx";
+/// The app's own binary, which runs `mcp-bridge` (Fix P).
+const BRIDGE: &str = "/Applications/Scrim.app/Contents/MacOS/figcraft";
 
 #[derive(Default)]
 struct Script {
@@ -49,9 +53,20 @@ fn scratch(name: &str, text: Option<&str>) -> (PathBuf, PathBuf) {
     (d, path)
 }
 
-/// The AI tab with the endpoint on 7601, Claude Desktop's file at `path`, npx found (or not).
+/// The AI tab with the endpoint on 7601, Claude Desktop's file at `path`, npx found (or not), and
+/// the app's binary known, as the desktop app knows it.
 fn harness(path: &Path, npx: bool) -> (Harness, Arc<Mutex<Script>>) {
+    harness_with(path, npx, Some(BRIDGE))
+}
+
+/// [`harness`] where the app's binary isn't known (the browser, a build that can't tell).
+fn harness_bare(path: &Path, npx: bool) -> (Harness, Arc<Mutex<Script>>) {
+    harness_with(path, npx, None)
+}
+
+fn harness_with(path: &Path, npx: bool, bridge: Option<&str>) -> (Harness, Arc<Mutex<Script>>) {
     let (mut h, _) = Harness::new();
+    h.app.session.agents.mcp.bridge = bridge.map(str::to_string);
     let script = Arc::new(Mutex::new(Script { npx, ..Default::default() }));
     h.app.services = Box::new(Platform(script.clone()));
     h.app.session.agents.mcp.port = Some(7601);
@@ -99,8 +114,8 @@ fn connect_shows_the_file_and_entry_and_writes_only_after_one_confirmation() {
     click(&mut h, "Connect Claude Desktop");
     let shapes = h.frames(2);
     assert!(has_text(&shapes, &path.to_string_lossy()), "the exact file");
-    let entry = crate::live_tests::texts(&shapes).into_iter().find(|(t, _, _)| t.contains(MCP_REMOTE)).map(|(t, _, _)| t).expect("the entry");
-    assert!(entry.contains(URL) && entry.contains(NPX) && entry.starts_with("{\n  \"scrim\": {\n    \"command\""), "{entry}");
+    let entry = crate::live_tests::texts(&shapes).into_iter().find(|(t, _, _)| t.contains("mcp-bridge")).map(|(t, _, _)| t).expect("the entry");
+    assert!(entry.contains(BRIDGE) && !entry.contains(URL) && !entry.contains(MCP_REMOTE), "Scrim's own bridge, no address: {entry}");
     assert!(has_text(&shapes, "Write") && has_text(&shapes, "Copy"));
     assert!(!path.exists(), "showing it writes nothing");
     click(&mut h, "Write");
@@ -109,7 +124,7 @@ fn connect_shows_the_file_and_entry_and_writes_only_after_one_confirmation() {
     assert!(!path.exists(), "nothing before it is answered");
     confirm(&mut h, "Write to Claude Desktop's configuration?", "Write");
     let v = read(&path);
-    assert_eq!(v["mcpServers"]["scrim"]["args"], json!(["-y", MCP_REMOTE, URL]));
+    assert_eq!(v["mcpServers"]["scrim"], json!({"command": BRIDGE, "args": ["mcp-bridge"]}));
     // (The panel runs below the test screen's edge: the outcome is read from the flow.)
     let said = h.app.ui.desktop.outcome.clone();
     assert_eq!(
@@ -117,7 +132,7 @@ fn connect_shows_the_file_and_entry_and_writes_only_after_one_confirmation() {
         Some((Ok("Scrim was added to Claude Desktop. Quit Claude Desktop completely and open it again to use it.".into()), "configured".into())),
         "the restart is the person's"
     );
-    assert!(has_text(&h.frames(3), "Configured"), "read back from the file");
+    assert!(has_text(&h.frames(3), "Configured · waits for Scrim to start"), "read back from the file");
     assert!(backups(&d).is_empty(), "no file before, nothing to back up");
     let _ = std::fs::remove_dir_all(&d);
 }
@@ -165,21 +180,45 @@ fn invalid_json_is_refused_and_left_untouched() {
 }
 
 #[test]
-fn an_out_of_date_entry_is_replaced_only_after_re_register_is_confirmed() {
-    let old = json!({"mcpServers": {"scrim": {"command": "npx", "args": ["-y", MCP_REMOTE, "http://127.0.0.1:7600/mcp"]}}}).to_string();
-    let (d, path) = scratch("outdated", Some(&old));
+fn an_npx_entry_is_offered_the_upgrade_and_re_register_writes_scrims_bridge() {
+    let old = json!({"mcpServers": {"scrim": {"command": "npx", "args": ["-y", MCP_REMOTE, URL]}}}).to_string();
+    let (d, path) = scratch("upgrade", Some(&old));
+    let (mut h, _) = harness(&path, true);
+    let shapes = h.frames(1);
+    assert!(has_text(&shapes, "Out of date") && has_text(&shapes, "Claude Desktop uses the npx bridge"), "detected as upgradable");
+    assert!(h.app.run("mcp.claude-desktop-status", json!({})).unwrap()["upgrade"] == true);
+    click(&mut h, "Re-register");
+    let shapes = h.frames(2);
+    assert!(has_text(&shapes, "Re-register Scrim in Claude Desktop?"), "one confirmation");
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), old, "not before the answer");
+    confirm(&mut h, "Re-register Scrim in Claude Desktop?", "Re-register");
+    assert_eq!(read(&path)["mcpServers"]["scrim"], json!({"command": BRIDGE, "args": ["mcp-bridge"]}));
+    let kept = backups(&d);
+    assert_eq!(kept.len(), 1, "a backup");
+    assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), old, "of the file as it was");
+    assert!(
+        std::fs::read_dir(&d).unwrap().all(|e| !e.unwrap().file_name().to_string_lossy().ends_with(".tmp")),
+        "written atomically: no temporary file left"
+    );
+    assert!(has_text(&h.frames(3), "Configured · waits for Scrim to start"));
+    let _ = std::fs::remove_dir_all(&d);
+}
+
+#[test]
+fn a_bridge_from_another_copy_of_scrim_is_out_of_date_and_re_registered() {
+    let old = json!({"mcpServers": {"scrim": {"command": "/Volumes/Old/Scrim.app/Contents/MacOS/figcraft", "args": ["mcp-bridge"]}}}).to_string();
+    let (d, path) = scratch("moved", Some(&old));
     let (mut h, _) = harness(&path, true);
     let shapes = h.frames(1);
     assert!(has_text(&shapes, "Out of date") && has_text(&shapes, "Registered address is out of date"));
-    assert!(has_text(&shapes, &format!("Claude Desktop points to http://127.0.0.1:7600/mcp; this window is at {URL}.")));
+    assert!(has_text(
+        &shapes,
+        &format!("Claude Desktop points to /Volumes/Old/Scrim.app/Contents/MacOS/figcraft mcp-bridge; this window is at {BRIDGE} mcp-bridge.")
+    ));
     click(&mut h, "Re-register");
-    let shapes = h.frames(2);
-    assert!(has_text(&shapes, "Re-register Scrim in Claude Desktop?"));
-    assert_eq!(std::fs::read_to_string(&path).unwrap(), old, "not before the answer");
     confirm(&mut h, "Re-register Scrim in Claude Desktop?", "Re-register");
-    assert_eq!(read(&path)["mcpServers"]["scrim"]["args"], json!(["-y", MCP_REMOTE, URL]));
+    assert_eq!(read(&path)["mcpServers"]["scrim"]["command"], BRIDGE);
     assert_eq!(backups(&d).len(), 1);
-    assert!(has_text(&h.frames(3), "Configured"));
     let _ = std::fs::remove_dir_all(&d);
 }
 
@@ -202,12 +241,14 @@ fn the_old_figcraft_entry_can_be_removed() {
 }
 
 #[test]
-fn without_npx_it_says_so_and_offers_copy_only() {
-    let (d, path) = scratch("nonpx", None);
-    let (mut h, script) = harness(&path, false);
+fn without_scrims_bridge_it_offers_the_mcp_remote_entry_to_copy_only() {
+    // The binary isn't known: Copy only, the mcp-remote entry (and, without npx, it says so).
+    let (d, path) = scratch("nobridge", None);
+    let (mut h, script) = harness_bare(&path, false);
     click(&mut h, "Connect Claude Desktop");
     let shapes = h.frames(2);
     assert!(!has_text(&shapes, "Write"));
+    assert!(crate::live_tests::texts(&shapes).iter().any(|(t, _, _)| t.starts_with("Scrim's own bridge isn't available here")));
     assert!(crate::live_tests::texts(&shapes).iter().any(|(t, _, _)| t.starts_with("Node.js's npx wasn't found")));
     click(&mut h, "Copy");
     let copied = script.lock().unwrap().copied.clone();

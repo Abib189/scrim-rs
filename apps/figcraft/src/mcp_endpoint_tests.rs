@@ -140,3 +140,29 @@ fn a_turned_off_tools_command_is_refused_through_run_command_and_batch_over_http
     }
     assert!(!seen.lock().unwrap_or_else(std::sync::PoisonError::into_inner).iter().any(|(m, _)| m == "engine.execute"), "refused before the UI");
 }
+
+/// Fix P: with a settings folder (a scratch one here), the endpoint notes where it listens (the port
+/// it got, a fallback included) and the tools it lists (Tool access applied), follows a restart on
+/// another port, and takes its note away when the app lets go of it.
+#[test]
+fn the_endpoint_is_noted_for_bridges_and_the_note_goes_with_it() {
+    use figcraft_mcp::discovery::{ENDPOINT_FILE, endpoint, tools};
+    let dir = std::env::temp_dir().join(format!("scrim-endpoint-note-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let queue = Arc::new(Mutex::new(Vec::new()));
+    let mut h = McpHandle::new(queue, Arc::new(Mutex::new(None))).with_dir(Some(dir.clone()));
+    let settings = McpSettings { port: free_port(), disabled_tools: vec!["export".into()], ..Default::default() };
+    let port = h.restart(&settings).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(endpoint(&dir).port(), port);
+    let listed = tools(&dir).unwrap_or_else(|| panic!("the tools are noted"));
+    let names: Vec<&str> = listed["tools"].as_array().into_iter().flatten().filter_map(|t| t["name"].as_str()).collect();
+    assert!(names.contains(&"batch") && !names.contains(&"export"), "Tool access applied: {names:?}");
+    let note = std::fs::read_to_string(dir.join(ENDPOINT_FILE)).unwrap_or_default();
+    assert!(!note.contains("token"), "no token in the note: {note}");
+    // Restarted on another port: the note follows.
+    let again = h.restart(&McpSettings { port: free_port(), ..Default::default() }).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(endpoint(&dir).port(), again);
+    drop(h);
+    assert!(!dir.join(ENDPOINT_FILE).exists(), "gone when the app lets go of the endpoint");
+    let _ = std::fs::remove_dir_all(&dir);
+}

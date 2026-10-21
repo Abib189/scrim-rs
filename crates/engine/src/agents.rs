@@ -65,6 +65,10 @@ pub struct McpEndpoint {
     /// Where other agents' configurations are (`cmd::agent_clients`): set by the desktop app. `None`
     /// (the browser, headless, tests unless they give a scratch one): no client's file is read.
     pub client_env: Option<crate::cmd::agent_clients::PathEnv>,
+    /// The binary that runs `mcp-bridge` (Fix P): set by the desktop app to its own executable.
+    /// `None` (the browser, headless, tests unless they give one): Claude Desktop's entry falls back
+    /// to `mcp-remote`, to copy.
+    pub bridge: Option<String>,
 }
 
 /// How long after a client's last `initialize` the AI tab still calls it connected.

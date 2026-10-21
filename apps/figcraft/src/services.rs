@@ -178,6 +178,8 @@ const STATE: &str = "state.json";
 pub fn shutdown(app: &mut FigApp, dir: Option<&Path>, recovery: Option<crate::recovery::Recovery>) {
     if let Some(dir) = dir {
         write_prefs(dir, &app.session.prefs);
+        // Bridges stop looking for this endpoint (Fix P); only this process's note is removed.
+        figcraft_mcp::discovery::remove_endpoint(dir);
     }
     // Before the sessions end: a recovered online file's copy waits for its session's outcome.
     if let Some(r) = recovery {
@@ -294,6 +296,12 @@ impl Services for Desktop {
             return rx;
         }
         rx
+    }
+    fn bridge_command(&self) -> Option<String> {
+        // This binary, by its real path (`figcraft mcp-bridge` runs the bridge, not the app).
+        let exe = std::env::current_exe().ok()?;
+        let exe = std::fs::canonicalize(&exe).unwrap_or(exe);
+        exe.is_absolute().then(|| exe.to_string_lossy().into_owned())
     }
     fn claude_desktop_config(&self) -> Option<std::path::PathBuf> {
         use figcraft_engine::cmd::claude_desktop::{Env, Os, config_path};

@@ -315,5 +315,10 @@ fn the_generic_card() {
     assert!(super::generic(&s, "stdio").unwrap().contains("mcp-remote@"), "no control port: the bridge");
     s.agents.control_port = Some(7979);
     assert_eq!(super::generic(&s, "stdio").unwrap(), "scrim mcp --attach 7979");
+    // The app knows its binary (Fix P): Scrim's own bridge, which waits for the app.
+    s.agents.mcp.bridge = Some("/Applications/Scrim.app/Contents/MacOS/figcraft".into());
+    assert_eq!(super::generic(&s, "stdio").unwrap(), "/Applications/Scrim.app/Contents/MacOS/figcraft mcp-bridge");
+    s.agents.mcp.bridge = Some("/Users/me/My Apps/figcraft".into());
+    assert_eq!(super::generic(&s, "stdio").unwrap(), "\"/Users/me/My Apps/figcraft\" mcp-bridge", "quoted when it has spaces");
     assert!(super::generic(&s, "yaml").is_err());
 }

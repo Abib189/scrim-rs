@@ -198,6 +198,18 @@ live sessions (`collab.*`: without a key on a server open to the public, with `c
 `collab.manageFile` for the owner token and `collab.report`) and use plugin directories
 (`plugin.directory.*`); the one-shot `run` can't (no network link).
 
+### `mcp-bridge`
+
+A stdio MCP server that forwards to the running Scrim app's HTTP endpoint (Fix P). It is what Claude Desktop's entry runs (as the app's own binary, `figcraft mcp-bridge`, which does the same).
+- **Where the app is:** read before every connection attempt, from `mcp-endpoint.json` in the app's settings folder (`design.scrim.app`), else the port saved in Settings ▸ MCP. So a fallback port is followed.
+- **While the app is closed** it doesn't exit:
+  - it answers `initialize`, and `tools/list` with the tools the app last noted (`mcp-tools.json`), or none;
+  - each tool call returns a tool error, "Scrim is not running. Open the Scrim app and try again.";
+  - it tries the app every 2 s. Once the app is up, it proxies and sends `notifications/tools/list_changed`.
+- **The client's name** reaches the app as `<name> (via scrim mcp-bridge)`.
+- **The token** (with MCP authentication on) comes in `SCRIM_MCP_AUTH` as `Bearer <token>`. It is never printed.
+- **It ends** when stdin closes, ending its session at the app. Progress goes to stderr.
+
 ### `plugin publish <folder> --server ws://host:port/[?key=KEY]`
 
 Publishes a plugin folder (`figcraft-plugin.json`, the module its `main` names, an optional `assets/`

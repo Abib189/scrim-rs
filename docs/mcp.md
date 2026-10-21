@@ -16,6 +16,7 @@ The server lives in `crates/mcp` (`figcraft-mcp`) and is started by the CLI:
 |---|---|
 | `scrim mcp` | **Headless**: an in-process engine session with one untitled document. No window; renders with the CPU renderer. |
 | `scrim mcp --attach <port>` | **Attached**: drives a running Scrim app through its control channel (`figcraft --control <port>`). The user sees every change live. |
+| `scrim mcp-bridge` (or the app's own binary: `figcraft mcp-bridge`) | **Bridge** (Fix P): forwards stdio to the running app's HTTP endpoint, wherever it listens (the app notes its port in `mcp-endpoint.json` in its settings folder). While the app is closed it stays up: `initialize` and `tools/list` are answered (the tools the app last noted in `mcp-tools.json`, else none), and every tool call says "Scrim is not running. Open the Scrim app and try again." It tries again every 2 s, and once the app is up it proxies and sends `notifications/tools/list_changed`. The token, when authentication is on, comes in `SCRIM_MCP_AUTH` (`Bearer <token>`). It ends when stdin closes. |
 
 `--attach` also takes `host:port`. The control channel only listens on 127.0.0.1.
 
@@ -198,9 +199,26 @@ Or in a project's `.mcp.json`:
 
 **Connect Claude Desktop** (the AI tab, Settings ▸ MCP, the Actions palette; `mcp.connect-claude-desktop`) adds Scrim to Claude Desktop's `claude_desktop_config.json`: `~/Library/Application Support/Claude/` on macOS, `%APPDATA%\Claude\` on Windows, `~/.config/Claude/` on Linux (inferred: Anthropic names no Linux path). It shows the exact file and entry first, and writes only after one confirmation:
 - **Safely:** an invalid file is refused, never overwritten. Only `mcpServers.scrim` changes, and the rest keeps its text. A backup is kept as `claude_desktop_config.json.scrim-backup-<UTC time>`, and the new file is written by rename.
-- **Through a bridge:** Claude Desktop starts local servers as programs, and its Connectors reach servers from Anthropic's cloud, not this computer. So the entry runs `mcp-remote` (third-party, pinned), which forwards to the window's live address. That needs Node.js's `npx`; without it, Copy only.
+- **Through a bridge:** Claude Desktop starts local servers as programs, and its Connectors reach servers from Anthropic's cloud, not this computer. So the entry runs a bridge to the window's endpoint:
+  - **Scrim's own** (Fix P): the app's binary with `mcp-bridge`. It doesn't need Node.js, waits while Scrim is closed, and follows Scrim to another port. The status reads "Configured · waits for Scrim to start".
+  - **`mcp-remote`** (third-party, pinned) when the app can't tell its binary: Copy only, and it needs Node.js's `npx`. It exits when Scrim isn't running yet, and it names one port. An entry that runs it is offered the upgrade (Re-register).
 - **The status** is read from the file: Configured, Not configured, Out of date (with Re-register), or Can't read. Claude Desktop can't be asked whether it is connected.
 - **Afterwards,** quit Claude Desktop completely and open it again. Scrim never restarts or closes it.
+
+```json
+{
+  "mcpServers": {
+    "scrim": {
+      "command": "/Applications/Scrim.app/Contents/MacOS/figcraft",
+      "args": ["mcp-bridge"]
+    }
+  }
+}
+```
+
+With MCP authentication on, the entry adds `env.SCRIM_MCP_AUTH = "Bearer <token>"`. The token is then in Claude Desktop's file.
+
+The documented fallback, `mcp-remote`:
 
 ```json
 {
@@ -214,7 +232,7 @@ Or in a project's `.mcp.json`:
 }
 ```
 
-With MCP authentication on, the entry adds `"--header", "Authorization:${SCRIM_MCP_AUTH}"` and `env.SCRIM_MCP_AUTH = "Bearer <token>"`. The token is then in Claude Desktop's file.
+With authentication on, it adds `"--header", "Authorization:${SCRIM_MCP_AUTH}"` and the same `env.SCRIM_MCP_AUTH`.
 
 Commands: `mcp.connect-claude-desktop` and `mcp.claude-desktop-status` (`{npx?}` → the path, the entry, the state), `mcp.copy-claude-desktop-entry`. Three commands only ask the person: `mcp.write-claude-desktop`, `mcp.reregister-claude-desktop` and `mcp.remove-old-desktop-entry` (the old `figcraft` and `figcraft-app` keys).
 
