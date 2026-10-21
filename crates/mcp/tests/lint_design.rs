@@ -32,7 +32,9 @@ fn the_tools_are_listed_and_writing_tools_carry_the_lint_hint() {
     assert_eq!(tool("set_lint_profile")["annotations"]["readOnlyHint"], false);
     assert!(tool("lint_design")["description"].as_str().unwrap().contains("'expressive' = posters, covers, editorial display type"));
     for writer in ["run_command", "batch", "create_node", "set_properties"] {
-        assert!(tool(writer)["description"].as_str().unwrap().ends_with("never to silence contrast."), "{writer}");
+        let d = tool(writer)["description"].as_str().unwrap().to_string();
+        // The lint hint, then (Stage I.1) the line every tool that changes things ends with.
+        assert!(d.contains("never to silence contrast.") && d.ends_with(figcraft_mcp::FINISH_HINT), "{writer}");
     }
     let init = c.rpc("initialize", json!({"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}));
     assert!(init["result"]["instructions"].as_str().unwrap().contains("run lint_design on what you built"));

@@ -28,8 +28,13 @@ pub use backend::{Attached, Backend, decode_data, page_children};
 pub use headless::Headless;
 pub use prompts::{PROMPTS, PromptArg, PromptDef};
 pub use resources::{COMMAND_TEMPLATE, COMMANDS_URI, DOC_URI, NODE_TEMPLATE};
-pub use server::{INSTRUCTIONS, PROTOCOL_VERSION, SUPPORTED_VERSIONS, Server};
-pub use tools::{TOOL_NAMES, ToolResult, call_tool, tool_definitions};
+pub use server::{INSTRUCTIONS, PROTOCOL_VERSION, SUPPORTED_VERSIONS, Server, SessionEvent};
+pub use tools::{FINISH_HINT, TOOL_NAMES, ToolResult, call_tool, tool_definitions};
+
+/// The line every tool that changes things ends with ([`FINISH_HINT`]).
+pub fn tools_finish_hint() -> &'static str {
+    FINISH_HINT
+}
 
 /// Width and height of a PNG from its IHDR chunk.
 pub fn png_size(bytes: &[u8]) -> Option<(u32, u32)> {

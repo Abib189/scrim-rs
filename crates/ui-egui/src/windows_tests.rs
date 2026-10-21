@@ -29,6 +29,7 @@ fn request(app: &mut FigApp, method: &str, params: Value) -> Receiver<ControlRep
     let (reply, rx) = channel();
     app.control_queue.push(ControlRequest {
         client: None,
+        session: None,
         route: crate::control::ROUTE_CONTROL,
         id: json!(1),
         method: method.into(),

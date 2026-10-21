@@ -39,10 +39,20 @@ and run them with run_command, or several as one undo step with batch. Commands 
 on the selection; new layers become the selection. Colours are \"#RRGGBB\" or \"#RRGGBBAA\". Verify your work: \
 inspect_document / get_node return the layer tree as JSON (check sizes, fills, layout, overrides), and \
 screenshot returns a PNG of the page or of given layers to look at. undo/redo step through history. \
-Resources: figcraft://document, figcraft://node/{id}, figcraft://command/{id}. prompts/list has workflows.";
+Resources: figcraft://document, figcraft://node/{id}, figcraft://command/{id}. prompts/list has workflows. \
+When you have finished working on the canvas, call finish_working so the person sees you are done.";
 
 /// What [`Server::with_initialize_hook`] calls.
 type InitializeHook = Box<dyn FnMut(&Value)>;
+
+/// An HTTP session starting (its id and `clientInfo`) or ending (Stage I.1).
+pub enum SessionEvent<'a> {
+    Started { id: &'a str, info: &'a Value },
+    Ended { id: &'a str },
+}
+
+/// What [`Server::with_session_hook`] calls.
+type SessionHook = Box<dyn FnMut(SessionEvent)>;
 
 /// An MCP server bound to one backend.
 pub struct Server {
@@ -62,6 +72,11 @@ pub struct Server {
     issued: Option<String>,
     /// Issue session ids (the HTTP transport; stdio has one client per process).
     issue_sessions: bool,
+    /// Told when an HTTP session starts or ends (the app's working state, Stage I.1).
+    on_session: Option<SessionHook>,
+    /// Tell the backend who the client is on `initialize` (`mcp.client`): `scrim mcp --attach`, so
+    /// the app knows the client behind its control connection (Stage I.1).
+    announce: bool,
 }
 
 /// How many HTTP sessions are remembered.
@@ -90,6 +105,8 @@ impl Server {
             last_client: None,
             issued: None,
             issue_sessions: false,
+            on_session: None,
+            announce: false,
         }
     }
 
@@ -98,6 +115,30 @@ impl Server {
     pub fn with_roots(mut self, roots: Option<Roots>) -> Self {
         self.roots = roots.map(Arc::new);
         self
+    }
+
+    /// Call `f` when an HTTP session starts (`initialize`) or ends (`DELETE /mcp`).
+    pub fn with_session_hook(mut self, f: impl FnMut(SessionEvent) + 'static) -> Self {
+        self.on_session = Some(Box::new(f));
+        self
+    }
+
+    /// Send the client's `clientInfo` to the backend on `initialize` (`mcp.client {name, version}`),
+    /// ignoring the answer: `scrim mcp --attach`, whose app otherwise never learns who it serves.
+    pub fn announcing_clients(mut self) -> Self {
+        self.announce = true;
+        self
+    }
+
+    /// End HTTP session `id` (`DELETE /mcp`): forgotten, and the session hook told. False when it
+    /// isn't one of the sessions remembered.
+    pub fn end_session(&mut self, id: &str) -> bool {
+        let Some(i) = self.sessions.iter().position(|(s, _)| s == id) else { return false };
+        self.sessions.remove(i);
+        if let Some(f) = self.on_session.as_mut() {
+            f(SessionEvent::Ended { id });
+        }
+        true
     }
 
     /// Call `f` with the client's `clientInfo` each time one initializes.
@@ -177,8 +218,10 @@ impl Server {
     /// comes from (that session's, else the newest to initialize). Returns the reply and, for an
     /// `initialize`, the new session's id for the response's `Mcp-Session-Id` header.
     pub fn handle_session(&mut self, line: &str, session: Option<&str>) -> (Option<String>, Option<String>) {
-        let client = session.and_then(|s| self.sessions.iter().find(|(id, _)| id == s).map(|(_, c)| c.clone())).or_else(|| self.last_client.clone());
+        let known = session.filter(|s| self.sessions.iter().any(|(id, _)| id == s));
+        let client = known.and_then(|s| self.sessions.iter().find(|(id, _)| id == s).map(|(_, c)| c.clone())).or_else(|| self.last_client.clone());
         self.backend.set_client(client.as_ref().and_then(|c| c.get("name")).and_then(Value::as_str));
+        self.backend.set_session(known);
         self.issue_sessions = true;
         let reply = self.handle_line(line);
         (reply, self.issued.take())
@@ -245,7 +288,13 @@ impl Server {
                     while self.sessions.len() > MAX_SESSIONS {
                         self.sessions.pop_front();
                     }
+                    if let Some(f) = self.on_session.as_mut() {
+                        f(SessionEvent::Started { id: &id, info: &info });
+                    }
                     self.issued = Some(id);
+                }
+                if self.announce {
+                    let _ = self.backend.call("mcp.client", json!({"name": info.get("name"), "version": info.get("version")}));
                 }
                 self.last_client = Some(info);
                 let asked = params.get("protocolVersion").and_then(Value::as_str).unwrap_or(PROTOCOL_VERSION);

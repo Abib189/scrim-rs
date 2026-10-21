@@ -31,6 +31,7 @@ fn reply(reader: &mut BufReader<TcpStream>) -> Value {
 fn request() -> ControlRequest {
     ControlRequest {
         client: None,
+        session: None,
         route: figcraft_ui_egui::control::ROUTE_CONTROL,
         id: json!(0),
         method: "ui.inspect".into(),
@@ -287,4 +288,54 @@ fn timed_out_requests_release_a_full_deferred_ui_queue() {
     for worker in workers {
         worker.join().unwrap().unwrap();
     }
+}
+
+/// Stage I.1: a connection that says which MCP client it serves (`scrim mcp --attach`) tags its
+/// requests with that client and a session of its own, and its closing tells the window the
+/// session ended.
+#[test]
+fn an_attached_clients_requests_carry_it_and_its_closing_ends_the_session() {
+    let (mut client, server) = pair();
+    let pending = queue();
+    let mut workers = Vec::new();
+    spawn_connection(server, pending.clone(), context(), &mut workers, Duration::from_secs(5));
+    let next = |method: &str| -> ControlRequest {
+        let start = Instant::now();
+        loop {
+            let mut q = pending.lock().unwrap();
+            if let Some(i) = q.iter().position(|r| r.method == method) {
+                return q.remove(i);
+            }
+            drop(q);
+            assert!(start.elapsed() < Duration::from_secs(5), "no {method}");
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    };
+    let answer = |r: ControlRequest| {
+        let _ = r.reply.send(figcraft_ui_egui::ControlReply { id: r.id.clone(), result: Ok(json!({})) });
+    };
+    let mut reader = BufReader::new(client.try_clone().unwrap());
+    client.write_all(b"{\"id\":1,\"method\":\"mcp.client\",\"params\":{\"name\":\"codex-mcp-client\",\"version\":\"1\"}}\n").unwrap();
+    let hello = next("mcp.client");
+    let session = hello.params["session"].as_str().expect("its session").to_string();
+    assert!(session.starts_with("attach-"), "{session}");
+    answer(hello);
+    reply(&mut reader);
+    client.write_all(b"{\"id\":2,\"method\":\"engine.execute\",\"params\":{\"command\":\"view.get\"}}\n").unwrap();
+    let r = next("engine.execute");
+    assert_eq!((r.client.as_deref(), r.session.as_deref()), (Some("codex-mcp-client"), Some(session.as_str())));
+    answer(r);
+    reply(&mut reader);
+    client.shutdown(Shutdown::Both).unwrap();
+    let ended = next("mcp.session-ended");
+    assert_eq!(ended.params, json!({"session": session}));
+    // A plain control connection (no mcp.client) says nothing when it closes.
+    let (plain, server) = pair();
+    let other = queue();
+    spawn_connection(server, other.clone(), context(), &mut workers, Duration::from_secs(5));
+    plain.shutdown(Shutdown::Both).unwrap();
+    for w in workers {
+        w.join().unwrap();
+    }
+    assert!(other.lock().unwrap().is_empty());
 }

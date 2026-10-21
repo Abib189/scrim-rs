@@ -150,6 +150,9 @@ pub struct Agents {
     pub author: Author,
     /// The MCP client running the current commands (its `clientInfo.name`), when the route knows.
     pub client: Option<String>,
+    /// The MCP session running the current commands (an HTTP `Mcp-Session-Id`, or an `--attach`
+    /// connection), when the route knows: who `agent.finish-working` finishes (Stage I.1).
+    pub session: Option<String>,
     pub since: Option<u64>,
     /// The app's control channel port when it listens (`--control`): agents attach through it
     /// (`ai.status`). `None`: headless, or the app runs without it.

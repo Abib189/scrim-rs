@@ -1,5 +1,5 @@
 //! I3, the working indicator: the wave is deterministic for a seed and a time, smooth and periodic;
-//! it fades in over 160 ms and out over 400 ms after 600 ms idle; the row is placed after E2's
+//! it fades in over 160 ms and out over 400 ms when the working state ends (Stage I.1); the row is placed after E2's
 //! labels and never overlaps one (Ridgeline at 10, 22, 50 and 100%), drops columns on a narrow
 //! artboard, then hides, and is never wider than its artboard; the outline has no handles and no
 //! hit area and gives way to the person's selection; one polite AccessKit status names it; the
@@ -10,7 +10,7 @@ use figcraft_doc::NodeId;
 use figcraft_engine::Session;
 use serde_json::json;
 
-use super::{COLUMNS, FADE_IN, FADE_OUT, IDLE, LOOP, MIN_COLUMNS, alpha, column_x, place, still, wave, width};
+use super::{COLUMNS, FADE_IN, FADE_OUT, LOOP, MIN_COLUMNS, column_x, place, still, wave, width};
 use crate::follow_agent::tests::{agent, click, frames, id, poster, scene};
 use crate::layers_drag_tests::Ui;
 
@@ -39,18 +39,30 @@ fn the_wave_is_deterministic_smooth_and_loops() {
 }
 
 #[test]
-fn it_fades_in_over_160_ms_and_out_over_400_ms_after_600_ms_idle() {
-    let (began, last) = (10.0, 10.0);
-    assert_eq!(alpha(began, last, 10.0, true), 0.0);
-    assert!((alpha(began, last, 10.0 + FADE_IN / 2.0, true) - 0.5).abs() < 1e-9);
-    assert_eq!(alpha(began, last, 10.0 + FADE_IN, true), 1.0);
-    // Working on (the last edit keeps moving), then idle.
-    assert_eq!(alpha(began, 11.0, 11.0 + IDLE, true), 1.0, "still on 600 ms after the last edit");
-    assert!((alpha(began, 11.0, 11.0 + IDLE + FADE_OUT / 2.0, true) - 0.5).abs() < 1e-9);
-    assert_eq!(alpha(began, 11.0, 11.0 + IDLE + FADE_OUT, true), 0.0);
-    // Without motion: shown, then gone, no fades.
-    assert_eq!(alpha(began, last, 10.0, false), 1.0);
-    assert_eq!(alpha(began, last, 10.0 + IDLE + FADE_OUT + 0.01, false), 0.0);
+fn it_fades_in_over_160_ms_stays_across_gaps_and_fades_out_over_400_ms_when_work_ends() {
+    let mut w = crate::follow_agent::working_state::State::default();
+    w.touch("session:a".into(), Some("Codex".into()), 10.0);
+    w.tick(10.0, 15.0, true);
+    assert_eq!(w.alpha(10.0, true), 0.0);
+    assert!((w.alpha(10.0 + FADE_IN / 2.0, true) - 0.5).abs() < 1e-9);
+    assert_eq!(w.alpha(10.0 + FADE_IN, true), 1.0);
+    // A 2.5 s gap between steps: still fully on.
+    w.tick(12.5, 15.0, true);
+    assert_eq!(w.alpha(12.5, true), 1.0);
+    // It finishes: out over 400 ms from then.
+    w.finish("session:a", 13.0);
+    w.tick(13.0, 15.0, true);
+    assert!((w.alpha(13.0 + FADE_OUT / 2.0, true) - 0.5).abs() < 1e-9);
+    assert_eq!(w.alpha(13.0 + FADE_OUT, true), 0.0);
+    // Without motion: shown for the whole run, then gone, no fades.
+    let mut w = crate::follow_agent::working_state::State::default();
+    w.touch("session:a".into(), None, 10.0);
+    w.tick(10.0, 15.0, false);
+    assert_eq!(w.alpha(10.0, false), 1.0);
+    w.tick(24.9, 15.0, false);
+    assert_eq!(w.alpha(24.9, false), 1.0);
+    w.tick(25.0, 15.0, false);
+    assert_eq!(w.alpha(25.0, false), 0.0);
 }
 
 #[test]
@@ -191,13 +203,14 @@ fn with_animations_off_the_row_is_still_and_with_motion_it_moves() {
 }
 
 #[test]
-fn it_fades_out_once_the_agent_is_idle_and_the_dots_switch_is_its_own() {
+fn it_fades_out_once_the_grace_period_passes_and_the_dots_switch_is_its_own() {
     let (mut u, _) = calm();
+    u.app.session.prefs.settings.agent_grace_secs = 5;
     poster(&mut u, 300.0);
     frames(&mut u, 10);
     assert!(u.app.ui.agent_view.indicator.artboard().is_some());
-    frames(&mut u, ((IDLE + FADE_OUT) * 60.0) as usize + 4);
-    assert!(u.app.ui.agent_view.indicator.artboard().is_none(), "gone after idle");
+    frames(&mut u, ((5.0 + FADE_OUT) * 60.0) as usize + 4);
+    assert!(u.app.ui.agent_view.indicator.artboard().is_none(), "gone after the grace period");
     assert!(u.app.ui.agent_view.indicator.drawn.get().is_none());
     // "Show working indicator" off: no dots, the outline stays.
     let r = agent(&mut u, "pref.workingIndicator", json!({"on": false}));
@@ -230,25 +243,9 @@ fn the_switches_are_saved_and_answer_over_the_route() {
     let v = serde_json::to_value(&s.prefs.settings).unwrap();
     assert_eq!(
         (v["reveal_agent_work"].clone(), v["working_indicator"].clone(), v["settings_version"].clone()),
-        (json!(false), json!(false), json!(4))
+        (json!(false), json!(false), json!(figcraft_engine::settings::SETTINGS_VERSION))
     );
     let old: figcraft_engine::settings::Settings = serde_json::from_value(json!({"settings_version": 3})).unwrap();
     let old = old.sanitized();
     assert!(old.reveal_agent_work && old.working_indicator, "a file from version 3 reads them on");
-}
-
-/// The agent's edit on a big file can take a long frame: that frame isn't idle time, so the
-/// indicator is still on after it.
-#[test]
-fn a_long_frame_after_the_agents_edit_isnt_idle_time() {
-    let (mut u, _) = calm();
-    poster(&mut u, 300.0);
-    u.frame(vec![]);
-    let ctx = u.ctx.clone();
-    let now = ctx.input(|i| i.time);
-    super::tick(&mut u.app, &ctx, now + 1.5, 1.5, &[]);
-    let st = &u.app.ui.agent_view.indicator;
-    assert!(st.artboard().is_some(), "still on");
-    // Its fade in starts after that frame (nothing was drawn during it), and it isn't fading out.
-    assert!(alpha(st.began, st.last, now + 1.7, true) > 0.99, "fully shown 200 ms later, not fading out");
 }

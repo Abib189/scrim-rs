@@ -35,6 +35,8 @@ use crate::theme::{Tokens, ink, regular, semibold};
 pub mod reveal;
 #[path = "working_indicator.rs"]
 pub mod working_indicator;
+#[path = "working_state.rs"]
+pub mod working_state;
 
 /// While edits keep coming, at most one new flight this often (seconds).
 pub const FLIGHT_EVERY: f64 = 0.4;
@@ -76,6 +78,8 @@ pub struct State {
     follow: Follow,
     pub reveal: reveal::State,
     pub indicator: working_indicator::State,
+    /// Whether agents are working (Stage I.1): the one source everything here reads.
+    pub working: working_state::State,
     pub budget: Budget,
 }
 
@@ -102,7 +106,7 @@ pub struct Budget {
 }
 
 fn budget(app: &mut FigApp, now: f64) {
-    let active = app.ui.agent_view.reveal.active() || app.ui.agent_view.indicator.artboard().is_some();
+    let active = app.ui.agent_view.reveal.active() || app.ui.agent_view.indicator.artboard().is_some() || app.ui.agent_view.working.working();
     let b = &mut app.ui.agent_view.budget;
     let new_render = app.ui.render_ms != b.last_render;
     b.last_render = app.ui.render_ms;
@@ -245,9 +249,15 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let now = ctx.input(|i| i.time);
     let gap = app.ui.agent_view.last_frame.replace(now).map_or(0.0, |t| (now - t).max(0.0));
     let landed = scan(app);
+    // A plugin's edits keep it working too (MCP clients and the control channel are noted per request).
+    for l in landed.iter().filter(|l| l.agent && l.route.starts_with("plugin")) {
+        app.ui.agent_view.working.touch(working_state::key(None, None, &l.route), None, now);
+    }
+    let (grace, motion) = (grace(app), !app.reduce_motion());
+    app.ui.agent_view.working.tick(now, grace, motion);
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
-    working_indicator::tick(app, ctx, now, gap, &landed);
+    working_indicator::tick(app, ctx, now, &landed);
     app.ui.agent_view.landed_hidden = false;
     budget(app, now);
 }
@@ -258,14 +268,54 @@ pub fn after_canvas(app: &mut FigApp, ui: &mut Ui) {
     working_indicator::accessibility(app, ui);
 }
 
-/// "Claude is working on Poster": the working indicator's name for screen readers, from the same
-/// agent and artboard as the AI tab's "Following …".
+/// The grace period (Settings ▸ General), in seconds.
+pub fn grace(app: &FigApp) -> f64 {
+    f64::from(app.session.prefs.settings.agent_grace_secs)
+}
+
+/// The time of the frame being drawn (requests answered between frames use it too).
+pub fn now(app: &FigApp) -> f64 {
+    app.ui.agent_view.last_frame.unwrap_or(0.0)
+}
+
+/// The name of who is working (the most recently active client), else of the latest edit's.
+pub fn agent_now(app: &FigApp) -> Option<String> {
+    let w = &app.ui.agent_view.working;
+    // A client that gave no name: J1's rule, the latest edit's (over MCP, the newest to connect).
+    let named = w.working().then(|| w.name(now(app), grace(app))).flatten();
+    named.or_else(|| app.ui.agent_view.follow.agent.clone())
+}
+
+/// "Codex is working on Poster" (or "… is working" before its first edit): the working state's
+/// words, for the indicator's AccessKit status and the AI tab. `None` when no one is working.
 pub fn working_text(app: &FigApp) -> Option<String> {
-    let id = app.ui.agent_view.indicator.artboard()?;
-    let name = app.session.doc().ok()?.node(id)?.name.clone();
-    Some(match &app.ui.agent_view.follow.agent {
-        Some(agent) => trf("{agent} is working on {artboard}", &[("agent", agent), ("artboard", &name)]),
-        None => trf("An agent is working on {artboard}", &[("artboard", &name)]),
+    if !app.ui.agent_view.working.working() {
+        return None;
+    }
+    let agent = agent_now(app);
+    let artboard = app.ui.agent_view.indicator.artboard().and_then(|id| app.session.doc().ok()?.node(id).map(|n| n.name.clone()));
+    Some(match (agent, artboard) {
+        (Some(a), Some(b)) => trf("{agent} is working on {artboard}", &[("agent", &a), ("artboard", &b)]),
+        (None, Some(b)) => trf("An agent is working on {artboard}", &[("artboard", &b)]),
+        (Some(a), None) => trf("{agent} is working", &[("agent", &a)]),
+        (None, None) => tr("An agent is working").to_string(),
+    })
+}
+
+/// `finish_working` (the engine's `agent.finish-working`): the calling client is done.
+pub fn finish(app: &mut FigApp, data: &serde_json::Value) {
+    let s = |k: &str| data.get(k).and_then(serde_json::Value::as_str);
+    let key = working_state::key(s("session"), s("client"), s("route").unwrap_or_default());
+    let now = now(app);
+    app.ui.agent_view.working.finish(&key, now);
+}
+
+/// "Codex finished": said once a run of work ends, for [`working_state::FINISHED_FOR`].
+pub fn finished_text(app: &FigApp) -> Option<String> {
+    let name = app.ui.agent_view.working.finished(now(app))?;
+    Some(match name {
+        Some(n) => trf("{agent} finished", &[("agent", &n)]),
+        None => tr("An agent finished").to_string(),
     })
 }
 
@@ -278,6 +328,8 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
         "indicator": v.indicator.drawn.get().map(|(r, cols)| json!({"columns": cols, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]})),
         "outline": v.indicator.outlined.get().is_some(),
         "working": working_text(app),
+        "workingClients": v.working.count(now(app), grace(app)),
+        "finished": finished_text(app),
         "degraded": v.budget.level,
     })
 }
@@ -421,7 +473,7 @@ pub fn status(app: &FigApp) -> Option<String> {
     match follow_state(&app.session) {
         "following" if !f.seen_agent => Some(tr("Following agents: waiting for their next edit").to_string()),
         "following" => {
-            let agent = f.agent.clone().unwrap_or_else(|| tr("an agent").to_string());
+            let agent = agent_now(app).unwrap_or_else(|| tr("an agent").to_string());
             Some(match artboard {
                 Some(a) => trf("Following {agent} · {artboard}", &[("agent", &agent), ("artboard", &a)]),
                 None => trf("Following {agent}", &[("agent", &agent)]),

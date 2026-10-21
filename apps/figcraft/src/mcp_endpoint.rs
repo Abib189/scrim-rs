@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use figcraft_engine::settings::McpSettings;
 use figcraft_mcp::http::{Config, Endpoint};
-use figcraft_mcp::{Backend, Server};
+use figcraft_mcp::{Backend, Server, SessionEvent};
 use figcraft_ui_egui::ControlRequest;
 use figcraft_ui_egui::control::ROUTE_MCP_HTTP;
 use serde_json::{Value, json};
@@ -34,6 +34,8 @@ struct InApp {
     disabled: Disabled,
     /// The client the server says the current request comes from (by its session).
     client: Option<String>,
+    /// That request's HTTP session, when the server knows it (Stage I.1).
+    session: Option<String>,
 }
 
 impl InApp {
@@ -50,6 +52,7 @@ impl InApp {
             pending.push(ControlRequest {
                 route: ROUTE_MCP_HTTP,
                 client: self.client.clone(),
+                session: self.session.clone(),
                 id: json!(0),
                 method: method.to_string(),
                 params,
@@ -79,6 +82,9 @@ impl Backend for InApp {
     }
     fn set_client(&mut self, client: Option<&str>) {
         self.client = client.map(str::to_string);
+    }
+    fn set_session(&mut self, session: Option<&str>) {
+        self.session = session.map(str::to_string);
     }
     fn has_ui(&self) -> bool {
         true
@@ -113,12 +119,18 @@ impl McpHandle {
         self.configure(settings);
         let (queue, ctx, disabled) = (self.queue.clone(), self.ctx.clone(), self.disabled.clone());
         let endpoint = Endpoint::start(settings.port, TRIES, self.config.clone(), move || {
-            let notify = InApp { queue: queue.clone(), ctx: ctx.clone(), disabled: disabled.clone(), client: None };
-            Server::new(Box::new(InApp { queue, ctx, disabled, client: None })).with_initialize_hook(move |info| {
-                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-                let params = json!({"name": info.get("name"), "version": info.get("version"), "now": now});
-                // Told to the UI thread without waiting for it.
-                notify.send("mcp.client", params, false);
+            let notify = InApp { queue: queue.clone(), ctx: ctx.clone(), disabled: disabled.clone(), client: None, session: None };
+            // Told to the UI thread without waiting for it: a session starting (who connected), and
+            // ending (it stops showing as working, Stage I.1).
+            Server::new(Box::new(InApp { queue, ctx, disabled, client: None, session: None })).with_session_hook(move |event| match event {
+                SessionEvent::Started { id, info } => {
+                    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+                    let params = json!({"name": info.get("name"), "version": info.get("version"), "now": now, "session": id});
+                    notify.send("mcp.client", params, false);
+                }
+                SessionEvent::Ended { id } => {
+                    notify.send("mcp.session-ended", json!({"session": id}), false);
+                }
             })
         })?;
         let port = endpoint.port;

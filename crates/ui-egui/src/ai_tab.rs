@@ -69,6 +69,13 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
             app.run("mcp.restart-server", json!({}));
         }
     });
+    // Who is working now (Stage I.1's working state), on its own line. Plain text: the working
+    // indicator's AccessKit node is the one live status, so it isn't announced twice.
+    if let Some(text) = crate::follow_agent::working_text(app) {
+        crate::right::row(ui, 22.0, |ui| {
+            ui.add(egui::Label::new(egui::RichText::new(&text).color(t.text).font(regular(11.0))).truncate()).on_hover_text(&text);
+        });
+    }
     crate::mcp_registration::row(app, ui);
     if app.ui.connect.open {
         crate::connect_flow::panel(app, ui);

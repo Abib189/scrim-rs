@@ -94,3 +94,27 @@
 5. **"In flight"** is a request queued for the window or waiting for a frame. Requests are answered on the UI thread in a frame, so that window is short; the grace period carries the gaps.
 6. **"{name} finished"** is spoken once, for 2 s, and only when the state ends: by `finish_working`, the session ending, or the grace running out.
 7. **The tool-description line goes on every tool that isn't read-only**, including `select`, `open_file`, `undo` and the input tools. That's the plainest reading of "every mutating tool", and the cost is one short sentence.
+
+## IB as built
+
+- **The state** (`crates/ui-egui/src/working_state.rs`): clients keyed by session (HTTP `Mcp-Session-Id`, or an `--attach` connection's `attach-N`), else client name, else route.
+  - **One run:** it begins when the first client starts. It ends when the last one stops: at its finish, or at its last request + grace exactly, even when the frame that notices comes later.
+  - **A new run during the last one's fade out** carries on from that fade's opacity, so there's no dip.
+  - **`ui.inspect` › `agent`** gains `workingClients` and `finished`.
+- **Where activity is noted** (`control::handle_route`, the path every agent request takes):
+  - **an MCP request of any kind,** before it runs, so the client's own `finish_working` lands after it;
+  - **the plain control channel** only when the request edited;
+  - **a plugin's edits,** as they land.
+- **The transports:**
+  - `Server::with_session_hook` reports HTTP sessions starting and ending.
+  - `DELETE /mcp` ends one.
+  - `Backend::set_session` gives each request its known session.
+  - `Server::announcing_clients` makes `scrim mcp --attach` send `mcp.client`. The control server keys that connection, tags its requests with the client and session, and sends `mcp.session-ended` when it closes.
+- **`agent.finish-working`** is in the no-revision list next to Layers' collapse (`cmd::view_only`). The window ends the caller's state from the UI request.
+- **Readers:**
+  - **The indicator:** its alpha comes from the state. The wave runs on the clock, so it doesn't restart between steps. The artboard is let go once the run has ended and faded.
+  - **AccessKit:** one live node; "{agent} finished" for 2 s where the row was.
+  - **The AI tab:** a plain-text working line under the status. The indicator's node is the one live region, so it isn't announced twice.
+  - **Follow's "Following {agent}":** names the working client; a nameless one falls back to J1's name for the latest edit.
+  - **The load budget:** counts the state as activity.
+- **Settings ▸ General ▸ Agents at work:** "Keep the working indicator for 5 s / 15 s / 30 s / 60 s after the last agent request".

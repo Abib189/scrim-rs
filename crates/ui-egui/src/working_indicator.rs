@@ -11,12 +11,14 @@
 //!   row higher, above the labels (still right-aligned to the artboard); failing that, it hides. It
 //!   is never wider than its artboard, so never detached from it.
 //! - **The wave:** each dot's opacity and radius follow [`wave`], a cosine seeded per column (a pure
-//!   function of seed, row, column and time; a [`LOOP`] loop). Fades in over [`FADE_IN`] when work
-//!   starts, out over [`FADE_OUT`] once the agent has been idle [`IDLE`]. Reduced motion,
-//!   Animations Off or a degraded frame budget: the static row ([`still`]).
+//!   function of seed, row, column and time; a [`LOOP`] loop). It shows for as long as the working
+//!   state (`working_state`, Stage I.1) says agents work, continuous across the gaps between their
+//!   steps: in over 160 ms when a run of work starts, out over 400 ms only when it ends. Reduced
+//!   motion, Animations Off or a degraded frame budget: the static row ([`still`]), for the whole run.
 //! - **The outline:** 2 px, the canvas overlay colour (G1), no handles and no hit area. When the
 //!   person has the artboard selected, their selection's outline and handles are drawn instead.
-//! - **Accessibility:** one polite status node, "{agent} is working on {artboard}", not one per dot.
+//! - **Accessibility:** one polite status node, "{agent} is working on {artboard}" for the whole run,
+//!   then "{agent} finished" for 2 s; not one per dot.
 
 use std::cell::Cell;
 
@@ -42,26 +44,22 @@ pub const ABOVE: f32 = 12.0;
 pub const ABOVE_LABELS: f32 = crate::canvas_labels::ROW_TOP + crate::canvas_labels::GAP + 1.0;
 /// Fewer columns than this fit: the row hides.
 pub const MIN_COLUMNS: usize = GROUP;
-/// The wave's loop, the fade in, how long the agent is idle before the fade out, and the fade out.
+/// The wave's loop.
 pub const LOOP: f64 = 1.6;
-pub const FADE_IN: f64 = 0.16;
-pub const IDLE: f64 = 0.6;
-pub const FADE_OUT: f64 = 0.4;
+/// The fades (the working state's).
+pub use super::working_state::{FADE_IN, FADE_OUT};
 
-/// The artboard being worked on, and when.
+/// The artboard being worked on.
 #[derive(Default)]
 pub struct State {
     /// The document (`uid`) and artboard.
     on: Option<(u64, NodeId)>,
-    /// When this run of work began (the fade in) and when the agent last edited.
-    began: f64,
-    last: f64,
-    /// The agent edited in the frame before this one.
-    fresh: bool,
     /// Where the row was drawn this frame and with how many columns (its AccessKit node); the
     /// outline's rectangle. Set while the canvas paints.
     pub(crate) drawn: Cell<Option<(Rect, usize)>>,
     pub(crate) outlined: Cell<Option<Rect>>,
+    /// Where the row was last drawn: "{agent} finished" is said there once it has faded.
+    last_drawn: Cell<Option<Rect>>,
 }
 
 impl State {
@@ -111,18 +109,6 @@ pub fn still(seed: u64, row: usize, col: usize) -> f64 {
     wave(seed, row, col, 0.37 * LOOP)
 }
 
-/// How visible the indicator is at `now` (0..1): the fade in after `began`, the fade out once the
-/// agent has been idle since `last`. Without motion: shown, then gone, with no fades.
-pub fn alpha(began: f64, last: f64, now: f64, motion: bool) -> f64 {
-    let idle = now - last;
-    if !motion {
-        return if idle < IDLE + FADE_OUT { 1.0 } else { 0.0 };
-    }
-    let fade_in = ((now - began) / FADE_IN).clamp(0.0, 1.0);
-    let fade_out = if idle <= IDLE { 1.0 } else { 1.0 - ((idle - IDLE) / FADE_OUT).clamp(0.0, 1.0) };
-    fade_in * fade_out
-}
-
 /// Where the row goes: right-aligned at the artboard's top-right corner `corner` (screen), within
 /// its on-screen width `room`, a gap clear of every rectangle in `taken` (E2's placed labels):
 /// [`ABOVE`] the artboard, else [`ABOVE_LABELS`]; the most columns that fit, [`MIN_COLUMNS`] at
@@ -141,38 +127,32 @@ pub fn place(corner: Pos2, room: f32, taken: &[Rect]) -> Option<(usize, Rect)> {
     })
 }
 
-/// Every frame, before the canvas: the agent's latest artboard starts (or keeps) the indicator. A
-/// long frame right after the agent's edit (`gap`, the edit's own cost on a big file) doesn't count
-/// as idle time.
-pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Landed]) {
+/// Every frame, before the canvas (after the working state's tick): the agent's latest artboard is
+/// the one shown; it is let go once the run has ended and faded.
+pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let uid = app.session.ds().map(|d| d.uid).ok();
     let artboard = super::working_on(app).1;
     let motion = !app.reduce_motion();
+    let grace = super::grace(app);
+    let w = &app.ui.agent_view.working;
+    let (working, alpha, next) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
+    let finished = w.finished(now).is_some();
     let st = &mut app.ui.agent_view.indicator;
-    if gap > super::reveal::GAP && gap <= super::reveal::LANDING && std::mem::take(&mut st.fresh) {
-        st.began += gap;
-        st.last += gap;
-    }
-    st.fresh = false;
     if let (Some(uid), Some(art)) = (uid, artboard)
         && landed.iter().any(|l| l.agent)
     {
-        let shown = st.on.is_some() && alpha(st.began, st.last, now, motion) > 0.0;
-        if st.on != Some((uid, art)) || !shown {
-            st.began = now;
-        }
         st.on = Some((uid, art));
-        st.last = now;
-        st.fresh = true;
     }
-    if st.on.is_some() {
-        if alpha(st.began, st.last, now, motion) <= 0.0 && now - st.last > IDLE {
-            st.on = None;
-        } else if motion {
-            ctx.request_repaint();
-        } else {
-            ctx.request_repaint_after(std::time::Duration::from_secs_f64((IDLE + FADE_OUT - (now - st.last)).max(0.01)));
-        }
+    if !working && alpha <= 0.0 {
+        st.on = None;
+    }
+    if (working || alpha > 0.0) && motion && st.on.is_some() {
+        ctx.request_repaint();
+    } else if let Some(t) = next {
+        // The grace period running out ends the state: be there for it.
+        ctx.request_repaint_after(std::time::Duration::from_secs_f64(t.max(0.01)));
+    } else if alpha > 0.0 || finished {
+        ctx.request_repaint_after(std::time::Duration::from_millis(100));
     }
 }
 
@@ -188,7 +168,7 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     }
     let now = painter.ctx().input(|i| i.time);
     let motion = !app.reduce_motion();
-    let a = alpha(st.began, st.last, now, motion) as f32;
+    let a = app.ui.agent_view.working.alpha(now, motion) as f32;
     let Some(b) = doc.world_bounds(id).filter(|_| a > 0.0) else { return };
     let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
     if !r.is_finite() || !r.intersects(painter.clip_rect().expand(height() + ABOVE)) {
@@ -196,7 +176,8 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     }
     let level = app.ui.agent_view.budget.level;
     let seed = id.0;
-    let t = now - st.began;
+    // The wave runs on the clock, so it carries on unbroken across the gaps between steps.
+    let t = now;
     // The outline, unless the person's selection outline and handles are there.
     if !sel.contains(&id) {
         let pulse = if motion && level < 2 { 0.85 + 0.15 * wave(seed, 0, 0, t) as f32 } else { 1.0 };
@@ -219,10 +200,27 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     st.drawn.set(Some((row, cols)));
 }
 
-/// After the canvas: the row's one AccessKit node, a polite status naming the agent and artboard.
+/// After the canvas: the row's one AccessKit node, a polite status naming the agent and artboard
+/// while it works, then "{agent} finished" where the row was.
 pub fn accessibility(app: &FigApp, ui: &mut Ui) {
-    let Some((r, _)) = app.ui.agent_view.indicator.drawn.get() else { return };
-    let Some(text) = super::working_text(app) else { return };
+    let st = &app.ui.agent_view.indicator;
+    if let Some((r, _)) = st.drawn.get() {
+        st.last_drawn.set(Some(r));
+    }
+    let (r, text) = match (super::working_text(app), super::finished_text(app)) {
+        (Some(text), _) => match st.drawn.get() {
+            Some((r, _)) => (r, text),
+            None => return,
+        },
+        (None, Some(text)) => match st.last_drawn.get() {
+            Some(r) => (r, text),
+            None => return,
+        },
+        (None, None) => {
+            st.last_drawn.set(None);
+            return;
+        }
+    };
     let resp = ui.interact(r, Id::new("agent_working_indicator"), Sense::hover());
     let ctx = ui.ctx().clone();
     ctx.accesskit_node_builder(resp.id, |n| {

@@ -88,6 +88,7 @@ pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
             app.services.save_prefs(&app.session.prefs);
         }
         CONNECT_REQUEST => crate::connect_flow::open(app),
+        figcraft_engine::cmd::agent_work::FINISH_REQUEST => crate::follow_agent::finish(app, data),
         _ => {
             return crate::desktop_flow::request(app, kind)
                 || crate::connect_flow::request(app, kind)

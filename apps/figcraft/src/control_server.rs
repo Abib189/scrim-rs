@@ -1,5 +1,9 @@
 //! Localhost JSON-lines control server: each line `{"id", "method", "params"}` is queued for the UI
 //! thread; the reply line `{"id", "ok", "result" | "error"}` is written when the frame handled it.
+//!
+//! A connection that sends `mcp.client` is an MCP client's (`scrim mcp --attach`, Stage I.1): its
+//! requests then carry that client and a session of the connection's own, and when it closes the
+//! window is told the session ended (`mcp.session-ended`), so it stops showing that client as working.
 
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -50,20 +54,58 @@ pub fn start(port: u16, queue: Queue, ctx: CtxSlot) -> bool {
     true
 }
 
+/// A connection: its session key, and the MCP client it said it serves (`mcp.client`).
+struct Conn {
+    key: String,
+    client: Option<String>,
+    announced: bool,
+}
+
+static CONNECTIONS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+/// Queue `method` for the UI thread without waiting for an answer.
+fn tell(queue: &Queue, ctx: &CtxSlot, method: &str, params: Value) {
+    let (tx, _) = std::sync::mpsc::channel();
+    queue.lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(ControlRequest {
+        client: None,
+        session: None,
+        route: figcraft_ui_egui::control::ROUTE_CONTROL,
+        id: Value::Null,
+        method: method.to_string(),
+        params,
+        reply: tx,
+        cancelled: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+    });
+    if let Some(c) = ctx.lock().unwrap_or_else(std::sync::PoisonError::into_inner).as_ref() {
+        c.request_repaint();
+    }
+}
+
 fn spawn_connection(stream: TcpStream, queue: Queue, ctx: CtxSlot, workers: &mut Vec<std::thread::JoinHandle<()>>, timeout: Duration) {
     workers.retain(|worker| !worker.is_finished());
     if workers.len() >= MAX_CONNECTIONS {
         return;
     }
     match std::thread::Builder::new().name("figcraft-control-conn".into()).spawn(move || {
-        let _ = serve(stream, queue, ctx, timeout);
+        let key = format!("attach-{}", CONNECTIONS.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
+        let mut conn = Conn { key, client: None, announced: false };
+        let _ = serve_as(stream, queue.clone(), ctx.clone(), timeout, &mut conn);
+        if conn.announced {
+            tell(&queue, &ctx, "mcp.session-ended", json!({"session": conn.key}));
+        }
     }) {
         Ok(worker) => workers.push(worker),
         Err(e) => log::error!("control connection thread: {e}"),
     }
 }
 
-fn serve(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> std::io::Result<()> {
+/// [`serve_as`] a connection of its own (the tests').
+#[cfg(test)]
+fn serve(out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> std::io::Result<()> {
+    serve_as(out, queue, ctx, timeout, &mut Conn { key: "attach-test".into(), client: None, announced: false })
+}
+
+fn serve_as(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration, conn: &mut Conn) -> std::io::Result<()> {
     out.set_read_timeout(Some(timeout))?;
     out.set_write_timeout(Some(timeout))?;
     let mut reader = BufReader::new(out.try_clone()?);
@@ -88,7 +130,14 @@ fn serve(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> s
             Ok(v) => {
                 let id = v.get("id").cloned().unwrap_or(Value::Null);
                 let method = v.get("method").and_then(Value::as_str).unwrap_or("").to_string();
-                let params = v.get("params").cloned().unwrap_or(json!({}));
+                let mut params = v.get("params").cloned().unwrap_or(json!({}));
+                if method == "mcp.client" {
+                    conn.announced = true;
+                    conn.client = params.get("name").and_then(Value::as_str).map(str::to_string);
+                    if params.is_object() {
+                        params["session"] = json!(conn.key);
+                    }
+                }
                 let (tx, rx) = std::sync::mpsc::channel();
                 let cancelled = Arc::new(std::sync::atomic::AtomicBool::new(false));
                 let mut pending = queue.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -99,7 +148,8 @@ fn serve(mut out: TcpStream, queue: Queue, ctx: CtxSlot, timeout: Duration) -> s
                     continue;
                 }
                 pending.push(ControlRequest {
-                    client: None,
+                    client: conn.client.clone(),
+                    session: conn.announced.then(|| conn.key.clone()),
                     route: figcraft_ui_egui::control::ROUTE_CONTROL,
                     id: id.clone(),
                     method,

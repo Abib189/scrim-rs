@@ -93,7 +93,17 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 2: the MCP port's default moved from 7600 to 7680 (C1.2).
 /// - 3: `follow_agents` (Stage I), on by default.
 /// - 4: `reveal_agent_work` and `working_indicator` (Stage I2), on by default.
-pub const SETTINGS_VERSION: u32 = 4;
+/// - 5: `agent_grace_secs` (Stage I.1), 15 s by default.
+pub const SETTINGS_VERSION: u32 = 5;
+
+/// How long the working indicator stays after an agent's last request (`pref.agentGrace`): the
+/// choices Settings offers, never under 5 s.
+pub const AGENT_GRACE_SECS: [u32; 4] = [5, 15, 30, 60];
+pub const DEFAULT_AGENT_GRACE_SECS: u32 = 15;
+
+fn grace() -> u32 {
+    DEFAULT_AGENT_GRACE_SECS
+}
 
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
@@ -135,6 +145,10 @@ pub struct Settings {
     /// The dot row above the artboard an agent works on (`pref.workingIndicator`).
     #[serde(default = "yes")]
     pub working_indicator: bool,
+    /// An agent counts as working for this long after its last request of any kind, unless it calls
+    /// `finish_working` or its session ends (`pref.agentGrace`; one of [`AGENT_GRACE_SECS`]).
+    #[serde(default = "grace")]
+    pub agent_grace_secs: u32,
     /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub toolbar: crate::cmd::toolbar::Layout,
@@ -160,6 +174,7 @@ impl Default for Settings {
             follow_agents: true,
             reveal_agent_work: true,
             working_indicator: true,
+            agent_grace_secs: grace(),
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
             diagnostics: Vec::new(),
@@ -188,6 +203,11 @@ impl Settings {
         }
         self.mcp.disabled_tools.sort();
         self.mcp.disabled_tools.dedup();
+        if !AGENT_GRACE_SECS.contains(&self.agent_grace_secs) {
+            // Never under 5 s; another value goes to the nearest choice.
+            let g = self.agent_grace_secs;
+            self.agent_grace_secs = AGENT_GRACE_SECS.iter().copied().min_by_key(|c| c.abs_diff(g)).unwrap_or(DEFAULT_AGENT_GRACE_SECS);
+        }
         if !diagnostics::RETENTION_DAYS.contains(&self.diagnostics_days) {
             self.diagnostics_days = week();
         }

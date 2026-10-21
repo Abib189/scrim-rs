@@ -2,6 +2,7 @@
 
 pub mod access;
 pub mod agent_clients;
+pub mod agent_work;
 pub mod ai;
 pub mod analyze;
 pub mod appearance;
@@ -102,6 +103,7 @@ fn registry() -> &'static Registry {
         list.extend(mcp::specs());
         list.extend(claude_desktop::specs());
         list.extend(agent_clients::specs());
+        list.extend(agent_work::specs());
         list.extend(diagnostics::specs());
         list.extend(layers::specs());
         list.extend(camera::specs());
@@ -157,7 +159,8 @@ pub fn all_commands() -> &'static [CommandSpec] {
 
 /// `id` changes only what a panel shows (no new document revision; `layers::VIEW_ONLY`).
 pub fn view_only(id: &str) -> bool {
-    layers::VIEW_ONLY.contains(&id)
+    // `agent.finish-working` only tells the window an agent is done (Stage I.1).
+    layers::VIEW_ONLY.contains(&id) || id == "agent.finish-working"
 }
 
 pub fn find_command(id: &str) -> Option<&'static CommandSpec> {

@@ -36,6 +36,7 @@ pub const TOOLS: &[(&str, &str, bool)] = &[
     ("ignore_lint", "Ignore a lint finding", false),
     ("analyze_design", "Analyze design", true),
     ("get_changes", "Changes since a revision", true),
+    ("finish_working", "Finish working", true),
     ("pointer", "Pointer gesture", false),
     ("key", "Press key", false),
     ("type_text", "Type text", false),

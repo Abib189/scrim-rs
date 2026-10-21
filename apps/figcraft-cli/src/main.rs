@@ -268,6 +268,10 @@ fn mcp(attach: Option<&str>, roots: Option<figcraft_engine::file_access::Roots>)
         eprintln!("file access confined to {}", r.to_json());
     }
     let mut server = figcraft_mcp::Server::new(backend).with_roots(roots);
+    if attach.is_some() {
+        // The app learns which client its control connection serves (its working state, Stage I.1).
+        server = server.announcing_clients();
+    }
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
     server.serve(stdin.lock(), stdout.lock()).map_err(|e| format!("stdio: {e}"))?;

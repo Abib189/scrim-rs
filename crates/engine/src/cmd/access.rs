@@ -29,6 +29,7 @@ pub enum Access {
 /// Commands that only answer: they change nothing (no document, file, selection, view, setting,
 /// clipboard or network).
 pub const READ: &[&str] = &[
+    "agent.finish-working",
     "ai.findings",
     "ai.status",
     "annotation.categories",
@@ -224,6 +225,7 @@ pub const WRITE: &[&str] = &[
     "plugins.manage",
     "plugins.runLast",
     "pref.accent",
+    "pref.agentGrace",
     "pref.appearance",
     "pref.autoSave",
     "pref.highlightHover",
@@ -383,6 +385,7 @@ pub const EQUIVALENT: &[(&str, &str)] = &[
     ("lint.ignore", "ignore_lint"),
     ("design.analyze", "analyze_design"),
     ("history.changes", "get_changes"),
+    ("agent.finish-working", "finish_working"),
     ("file.export", "export"),
     ("file.exportLayers", "export"),
     ("file.exportSvg", "export"),

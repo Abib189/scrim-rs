@@ -49,6 +49,9 @@ pub struct ControlRequest {
     pub route: &'static str,
     /// The MCP client it comes from (its `clientInfo.name`), when the route knows (Stage J).
     pub client: Option<String>,
+    /// The MCP session it comes from (an HTTP `Mcp-Session-Id`, or an `--attach` connection), when
+    /// the route knows: whose working state it keeps up (Stage I.1).
+    pub session: Option<String>,
     pub id: Value,
     pub method: String,
     pub params: Value,
@@ -260,13 +263,36 @@ fn handle_request(app: &mut FigApp, ctx: &Context, r: &ControlRequest) -> Result
     }
     let roots = if r.route == ROUTE_MCP_HTTP && app.automation_roots.is_none() { app.session.agents.mcp.roots.clone() } else { None };
     let client = std::mem::replace(&mut app.session.agents.client, r.client.clone());
+    let session = std::mem::replace(&mut app.session.agents.session, r.session.clone());
     let res = figcraft_engine::file_access::confined(roots.as_ref(), || handle_route(app, ctx, r.route, &r.method, &r.params));
     app.session.agents.client = client;
+    app.session.agents.session = session;
     res
 }
 
 /// [`handle`] as the agent `route`.
 pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, p: &Value) -> Result<Value, String> {
+    // The working state (Stage I.1): an MCP client's request of any kind keeps it working, noted
+    // before it runs (so its own finish_working comes after it); the plain control channel's only
+    // when it edits (its scripts' captures and reads aren't an agent at work).
+    let (session, client) = (app.session.agents.session.clone(), app.session.agents.client.clone());
+    let key = crate::follow_agent::working_state::key(session.as_deref(), client.as_deref(), route);
+    let name = client.as_deref().and_then(figcraft_engine::agents::client_display_name);
+    let mcp = (route == ROUTE_MCP_HTTP || session.is_some()) && !matches!(method, "mcp.client" | "mcp.session-ended");
+    let now = ctx.input(|i| i.time);
+    if mcp {
+        app.ui.agent_view.working.touch(key.clone(), name.clone(), now);
+    }
+    let edits = |app: &FigApp| app.session.ds().ok().and_then(|d| app.session.agents.last_edit(d.uid));
+    let edited_before = edits(app);
+    let r = handle_agent(app, ctx, route, method, p);
+    if !mcp && edits(app) != edited_before {
+        app.ui.agent_view.working.touch(key, name, now);
+    }
+    r
+}
+
+fn handle_agent(app: &mut FigApp, ctx: &Context, route: &str, method: &str, p: &Value) -> Result<Value, String> {
     let author = app.session.set_author(figcraft_engine::agents::Author::agent(route));
     let since = app.session.set_since(p.get("since").and_then(Value::as_u64));
     let view = app.session.ds().map(|d| (d.uid, d.page, d.view.cx, d.view.cy, d.view.zoom)).ok();
@@ -293,6 +319,13 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
         }
         // The app's MCP endpoint saw a client initialize (`figcraft_mcp::http`).
         "mcp.client" => crate::mcp_ui::client_seen(app, p),
+        // An MCP session ended (HTTP DELETE, or an --attach connection closing): it stops working.
+        "mcp.session-ended" => {
+            let session = p.get("session").and_then(Value::as_str).ok_or("`session` required")?;
+            let key = crate::follow_agent::working_state::key(Some(session), None, "");
+            app.ui.agent_view.working.finish(&key, ctx.input(|i| i.time));
+            Ok(json!({"ended": true}))
+        }
         // The tools Settings ▸ Tool access turned off (`scrim mcp --attach` hides and refuses them).
         "mcp.policy" => Ok(json!({"disabledTools": app.session.prefs.settings.mcp.disabled_tools})),
         "engine.commands" => Ok(Value::Array(

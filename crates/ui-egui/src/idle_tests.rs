@@ -268,6 +268,7 @@ fn control_requests_and_screenshots_wake_an_idle_ui() {
     let (tx, rx) = std::sync::mpsc::channel();
     h.app.control_queue.push(ControlRequest {
         client: None,
+        session: None,
         route: crate::control::ROUTE_CONTROL,
         id: json!(1),
         method: "ui.inspect".into(),
@@ -283,6 +284,7 @@ fn control_requests_and_screenshots_wake_an_idle_ui() {
     let params = json!({"path": path.to_string_lossy()});
     h.app.control_queue.push(ControlRequest {
         client: None,
+        session: None,
         route: crate::control::ROUTE_CONTROL,
         id: json!(2),
         method: "ui.screenshot".into(),
@@ -371,6 +373,7 @@ fn a_hidden_window_answers_at_once() {
     let (tx, rx) = std::sync::mpsc::channel();
     let request = |id: u64, method: &str, params: Value| ControlRequest {
         client: None,
+        session: None,
         route: crate::control::ROUTE_CONTROL,
         id: json!(id),
         method: method.into(),

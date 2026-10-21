@@ -72,6 +72,9 @@ fn obj(props: Value, required: &[&str]) -> Value {
     o
 }
 
+/// The line every tool that changes things ends with (Stage I.1).
+pub const FINISH_HINT: &str = " When you have finished working on the canvas, call finish_working so the person sees you are done.";
+
 /// The tools that write: they take `sinceRevision`, the stale-write guard.
 const GUARDED: &[&str] = &["run_command", "batch", "create_node", "set_properties"];
 
@@ -81,7 +84,11 @@ fn tool(name: &str, title: &str, desc: &str, schema: Value, read_only: bool) -> 
         schema["properties"]["sinceRevision"] = json!({"type": "integer", "minimum": 0, "description": "The document revision you last read (get_changes returns it). If someone else changed a layer this call would change after that revision, nothing is changed and the error says what changed: read it again and retry."});
     }
     // The content-writing tools end with the lint hint: a new session has no memory of the rules.
-    let desc = if GUARDED.contains(&name) { format!("{desc}{}", figcraft_engine::cmd::lint::write_hint()) } else { desc.to_string() };
+    let mut desc = if GUARDED.contains(&name) { format!("{desc}{}", figcraft_engine::cmd::lint::write_hint()) } else { desc.to_string() };
+    // Every tool that changes things says how to end the working state (Stage I.1).
+    if !read_only {
+        desc.push_str(FINISH_HINT);
+    }
     json!({
         "name": name,
         "title": title,
@@ -113,6 +120,7 @@ pub const TOOL_NAMES: &[&str] = &[
     "ignore_lint",
     "analyze_design",
     "get_changes",
+    "finish_working",
     "pointer",
     "key",
     "type_text",
@@ -341,6 +349,13 @@ pub fn tool_definitions() -> Vec<Value> {
             true,
         ),
         tool(
+            "finish_working",
+            "Finish working",
+            "Say you are done working on the canvas: the person's window stops showing you as working (the dots above the artboard fade out). Call it once when your task is finished. Changes nothing in the document.",
+            obj(json!({"ids": ids_schema("Optional: the artboards you worked on")}), &[]),
+            true,
+        ),
+        tool(
             "pointer",
             "Pointer gesture",
             "Drive the canvas with the mouse in page coordinates, exactly as a user would with the current tool: click to select, drag to move/resize/marquee, or draw with a shape tool (set `tool` first, e.g. {\"tool\":\"rectangle\",\"kind\":\"drag\",\"x\":0,\"y\":0,\"to\":[200,100]}). `double` on a text layer starts editing it. Returns the selection and tool.",
@@ -513,6 +528,13 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
     let mut guarded = Guarded { inner: b, since: a.get("sinceRevision").and_then(Value::as_u64) };
     let b: &mut dyn Backend = &mut guarded;
     let r = match name {
+        "finish_working" => {
+            let mut p = json!({});
+            if let Some(ids) = a.get("ids") {
+                p["ids"] = ids.clone();
+            }
+            exec(b, "agent.finish-working", p).map(|v| ToolResult::json(&v))
+        }
         "get_changes" => {
             exec(b, "history.changes", json!({"since": a.get("since").and_then(Value::as_u64).unwrap_or(0)})).map(|v| ToolResult::json(&v))
         }

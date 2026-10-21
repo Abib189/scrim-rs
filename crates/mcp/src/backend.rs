@@ -19,6 +19,10 @@ pub trait Backend {
     /// (the HTTP endpoint's sessions). The default ignores it.
     fn set_client(&mut self, _client: Option<&str>) {}
 
+    /// The HTTP session the next calls come from (its `Mcp-Session-Id`), when it is a known one
+    /// (Stage I.1: the app's working state is per session). The default ignores it.
+    fn set_session(&mut self, _session: Option<&str>) {}
+
     /// True when a real UI window is attached (`ui.screenshot` captures the window).
     fn has_ui(&self) -> bool;
 

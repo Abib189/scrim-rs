@@ -26,6 +26,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 | `lint.ignore` | `ignore_lint` |
 | `design.analyze` | `analyze_design` |
 | `history.changes` | `get_changes` |
+| `agent.finish-working` | `finish_working` (Stage I.1; Read) |
 | `file.export` | `export` |
 | `file.exportLayers` | `export` |
 | `file.exportSvg` | `export` |
@@ -60,6 +61,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 
 ## Read (54)
 
+- **agent:** `agent.finish-working` (Finish working; Stage I.1: it changes nothing but what the window shows, so it runs with only read-only tools on)
 - **ai:** `ai.findings` (Design lint findings by rule), `ai.status` (Agent connection)
 - **annotation:** `annotation.categories` (Annotation categories), `annotation.list` (List annotations)
 - **branch:** `branch.list` (List branches), `branch.review` (Review branch)

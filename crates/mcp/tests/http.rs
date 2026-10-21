@@ -132,7 +132,7 @@ fn other_methods_paths_and_bodies() {
     let host = format!("127.0.0.1:{}", e.port);
     let (code, headers, _) = send(e.port, &format!("GET /mcp HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"));
     assert_eq!(code, 405);
-    assert!(headers.iter().any(|(k, v)| k == "allow" && v == "POST"));
+    assert!(headers.iter().any(|(k, v)| k == "allow" && v == "POST, DELETE"));
     assert_eq!(send(e.port, &format!("POST /other HTTP/1.1\r\nHost: {host}\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}")).0, 404);
     // Too large: refused from the header, the body never sent.
     assert_eq!(send(e.port, &format!("POST /mcp HTTP/1.1\r\nHost: {host}\r\nContent-Length: {}\r\n\r\n", 64 * 1024 * 1024)).0, 413);
