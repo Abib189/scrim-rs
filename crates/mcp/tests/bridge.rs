@@ -281,3 +281,29 @@ fn the_app_notes_where_it_is_and_what_it_lists_and_takes_the_note_away() {
     assert_eq!(tools(&dir).unwrap()["tools"][0]["name"], "batch");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// P3 found it: something else holding the port (it accepts, never answers) mustn't hold the
+/// bridge. Its initialize is answered here within a few seconds, and when the app comes up on its
+/// fallback port (the note says where) the bridge goes there.
+#[test]
+fn a_port_held_by_something_else_doesnt_hold_the_bridge() {
+    let squatter = TcpListener::bind("127.0.0.1:0").unwrap();
+    let mut b = Bridge::start(squatter.local_addr().unwrap(), None, None);
+    let t = std::time::Instant::now();
+    init(&b, "claude-ai");
+    let r = b.answer(1);
+    assert!(t.elapsed() < Duration::from_secs(6), "answered in {:?}", t.elapsed());
+    assert_eq!(r["result"]["serverInfo"]["name"], "scrim");
+    // The app comes up on another port, and the note says so.
+    let seen = Arc::new(Mutex::new(Seen::default()));
+    let l = TcpListener::bind("127.0.0.1:0").unwrap();
+    *b.at.lock().unwrap() = l.local_addr().unwrap();
+    let mut endpoint = app(l, None, seen.clone());
+    b.wait(15, |v| v["method"] == "notifications/tools/list_changed");
+    call(&b, 2, "inspect_document");
+    assert_eq!(b.answer(2)["result"]["isError"], false);
+    let (_, log) = b.close();
+    assert!(log.iter().any(|l| l.contains("waiting")), "{log:?}");
+    drop(squatter);
+    endpoint.stop();
+}

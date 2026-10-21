@@ -150,8 +150,13 @@ Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
 3. **The note's address is loopback only:** anything else is ignored, and the saved port is used.
 4. **A tool call while the app is closed is not queued until it comes up:** it is answered with the error at once, and the agent can try again.
 
+**Found by the live check (P3) and fixed:** with Scrim closed, something else holding the saved port (it accepted the connection, never answered) held the bridge's first `initialize` for the tool calls' 300 s timeout.
+- **`initialize` at the app now has 3 s,** and only an answer naming the server "scrim" counts as Scrim. Tool calls keep 300 s (a big export or render).
+- **So the bridge answers at once and keeps waiting,** and follows the app to its fallback port when it comes up.
+- **The test:** `a_port_held_by_something_else_doesnt_hold_the_bridge`.
+
 **Tests:**
-- `crates/mcp/tests/bridge.rs`: down then up, a new port, the token, stdin closing, the discovery files;
+- `crates/mcp/tests/bridge.rs`: down then up, a new port, the token, stdin closing, the discovery files, a port held by something else;
 - `claude_desktop_tests.rs` (2 new): the entry, the upgrade, the report;
 - `desktop_flow_tests.rs`: writing the bridge, the upgrade with backup, a moved binary, Copy only without it;
 - `mcp_endpoint_tests.rs`: the app's note, which follows a restart and goes away when the endpoint is dropped;

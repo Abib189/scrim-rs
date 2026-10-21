@@ -129,12 +129,13 @@ impl Shared {
         p["clientInfo"]["name"] = json!(format!("{}{VIA}", if name.trim().is_empty() { "an MCP client" } else { &name }));
         let init = json!({"jsonrpc": "2.0", "id": "scrim-bridge-init", "method": "initialize", "params": p});
         let auth = self.cfg.auth.as_deref();
-        match upstream::post(addr, None, auth, &init) {
-            upstream::Reply::Answer { status: 200, session, body: Some(b) } if b.get("result").is_some() => {
+        // Quickly, and only Scrim: another program holding the port, or one answering slowly, isn't.
+        match upstream::post(addr, None, auth, &init, upstream::QUICK) {
+            upstream::Reply::Answer { status: 200, session, body: Some(b) } if b["result"]["serverInfo"]["name"] == "scrim" => {
                 *link = Link { addr: Some(addr), session, up: true, refused: false, said: std::mem::take(&mut link.said) };
                 if initialized {
                     let n = json!({"jsonrpc": "2.0", "method": "notifications/initialized"});
-                    let _ = upstream::post(addr, link.session.as_deref(), auth, &n);
+                    let _ = upstream::post(addr, link.session.as_deref(), auth, &n, upstream::QUICK);
                 }
                 self.say(&mut link, format!("connected to Scrim at {addr}"));
                 b.get("result").cloned()
@@ -147,12 +148,12 @@ impl Shared {
             }
             upstream::Reply::Answer { status, .. } => {
                 link.up = false;
-                self.say(&mut link, format!("Scrim at {addr} answered {status} to initialize; waiting"));
+                self.say(&mut link, format!("something at {addr} that isn't Scrim answered ({status}); waiting for Scrim"));
                 None
             }
             upstream::Reply::Down(_) => {
                 link.up = false;
-                self.say(&mut link, format!("Scrim isn't running (nothing at {addr}); waiting for it"));
+                self.say(&mut link, format!("Scrim isn't running (no answer from {addr}); waiting for it"));
                 None
             }
         }
@@ -167,7 +168,7 @@ impl Shared {
             }
             (link.addr?, link.session.clone())
         };
-        match upstream::post(addr, session.as_deref(), self.cfg.auth.as_deref(), msg) {
+        match upstream::post(addr, session.as_deref(), self.cfg.auth.as_deref(), msg, upstream::ANSWER) {
             upstream::Reply::Answer { status: 200, body: Some(b), .. } => Some(b),
             upstream::Reply::Answer { status: 202, .. } => Some(Value::Null),
             // The app restarted on the same port: its sessions are new.

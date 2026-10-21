@@ -10,8 +10,11 @@ use serde_json::Value;
 
 /// Connecting gives up after this (the app isn't there).
 const CONNECT: Duration = Duration::from_millis(800);
-/// An answer may take this long (a big export or render).
-const ANSWER: Duration = Duration::from_secs(300);
+/// A tool call's answer may take this long (a big export or render).
+pub const ANSWER: Duration = Duration::from_secs(300);
+/// Scrim answers `initialize` and notifications at once: something slower at that port (another
+/// program holding it, or a hung app) isn't treated as Scrim.
+pub const QUICK: Duration = Duration::from_secs(3);
 /// The most bytes an answer may have (a screenshot is a few MB).
 const MAX_BODY: usize = 64 << 20;
 
@@ -24,23 +27,24 @@ pub enum Reply {
     Down(String),
 }
 
-/// `POST /mcp` with `body` to `addr`, in `session`, with `auth` (`Bearer …`) when set.
-pub fn post(addr: SocketAddr, session: Option<&str>, auth: Option<&str>, body: &Value) -> Reply {
-    send(addr, "POST", session, auth, Some(body))
+/// `POST /mcp` with `body` to `addr`, in `session`, with `auth` (`Bearer …`) when set, waiting at
+/// most `wait` for the answer.
+pub fn post(addr: SocketAddr, session: Option<&str>, auth: Option<&str>, body: &Value, wait: Duration) -> Reply {
+    send(addr, "POST", session, auth, Some(body), wait)
 }
 
 /// `DELETE /mcp`: end `session` (the bridge is closing).
 pub fn delete(addr: SocketAddr, session: &str, auth: Option<&str>) -> Reply {
-    send(addr, "DELETE", Some(session), auth, None)
+    send(addr, "DELETE", Some(session), auth, None, QUICK)
 }
 
-fn send(addr: SocketAddr, method: &str, session: Option<&str>, auth: Option<&str>, body: Option<&Value>) -> Reply {
+fn send(addr: SocketAddr, method: &str, session: Option<&str>, auth: Option<&str>, body: Option<&Value>, wait: Duration) -> Reply {
     let mut s = match TcpStream::connect_timeout(&addr, CONNECT) {
         Ok(s) => s,
         Err(e) => return Reply::Down(e.to_string()),
     };
-    let _ = s.set_read_timeout(Some(ANSWER));
-    let _ = s.set_write_timeout(Some(ANSWER));
+    let _ = s.set_read_timeout(Some(wait));
+    let _ = s.set_write_timeout(Some(wait));
     let body = body.map(Value::to_string).unwrap_or_default();
     let mut head = format!("{method} /mcp HTTP/1.1\r\nHost: {addr}\r\nAccept: application/json, text/event-stream\r\nConnection: close\r\n");
     if method == "POST" {
