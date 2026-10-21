@@ -1,0 +1,192 @@
+{
+ "events": [
+  {
+   "t": 1.15,
+   "what": "entry",
+   "entry": {
+    "args": [
+     "mcp-bridge"
+    ],
+    "command": "<repo>/target/release/figcraft"
+   },
+   "state": "not configured",
+   "port": 7690
+  },
+  {
+   "t": 1.198,
+   "what": "app quit",
+   "note_left": false,
+   "tools_noted": true
+  },
+  {
+   "t": 1.212,
+   "what": "initialize answered with Scrim closed",
+   "server": {
+    "name": "scrim",
+    "title": "Scrim",
+    "version": "0.7.0"
+   },
+   "listChanged": true
+  },
+  {
+   "t": 1.213,
+   "what": "tools/list with Scrim closed",
+   "tools": 25
+  },
+  {
+   "t": 1.214,
+   "what": "tool call with Scrim closed",
+   "isError": true,
+   "text": "Scrim is not running. Open the Scrim app and try again."
+  },
+  {
+   "t": 6.22,
+   "what": "still running after 5 s",
+   "alive": true
+  },
+  {
+   "t": 6.527,
+   "what": "app up",
+   "port": 7690
+  },
+  {
+   "t": 7.223,
+   "what": "tools/list_changed received",
+   "at": 7.223
+  },
+  {
+   "t": 7.228,
+   "what": "tools/list now",
+   "tools": 25
+  },
+  {
+   "t": 7.246,
+   "what": "inspect_document through the bridge",
+   "isError": false
+  },
+  {
+   "t": 7.262,
+   "what": "frame made through the bridge",
+   "isError": false
+  },
+  {
+   "t": 9.485,
+   "what": "capture",
+   "name": "window-after",
+   "ok": true
+  },
+  {
+   "t": 9.487,
+   "what": "stdin closed: bridge exited",
+   "code": 0
+  },
+  {
+   "t": 11.17,
+   "what": "capture",
+   "name": "window-after-bridge-closed",
+   "ok": true
+  }
+ ],
+ "stdout": [
+  {
+   "t": 1.212,
+   "msg": {
+    "id": 1,
+    "keys": [
+     "capabilities",
+     "instructions",
+     "protocolVersion",
+     "serverInfo"
+    ],
+    "error": null
+   }
+  },
+  {
+   "t": 1.213,
+   "msg": {
+    "id": 2,
+    "keys": [
+     "tools"
+    ],
+    "error": null
+   }
+  },
+  {
+   "t": 1.214,
+   "msg": {
+    "id": 3,
+    "keys": [
+     "content",
+     "isError"
+    ],
+    "error": null
+   }
+  },
+  {
+   "t": 7.223,
+   "msg": {
+    "jsonrpc": "2.0",
+    "method": "notifications/tools/list_changed"
+   }
+  },
+  {
+   "t": 7.228,
+   "msg": {
+    "id": 4,
+    "keys": [
+     "tools"
+    ],
+    "error": null
+   }
+  },
+  {
+   "t": 7.246,
+   "msg": {
+    "id": 5,
+    "keys": [
+     "content",
+     "isError"
+    ],
+    "error": null
+   }
+  },
+  {
+   "t": 7.262,
+   "msg": {
+    "id": 6,
+    "keys": [
+     "content",
+     "isError"
+    ],
+    "error": null
+   }
+  }
+ ],
+ "stderr": [
+  {
+   "t": 1.212,
+   "line": "scrim mcp-bridge: Scrim isn't running (no answer from 127.0.0.1:7690); waiting for it"
+  },
+  {
+   "t": 7.223,
+   "line": "scrim mcp-bridge: connected to Scrim at 127.0.0.1:7690"
+  }
+ ],
+ "block": null,
+ "first_port": 7690,
+ "entry": {
+  "args": [
+   "mcp-bridge"
+  ],
+  "command": "<repo>/target/release/figcraft"
+ },
+ "entry_state": "not configured",
+ "clients": [
+  {
+   "display": "claude-ai (via scrim mcp-bridge)",
+   "name": "claude-ai (via scrim mcp-bridge)",
+   "version": "0.1.0"
+  }
+ ],
+ "bridge_pid_same": true
+}
