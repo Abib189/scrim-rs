@@ -11,8 +11,8 @@
 //!   follows the agent). Layers created off screen are drawn final at once: nothing is ever left
 //!   hidden or half-faded.
 //! - **Skipped:** the person's edits; undo and redo; opening a file; Settings ▸ "Reveal agent work"
-//!   off; Animations Off or reduced motion; edits that landed while the window drew no frames (a
-//!   gap over [`HIDDEN`] before them).
+//!   off; Animations Off or reduced motion; edits that landed while the window was hidden (answered
+//!   by `control::drain_hidden`; an idle window draws no frames either, so a gap can't tell).
 //! - **Long frames:** the frame right after a landing can be long (on a big file the agent's edit
 //!   itself takes it): the reveal is re-timed by it, so it still plays. Later in a reveal, one stall
 //!   over [`GAP`] re-times it too; a second (frames being dropped) or one over [`HIDDEN`] finishes it.
@@ -46,8 +46,7 @@ pub const START_SCALE: f64 = 0.96;
 /// A gap between frames longer than this is a stall: the first in a reveal re-times it, a second
 /// finishes it (frames are being dropped).
 pub const GAP: f64 = 0.25;
-/// A gap longer than this: the window drew no frames (hidden). Finish; what landed meanwhile is
-/// drawn final.
+/// A stall longer than this in a running reveal: the window was hidden. Finish.
 pub const HIDDEN: f64 = 1.0;
 /// The frame right after a landing is re-timed up to this long; longer, it finishes.
 pub const LANDING: f64 = 5.0;
@@ -166,6 +165,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
         return;
     };
     let before = app.ui.agent_view.before.clone();
+    let landed_hidden = app.ui.agent_view.landed_hidden;
     let st = &mut app.ui.agent_view.reveal;
     let fresh = std::mem::take(&mut st.fresh);
     if gap > GAP && st.active() {
@@ -185,8 +185,8 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
     if !animate {
         st.finish();
     }
-    // Edits that landed while the window drew no frames are drawn final.
-    let animate = animate && gap <= HIDDEN;
+    // Edits that landed while the window was hidden are drawn final.
+    let animate = animate && !landed_hidden;
     // In view now, or on its way into view (the camera follows the agent there).
     let seen =
         |id: NodeId| following || view.is_some_and(|(page, r)| doc.page_of(id) == Some(page) && doc.world_bounds(id).is_some_and(|b| meets(b, r)));

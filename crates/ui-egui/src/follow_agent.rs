@@ -67,7 +67,10 @@ pub struct State {
     /// The document before this frame's new edits (the reveal compares moves with it).
     pub(crate) before: Option<Arc<Document>>,
     /// When the last frame began (the reveal and the indicator read the gap).
-    last_frame: Option<f64>,
+    pub(crate) last_frame: Option<f64>,
+    /// Requests were answered while the window drew no frames (`control::drain_hidden`): what
+    /// landed then has no entrance. An idle window also draws no frames, so the gap can't tell.
+    pub(crate) landed_hidden: bool,
     follow: Follow,
     pub reveal: reveal::State,
     pub indicator: working_indicator::State,
@@ -238,6 +241,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
     working_indicator::tick(app, ctx, now, gap, &landed);
+    app.ui.agent_view.landed_hidden = false;
     budget(app, now);
 }
 

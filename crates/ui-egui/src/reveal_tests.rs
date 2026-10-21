@@ -258,10 +258,24 @@ fn a_long_landing_frame_delays_the_reveal_and_dropped_frames_finish_it() {
     assert!(canvas_doc(&u.app).is_some(), "one stall: still playing");
     super::tick(&mut u.app, &ctx, now + 1.8, 0.3, &[]);
     assert!(canvas_doc(&u.app).is_none(), "a second stall: frames are being dropped, finished");
-    // Edits that land after the window drew no frames for a while: final at once.
+    // Edits answered while the window was hidden (`control::drain_hidden`): final at once.
     let late = super::super::Landed { agent: true, route: "mcp (http)".into(), created: vec![r], ..Default::default() };
+    u.app.ui.agent_view.landed_hidden = true;
     super::tick(&mut u.app, &ctx, now + 10.0, 8.0, &[late]);
     assert!(canvas_doc(&u.app).is_none(), "landed while hidden: no entrance");
+}
+
+/// An idle window draws no frames either: the agent's first edit after a quiet minute still enters
+/// (found by I4: the gap alone read an idle window as a hidden one).
+#[test]
+fn an_edit_after_a_quiet_minute_still_enters() {
+    let (mut u, home) = calm();
+    frames(&mut u, 2);
+    let now = u.ctx.input(|i| i.time);
+    u.app.ui.agent_view.last_frame = Some(now - 60.0);
+    let r = id(&agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home})));
+    u.frame(vec![]);
+    assert!(u.app.ui.agent_view.reveal.entering().any(|(i, _)| i == r), "it enters");
 }
 
 #[test]

@@ -256,6 +256,9 @@ Over I1–I3 that is 38 tests in the window (`follow_agent_tests.rs` 15, `reveal
   - **The rule now** (`24b163d`, then this commit):
     - The frame right after a landing is the landing's own: the reveal and the indicator are re-timed by its gap (up to 5 s), so they play after it.
     - Later in a reveal, one stall over 250 ms re-times it too; a second, or one over 1 s, finishes it (frames are being dropped).
-    - Edits that land after the window drew no frames for over 1 s are drawn final.
+    - Edits answered while the window is hidden (`control::drain_hidden`, which runs only then) are drawn final.
   - **Tests:** `a_long_landing_frame_delays_the_reveal_and_dropped_frames_finish_it`, `a_long_frame_after_the_agents_edit_isnt_idle_time`.
   - **Overrule** if you'd rather any long frame finish it.
+- **An idle window isn't a hidden one.** The I4 runs on the Fixture still showed no reveal whenever the window had been idle before the agent's edit. egui draws no frames while nothing asks for one, so the first frame after a quiet spell has a large gap, and the rule above read that gap as a hidden window.
+  - **The real signal now:** requests answered by `control::drain_hidden` (which runs only while the window draws no frames) mark what they land as seen while hidden. The gap before a landing isn't used.
+  - **Test:** `an_edit_after_a_quiet_minute_still_enters` fails under the old rule.

@@ -193,6 +193,8 @@ pub fn drain_hidden(app: &mut FigApp, ctx: &Context) {
         // ends in recovery copies and leaves every window its own state.
         let res = crate::windows::as_window(app, target, |app| {
             let mut res = Err("internal error".to_string());
+            // What an agent does now lands while nobody can watch: no entrance for it (Stage I).
+            app.ui.agent_view.landed_hidden = true;
             crate::windows::guard(app, ctx, |app| res = handle_request(app, ctx, &r));
             res
         });
