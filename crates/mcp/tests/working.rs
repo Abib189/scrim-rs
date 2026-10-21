@@ -70,10 +70,10 @@ fn finish_working_is_a_read_only_tool_that_runs_when_writing_tools_are_off() {
     let t = tools.iter().find(|t| t["name"] == "finish_working").expect("listed");
     assert_eq!(t["annotations"]["readOnlyHint"], true);
     assert!(t["description"].as_str().unwrap().contains("Changes nothing in the document"));
-    // Every tool that changes things says how to end the working state; read-only ones don't.
+    // Only the building tools say how to end the working state (Fix L1, `tool_list_budget.rs`).
     for t in &tools {
-        let (desc, ro) = (t["description"].as_str().unwrap(), t["annotations"]["readOnlyHint"] == true);
-        assert_eq!(desc.ends_with(figcraft_mcp::tools_finish_hint()), !ro, "{}", t["name"]);
+        let hinted = figcraft_mcp::FINISH_HINTED.contains(&t["name"].as_str().unwrap());
+        assert_eq!(t["description"].as_str().unwrap().ends_with(figcraft_mcp::tools_finish_hint()), hinted, "{}", t["name"]);
     }
     let instructions = figcraft_mcp::INSTRUCTIONS;
     assert!(instructions.contains("call finish_working so the person sees you are done"));

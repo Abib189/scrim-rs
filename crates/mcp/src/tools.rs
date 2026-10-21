@@ -72,8 +72,12 @@ fn obj(props: Value, required: &[&str]) -> Value {
     o
 }
 
-/// The line every tool that changes things ends with (Stage I.1).
-pub const FINISH_HINT: &str = " When you have finished working on the canvas, call finish_working so the person sees you are done.";
+/// The reminder the tools that build on the canvas end with (Stage I.1; trimmed in Fix L1).
+pub const FINISH_HINT: &str = " When done, call finish_working.";
+
+/// The tools that carry [`FINISH_HINT`]: only those an agent builds with (Fix L1). Every other tool
+/// leaves it out, because each line is sent to every agent in every request.
+pub const FINISH_HINTED: &[&str] = &["run_command", "batch", "create_node", "set_properties", "type_text"];
 
 /// The tools that write: they take `sinceRevision`, the stale-write guard.
 const GUARDED: &[&str] = &["run_command", "batch", "create_node", "set_properties"];
@@ -85,8 +89,8 @@ fn tool(name: &str, title: &str, desc: &str, schema: Value, read_only: bool) -> 
     }
     // The content-writing tools end with the lint hint: a new session has no memory of the rules.
     let mut desc = if GUARDED.contains(&name) { format!("{desc}{}", figcraft_engine::cmd::lint::write_hint()) } else { desc.to_string() };
-    // Every tool that changes things says how to end the working state (Stage I.1).
-    if !read_only {
+    // The building tools say how to end the working state (Stage I.1, Fix L1).
+    if FINISH_HINTED.contains(&name) {
         desc.push_str(FINISH_HINT);
     }
     json!({

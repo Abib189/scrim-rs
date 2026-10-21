@@ -60,7 +60,7 @@
   - **Access:** Read, so it runs with only read-only tools on. It's listed in Tool access and `list_commands`.
   - **Effect:** it asks the window to end the calling client's state (`Session::request_ui`, which isn't a dialog, so the control channel keeps it). It never touches the document, undo or the revision.
   - **The reply:** `{finished: true, client}`, plus `ids` echoed. With `ids`, the state still ends for the whole client (see disagreement 3).
-- **The tool descriptions:** each tool that isn't read-only gets one short line: "When you have finished working on the canvas, call finish_working so the person sees you are done." The instructions string says it once too.
+- **The tool descriptions:** each tool that isn't read-only gets one short line: "When you have finished working on the canvas, call finish_working so the person sees you are done." The instructions string says it once too. *(Trimmed in Fix L1: now five tools carry "When done, call finish_working."; see L1 below.)*
 - **Every reader reads the one state.** The dots, the outline and its pulse, the AccessKit status, `ui.inspect`, the load budget, follow's "Following {name}" and the AI tab all read it, so nothing keeps its own timer:
   - **The name** is the most recently active working client's; when none is working, the last edit's.
   - **The dots** fade in over 160 ms when work first starts, stay continuous across gaps, and fade out over 400 ms only when the state ends.
@@ -93,7 +93,7 @@
 4. **The grace command takes only 5, 15, 30 or 60**, the values Settings offers; anything else is refused, and nothing is ever below 5.
 5. **"In flight"** is a request queued for the window or waiting for a frame. Requests are answered on the UI thread in a frame, so that window is short; the grace period carries the gaps.
 6. **"{name} finished"** is spoken once, for 2 s, and only when the state ends: by `finish_working`, the session ending, or the grace running out.
-7. **The tool-description line goes on every tool that isn't read-only**, including `select`, `open_file`, `undo` and the input tools. That's the plainest reading of "every mutating tool", and the cost is one short sentence.
+7. **The tool-description line goes on every tool that isn't read-only**, including `select`, `open_file`, `undo` and the input tools. That's the plainest reading of "every mutating tool", and the cost is one short sentence. *(Overruled in Fix L1: it bloated the list every agent carries; only the five building tools keep it.)*
 
 ## IB as built
 
@@ -194,3 +194,22 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
   - `with_settings_open_nothing_behind_it_scrolls_zooms_or_pauses` checks over the dialog, the canvas beside it, and both side panels. It failed before the fix.
   - `under_settings_a_scroll_on_the_canvas_doesnt_pause_following` runs on follow's harness, the only one that sizes the canvas for following. It fails with follow's check removed.
   - `over_a_dialog_the_wheel_and_pinch_dont_reach_the_canvas` covers the four floating dialogs.
+
+## L1: the finish reminder, trimmed (Fix L)
+
+- **What changed:** Stage I.1 put the reminder on every tool that isn't read-only (13 tools, `select`, `undo`, `redo`, `key`, `pointer`, `open_file`, `save_file`, `set_lint_profile` and `ignore_lint` among them). It is sent to every agent in every request.
+  - **Now** it is on five tools only, the ones an agent builds with: `create_node`, `set_properties`, `batch`, `run_command`, `type_text` (`tools::FINISH_HINTED`).
+  - **The wording**, shortened: "When done, call finish_working." `finish_working`'s own description says what it does and why, and the instructions string keeps the long sentence once.
+- **The size of the whole `tools/list` response** (compact JSON as sent; tokens approximated as characters ÷ 4):
+
+  | When | Tools | Characters | ≈ Tokens |
+  |---|---|---|---|
+  | Before Stage I.1 (`e46c546`) | 24 | 28,836 | 7,209 |
+  | After Stage I.1 (`30eae02`) | 25 | 30,780 | 7,695 |
+  | After L1 | 25 | 29,554 | 7,389 |
+
+  L1 takes back 1,226 of the 1,944 characters Stage I.1 added. What remains is the `finish_working` tool itself and the five reminders.
+- **Tests** (`crates/mcp/tests/tool_list_budget.rs`):
+  - an exact allow-list: it fails if any other tool carries the reminder, or one of the five loses it;
+  - a size budget: it fails if `tools/list` grows more than 2% over 29,554 characters, unless the baseline in the test is changed on purpose.
+  - Each was checked by breaking it on purpose: adding `select`, dropping `type_text`, and a longer reminder each fail.

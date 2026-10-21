@@ -29,9 +29,9 @@ pub use headless::Headless;
 pub use prompts::{PROMPTS, PromptArg, PromptDef};
 pub use resources::{COMMAND_TEMPLATE, COMMANDS_URI, DOC_URI, NODE_TEMPLATE};
 pub use server::{INSTRUCTIONS, PROTOCOL_VERSION, SUPPORTED_VERSIONS, Server, SessionEvent};
-pub use tools::{FINISH_HINT, TOOL_NAMES, ToolResult, call_tool, tool_definitions};
+pub use tools::{FINISH_HINT, FINISH_HINTED, TOOL_NAMES, ToolResult, call_tool, tool_definitions};
 
-/// The line every tool that changes things ends with ([`FINISH_HINT`]).
+/// The reminder the building tools ([`FINISH_HINTED`]) end with ([`FINISH_HINT`]).
 pub fn tools_finish_hint() -> &'static str {
     FINISH_HINT
 }
