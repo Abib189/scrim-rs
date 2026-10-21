@@ -56,6 +56,8 @@ pub struct State {
     /// When this run of work began (the fade in) and when the agent last edited.
     began: f64,
     last: f64,
+    /// The agent edited in the frame before this one.
+    fresh: bool,
     /// Where the row was drawn this frame and with how many columns (its AccessKit node); the
     /// outline's rectangle. Set while the canvas paints.
     pub(crate) drawn: Cell<Option<(Rect, usize)>>,
@@ -139,12 +141,19 @@ pub fn place(corner: Pos2, room: f32, taken: &[Rect]) -> Option<(usize, Rect)> {
     })
 }
 
-/// Every frame, before the canvas: the agent's latest artboard starts (or keeps) the indicator.
-pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
+/// Every frame, before the canvas: the agent's latest artboard starts (or keeps) the indicator. A
+/// long frame right after the agent's edit (`gap`, the edit's own cost on a big file) doesn't count
+/// as idle time.
+pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Landed]) {
     let uid = app.session.ds().map(|d| d.uid).ok();
     let artboard = super::working_on(app).1;
     let motion = !app.reduce_motion();
     let st = &mut app.ui.agent_view.indicator;
+    if gap > super::reveal::GAP && gap <= super::reveal::LANDING && std::mem::take(&mut st.fresh) {
+        st.began += gap;
+        st.last += gap;
+    }
+    st.fresh = false;
     if let (Some(uid), Some(art)) = (uid, artboard)
         && landed.iter().any(|l| l.agent)
     {
@@ -154,6 +163,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         }
         st.on = Some((uid, art));
         st.last = now;
+        st.fresh = true;
     }
     if st.on.is_some() {
         if alpha(st.began, st.last, now, motion) <= 0.0 && now - st.last > IDLE {

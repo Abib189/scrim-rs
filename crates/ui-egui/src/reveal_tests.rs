@@ -232,26 +232,36 @@ fn a_move_tweens_a_delete_fades_and_dropped_frames_finish_it() {
     assert!(canvas_doc(&u.app).is_some());
     let ctx = u.ctx.clone();
     let now = ctx.input(|i| i.time);
-    super::tick(&mut u.app, &ctx, now + 2.0, &[]);
+    // (Right after a landing, a gap up to 5 s is the landing's own frame; longer, the window was hidden.)
+    super::tick(&mut u.app, &ctx, now + 6.0, 6.0, &[]);
     assert!(canvas_doc(&u.app).is_none(), "the window was hidden: finished");
 }
 
 /// On a big file the agent's edit itself can take a long frame: the reveal waits for it rather than
-/// being dropped. A second stall in the same reveal (frames being dropped) finishes it.
+/// being dropped, however long (up to 5 s). Later in the reveal, one stall re-times it; a second
+/// (frames being dropped) finishes it. What lands after the window drew no frames is drawn final.
 #[test]
-fn one_long_frame_delays_the_reveal_and_a_second_finishes_it() {
+fn a_long_landing_frame_delays_the_reveal_and_dropped_frames_finish_it() {
     let (mut u, home) = calm();
     let r = id(&agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home})));
     u.frame(vec![]);
     let ctx = u.ctx.clone();
     let now = ctx.input(|i| i.time);
     let start = u.app.ui.agent_view.reveal.entering().find(|(i, _)| *i == r).unwrap().1;
-    super::tick(&mut u.app, &ctx, now + 0.5, &[]);
-    let later = u.app.ui.agent_view.reveal.entering().find(|(i, _)| *i == r).expect("still revealing after one long frame").1;
-    assert!((later - start - 0.5).abs() < 1e-9, "re-timed by the gap: {start} → {later}");
+    // The landing's own frame took 1.2 s (the batch on a big file).
+    super::tick(&mut u.app, &ctx, now + 1.2, 1.2, &[]);
+    let later = u.app.ui.agent_view.reveal.entering().find(|(i, _)| *i == r).expect("still revealing after the landing's long frame").1;
+    assert!((later - start - 1.2).abs() < 1e-9, "re-timed by the gap: {start} → {later}");
     assert!(canvas_doc(&u.app).is_some_and(|d| opacity(&d, r) < 1.0), "and it plays from where it was");
-    super::tick(&mut u.app, &ctx, now + 1.0, &[]);
+    // One stall later on: re-timed; a second: finished.
+    super::tick(&mut u.app, &ctx, now + 1.5, 0.3, &[]);
+    assert!(canvas_doc(&u.app).is_some(), "one stall: still playing");
+    super::tick(&mut u.app, &ctx, now + 1.8, 0.3, &[]);
     assert!(canvas_doc(&u.app).is_none(), "a second stall: frames are being dropped, finished");
+    // Edits that land after the window drew no frames for a while: final at once.
+    let late = super::super::Landed { agent: true, route: "mcp (http)".into(), created: vec![r], ..Default::default() };
+    super::tick(&mut u.app, &ctx, now + 10.0, 8.0, &[late]);
+    assert!(canvas_doc(&u.app).is_none(), "landed while hidden: no entrance");
 }
 
 #[test]

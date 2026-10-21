@@ -66,6 +66,8 @@ pub struct State {
     last_doc: Option<Arc<Document>>,
     /// The document before this frame's new edits (the reveal compares moves with it).
     pub(crate) before: Option<Arc<Document>>,
+    /// When the last frame began (the reveal and the indicator read the gap).
+    last_frame: Option<f64>,
     follow: Follow,
     pub reveal: reveal::State,
     pub indicator: working_indicator::State,
@@ -231,10 +233,11 @@ pub fn target(doc: &Document, landed: &[Landed]) -> Option<(NodeId, BTreeSet<Nod
 /// Every frame, before the canvas: what's new in the log, then following.
 pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let now = ctx.input(|i| i.time);
+    let gap = app.ui.agent_view.last_frame.replace(now).map_or(0.0, |t| (now - t).max(0.0));
     let landed = scan(app);
     follow(app, ctx, now, &landed);
-    reveal::tick(app, ctx, now, &landed);
-    working_indicator::tick(app, ctx, now, &landed);
+    reveal::tick(app, ctx, now, gap, &landed);
+    working_indicator::tick(app, ctx, now, gap, &landed);
     budget(app, now);
 }
 

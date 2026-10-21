@@ -11,9 +11,11 @@
 //!   follows the agent). Layers created off screen are drawn final at once: nothing is ever left
 //!   hidden or half-faded.
 //! - **Skipped:** the person's edits; undo and redo; opening a file; Settings ▸ "Reveal agent work"
-//!   off; Animations Off or reduced motion. **Finished at once** when the window was hidden (a gap
-//!   over [`HIDDEN`]) or frames are being dropped (a second gap over [`GAP`] in one reveal). One
-//!   long frame (the edit itself, on a big file) only delays it: the reveal is re-timed by the gap.
+//!   off; Animations Off or reduced motion; edits that landed while the window drew no frames (a
+//!   gap over [`HIDDEN`] before them).
+//! - **Long frames:** the frame right after a landing can be long (on a big file the agent's edit
+//!   itself takes it): the reveal is re-timed by it, so it still plays. Later in a reveal, one stall
+//!   over [`GAP`] re-times it too; a second (frames being dropped) or one over [`HIDDEN`] finishes it.
 //! - **Render-only:** the canvas draws [`canvas_doc`], a copy of the document with the revealing
 //!   layers' opacity and transform eased (`imbl` shares every other node). Nothing else reads it: the
 //!   session's document, hit-testing, selection, undo, the change log, `inspect_document`, MCP
@@ -44,8 +46,11 @@ pub const START_SCALE: f64 = 0.96;
 /// A gap between frames longer than this is a stall: the first in a reveal re-times it, a second
 /// finishes it (frames are being dropped).
 pub const GAP: f64 = 0.25;
-/// A gap longer than this: the window was hidden. Finish.
+/// A gap longer than this: the window drew no frames (hidden). Finish; what landed meanwhile is
+/// drawn final.
 pub const HIDDEN: f64 = 1.0;
+/// The frame right after a landing is re-timed up to this long; longer, it finishes.
+pub const LANDING: f64 = 5.0;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Kind {
@@ -79,9 +84,10 @@ pub struct State {
     fade: Option<Fade>,
     /// This frame's render-only document, and the session document it stands in for.
     frame_doc: Option<(Arc<Document>, Arc<Document>)>,
-    last_tick: Option<f64>,
     /// This reveal has had its one stall already.
     stalled: bool,
+    /// Entrances were queued in the frame before this one (the gap after it is the landing's).
+    fresh: bool,
 }
 
 impl State {
@@ -148,7 +154,9 @@ fn view_rect(app: &FigApp) -> Option<(NodeId, figcraft_doc::geom::Rect)> {
 
 /// Every frame, before the canvas: queue what landed, drop what's done, and make this frame's
 /// render-only document.
-pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
+/// Every frame, before the canvas (`gap`: seconds since the last frame): queue what landed, drop
+/// what's done, and make this frame's render-only document.
+pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Landed]) {
     let animate = app.session.prefs.settings.reveal_agent_work && !app.reduce_motion();
     let cap = if app.ui.agent_view.budget.level >= 3 { CAP_DEGRADED } else { CAP };
     let following = figcraft_engine::cmd::camera::follow_state(&app.session) == "following";
@@ -159,24 +167,26 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     };
     let before = app.ui.agent_view.before.clone();
     let st = &mut app.ui.agent_view.reveal;
-    let gap = st.last_tick.map(|t| now - t).filter(|g| *g > GAP);
-    st.last_tick = Some(now);
-    match gap {
-        Some(g) if g <= HIDDEN && !st.stalled && st.active() => {
-            // One long frame (the edit itself): the reveal waits for it.
-            st.stalled = true;
-            st.last_start += g;
-            st.items.iter_mut().for_each(|i| i.start += g);
+    let fresh = std::mem::take(&mut st.fresh);
+    if gap > GAP && st.active() {
+        let landing = fresh && gap <= LANDING;
+        if landing || (gap <= HIDDEN && !st.stalled) {
+            // The landing's own long frame, or one stall: the reveal waits for it.
+            st.stalled |= !landing;
+            st.last_start += gap;
+            st.items.iter_mut().for_each(|i| i.start += gap);
             if let Some(f) = st.fade.as_mut() {
-                f.start += g;
+                f.start += gap;
             }
+        } else {
+            st.finish();
         }
-        Some(_) => st.finish(),
-        None => {}
     }
     if !animate {
         st.finish();
     }
+    // Edits that landed while the window drew no frames are drawn final.
+    let animate = animate && gap <= HIDDEN;
     // In view now, or on its way into view (the camera follows the agent there).
     let seen =
         |id: NodeId| following || view.is_some_and(|(page, r)| doc.page_of(id) == Some(page) && doc.world_bounds(id).is_some_and(|b| meets(b, r)));
@@ -192,6 +202,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
             st.items.retain(|i| i.id != id);
             st.items.push(Item { id, start, kind: Kind::Enter });
             st.last_start = start;
+            st.fresh = true;
         }
         let Some(before) = before.as_ref() else { continue };
         // Moves: only the position changed.

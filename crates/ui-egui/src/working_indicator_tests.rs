@@ -236,3 +236,19 @@ fn the_switches_are_saved_and_answer_over_the_route() {
     let old = old.sanitized();
     assert!(old.reveal_agent_work && old.working_indicator, "a file from version 3 reads them on");
 }
+
+/// The agent's edit on a big file can take a long frame: that frame isn't idle time, so the
+/// indicator is still on after it.
+#[test]
+fn a_long_frame_after_the_agents_edit_isnt_idle_time() {
+    let (mut u, _) = calm();
+    poster(&mut u, 300.0);
+    u.frame(vec![]);
+    let ctx = u.ctx.clone();
+    let now = ctx.input(|i| i.time);
+    super::tick(&mut u.app, &ctx, now + 1.5, 1.5, &[]);
+    let st = &u.app.ui.agent_view.indicator;
+    assert!(st.artboard().is_some(), "still on");
+    // Its fade in starts after that frame (nothing was drawn during it), and it isn't fading out.
+    assert!(alpha(st.began, st.last, now + 1.7, true) > 0.99, "fully shown 200 ms later, not fading out");
+}
