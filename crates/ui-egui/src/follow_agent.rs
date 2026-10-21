@@ -25,6 +25,7 @@ use std::sync::Arc;
 use egui::{Context, CornerRadius, Id, Rect, Sense, Stroke, Ui, pos2, vec2};
 use figcraft_doc::{Document, NodeId};
 use figcraft_engine::cmd::camera::follow_state;
+use figcraft_engine::settings::diagnostics::Pause;
 use serde_json::json;
 
 use crate::FigApp;
@@ -152,6 +153,8 @@ struct Follow {
     artboard: Option<NodeId>,
     /// The paused chip, where it was drawn (a press on it isn't a press on the canvas).
     chip: Option<Rect>,
+    /// Why following last paused, until it resumes (Fix L2's diagnostics, `ui.inspect`).
+    paused_by: Option<Pause>,
 }
 
 /// The name a person sees for the agent that made an edit (Stage J): the MCP client it came from
@@ -324,7 +327,9 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
     let v = &app.ui.agent_view;
     json!({
         "follow": follow_state(&app.session),
+        "pausedBy": v.follow.paused_by.map(Pause::text),
         "revealing": v.reveal.entering().count(),
+        "reveals": v.reveal.diagnostics(),
         "indicator": v.indicator.drawn.get().map(|(r, cols)| json!({"columns": cols, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]})),
         "outline": v.indicator.outlined.get().is_some(),
         "working": working_text(app),
@@ -345,9 +350,11 @@ pub fn agent_moved_camera(app: &mut FigApp) {
     app.ui.agent_view.follow.expected = view_now(app);
 }
 
-fn pause(app: &mut FigApp) {
+fn pause(app: &mut FigApp, why: Pause) {
     app.session.agents.follow_paused = true;
+    crate::settings_privacy::record(app, figcraft_engine::settings::diagnostics::Entry::FollowPaused(why));
     let f = &mut app.ui.agent_view.follow;
+    f.paused_by = Some(why);
     f.pending = None;
     if f.flying {
         app.ui.camera.stop();
@@ -401,6 +408,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         f.pending = f.latest.clone();
         f.last_flight = None;
         f.expected = None;
+        f.paused_by = None;
     }
     f.was = state;
     if state != "following" {
@@ -433,8 +441,17 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     };
     // Only once there is an agent's work to follow: before that, the person's own work is just theirs.
     let following_work = app.ui.agent_view.follow.latest.is_some();
-    if following_work && (person_edit || moved || person_on_canvas(app, ctx)) {
-        pause(app);
+    let why = if person_edit {
+        Some(Pause::PersonEdit)
+    } else if moved {
+        Some(Pause::CameraMoved)
+    } else if person_on_canvas(app, ctx) {
+        Some(Pause::CanvasInput)
+    } else {
+        None
+    };
+    if following_work && let Some(why) = why {
+        pause(app, why);
         return;
     }
     let f = &app.ui.agent_view.follow;

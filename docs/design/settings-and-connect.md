@@ -217,7 +217,9 @@ Each was opened read-only with the `scrim` CLI (`info`, then `render` of every p
     - `fontFallback`: the families a file opened without (family names only, at most 30);
     - `mcpServer`: started on its port, or couldn't start;
     - `mcpClient`: a client's name and version as it gave them;
-    - `error`: a failed command's id (only a registered id) and its category, never the message.
+    - `error`: a failed command's id (only a registered id) and its category, never the message;
+    - `follow` (Fix L2): following an agent paused, and which of its three reasons (`diagnostics::Pause`);
+    - `reveal` (Fix L2): agents' new layers, how many entered and how many were drawn final at once, by reason (`diagnostics::Skip`). One event per burst, once the edits have been quiet 2 s (at most 30 s after the first skip it holds), only when something was skipped.
   - **Not recorded, because the fork has nothing to record:** "font retry" (there is no retry action; fonts are bundled or installed, never fetched) and MCP disconnects (HTTP clients never say they leave).
   - **The section:** Keep for (Don't keep / 1 / 7 / 30 days; a week by default; at most 1000 events), Copy, Save… and Clear; the list newest first.
   - **The commands:** `diagnostics.events`, `diagnostics.copy`, `diagnostics.save {path?}`, `diagnostics.clear` (the person's alone) and `diagnostics.retention`.

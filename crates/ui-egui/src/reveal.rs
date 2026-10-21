@@ -24,12 +24,17 @@
 //!   session's document, hit-testing, selection, undo, the change log, `inspect_document`, MCP
 //!   `screenshot` (which renders the session's document), exports and saves always have the final
 //!   state at once.
+//! - **Diagnostics** (Fix L2, `docs/design/reveal-skip.md`): every agent edit's new layers are
+//!   counted, entered or drawn final and why ([`Tally`], `ui.inspect` › `agent.reveals`), and a
+//!   burst with skips is kept in Settings ▸ Diagnostics ([`Entry::Reveal`]).
 
+use std::collections::{BTreeMap, VecDeque};
 use std::sync::Arc;
 
 use egui::Context;
 use figcraft_doc::geom::{Affine, Vec2};
 use figcraft_doc::{Document, NodeId};
+use figcraft_engine::settings::diagnostics::{Entry, Skip};
 
 use super::Landed;
 use crate::FigApp;
@@ -122,6 +127,76 @@ pub struct State {
     stalled: bool,
     /// Entrances were queued in the frame before this one (the gap after it is the landing's).
     fresh: bool,
+    /// How many of the agents' new layers entered, and why the others didn't (Fix L2).
+    diag: Diagnostics,
+}
+
+/// One agent edit's new layers: how many entered, entered with their group (over
+/// [`super::MANY`]), or were drawn final at once, and why.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Tally {
+    pub at: f64,
+    pub created: usize,
+    pub entered: usize,
+    pub with_group: usize,
+    pub skipped: BTreeMap<Skip, usize>,
+    pub follow: &'static str,
+}
+
+/// The reveal's counters since the window opened and the last [`RECENT`] edits' tallies, for
+/// `ui.inspect` › `agent.reveals`; and what the next diagnostics event will say (Fix L2). Nothing in
+/// the interface reads them.
+#[derive(Default)]
+pub struct Diagnostics {
+    pub entered: usize,
+    pub skipped: BTreeMap<Skip, usize>,
+    pub recent: VecDeque<Tally>,
+    /// Since the last diagnostics event: the counts, when the first skip of them was, and when the
+    /// last edit was counted.
+    pending: (usize, BTreeMap<Skip, usize>),
+    pending_since: Option<f64>,
+    last_counted: f64,
+}
+
+/// How many edits' tallies `ui.inspect` keeps.
+pub const RECENT: usize = 16;
+/// A `reveal` diagnostics event is written once the agents' edits have been quiet this long
+/// (seconds) after a skip, so one burst is one event…
+pub const LOG_QUIET: f64 = 2.0;
+/// … or this long after the first skip it holds, whichever comes first.
+pub const LOG_EVERY: f64 = 30.0;
+
+impl Diagnostics {
+    fn add(&mut self, t: Tally) {
+        self.last_counted = t.at;
+        self.entered += t.entered;
+        self.pending.0 += t.entered;
+        for (why, n) in &t.skipped {
+            self.skip(*why, *n);
+        }
+        if self.recent.len() == RECENT {
+            self.recent.pop_front();
+        }
+        self.recent.push_back(t);
+    }
+
+    fn skip(&mut self, why: Skip, n: usize) {
+        self.pending_since.get_or_insert(self.last_counted);
+        *self.skipped.entry(why).or_default() += n;
+        *self.pending.1.entry(why).or_default() += n;
+    }
+
+    /// What the next `reveal` event says, when one is due: something was skipped since the last,
+    /// and the edits have been quiet [`LOG_QUIET`], or the first skip was [`LOG_EVERY`] ago.
+    fn due(&mut self, now: f64) -> Option<(usize, Vec<(Skip, usize)>)> {
+        let since = self.pending_since?;
+        if now - self.last_counted < LOG_QUIET && now - since < LOG_EVERY {
+            return None;
+        }
+        self.pending_since = None;
+        let (entered, skipped) = std::mem::take(&mut self.pending);
+        Some((entered, skipped.into_iter().collect()))
+    }
 }
 
 impl State {
@@ -135,12 +210,39 @@ impl State {
         self.items.iter().filter(|i| i.kind == Kind::Enter).map(|i| (i.id, i.start))
     }
 
+    /// The counters and the recent edits' tallies (Fix L2).
+    pub fn tallies(&self) -> &Diagnostics {
+        &self.diag
+    }
+
+    /// [`Self::tallies`] as JSON, for `ui.inspect`.
+    pub fn diagnostics(&self) -> serde_json::Value {
+        let d = &self.diag;
+        let recent: Vec<serde_json::Value> = d
+            .recent
+            .iter()
+            .map(|t| {
+                serde_json::json!({"at": t.at, "created": t.created, "entered": t.entered, "withGroup": t.with_group, "skipped": texts(&t.skipped), "follow": t.follow})
+            })
+            .collect();
+        serde_json::json!({"entered": d.entered, "skipped": texts(&d.skipped), "recent": recent})
+    }
+
     /// Stop every reveal: the canvas draws the final state.
     pub fn finish(&mut self) {
+        let cut = self.items.iter().filter(|i| i.kind == Kind::Enter).count();
+        if cut > 0 {
+            self.diag.skip(Skip::CutShort, cut);
+        }
         self.items.clear();
         self.fade = None;
         self.frame_doc = None;
     }
+}
+
+/// Reasons by their words, for JSON.
+fn texts(m: &BTreeMap<Skip, usize>) -> BTreeMap<&'static str, usize> {
+    m.iter().map(|(k, n)| (k.text(), *n)).collect()
 }
 
 fn ease_out_cubic(t: f64) -> f64 {
@@ -191,10 +293,12 @@ fn view_rect(app: &FigApp) -> Option<(NodeId, figcraft_doc::geom::Rect)> {
 /// Every frame, before the canvas (`gap`: seconds since the last frame): queue what landed, drop
 /// what's done, and make this frame's render-only document.
 pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Landed]) {
-    let animate = app.session.prefs.settings.reveal_agent_work && !app.reduce_motion();
+    let (switched_on, motion) = (app.session.prefs.settings.reveal_agent_work, !app.reduce_motion());
+    let animate = switched_on && motion;
     let speed = Speed::of(&app.session.prefs.settings.reveal_speed);
     let speed = if app.ui.agent_view.budget.level >= 3 { speed.degraded() } else { speed };
-    let following = figcraft_engine::cmd::camera::follow_state(&app.session) == "following";
+    let follow = figcraft_engine::cmd::camera::follow_state(&app.session);
+    let following = follow == "following";
     let view = view_rect(app);
     let Ok(doc) = app.session.ds().map(|d| d.doc.clone()) else {
         app.ui.agent_view.reveal.finish();
@@ -221,18 +325,45 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
     if !animate {
         st.finish();
     }
-    // Edits that landed while the window was hidden are drawn final.
-    let animate = animate && !landed_hidden;
     // In view now, or on its way into view (the camera follows the agent there).
     let seen =
         |id: NodeId| following || view.is_some_and(|(page, r)| doc.page_of(id) == Some(page) && doc.world_bounds(id).is_some_and(|b| meets(b, r)));
+    // Why nothing of this frame's edits enters, if nothing does.
+    let none = if !switched_on {
+        Some(Skip::RevealOff)
+    } else if !motion {
+        Some(Skip::NoMotion)
+    } else if landed_hidden {
+        // Edits that landed while the window was hidden are drawn final.
+        Some(Skip::Hidden)
+    } else {
+        None
+    };
     for l in landed {
         // Any edit ends a delete's fade: the document before it isn't the one before any more.
         st.fade = None;
-        if !animate || !l.agent || l.undo {
+        if !l.agent {
             continue;
         }
-        let new: Vec<NodeId> = entering(&doc, &l.created).into_iter().filter(|id| seen(*id)).collect();
+        let candidates = entering(&doc, &l.created);
+        let created = l.created.iter().filter(|id| doc.node(**id).is_some_and(|n| !n.is_page())).count();
+        let mut tally = Tally { at: now, created, with_group: created.saturating_sub(candidates.len()), follow, ..Tally::default() };
+        if let Some(why) = none.or(l.undo.then_some(Skip::Undo)) {
+            if !candidates.is_empty() {
+                tally.skipped.insert(why, candidates.len());
+                st.diag.add(tally);
+            }
+            continue;
+        }
+        let new: Vec<NodeId> = candidates.iter().copied().filter(|id| seen(*id)).collect();
+        if !candidates.is_empty() {
+            tally.entered = new.len();
+            if new.len() < candidates.len() {
+                let why = if follow == "off" { Skip::OffScreenOff } else { Skip::OffScreenPaused };
+                tally.skipped.insert(why, candidates.len() - new.len());
+            }
+            st.diag.add(tally);
+        }
         // Behind the running stagger: a step landing mid-reveal never restarts or cuts it.
         let first = if st.items.iter().any(|i| i.kind == Kind::Enter) { st.last_start + speed.stagger } else { now };
         for (id, start) in schedule(&new, now, first, speed) {
@@ -269,6 +400,11 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
             st.fade = Some(Fade { before: before.clone(), after: doc.clone(), ids: roots, start: now });
         }
     }
+    // The diagnostics event (Fix L2): at most one per LOG_EVERY, only when something was skipped.
+    if let Some((entered, skipped)) = st.diag.due(now) {
+        crate::settings_privacy::record(app, Entry::Reveal { entered, skipped: &skipped });
+    }
+    let st = &mut app.ui.agent_view.reveal;
     st.items.retain(|i| now < i.start + i.dur && doc.contains(i.id));
     if st.fade.as_ref().is_some_and(|f| now >= f.start + TWEEN || !Arc::ptr_eq(&f.after, &doc)) {
         st.fade = None;
@@ -325,3 +461,7 @@ pub fn canvas_doc(app: &FigApp) -> Option<Arc<Document>> {
 #[cfg(test)]
 #[path = "reveal_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "reveal_skip_tests.rs"]
+mod skip_tests;

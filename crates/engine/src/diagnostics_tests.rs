@@ -3,7 +3,7 @@
 
 use serde_json::json;
 
-use super::{Entry, MAX_EVENTS, record, text, timestamp};
+use super::{Entry, MAX_EVENTS, Pause, Skip, record, text, timestamp};
 use crate::agents::Author;
 use crate::{EngineError, Session};
 
@@ -20,6 +20,8 @@ fn entries_say_only_their_allow_listed_facts() {
     record(st, NOW, Entry::Error { command: "text.set", error: &EngineError::Other("the text was \"hello\"".into()) });
     record(st, NOW, Entry::Error { command: "not a command at all", error: &EngineError::NoDocument });
     record(st, NOW, Entry::Error { command: "file.open", error: &EngineError::Waiting });
+    record(st, NOW, Entry::FollowPaused(Pause::CanvasInput));
+    record(st, NOW, Entry::Reveal { entered: 20, skipped: &[(Skip::OffScreenPaused, 16), (Skip::CutShort, 2)] });
     let lines: Vec<(&str, &str)> = st.diagnostics.iter().map(|e| (e.kind.as_str(), e.detail.as_str())).collect();
     assert_eq!(
         lines,
@@ -30,6 +32,11 @@ fn entries_say_only_their_allow_listed_facts() {
             ("mcpClient", "claude-code 2.1.296 connected"),
             ("error", "text.set: failed"),
             ("error", "a command: no open document"),
+            ("follow", "following paused: the person's press, scroll or pinch on the canvas"),
+            (
+                "reveal",
+                "agent layers: 20 entered, 18 drawn final at once (off screen, follow paused: 16; entrance cut short (dropped frames, a hidden window or a window capture): 2)"
+            ),
         ],
         "Waiting isn't an error"
     );
@@ -121,6 +128,8 @@ fn no_secrets_reach_the_events() {
     record(&mut s.prefs.settings, NOW, Entry::Reload);
     record(&mut s.prefs.settings, NOW, Entry::McpClient { name: "claude-code", version: "2.1" });
     record(&mut s.prefs.settings, NOW, Entry::FontFallback(&["Inter".into(), "Geist".into()]));
+    record(&mut s.prefs.settings, NOW, Entry::FollowPaused(Pause::PersonEdit));
+    record(&mut s.prefs.settings, NOW, Entry::Reveal { entered: 3, skipped: &[(Skip::OffScreenOff, 2)] });
     let kept = serde_json::to_string(&s.prefs.settings.diagnostics).unwrap() + &text(&s.prefs.settings.diagnostics);
     assert!(s.prefs.settings.diagnostics.len() >= 6, "{kept}");
     for secret in [DOC, PROMPT, PATH, "SECRET", "/Users/", token.as_str()] {

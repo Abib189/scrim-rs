@@ -8,7 +8,9 @@
 //! - the MCP server starting (its port) or failing to;
 //! - an MCP client connecting (its name and version as it gave them);
 //! - a command failing (its id, when it is a registered command, and the error's category; never
-//!   the message, which can quote the document).
+//!   the message, which can quote the document);
+//! - following an agent pausing, and why ([`Pause`]), and the reveal drawing an agent's new layers
+//!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2).
 //!
 //! So no prompts, document content, paths or tokens can reach it; `diagnostics_tests.rs` scans for
 //! them.
@@ -32,7 +34,7 @@ const MAX_FAMILIES: usize = 30;
 pub struct Event {
     /// Seconds since 1970 (UTC).
     pub at: u64,
-    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient` or `error`.
+    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient`, `error`, `follow` or `reveal`.
     pub kind: String,
     pub detail: String,
 }
@@ -51,6 +53,55 @@ pub enum Entry<'a> {
     McpClient { name: &'a str, version: &'a str },
     /// A command failed: its id and the error.
     Error { command: &'a str, error: &'a EngineError },
+    /// Following the agent paused, for this reason.
+    FollowPaused(Pause),
+    /// Agents' new layers since the last such event: how many entered, and how many were drawn
+    /// final at once, by reason.
+    Reveal { entered: usize, skipped: &'a [(Skip, usize)] },
+}
+
+/// Why following the agent paused (Stage I1's rules).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Pause {
+    PersonEdit,
+    CameraMoved,
+    CanvasInput,
+}
+
+impl Pause {
+    pub fn text(self) -> &'static str {
+        match self {
+            Pause::PersonEdit => "the person's edit",
+            Pause::CameraMoved => "a camera move that wasn't follow's or an agent's",
+            Pause::CanvasInput => "the person's press, scroll or pinch on the canvas",
+        }
+    }
+}
+
+/// Why an agent's new layer was drawn final at once instead of entering (Stage I2's rules).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Skip {
+    RevealOff,
+    NoMotion,
+    Hidden,
+    Undo,
+    OffScreenPaused,
+    OffScreenOff,
+    CutShort,
+}
+
+impl Skip {
+    pub fn text(self) -> &'static str {
+        match self {
+            Skip::RevealOff => "Reveal agent work off",
+            Skip::NoMotion => "Animations Off or reduced motion",
+            Skip::Hidden => "landed while the window was hidden",
+            Skip::Undo => "undo or redo",
+            Skip::OffScreenPaused => "off screen, follow paused",
+            Skip::OffScreenOff => "off screen, follow off",
+            Skip::CutShort => "entrance cut short (dropped frames, a hidden window or a window capture)",
+        }
+    }
 }
 
 /// `s` without control characters, at most `max` characters.
@@ -80,6 +131,8 @@ impl Entry<'_> {
             Entry::McpStarted(_) | Entry::McpFailed => "mcpServer",
             Entry::McpClient { .. } => "mcpClient",
             Entry::Error { .. } => "error",
+            Entry::FollowPaused(_) => "follow",
+            Entry::Reveal { .. } => "reveal",
         }
     }
 
@@ -104,6 +157,12 @@ impl Entry<'_> {
                 // Only a registered command's id: anything else could be text someone typed.
                 let id = if crate::find_command(command).is_some() { *command } else { "a command" };
                 format!("{id}: {}", category(error))
+            }
+            Entry::FollowPaused(why) => format!("following paused: {}", why.text()),
+            Entry::Reveal { entered, skipped } => {
+                let n: usize = skipped.iter().map(|s| s.1).sum();
+                let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();
+                format!("agent layers: {entered} entered, {n} drawn final at once ({})", why.join("; "))
             }
         }
     }
