@@ -1,0 +1,4121 @@
+{
+ "seq": {
+  "shots": [
+   {
+    "name": "a00-start",
+    "t": null,
+    "view": [
+     -9000.0,
+     -6000.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a00",
+    "t": 0.035,
+    "view": [
+     -7246.039,
+     -4792.973,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 15,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a01",
+    "t": 0.15,
+    "view": [
+     -499.509,
+     -150.199,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 15,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a02",
+    "t": 0.267,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       756.2413940429688,
+       249.91879272460938,
+       902.2413940429688,
+       260.9187927246094
+      ]
+     },
+     "outline": true,
+     "revealing": 12,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a03",
+    "t": 0.367,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 9,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a04",
+    "t": 0.467,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 7,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a05",
+    "t": 0.567,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 4,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a06",
+    "t": 0.667,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 2,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a07",
+    "t": 0.767,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a08",
+    "t": 0.867,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a09",
+    "t": 0.967,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a10",
+    "t": 1.066,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a11",
+    "t": 1.167,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a12",
+    "t": 1.266,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a13",
+    "t": 1.367,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a14",
+    "t": 1.467,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a15",
+    "t": 1.583,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a16",
+    "t": 1.701,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a17",
+    "t": 1.8,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a18",
+    "t": 1.9,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a19",
+    "t": 2.017,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a20",
+    "t": 2.133,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a21",
+    "t": 2.25,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a22",
+    "t": 2.367,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a23",
+    "t": 2.484,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a99-final",
+    "t": null,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a99-final-rerendered",
+    "t": null,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "b01-paused-chip",
+    "t": 1.386,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "c00",
+    "t": 0.034,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 11,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c01",
+    "t": 0.15,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 11,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c02",
+    "t": 0.249,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 8,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c03",
+    "t": 0.35,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 6,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c04",
+    "t": 0.45,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 3,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c05",
+    "t": 0.55,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 1,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c06",
+    "t": 0.65,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c07",
+    "t": 0.749,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c08",
+    "t": 0.85,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c09",
+    "t": 0.949,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       727.0,
+       297.0,
+       873.0,
+       308.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on In view"
+    }
+   },
+   {
+    "name": "c10",
+    "t": 1.049,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "c11",
+    "t": 1.149,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "c12",
+    "t": 1.249,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "c13",
+    "t": 1.35,
+    "view": [
+     -3698.351,
+     -2528.519,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "d01-scrolled-to-far",
+    "t": null,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Far"
+    }
+   },
+   {
+    "name": "d02-far-later",
+    "t": null,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e00-paused-before-resume",
+    "t": null,
+    "view": [
+     -9000.0,
+     -6000.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "paused",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e00",
+    "t": 0.216,
+    "view": [
+     1583.892,
+     -4276.414,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e01",
+    "t": 0.333,
+    "view": [
+     28280.804,
+     71.174,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e02",
+    "t": 0.433,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e03",
+    "t": 0.533,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e04",
+    "t": 0.633,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e05",
+    "t": 0.733,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e06",
+    "t": 0.833,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "e99-resumed",
+    "t": null,
+    "view": [
+     30300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   }
+  ],
+  "mode": "seq",
+  "mcp_port": 7681,
+  "initialize": {
+   "name": "scrim",
+   "title": "Scrim",
+   "version": "0.7.0"
+  },
+  "batch_sent_s": 0.035,
+  "paused_state": "paused",
+  "far_revealing": 0,
+  "before_resume_state": "paused",
+  "after_resume_state": "following",
+  "history": [
+   [
+    "agent (mcp (http))",
+    "Rectangle"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Rectangle"
+   ],
+   [
+    "agent (mcp (http))",
+    "Run several commands"
+   ]
+  ]
+ },
+ "off": {
+  "shots": [
+   {
+    "name": "a00-start",
+    "t": null,
+    "view": [
+     -9000.0,
+     -6000.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a00",
+    "t": 0.034,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a01",
+    "t": 0.149,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a02",
+    "t": 0.266,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a03",
+    "t": 0.383,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a04",
+    "t": 0.5,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a05",
+    "t": 0.599,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a06",
+    "t": 0.699,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a07",
+    "t": 0.799,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a08",
+    "t": 0.899,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": {
+      "columns": 20,
+      "rect": [
+       752.0,
+       247.0,
+       898.0,
+       258.0
+      ]
+     },
+     "outline": true,
+     "revealing": 0,
+     "working": "Claude is working on Poster"
+    }
+   },
+   {
+    "name": "a09",
+    "t": 0.999,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a10",
+    "t": 1.099,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a11",
+    "t": 1.216,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a12",
+    "t": 1.334,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a13",
+    "t": 1.449,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a14",
+    "t": 1.566,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a15",
+    "t": 1.683,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a16",
+    "t": 1.8,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a17",
+    "t": 1.899,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a18",
+    "t": 1.999,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a19",
+    "t": 2.116,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a20",
+    "t": 2.232,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a21",
+    "t": 2.349,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a22",
+    "t": 2.466,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a23",
+    "t": 2.583,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a99-final",
+    "t": null,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   },
+   {
+    "name": "a99-final-rerendered",
+    "t": null,
+    "view": [
+     300.0,
+     400.0,
+     0.5
+    ],
+    "agent": {
+     "degraded": 0,
+     "follow": "following",
+     "indicator": null,
+     "outline": false,
+     "revealing": 0,
+     "working": null
+    }
+   }
+  ],
+  "mode": "off",
+  "mcp_port": 7681,
+  "initialize": {
+   "name": "scrim",
+   "title": "Scrim",
+   "version": "0.7.0"
+  },
+  "batch_sent_s": 0.034,
+  "history": [
+   [
+    "agent (mcp (http))",
+    "Rectangle"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Text"
+   ],
+   [
+    "agent (mcp (http))",
+    "Rectangle"
+   ],
+   [
+    "agent (mcp (http))",
+    "Run several commands"
+   ]
+  ]
+ },
+ "fixture": [
+  {
+   "batch_s": 0.106,
+   "samples": [
+    {
+     "t": 0.165,
+     "frameMs": 159.130083,
+     "renderMs": 10.79325,
+     "revealing": 14,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.209,
+     "frameMs": 1.559917,
+     "renderMs": 2.978625,
+     "revealing": 14,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.259,
+     "frameMs": 1.4905000000000002,
+     "renderMs": 2.1055,
+     "revealing": 13,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.309,
+     "frameMs": 1.619917,
+     "renderMs": 2.3988329999999998,
+     "revealing": 12,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.359,
+     "frameMs": 1.792,
+     "renderMs": 2.8493749999999998,
+     "revealing": 11,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.409,
+     "frameMs": 1.798875,
+     "renderMs": 2.8395,
+     "revealing": 9,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.459,
+     "frameMs": 1.9275419999999999,
+     "renderMs": 2.963791,
+     "revealing": 8,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.493,
+     "frameMs": 2.025416,
+     "renderMs": 3.157666,
+     "revealing": 7,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.543,
+     "frameMs": 1.726875,
+     "renderMs": 2.593542,
+     "revealing": 6,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.593,
+     "frameMs": 1.7287080000000001,
+     "renderMs": 2.797667,
+     "revealing": 5,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.643,
+     "frameMs": 1.8195,
+     "renderMs": 2.75,
+     "revealing": 3,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.676,
+     "frameMs": 1.958792,
+     "renderMs": 2.757333,
+     "revealing": 3,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.726,
+     "frameMs": 1.901208,
+     "renderMs": 2.876958,
+     "revealing": 1,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.776,
+     "frameMs": 1.8689170000000002,
+     "renderMs": 2.796458,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.826,
+     "frameMs": 2.0058749999999996,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.877,
+     "frameMs": 2.36375,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.927,
+     "frameMs": 2.9945839999999997,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.977,
+     "frameMs": 3.898417,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.029,
+     "frameMs": 4.162334,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.078,
+     "frameMs": 3.97125,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.127,
+     "frameMs": 2.832167,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.179,
+     "frameMs": 3.1853749999999996,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.227,
+     "frameMs": 2.801291,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.279,
+     "frameMs": 4.024833999999999,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.327,
+     "frameMs": 3.165083,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.378,
+     "frameMs": 3.190542,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.428,
+     "frameMs": 3.1612910000000003,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.477,
+     "frameMs": 3.052208,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.528,
+     "frameMs": 3.170042,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.577,
+     "frameMs": 3.1953340000000003,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.627,
+     "frameMs": 3.0742920000000002,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.677,
+     "frameMs": 3.778292,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.728,
+     "frameMs": 4.042166,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.778,
+     "frameMs": 4.233583,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.827,
+     "frameMs": 2.821792,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.878,
+     "frameMs": 3.158125,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.927,
+     "frameMs": 3.146458,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.977,
+     "frameMs": 3.222334,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.027,
+     "frameMs": 3.57625,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.077,
+     "frameMs": 3.538958,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.128,
+     "frameMs": 3.8088330000000004,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.178,
+     "frameMs": 3.733833,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.227,
+     "frameMs": 3.7937499999999997,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.278,
+     "frameMs": 3.203166,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.327,
+     "frameMs": 3.249375,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.377,
+     "frameMs": 3.004833,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.427,
+     "frameMs": 3.208292,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.477,
+     "frameMs": 2.607833,
+     "renderMs": 2.8712500000000003,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    }
+   ]
+  },
+  {
+   "batch_s": 0.108,
+   "samples": [
+    {
+     "t": 0.166,
+     "frameMs": 161.0975,
+     "renderMs": 14.257166,
+     "revealing": 14,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.217,
+     "frameMs": 1.62375,
+     "renderMs": 2.050166,
+     "revealing": 14,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.267,
+     "frameMs": 1.7374999999999998,
+     "renderMs": 2.109584,
+     "revealing": 13,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.317,
+     "frameMs": 1.503,
+     "renderMs": 2.23125,
+     "revealing": 12,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.367,
+     "frameMs": 1.78275,
+     "renderMs": 2.647541,
+     "revealing": 10,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.401,
+     "frameMs": 1.778958,
+     "renderMs": 2.7715,
+     "revealing": 9,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.451,
+     "frameMs": 1.879417,
+     "renderMs": 2.881833,
+     "revealing": 8,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.484,
+     "frameMs": 1.973125,
+     "renderMs": 3.011209,
+     "revealing": 7,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.534,
+     "frameMs": 1.929417,
+     "renderMs": 2.9360839999999997,
+     "revealing": 6,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.584,
+     "frameMs": 1.8726669999999999,
+     "renderMs": 3.0223329999999997,
+     "revealing": 5,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.634,
+     "frameMs": 2.0998750000000004,
+     "renderMs": 2.954209,
+     "revealing": 4,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.684,
+     "frameMs": 2.0641249999999998,
+     "renderMs": 2.877,
+     "revealing": 2,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.734,
+     "frameMs": 2.182208,
+     "renderMs": 3.029542,
+     "revealing": 1,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.784,
+     "frameMs": 2.381041,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.817,
+     "frameMs": 2.113625,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.868,
+     "frameMs": 1.911791,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.918,
+     "frameMs": 1.7487080000000002,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.968,
+     "frameMs": 2.722417,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.019,
+     "frameMs": 3.234584,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.07,
+     "frameMs": 3.0070840000000003,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.119,
+     "frameMs": 3.738,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.169,
+     "frameMs": 3.1832499999999997,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.218,
+     "frameMs": 3.005625,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.269,
+     "frameMs": 3.6245000000000003,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.319,
+     "frameMs": 3.772458,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.369,
+     "frameMs": 3.786458,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.419,
+     "frameMs": 3.64675,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.469,
+     "frameMs": 3.268583,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.518,
+     "frameMs": 2.984667,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.568,
+     "frameMs": 2.956584,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.62,
+     "frameMs": 3.2125,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.67,
+     "frameMs": 3.168875,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.719,
+     "frameMs": 3.256083,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.769,
+     "frameMs": 3.959333,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.818,
+     "frameMs": 2.995958,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.87,
+     "frameMs": 2.996292,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.919,
+     "frameMs": 3.794625,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.969,
+     "frameMs": 2.979542,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.019,
+     "frameMs": 3.8132919999999997,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.069,
+     "frameMs": 2.784,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.12,
+     "frameMs": 3.81975,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.169,
+     "frameMs": 3.727125,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.219,
+     "frameMs": 3.7335,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.271,
+     "frameMs": 3.899417,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.319,
+     "frameMs": 3.22325,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.369,
+     "frameMs": 3.883791,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.419,
+     "frameMs": 3.220166,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.469,
+     "frameMs": 3.2144589999999997,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.502,
+     "frameMs": 3.7624999999999997,
+     "renderMs": 3.08675,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    }
+   ]
+  },
+  {
+   "batch_s": 0.098,
+   "samples": [
+    {
+     "t": 0.156,
+     "frameMs": 152.41825,
+     "renderMs": 18.607792,
+     "revealing": 14,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.216,
+     "frameMs": 1.564834,
+     "renderMs": 3.108917,
+     "revealing": 14,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.266,
+     "frameMs": 1.566667,
+     "renderMs": 2.2207500000000002,
+     "revealing": 13,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.316,
+     "frameMs": 1.676083,
+     "renderMs": 2.692666,
+     "revealing": 12,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.366,
+     "frameMs": 1.897458,
+     "renderMs": 2.9199159999999997,
+     "revealing": 10,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.416,
+     "frameMs": 1.941,
+     "renderMs": 2.93025,
+     "revealing": 9,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.466,
+     "frameMs": 1.940792,
+     "renderMs": 3.180167,
+     "revealing": 8,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.516,
+     "frameMs": 1.970834,
+     "renderMs": 3.160708,
+     "revealing": 7,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.566,
+     "frameMs": 2.081166,
+     "renderMs": 3.0344170000000004,
+     "revealing": 5,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.616,
+     "frameMs": 1.979458,
+     "renderMs": 3.065667,
+     "revealing": 4,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.666,
+     "frameMs": 2.016042,
+     "renderMs": 5.01275,
+     "revealing": 3,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.716,
+     "frameMs": 1.6314579999999999,
+     "renderMs": 2.2657089999999998,
+     "revealing": 2,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.766,
+     "frameMs": 1.693416,
+     "renderMs": 2.3040830000000003,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.816,
+     "frameMs": 1.748333,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.849,
+     "frameMs": 2.096209,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.9,
+     "frameMs": 2.545042,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.95,
+     "frameMs": 2.433791,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.0,
+     "frameMs": 2.4052499999999997,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.05,
+     "frameMs": 2.868458,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.099,
+     "frameMs": 1.98125,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.15,
+     "frameMs": 2.021584,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.2,
+     "frameMs": 2.6945419999999998,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.25,
+     "frameMs": 2.9495,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.302,
+     "frameMs": 3.258041,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.352,
+     "frameMs": 3.184208,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.401,
+     "frameMs": 3.150834,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.45,
+     "frameMs": 2.7244159999999997,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.5,
+     "frameMs": 3.844834,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.551,
+     "frameMs": 4.235541,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.6,
+     "frameMs": 2.7751249999999996,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.652,
+     "frameMs": 3.014583,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.7,
+     "frameMs": 2.849167,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.751,
+     "frameMs": 3.171792,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.8,
+     "frameMs": 3.0140000000000002,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.851,
+     "frameMs": 3.1866659999999998,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.901,
+     "frameMs": 3.705458,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.951,
+     "frameMs": 3.9612909999999997,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.002,
+     "frameMs": 3.8813329999999997,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.05,
+     "frameMs": 2.96625,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.101,
+     "frameMs": 3.1545829999999997,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.15,
+     "frameMs": 3.9856249999999998,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.202,
+     "frameMs": 4.011208,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.252,
+     "frameMs": 4.033708000000001,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.3,
+     "frameMs": 3.215125,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.35,
+     "frameMs": 4.062875,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.4,
+     "frameMs": 3.090959,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.452,
+     "frameMs": 3.857167,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.501,
+     "frameMs": 4.0165,
+     "renderMs": 2.549375,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    }
+   ]
+  },
+  {
+   "batch_s": 0.105,
+   "samples": [
+    {
+     "t": 0.161,
+     "frameMs": 157.045083,
+     "renderMs": 11.986917,
+     "revealing": 14,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.205,
+     "frameMs": 1.501,
+     "renderMs": 2.873875,
+     "revealing": 14,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.255,
+     "frameMs": 1.492459,
+     "renderMs": 2.200834,
+     "revealing": 13,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.305,
+     "frameMs": 1.6065420000000001,
+     "renderMs": 2.466291,
+     "revealing": 12,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.355,
+     "frameMs": 2.0211669999999997,
+     "renderMs": 2.739334,
+     "revealing": 11,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.406,
+     "frameMs": 1.873542,
+     "renderMs": 2.860833,
+     "revealing": 9,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.455,
+     "frameMs": 2.093458,
+     "renderMs": 3.138667,
+     "revealing": 8,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.505,
+     "frameMs": 2.171417,
+     "renderMs": 3.0626249999999997,
+     "revealing": 7,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.555,
+     "frameMs": 1.953584,
+     "renderMs": 2.8912500000000003,
+     "revealing": 6,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.606,
+     "frameMs": 1.9895,
+     "renderMs": 3.009958,
+     "revealing": 4,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.656,
+     "frameMs": 2.074875,
+     "renderMs": 2.9050000000000002,
+     "revealing": 3,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.706,
+     "frameMs": 2.06725,
+     "renderMs": 3.0707500000000003,
+     "revealing": 2,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.756,
+     "frameMs": 2.067083,
+     "renderMs": 2.979166,
+     "revealing": 1,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.806,
+     "frameMs": 2.041375,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.856,
+     "frameMs": 2.66825,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.909,
+     "frameMs": 4.214665999999999,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.957,
+     "frameMs": 3.795709,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.009,
+     "frameMs": 4.0356250000000005,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.057,
+     "frameMs": 3.15325,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.107,
+     "frameMs": 2.79225,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.158,
+     "frameMs": 3.819708,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.207,
+     "frameMs": 3.203834,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.257,
+     "frameMs": 4.025167,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.306,
+     "frameMs": 2.979709,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.355,
+     "frameMs": 2.0995,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.406,
+     "frameMs": 2.280916,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.456,
+     "frameMs": 2.44825,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.506,
+     "frameMs": 2.470792,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.556,
+     "frameMs": 2.825208,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.606,
+     "frameMs": 2.9764169999999996,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.656,
+     "frameMs": 2.7569589999999997,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.706,
+     "frameMs": 2.836958,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.757,
+     "frameMs": 2.7708749999999998,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.806,
+     "frameMs": 2.788042,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.856,
+     "frameMs": 2.747125,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.906,
+     "frameMs": 3.0469999999999997,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.956,
+     "frameMs": 2.789583,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.006,
+     "frameMs": 2.755125,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.056,
+     "frameMs": 2.797875,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.107,
+     "frameMs": 3.9439159999999998,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.157,
+     "frameMs": 3.187917,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.207,
+     "frameMs": 3.1814579999999997,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.256,
+     "frameMs": 3.153667,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.308,
+     "frameMs": 3.1498749999999998,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.358,
+     "frameMs": 3.997708,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.408,
+     "frameMs": 4.191084,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.457,
+     "frameMs": 2.977333,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.507,
+     "frameMs": 3.203166,
+     "renderMs": 3.01825,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    }
+   ]
+  },
+  {
+   "batch_s": 0.117,
+   "samples": [
+    {
+     "t": 0.178,
+     "frameMs": 170.94316600000002,
+     "renderMs": 9.315541999999999,
+     "revealing": 14,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.224,
+     "frameMs": 1.54325,
+     "renderMs": 3.694,
+     "revealing": 14,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.271,
+     "frameMs": 1.4824169999999999,
+     "renderMs": 2.0692079999999997,
+     "revealing": 13,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.304,
+     "frameMs": 1.758375,
+     "renderMs": 2.1824589999999997,
+     "revealing": 12,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.354,
+     "frameMs": 1.608166,
+     "renderMs": 2.332208,
+     "revealing": 11,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.405,
+     "frameMs": 1.795542,
+     "renderMs": 2.6563749999999997,
+     "revealing": 9,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.454,
+     "frameMs": 1.919416,
+     "renderMs": 2.8388340000000003,
+     "revealing": 8,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.505,
+     "frameMs": 2.415708,
+     "renderMs": 3.184208,
+     "revealing": 7,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.554,
+     "frameMs": 2.1687920000000003,
+     "renderMs": 3.582125,
+     "revealing": 6,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.605,
+     "frameMs": 2.1332500000000003,
+     "renderMs": 2.598375,
+     "revealing": 4,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.638,
+     "frameMs": 2.118792,
+     "renderMs": 3.115083,
+     "revealing": 4,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.672,
+     "frameMs": 2.1966249999999996,
+     "renderMs": 2.893208,
+     "revealing": 3,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.722,
+     "frameMs": 2.18125,
+     "renderMs": 3.058542,
+     "revealing": 1,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.771,
+     "frameMs": 2.1,
+     "renderMs": 3.245458,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.805,
+     "frameMs": 2.00775,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.855,
+     "frameMs": 2.267958,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.906,
+     "frameMs": 2.913042,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 0.958,
+     "frameMs": 3.285583,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.006,
+     "frameMs": 2.744625,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": true,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.055,
+     "frameMs": 2.840875,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.106,
+     "frameMs": 3.1878330000000004,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.155,
+     "frameMs": 2.4798340000000003,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.205,
+     "frameMs": 2.357666,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.255,
+     "frameMs": 2.817875,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.305,
+     "frameMs": 2.748833,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.357,
+     "frameMs": 3.674708,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.407,
+     "frameMs": 4.061833,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.456,
+     "frameMs": 3.192791,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.505,
+     "frameMs": 2.591208,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.539,
+     "frameMs": 2.6535,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.588,
+     "frameMs": 1.950958,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.637,
+     "frameMs": 1.839083,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.688,
+     "frameMs": 2.2235,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.739,
+     "frameMs": 2.855667,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.789,
+     "frameMs": 3.3397919999999996,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.839,
+     "frameMs": 3.991708,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.898,
+     "frameMs": 3.224458,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.939,
+     "frameMs": 2.685292,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 1.988,
+     "frameMs": 2.478125,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.039,
+     "frameMs": 3.352459,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.089,
+     "frameMs": 3.5077920000000002,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.139,
+     "frameMs": 3.9557919999999998,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.19,
+     "frameMs": 3.812791,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.239,
+     "frameMs": 2.761375,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.272,
+     "frameMs": 3.129209,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.322,
+     "frameMs": 3.759375,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.372,
+     "frameMs": 3.930208,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.423,
+     "frameMs": 2.56,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    },
+    {
+     "t": 2.472,
+     "frameMs": 2.967375,
+     "renderMs": 3.095,
+     "revealing": 0,
+     "indicator": false,
+     "degraded": 0,
+     "follow": "following",
+     "view": null
+    }
+   ]
+  }
+ ]
+}

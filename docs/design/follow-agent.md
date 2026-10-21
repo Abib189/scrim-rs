@@ -263,3 +263,15 @@ Over I1–I3 that is 38 tests in the window (`follow_agent_tests.rs` 15, `reveal
   - **The real signal now:** requests answered by `control::drain_hidden` (which runs only while the window draws no frames) mark what they land as seen while hidden. The gap before a landing isn't used.
   - **Test:** `an_edit_after_a_quiet_minute_still_enters` fails under the old rule.
 - **One slow render isn't a slow frame rate.** On a Fixture run, a 220 ms render (the first after the window came back) stayed in `render_ms` until the next render. Every frame after it counted as over budget, and the degradation stepped all the way to 3. Only a new render counts now (`one_slow_render_doesnt_degrade`).
+
+## I4 results
+
+Live in the release build: the captures, numbers and method are in `docs/scrim-ports/follow-agent/README.md`, driven over the app's real MCP endpoint.
+- **The poster build:** 16 layers from the camera far away. The flight lands in about 0.27 s with the poster centred. Its layers fade in one after another while the dots wave above the artboard, in the same frames. The dots fade about 1 s after the agent stops.
+- **The person wins:** a scroll mid-flight stopped it and paused following, and the chip showed. Paused work in view still revealed. Off-screen work had no entrance and was final when scrolled to (0 px over 1.5 s). The chip resumed following and flew to the latest work.
+- **Animations Off:**
+  - a jump cut, no entrance, the static row;
+  - mid-reveal, On and Off differ only inside the canvas (0 px outside it);
+  - the final frames are identical after a fresh render (0 px). Before it, 163 px of path-dependent edge pixels differ, at most 16/255.
+- **The 782-layer Fixture,** five runs: about 2 ms a frame and 3 ms a render while it reveals; **no degradation step reached**. The landing frame (the batch itself) is 150–170 ms.
+- **Fixed on the way:** five follow-ups, each with a regression test (listed in the README).
