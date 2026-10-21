@@ -3,7 +3,7 @@
 
 use serde_json::json;
 
-use super::{Entry, MAX_EVENTS, Pause, Skip, record, text, timestamp};
+use super::{Cause, Change, Entry, MAX_EVENTS, Pause, Skip, record, text, timestamp};
 use crate::agents::Author;
 use crate::{EngineError, Session};
 
@@ -22,6 +22,11 @@ fn entries_say_only_their_allow_listed_facts() {
     record(st, NOW, Entry::Error { command: "file.open", error: &EngineError::Waiting });
     record(st, NOW, Entry::FollowPaused(Pause::CanvasInput));
     record(st, NOW, Entry::Reveal { entered: 20, skipped: &[(Skip::OffScreenPaused, 16), (Skip::CutShort, 2)] });
+    let raw = "local-agent-mode-scrim (via mcp-remote 0.14.3)";
+    let w = |change, cause, client, session, run| Entry::Working { change, cause, client, session, run };
+    record(st, NOW, w(Change::Begin, Cause::FirstRequest, Some(raw), Some("9f8e7d6c5b4a39281706f5e4d3c2b1a0"), true));
+    record(st, NOW, w(Change::Hold, Cause::SessionClosed, Some(raw), Some("9f8e7d6c-5b4a"), true));
+    record(st, NOW, w(Change::End, Cause::GraceExpired, None, None, false));
     let lines: Vec<(&str, &str)> = st.diagnostics.iter().map(|e| (e.kind.as_str(), e.detail.as_str())).collect();
     assert_eq!(
         lines,
@@ -37,6 +42,9 @@ fn entries_say_only_their_allow_listed_facts() {
                 "reveal",
                 "agent layers: 20 entered, 18 drawn final at once (off screen, follow paused: 16; entrance cut short (dropped frames, a hidden window or a window capture): 2)"
             ),
+            ("working", "begin: local-agent-mode-scrim (via mcp-remote 0.14.3) (session 9f8e7d6c…), first request; the dots are on"),
+            ("working", "hold: local-agent-mode-scrim (via mcp-remote 0.14.3) (session 9f8e7d6c…), session closed; the dots are on"),
+            ("working", "end: an agent (no session), grace period expired; the dots fade out"),
         ],
         "Waiting isn't an error"
     );
@@ -130,6 +138,14 @@ fn no_secrets_reach_the_events() {
     record(&mut s.prefs.settings, NOW, Entry::FontFallback(&["Inter".into(), "Geist".into()]));
     record(&mut s.prefs.settings, NOW, Entry::FollowPaused(Pause::PersonEdit));
     record(&mut s.prefs.settings, NOW, Entry::Reveal { entered: 3, skipped: &[(Skip::OffScreenOff, 2)] });
+    // A working transition on a session id as long as a token: 8 characters of it are kept. (The
+    // client's name is what it announced, kept as `mcpClient` keeps it.)
+    let client = Some("local-agent-mode-scrim (via mcp-remote 0.14.3)");
+    record(
+        &mut s.prefs.settings,
+        NOW,
+        Entry::Working { change: Change::Begin, cause: Cause::FirstRequest, client, session: Some(&token), run: true },
+    );
     let kept = serde_json::to_string(&s.prefs.settings.diagnostics).unwrap() + &text(&s.prefs.settings.diagnostics);
     assert!(s.prefs.settings.diagnostics.len() >= 6, "{kept}");
     for secret in [DOC, PROMPT, PATH, "SECRET", "/Users/", token.as_str()] {

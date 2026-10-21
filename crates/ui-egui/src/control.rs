@@ -29,6 +29,7 @@
 
 use egui::Context;
 use figcraft_engine::cmd::comment::{Filter, Sort};
+use figcraft_engine::settings::diagnostics::Cause;
 use figcraft_engine::{PointerEvent, PointerKind};
 use serde_json::{Value, json};
 
@@ -281,7 +282,7 @@ pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, 
     let mcp = (route == ROUTE_MCP_HTTP || session.is_some()) && !matches!(method, "mcp.client" | "mcp.session-ended");
     let now = ctx.input(|i| i.time);
     if mcp {
-        app.ui.agent_view.working.touch(key.clone(), name.clone(), now);
+        app.ui.agent_view.working.touch_as(key.clone(), name.clone(), client.as_deref(), now);
     }
     let edits = |app: &FigApp| app.session.ds().ok().and_then(|d| app.session.agents.last_edit(d.uid));
     let edited_before = edits(app);
@@ -323,7 +324,9 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
         "mcp.session-ended" => {
             let session = p.get("session").and_then(Value::as_str).ok_or("`session` required")?;
             let key = crate::follow_agent::working_state::key(Some(session), None, "");
-            app.ui.agent_view.working.finish(&key, ctx.input(|i| i.time));
+            // An --attach connection closing is a disconnect; an HTTP DELETE closes the session.
+            let cause = if session.starts_with("attach-") { Cause::Disconnected } else { Cause::SessionClosed };
+            app.ui.agent_view.working.end_session(&key, ctx.input(|i| i.time), cause);
             Ok(json!({"ended": true}))
         }
         // The tools Settings ▸ Tool access turned off (`scrim mcp --attach` hides and refuses them).

@@ -11,8 +11,12 @@
 //!   so gaps between an agent's steps never end it. It ends at the grace period's end exactly (or
 //!   at the finish), which the fade out counts from.
 //! - Window state only: never in the document, undo, the file, MCP results or exports.
+//! - **Transitions** (a client beginning, ending, or stopping while the run carries on) are queued
+//!   with their cause for Settings ▸ Diagnostics ([`State::transitions`], Fix M0).
 
 use std::collections::BTreeMap;
+
+use figcraft_engine::settings::diagnostics::{Cause, Change};
 
 /// The fade in when a run of work starts, and the fade out when it ends.
 pub const FADE_IN: f64 = 0.16;
@@ -21,6 +25,8 @@ pub const FADE_OUT: f64 = 0.4;
 pub const FINISHED_FOR: f64 = 2.0;
 /// Clients that stopped longer ago than this are forgotten.
 const FORGET: f64 = 120.0;
+/// The most transitions kept until they are taken.
+const QUEUED: usize = 64;
 
 /// A client's key: its session, else its MCP client name, else the route.
 pub fn key(session: Option<&str>, client: Option<&str>, route: &str) -> String {
@@ -35,10 +41,30 @@ pub fn key(session: Option<&str>, client: Option<&str>, route: &str) -> String {
 struct Client {
     /// The name a person sees (J1's rules); `None`: "an agent".
     name: Option<String>,
+    /// The name it announced (`clientInfo`), for diagnostics.
+    raw: Option<String>,
     /// Its last request.
     last: f64,
     /// When it said it finished (or its session ended).
     finished: Option<f64>,
+    /// Why it finished.
+    stop: Option<Cause>,
+    /// It was working at the last tick.
+    was: bool,
+}
+
+/// A working-state transition, for Settings ▸ Diagnostics (Fix M0).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Transition {
+    pub at: f64,
+    pub change: Change,
+    pub cause: Cause,
+    /// The client's announced name, else the name shown.
+    pub client: Option<String>,
+    /// Its session id, if it has one.
+    pub session: Option<String>,
+    /// Whether the dots are on after it.
+    pub run: bool,
 }
 
 impl Client {
@@ -60,31 +86,76 @@ pub struct State {
     began: Option<f64>,
     /// When the last run ended, and the name of the client that stopped last.
     ended: Option<(f64, Option<String>)>,
+    /// Transitions not yet taken by [`State::transitions`].
+    queued: Vec<Transition>,
 }
 
 impl State {
     /// Client `key` (named `name`, if it says) made a request at `now`.
     pub fn touch(&mut self, key: String, name: Option<String>, now: f64) {
-        let c = self.clients.entry(key).or_insert(Client { name: None, last: now, finished: None });
+        self.touch_as(key, name, None, now);
+    }
+
+    /// [`State::touch`], with the name the client announced (`clientInfo`), for diagnostics.
+    pub fn touch_as(&mut self, key: String, name: Option<String>, raw: Option<&str>, now: f64) {
+        let c = self.clients.entry(key).or_insert(Client { name: None, raw: None, last: now, finished: None, stop: None, was: false });
         if name.is_some() {
             c.name = name;
         }
+        if let Some(raw) = raw {
+            c.raw = Some(raw.to_string());
+        }
         c.last = c.last.max(now);
         c.finished = None;
+        c.stop = None;
     }
 
-    /// Client `key` finished (`finish_working`, or its session ended) at `now`.
+    /// Client `key` called `finish_working` at `now`.
     pub fn finish(&mut self, key: &str, now: f64) {
+        self.end_session(key, now, Cause::FinishWorking);
+    }
+
+    /// Client `key` stopped at `now` for `cause` (`finish_working`, its session closed, or its
+    /// connection dropped).
+    pub fn end_session(&mut self, key: &str, now: f64, cause: Cause) {
         if let Some(c) = self.clients.get_mut(key) {
             // Never before its own last request (a finish can be read a frame's time early).
             let at = now.max(c.last);
+            if c.finished.is_none_or(|f| at < f) {
+                c.stop = Some(cause);
+            }
             c.finished = Some(c.finished.map_or(at, |f| f.min(at)));
         }
+    }
+
+    /// The transitions since the last call, oldest first.
+    pub fn transitions(&mut self) -> Vec<Transition> {
+        std::mem::take(&mut self.queued)
     }
 
     /// Bring the run up to `now` (`grace`: the setting, in seconds). Returns whether agents work.
     pub fn tick(&mut self, now: f64, grace: f64, motion: bool) -> bool {
         let working = self.clients.values().any(|c| c.working(now, grace));
+        // Each client that began or stopped since the last tick: began, ended the run, or stopped
+        // while the run carries on.
+        for (key, c) in &mut self.clients {
+            let w = c.working(now, grace);
+            if w == c.was {
+                continue;
+            }
+            c.was = w;
+            let (change, cause, at) = match (w, working) {
+                (true, _) => (Change::Begin, Cause::FirstRequest, c.last),
+                (false, true) => (Change::Hold, c.stop.unwrap_or(Cause::GraceExpired), c.end(grace)),
+                (false, false) => (Change::End, c.stop.unwrap_or(Cause::GraceExpired), c.end(grace)),
+            };
+            let session = key.strip_prefix("session:").map(str::to_string);
+            let client = c.raw.clone().or_else(|| c.name.clone());
+            self.queued.push(Transition { at, change, cause, client, session, run: working });
+        }
+        self.queued.sort_by(|a, b| a.at.total_cmp(&b.at));
+        let excess = self.queued.len().saturating_sub(QUEUED);
+        self.queued.drain(..excess);
         match (working, self.began) {
             (true, None) => {
                 // Starting during the last run's fade out: carry on from its current opacity.
@@ -169,3 +240,7 @@ mod tests;
 #[cfg(test)]
 #[path = "working_state_window_tests.rs"]
 mod window_tests;
+
+#[cfg(test)]
+#[path = "working_gap_tests.rs"]
+mod gap_tests;

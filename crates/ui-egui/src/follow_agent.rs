@@ -258,6 +258,17 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     }
     let (grace, motion) = (grace(app), !app.reduce_motion());
     app.ui.agent_view.working.tick(now, grace, motion);
+    // Each transition, with its cause, into Settings ▸ Diagnostics (Fix M0).
+    for t in app.ui.agent_view.working.transitions() {
+        let e = figcraft_engine::settings::diagnostics::Entry::Working {
+            change: t.change,
+            cause: t.cause,
+            client: t.client.as_deref(),
+            session: t.session.as_deref(),
+            run: t.run,
+        };
+        crate::settings_privacy::record(app, e);
+    }
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
     working_indicator::tick(app, ctx, now, &landed);
@@ -334,6 +345,8 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
         "outline": v.indicator.outlined.get().is_some(),
         "working": working_text(app),
         "workingClients": v.working.count(now(app), grace(app)),
+        // The dots' opacity now (0..1): a fade out and in between steps shows here (Fix M0).
+        "workingAlpha": v.working.alpha(now(app), !app.reduce_motion()),
         "finished": finished_text(app),
         "degraded": v.budget.level,
     })

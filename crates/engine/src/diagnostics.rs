@@ -10,7 +10,10 @@
 //! - a command failing (its id, when it is a registered command, and the error's category; never
 //!   the message, which can quote the document);
 //! - following an agent pausing, and why ([`Pause`]), and the reveal drawing an agent's new layers
-//!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2).
+//!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2);
+//! - the working state's transitions: a client beginning, ending or being held, with the cause
+//!   ([`Change`], [`Cause`]) and the client as it named itself, with its session id cut to 8
+//!   characters (Fix M0).
 //!
 //! So no prompts, document content, paths or tokens can reach it; `diagnostics_tests.rs` scans for
 //! them.
@@ -58,6 +61,45 @@ pub enum Entry<'a> {
     /// Agents' new layers since the last such event: how many entered, and how many were drawn
     /// final at once, by reason.
     Reveal { entered: usize, skipped: &'a [(Skip, usize)] },
+    /// The working state changed for a client (`client`: its name as announced; `session`: its
+    /// session id, of which 8 characters are kept). `run`: whether the dots are shown after it.
+    Working { change: Change, cause: Cause, client: Option<&'a str>, session: Option<&'a str>, run: bool },
+}
+
+/// A working-state transition (Fix M0).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Change {
+    /// A client began working.
+    Begin,
+    /// A client stopped, and with it the run of work: the dots fade out.
+    End,
+    /// A client stopped, and the run carries on (another client works, or it is held for the same
+    /// client to come back).
+    Hold,
+}
+
+/// Why it changed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Cause {
+    FirstRequest,
+    FinishWorking,
+    SessionClosed,
+    GraceExpired,
+    Disconnected,
+    AnotherClient,
+}
+
+impl Cause {
+    pub fn text(self) -> &'static str {
+        match self {
+            Cause::FirstRequest => "first request",
+            Cause::FinishWorking => "finish_working",
+            Cause::SessionClosed => "session closed",
+            Cause::GraceExpired => "grace period expired",
+            Cause::Disconnected => "disconnected",
+            Cause::AnotherClient => "another client is working",
+        }
+    }
 }
 
 /// Why following the agent paused (Stage I1's rules).
@@ -133,6 +175,7 @@ impl Entry<'_> {
             Entry::Error { .. } => "error",
             Entry::FollowPaused(_) => "follow",
             Entry::Reveal { .. } => "reveal",
+            Entry::Working { .. } => "working",
         }
     }
 
@@ -163,6 +206,18 @@ impl Entry<'_> {
                 let n: usize = skipped.iter().map(|s| s.1).sum();
                 let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();
                 format!("agent layers: {entered} entered, {n} drawn final at once ({})", why.join("; "))
+            }
+            Entry::Working { change, cause, client, session, run } => {
+                let change = match change {
+                    Change::Begin => "begin",
+                    Change::End => "end",
+                    Change::Hold => "hold",
+                };
+                let who = client.map(|c| clean(c, 80)).filter(|c| !c.trim().is_empty()).unwrap_or_else(|| "an agent".into());
+                // Only the id's first 8 letters and digits: enough to tell sessions apart.
+                let session = session.map(|s| s.chars().filter(char::is_ascii_alphanumeric).take(8).collect::<String>());
+                let session = session.filter(|s| !s.is_empty()).map_or_else(|| "no session".to_string(), |s| format!("session {s}…"));
+                format!("{change}: {who} ({session}), {}; the dots {}", cause.text(), if *run { "are on" } else { "fade out" })
             }
         }
     }
