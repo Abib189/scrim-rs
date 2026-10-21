@@ -320,3 +320,20 @@ fn under_load_the_steps_come_in_order_and_the_fade_stays() {
     assert_eq!(starts.len(), 20, "the fade is kept under load");
     assert!(starts.iter().all(|t| *t + ENTER <= now + 2.0 / 60.0 + CAP_DEGRADED + 1e-9), "capped at 0.6 s");
 }
+
+/// One slow render isn't a slow frame rate: the render time stays the same until the next render,
+/// and only a new one counts (found by I4: one 220 ms render stepped all the way down).
+#[test]
+fn one_slow_render_doesnt_degrade() {
+    let (mut u, home) = calm();
+    u.app.ui.agent_view.budget.frozen = false;
+    agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home}));
+    u.app.ui.render_ms = 220.0;
+    for _ in 0..40 {
+        u.app.ui.frame_ms = 1.0;
+        u.frame(vec![]);
+        // (The harness renders nothing new: the 220 ms stays.)
+        u.app.ui.render_ms = 220.0;
+    }
+    assert_eq!(u.app.ui.agent_view.budget.level, 0, "one render, counted once");
+}

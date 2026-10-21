@@ -93,14 +93,18 @@ pub struct Budget {
     over: u8,
     stepped: f64,
     active_at: f64,
+    /// The canvas render time last seen: only a new render counts (the number stays until then).
+    last_render: f64,
     /// Tests pin the level (debug builds' frame times aren't the app's).
     pub(crate) frozen: bool,
 }
 
 fn budget(app: &mut FigApp, now: f64) {
     let active = app.ui.agent_view.reveal.active() || app.ui.agent_view.indicator.artboard().is_some();
-    let over = app.ui.frame_ms > FRAME_BUDGET_MS || app.ui.render_ms > RENDER_BUDGET_MS;
     let b = &mut app.ui.agent_view.budget;
+    let new_render = app.ui.render_ms != b.last_render;
+    b.last_render = app.ui.render_ms;
+    let over = app.ui.frame_ms > FRAME_BUDGET_MS || (new_render && app.ui.render_ms > RENDER_BUDGET_MS);
     if b.frozen {
         return;
     }
