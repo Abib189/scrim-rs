@@ -150,3 +150,13 @@ Fix V3 logs both from now on, with the origin.
 **Decisions (overrule any):**
 1. **"The person's resume" and "the person's command" are two more origins** than the brief lists: the canvas's resume and the palette or menu also run the command, and each should say which it was.
 2. **The startup line is the desktop app's:** the web build keeps no Diagnostics between visits.
+
+## V5: live
+
+`docs/scrim-ports/follow-setting/v5/`: the debug build of this tree on scratch settings, started from the pre-Fix-T settings file (Follow on). A stub MCP client named as Codex's first asks `camera.follow-agents {}`, then builds 40 layers 3,000 units away.
+- **Following:** on at start; the agent was refused, and following stayed on.
+- **The camera:** flew and centred the batch's 39 rectangles to 0.00 px.
+- **The reveal:** 40 layers entered and none drawn final at once.
+- **The dots:** on in 36 of 36 captures while the agent worked.
+- **Diagnostics:** "follow setting: stays ON (refused: an agent asked, over MCP, session …)".
+- **The screen was locked:** the figures are the app's own state; nothing was looked at on a real window.

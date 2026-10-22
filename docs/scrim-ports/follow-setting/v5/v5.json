@@ -1,0 +1,668 @@
+{
+ "report": {
+  "at_start": {
+   "follow": "following",
+   "header": {
+    "follow": "following",
+    "followSetting": "ON",
+    "followDimmed": false,
+    "followTooltip": "Follow agents as they work"
+   }
+  },
+  "agent_asked_follow_off": {
+   "refused": true,
+   "said": "invalid parameters for `camera.follow-agents`: only the person turns following on or off: the Follow agents button in the AI panel, or Settings \u25b8 Agents",
+   "follow_after": "following"
+  },
+  "view_before": [
+   232.0,
+   280.0,
+   1.0
+  ],
+  "view_settled": [
+   3543.0,
+   185.0,
+   0.8533104705593627,
+   664.0,
+   760.0
+  ],
+  "screen_locked": true,
+  "centre_px_from_canvas_centre": {
+   "the 39 rectangles": 0.0,
+   "the 40 layers (artboard)": 47.56
+  },
+  "captures_mid_flight": 6,
+  "follow_settled": "following",
+  "reveal_since_open": {
+   "entered": 40,
+   "drawn_final": {}
+  },
+  "diagnostics": [
+   [
+    "mcpServer",
+    "started on 127.0.0.1:7690"
+   ],
+   [
+    "mcpClient",
+    "codex-mcp-client 0.163.0-alpha.11 connected"
+   ],
+   [
+    "follow",
+    "follow setting: stays ON (refused: an agent asked, over MCP, session b0f6dadc\u2026)"
+   ],
+   [
+    "working",
+    "begin: codex-mcp-client (session b0f6dadc\u2026), first request; the dots are on"
+   ],
+   [
+    "working",
+    "end: codex-mcp-client (session b0f6dadc\u2026), finish_working; the dots fade out"
+   ]
+  ],
+  "saved_follow_agents": true,
+  "saved_settings_version": 8,
+  "landed_at": 0.02,
+  "dots_drawn_while_working": "36 of 36 captures",
+  "reveal_held_most": 40
+ },
+ "samples": [
+  {
+   "t": 0.01,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    232.0,
+    280.0,
+    1.0,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.12,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    300.6897220783883,
+    279.17241298700736,
+    0.9961523228761944,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.23,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    838.8058376421959,
+    272.68908629346754,
+    0.9665173910244428,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.34,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    2311.051190984087,
+    254.95119047007125,
+    0.8898669223835187,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.46,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    3061.0691531151165,
+    245.62084518488305,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.57,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    3187.468046764953,
+    229.72145253754434,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.67,
+   "follow": "following",
+   "dots": true,
+   "held": 40,
+   "view": [
+    3478.447740323183,
+    193.11986318264752,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.78,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3542.9250378145925,
+    185.00942930104122,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 0.89,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.0,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.12,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.22,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.33,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.44,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.55,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.66,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.76,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.87,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 1.99,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.1,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.21,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.32,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.42,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.53,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.64,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.75,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.86,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 2.97,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.08,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.19,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.3,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.42,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.52,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.63,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.74,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.85,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 3.96,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.07,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.19,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.3,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.41,
+   "follow": "following",
+   "dots": true,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.52,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.64,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.74,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.86,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  },
+  {
+   "t": 4.97,
+   "follow": "following",
+   "dots": false,
+   "held": 0,
+   "view": [
+    3543.0,
+    185.0,
+    0.8533104705593627,
+    664.0,
+    760.0
+   ]
+  }
+ ]
+}

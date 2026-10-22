@@ -1,0 +1,66 @@
+{
+ "at_start": {
+  "follow": "following",
+  "header": {
+   "follow": "following",
+   "followSetting": "ON",
+   "followDimmed": false,
+   "followTooltip": "Follow agents as they work"
+  }
+ },
+ "agent_asked_follow_off": {
+  "refused": true,
+  "said": "invalid parameters for `camera.follow-agents`: only the person turns following on or off: the Follow agents button in the AI panel, or Settings ▸ Agents",
+  "follow_after": "following"
+ },
+ "view_before": [
+  232.0,
+  280.0,
+  1.0
+ ],
+ "view_settled": [
+  3543.0,
+  185.0,
+  0.8533104705593627,
+  664.0,
+  760.0
+ ],
+ "screen_locked": true,
+ "centre_px_from_canvas_centre": {
+  "the 39 rectangles": 0.0,
+  "the 40 layers (artboard)": 47.56
+ },
+ "captures_mid_flight": 6,
+ "follow_settled": "following",
+ "reveal_since_open": {
+  "entered": 40,
+  "drawn_final": {}
+ },
+ "diagnostics": [
+  [
+   "mcpServer",
+   "started on 127.0.0.1:7690"
+  ],
+  [
+   "mcpClient",
+   "codex-mcp-client 0.163.0-alpha.11 connected"
+  ],
+  [
+   "follow",
+   "follow setting: stays ON (refused: an agent asked, over MCP, session b0f6dadc…)"
+  ],
+  [
+   "working",
+   "begin: codex-mcp-client (session b0f6dadc…), first request; the dots are on"
+  ],
+  [
+   "working",
+   "end: codex-mcp-client (session b0f6dadc…), finish_working; the dots fade out"
+  ]
+ ],
+ "saved_follow_agents": true,
+ "saved_settings_version": 8,
+ "landed_at": 0.02,
+ "dots_drawn_while_working": "36 of 36 captures",
+ "reveal_held_most": 40
+}
