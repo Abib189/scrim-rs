@@ -32,6 +32,15 @@ pub struct Window {
     size: Vec2,
 }
 
+#[cfg(test)]
+impl Window {
+    /// The title bar this window opened with (Fix S3: a secondary window keeps the main one's, and
+    /// with it the room left for the window buttons).
+    pub(crate) fn title_bar(&self) -> TitleBar {
+        self.pane.ui.title_bar
+    }
+}
+
 /// A window's own UI state.
 #[derive(Default)]
 struct Pane {

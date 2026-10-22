@@ -13,6 +13,18 @@ use crate::{FigApp, TitleBar};
 
 pub const HEIGHT: f32 = 40.0;
 
+/// Room the tab strip leaves at its left for the window's own buttons (Fix S3), the one place it
+/// is decided. macOS draws its red, yellow and green buttons over a full-size content view
+/// (`TitleBar::Inset`, main and secondary windows alike): measured in the real window, from x = 9
+/// to 68, so the strip starts at 76 and nothing is drawn under them. Other title bars need only a margin
+/// (`Custom` draws its own buttons at the right).
+pub fn window_buttons_inset(bar: TitleBar) -> f32 {
+    match bar {
+        TitleBar::Inset => 76.0,
+        TitleBar::Custom | TitleBar::Native => 8.0,
+    }
+}
+
 pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::top("tab_bar").exact_size(HEIGHT).frame(egui::Frame::NONE.fill(t.tab_bar)).show(ui, |ui| {
@@ -29,7 +41,7 @@ pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
             }
         }
         let buttons_w = if app.ui.title_bar == TitleBar::Custom { window_buttons(app, ui, rect) } else { 0.0 };
-        let mut x = rect.min.x + if app.ui.title_bar == TitleBar::Inset { 76.0 } else { 8.0 };
+        let mut x = rect.min.x + window_buttons_inset(app.ui.title_bar);
         // Home.
         let hr = Rect::from_min_size(pos2(x, rect.min.y), vec2(44.0, HEIGHT));
         let hresp = ui.interact(hr, ui.id().with("home"), Sense::click()).tip(tr("Home"));
@@ -320,3 +332,7 @@ pub fn resize_edges(ctx: &egui::Context) {
         }
     });
 }
+
+#[cfg(test)]
+#[path = "tabs_inset_tests.rs"]
+mod inset_tests;
