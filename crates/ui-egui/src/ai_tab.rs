@@ -76,6 +76,8 @@ pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
             ui.add(egui::Label::new(egui::RichText::new(&text).color(t.text).font(regular(11.0))).truncate()).on_hover_text(&text);
         });
     }
+    // The grace period ended before an agent's next step (Fix Q2): once per run.
+    crate::follow_agent::grace_hint::row(app, ui);
     crate::mcp_registration::row(app, ui);
     if app.ui.connect.open {
         crate::connect_flow::panel(app, ui);

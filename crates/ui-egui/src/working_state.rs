@@ -51,7 +51,22 @@ struct Client {
     stop: Option<Cause>,
     /// It was working at the last tick.
     was: bool,
+    /// When its state ended because the grace period ran out (Fix Q2: a request soon after says
+    /// the setting is too short).
+    expired_at: Option<f64>,
 }
+
+/// A client came back soon after its state ended at the grace period's end (Fix Q2).
+#[derive(Clone, Debug, PartialEq)]
+pub struct CameBack {
+    /// Its announced name, else the name shown.
+    pub client: Option<String>,
+    /// Seconds since its request before.
+    pub after: f64,
+}
+
+/// A request this soon after the grace period ran out counts as the agent coming back.
+pub const CAME_BACK_WITHIN: f64 = 120.0;
 
 /// A working-state transition, for Settings ▸ Diagnostics (Fix M0).
 #[derive(Clone, Debug, PartialEq)]
@@ -88,6 +103,8 @@ pub struct State {
     ended: Option<(f64, Option<String>)>,
     /// Transitions not yet taken by [`State::transitions`].
     queued: Vec<Transition>,
+    /// Clients that came back soon after the grace period ended them, not yet taken.
+    came_back: Vec<CameBack>,
 }
 
 impl State {
@@ -98,12 +115,21 @@ impl State {
 
     /// [`State::touch`], with the name the client announced (`clientInfo`), for diagnostics.
     pub fn touch_as(&mut self, key: String, name: Option<String>, raw: Option<&str>, now: f64) {
-        let c = self.clients.entry(key).or_insert(Client { name: None, raw: None, last: now, finished: None, stop: None, was: false });
+        let c =
+            self.clients.entry(key).or_insert(Client { name: None, raw: None, last: now, finished: None, stop: None, was: false, expired_at: None });
         if name.is_some() {
             c.name = name;
         }
         if let Some(raw) = raw {
             c.raw = Some(raw.to_string());
+        }
+        // Back soon after the grace period ended it: the setting is shorter than its pauses.
+        if let Some(at) = c.expired_at.take()
+            && !c.was
+            && now - at <= CAME_BACK_WITHIN
+            && self.came_back.len() < QUEUED
+        {
+            self.came_back.push(CameBack { client: c.raw.clone().or_else(|| c.name.clone()), after: now - c.last });
         }
         c.last = c.last.max(now);
         c.finished = None;
@@ -128,6 +154,11 @@ impl State {
         }
     }
 
+    /// The clients that came back soon after the grace period ended them, since the last call.
+    pub fn came_back(&mut self) -> Vec<CameBack> {
+        std::mem::take(&mut self.came_back)
+    }
+
     /// The transitions since the last call, oldest first.
     pub fn transitions(&mut self) -> Vec<Transition> {
         std::mem::take(&mut self.queued)
@@ -149,6 +180,7 @@ impl State {
                 (false, true) => (Change::Hold, c.stop.unwrap_or(Cause::GraceExpired), c.end(grace)),
                 (false, false) => (Change::End, c.stop.unwrap_or(Cause::GraceExpired), c.end(grace)),
             };
+            c.expired_at = (!w && cause == Cause::GraceExpired).then(|| c.end(grace));
             let session = key.strip_prefix("session:").map(str::to_string);
             let client = c.raw.clone().or_else(|| c.name.clone());
             self.queued.push(Transition { at, change, cause, client, session, run: working });

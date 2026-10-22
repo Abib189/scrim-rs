@@ -28,6 +28,7 @@ fn entries_say_only_their_allow_listed_facts() {
     record(st, NOW, w(Change::Begin, Cause::FirstRequest, Some(raw), Some("9f8e7d6c5b4a39281706f5e4d3c2b1a0"), true));
     record(st, NOW, w(Change::Hold, Cause::SessionClosed, Some(raw), Some("9f8e7d6c-5b4a"), true));
     record(st, NOW, w(Change::End, Cause::GraceExpired, None, None, false));
+    record(st, NOW, Entry::GraceTooShort { client: Some(raw), after: 8, setting: 5 });
     let lines: Vec<(&str, &str)> = st.diagnostics.iter().map(|e| (e.kind.as_str(), e.detail.as_str())).collect();
     assert_eq!(
         lines,
@@ -47,6 +48,7 @@ fn entries_say_only_their_allow_listed_facts() {
             ("working", "begin: local-agent-mode-scrim (via mcp-remote 0.14.3) (session 9f8e7d6c…), first request; the dots are on"),
             ("working", "hold: local-agent-mode-scrim (via mcp-remote 0.14.3) (session 9f8e7d6c…), session closed; the dots are on"),
             ("working", "end: an agent (no session), grace period expired; the dots fade out"),
+            ("working", "grace too short: local-agent-mode-scrim (via mcp-remote 0.14.3) came back after 8 s (the setting is 5 s)"),
         ],
         "Waiting isn't an error"
     );
@@ -149,6 +151,7 @@ fn no_secrets_reach_the_events() {
         NOW,
         Entry::Working { change: Change::Begin, cause: Cause::FirstRequest, client, session: Some(&token), run: true },
     );
+    record(&mut s.prefs.settings, NOW, Entry::GraceTooShort { client, after: 12, setting: 15 });
     let kept = serde_json::to_string(&s.prefs.settings.diagnostics).unwrap() + &text(&s.prefs.settings.diagnostics);
     assert!(s.prefs.settings.diagnostics.len() >= 6, "{kept}");
     for secret in [DOC, PROMPT, PATH, "SECRET", "/Users/", token.as_str()] {

@@ -66,6 +66,9 @@ pub enum Entry<'a> {
     /// The working state changed for a client (`client`: its name as announced; `session`: its
     /// session id, of which 8 characters are kept). `run`: whether the dots are shown after it.
     Working { change: Change, cause: Cause, client: Option<&'a str>, session: Option<&'a str>, run: bool },
+    /// A client's working state ended at the grace period's end, and it came back `after` seconds
+    /// after its request before: the setting (`setting` seconds) is shorter than its pauses (Fix Q2).
+    GraceTooShort { client: Option<&'a str>, after: u64, setting: u32 },
 }
 
 /// A working-state transition (Fix M0).
@@ -197,7 +200,7 @@ impl Entry<'_> {
             Entry::Error { .. } => "error",
             Entry::FollowPaused(_) | Entry::FollowCleared(_) => "follow",
             Entry::Reveal { .. } => "reveal",
-            Entry::Working { .. } => "working",
+            Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
         }
     }
 
@@ -229,6 +232,10 @@ impl Entry<'_> {
                 let n: usize = skipped.iter().map(|s| s.1).sum();
                 let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();
                 format!("agent layers: {entered} entered, {n} drawn final at once ({})", why.join("; "))
+            }
+            Entry::GraceTooShort { client, after, setting } => {
+                let who = client.map(|c| clean(c, 80)).filter(|c| !c.trim().is_empty()).unwrap_or_else(|| "an agent".into());
+                format!("grace too short: {who} came back after {after} s (the setting is {setting} s)")
             }
             Entry::Working { change, cause, client, session, run } => {
                 let change = match change {

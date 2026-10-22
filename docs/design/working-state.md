@@ -248,3 +248,18 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
   - Every file saved before Fix Q has no marker, so all of them move to 30, including the person's 5.
 - **5 s for tests only:** `Session::enable_test_hooks()` (no command or app path calls it) lets `pref.agentGrace` take 5 s into `agents.grace_for_tests`. That is session state, never saved. The window reads `Session::agent_grace()`, the override if there is one, else the setting.
 
+## Fix Q2: the window notices when the grace is too short
+
+- **When:** a client's working state ended because the grace period ran out, and **the same client** (the same session, else name) makes a request within 120 s of that end (`working_state::CAME_BACK_WITHIN`).
+- **What it keeps:** a `working` event in Settings ▸ Diagnostics, in fixed words with no content: "grace too short: {client} came back after {n} s (the setting is {s} s)". `n` is the seconds since its request before.
+- **What it says, once per run:** in the AI tab, under who is working, "The indicator ended before the agent's next step. A longer setting keeps it on.", with **Open the setting**.
+  - The button opens Settings ▸ General and scrolls to "Keep the working indicator after the last agent request".
+  - The hint then goes, and doesn't come back this run. Later returns are still noted in Diagnostics.
+- **Nothing changes the setting on its own.**
+- **Code:** `grace_hint.rs`; `working_state::State::came_back`.
+- **Tests** (`grace_hint_tests.rs`):
+  - steps 8, 12 and 20 s apart keep the dots on in every frame at 30 s;
+  - at 15 s only the 20 s gap breaks, and that return is noted and hinted, once;
+  - an agent's `pref.agentGrace` through the window is refused.
+  - `diagnostics_tests.rs` covers the event's words and the scan for secrets.
+

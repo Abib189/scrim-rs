@@ -34,6 +34,8 @@ use crate::theme::{Tokens, regular};
 
 #[path = "follow_end.rs"]
 pub mod follow_end;
+#[path = "grace_hint.rs"]
+pub mod grace_hint;
 #[path = "reveal.rs"]
 pub mod reveal;
 #[path = "working_indicator.rs"]
@@ -88,6 +90,8 @@ pub struct State {
     pub end: follow_end::State,
     /// Settings ▸ General scrolls to the grace once (Fix Q2's hint).
     pub focus_grace: bool,
+    /// The grace's self-diagnosis hint (Fix Q2).
+    pub grace_hint: grace_hint::State,
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -280,6 +284,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
         };
         crate::settings_privacy::record(app, e);
     }
+    grace_hint::note(app);
     follow_end::settle(app, now, ended);
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
