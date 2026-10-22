@@ -1,0 +1,44 @@
+[
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "program": "claude",
+    "args": [
+      "-p", "{prompt}",
+      "--output-format", "stream-json", "--verbose",
+      "--mcp-config", "{mcp_config}",
+      "--strict-mcp-config",
+      "--tools", "",
+      "--allowedTools", "mcp__scrim",
+      "--permission-mode", "dontAsk",
+      "--no-session-persistence"
+    ],
+    "auth_args": [],
+    "output": "claude-stream-json",
+    "docs": "https://docs.claude.com/en/docs/claude-code/setup",
+    "client_names": ["claude-code"],
+    "verified": "claude --help, Claude Code 2.1.296, 22 Oct 2026"
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "program": "codex",
+    "args": [
+      "exec",
+      "--json",
+      "--ephemeral",
+      "--skip-git-repo-check",
+      "--ignore-user-config",
+      "-s", "read-only",
+      "-c", "mcp_servers.scrim.url=\"{mcp_url}\"",
+      "-c", "approval_policy=\"never\"",
+      "{auth_args}",
+      "{prompt}"
+    ],
+    "auth_args": ["-c", "mcp_servers.scrim.bearer_token_env_var=\"{token_var}\""],
+    "output": "codex-jsonl",
+    "docs": "https://developers.openai.com/codex/cli",
+    "client_names": ["codex-mcp-client"],
+    "verified": "codex exec --help, Codex CLI 0.162.1, 22 Oct 2026; no --mcp-config flag: -c mcp_servers.* overrides"
+  }
+]

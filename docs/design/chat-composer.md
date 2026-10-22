@@ -137,3 +137,35 @@ codex exec <prompt + context line>
 6. **`--verbose`** is passed with `stream-json`. Claude Code needs it in print mode, from its documentation; that wasn't tried without it, so as not to spend a run.
 7. **The environment adds the variables Windows can't start a program without** (`SYSTEMROOT`, `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`). On macOS and Linux it is exactly the four of decision 4.
 8. **Closing the window with a run under way** kills it without asking. The transcript goes with the window, as decided.
+
+## R5a as built: profiles, parsers and the runner
+
+- **The profiles:** `crates/engine/src/cmd/agent_clients/headless.json` holds Claude Code and Codex with the flags above, each with the `clientInfo` name it announces and where its flags were read.
+- **Arguments:** `Headless::argv` fills the template one argument at a time. `{auth_args}` stands alone, as zero or more arguments; nothing is split or quoted. A prompt full of shell syntax stays one unchanged argument.
+- **The confirmation's text:** `Headless::display` shows the binary path and every argument, with `<your message>` for the prompt.
+- **The engine also has:**
+  - `child_env` (the minimal environment; Windows adds its system variables);
+  - `context_line` and `message` (the prompt plus the one line);
+  - `redact` (the token itself, bearer values, `sk-`/GitHub key shapes and `key=`/`token:` values become `<token>`; 300 characters at most);
+  - `output::parse` and `Outcome` (both parsers; tokens and cost only as reported).
+- **The runner** (`crates/mcp/src/agent_run.rs`):
+  - **`Run::start`** clears the environment and passes only what it's given. It runs in a new empty folder (removed afterwards), with stdin closed, in a process group of its own.
+  - **Output:** stdout comes back as lines; the last 20 lines of stderr are kept.
+  - **The end:** `RunEvent::Ended` says how it ended (exited with a code, stopped, timed out) and how long it took.
+  - **Stopping:** `Run::stop`, the limit, and dropping the `Run` all signal the group: `kill -TERM -- -<pgid>`, then `-KILL` after 2 s (`kill`, as an argument list); `taskkill /T /F` on Windows.
+- **The stub agent** (`crates/mcp/tests/stub/stub_agent.py`): it takes Claude Code's real arguments, reads the MCP configuration, and calls the endpoint over HTTP (initialize, tools, `finish_working`). It prints Claude Code's events, and its prompt's words pick a failure.
+- **Tests:**
+  - `headless_tests.rs` (12): profiles, arguments, the token never in an argument, a hostile prompt, the environment, the context line, redaction, both parsers, nothing estimated.
+  - `crates/mcp/tests/agent_run.rs` (11, Unix):
+    - the reply and the rectangle in Scrim's document;
+    - reported usage and cost;
+    - Stop ends the agent and its own child within 5 s;
+    - the time limit;
+    - dropping the run (Scrim closing) leaves nothing running;
+    - a sign-in failure's last line, redacted;
+    - exit 3;
+    - an unreachable Scrim;
+    - a missing binary;
+    - only the minimal environment;
+    - the empty folder, removed.
+  - **Mutation:** without the process group, the three stop tests fail.

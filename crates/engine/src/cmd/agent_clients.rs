@@ -28,6 +28,7 @@ use super::CommandSpec;
 use super::claude_desktop::{Change, Os, Written, stamp};
 use crate::{EngineError, Session, bad, spec};
 
+pub mod headless;
 pub mod jsonc;
 pub mod tomlfile;
 

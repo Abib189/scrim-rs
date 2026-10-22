@@ -13,6 +13,7 @@
 //! Entry points: [`Server::serve`] (stdio loop) and [`Server::handle_line`] (one message).
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+pub mod agent_run;
 mod backend;
 pub mod bridge;
 pub mod discovery;
