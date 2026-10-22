@@ -23,6 +23,45 @@ impl ProgramOutput {
     }
 }
 
+/// An agent CLI run for "Describe a change" (R5): what to start. The program is started from this
+/// argument list, never a shell, with this environment and nothing else.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct AgentRunSpec {
+    pub program: String,
+    pub args: Vec<String>,
+    pub env: Vec<(String, String)>,
+    /// Stopped after this long.
+    pub limit_secs: u64,
+}
+
+/// How an agent run ended.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum AgentEnd {
+    /// It exited by itself, with this code (`None`: a signal).
+    Exited(Option<i32>),
+    /// Stopped (Stop, Esc).
+    Stopped,
+    /// Its time limit.
+    TimedOut,
+}
+
+/// What an agent run reports.
+#[derive(Clone, Debug, PartialEq)]
+pub enum AgentRunEvent {
+    /// A line of its output.
+    Line(String),
+    /// It ended, how, the last lines of its error output, and how long it took.
+    Ended { end: AgentEnd, stderr: Vec<String>, secs: f64 },
+}
+
+/// An agent run in progress. Dropping it stops it, and everything it started.
+pub trait AgentRun {
+    /// What happened since the last call.
+    fn poll(&mut self) -> Vec<AgentRunEvent>;
+    /// Stop it, with everything it started.
+    fn stop(&mut self);
+}
+
 /// Platform services the app crate provides (file dialogs, clipboard, URLs).
 pub trait Services {
     fn pick_open(&mut self, _title: &str, _exts: &[&str]) -> DialogFuture {
@@ -118,4 +157,9 @@ pub trait Services {
     /// Agents started working (`on`) or stopped (R3a): the desktop app keeps the OS from napping it
     /// meanwhile (macOS App Nap). Elsewhere nothing.
     fn keep_awake(&mut self, _on: bool) {}
+    /// Start an agent CLI for "Describe a change" (R5). Only the desktop app can; elsewhere (the
+    /// browser, tests) it says so.
+    fn start_agent(&mut self, _spec: AgentRunSpec) -> Result<Box<dyn AgentRun>, String> {
+        Err("agent runs need the desktop app".into())
+    }
 }

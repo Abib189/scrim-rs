@@ -154,6 +154,15 @@ impl State {
         }
     }
 
+    /// Every client whose announced name `matches` and that made a request at or after `since`
+    /// stopped at `now`, as `finish_working` stops it (an agent run Scrim started has ended, R5).
+    pub fn finish_where(&mut self, now: f64, matches: impl Fn(Option<&str>) -> bool, since: f64) {
+        let keys: Vec<String> = self.clients.iter().filter(|(_, c)| c.last >= since && matches(c.raw.as_deref())).map(|(k, _)| k.clone()).collect();
+        for k in keys {
+            self.end_session(&k, now, Cause::FinishWorking);
+        }
+    }
+
     /// The clients that came back soon after the grace period ended them, since the last call.
     pub fn came_back(&mut self) -> Vec<CameBack> {
         std::mem::take(&mut self.came_back)

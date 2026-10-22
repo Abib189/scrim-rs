@@ -63,6 +63,10 @@ fn remember(app: &mut FigApp, view: PanelView) {
 
 /// Act on a panel request from a command; `false` when `kind` isn't one.
 pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
+    // "Describe a change" (R5): the AI tab's composer.
+    if kind.starts_with("chat.") {
+        return crate::follow_agent::chat_ui::request(app, kind, data);
+    }
     match kind {
         figcraft_engine::cmd::panel::REQUEST => {
             let view: PanelView = serde_json::from_value(data.clone()).unwrap_or_default();
@@ -100,6 +104,8 @@ pub fn header(app: &mut FigApp, ui: &mut Ui, w: f32) {
     mode_switch(app, ui, &t, row);
     zoom_menu(app, ui, &t, row);
     ui.painter().line_segment([row.left_bottom(), row.right_bottom()], Stroke::new(1.0, t.border));
+    // The AI tab's composer, pinned at the panel's bottom (R5).
+    crate::follow_agent::chat_ui::panel(app, ui);
     if app.ui.panel_animate && app.ui.right_tab != RightTab::Inspect {
         return;
     }

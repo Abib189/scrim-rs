@@ -30,6 +30,8 @@ fn harness() -> (Harness, Arc<Mutex<Vec<String>>>, u64) {
             .unwrap();
     h.app.session.execute_as(agent, None, "object.rename", &json!({"ids": [badge], "name": "Badge"})).unwrap();
     h.app.session.execute("select.none", &json!({})).unwrap();
+    // The composer pinned at the tab's bottom covers the rows this test clicks; it has its own tests (R5).
+    h.app.session.prefs.settings.describe_change = false;
     h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
     h.app.handle_ui_requests();
     h.frames(3);

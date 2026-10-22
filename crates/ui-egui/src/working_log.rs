@@ -87,6 +87,8 @@ pub fn settle(app: &mut FigApp, ctx: &Context, now: f64) {
 pub fn logic(app: &mut FigApp, ctx: &Context) {
     let now = clock(app, ctx);
     settle(app, ctx, now);
+    // An agent run started from "Describe a change" carries on while the window is hidden (R5).
+    super::chat_ui::tick(app, ctx);
 }
 
 /// The run's end since the last frame took it, if it ended (follow's pause clears then).

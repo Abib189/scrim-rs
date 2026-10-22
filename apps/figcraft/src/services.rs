@@ -287,6 +287,9 @@ impl Services for Desktop {
     fn keep_awake(&mut self, on: bool) {
         self.awake.set(on);
     }
+    fn start_agent(&mut self, spec: figcraft_ui_egui::AgentRunSpec) -> Result<Box<dyn figcraft_ui_egui::AgentRun>, String> {
+        crate::agent_runs::start(spec)
+    }
     fn mcp_restart(&mut self, settings: &figcraft_engine::settings::McpSettings) -> Result<u16, String> {
         self.mcp.as_mut().ok_or_else(|| "the MCP endpoint isn't set up".to_string())?.restart(settings)
     }

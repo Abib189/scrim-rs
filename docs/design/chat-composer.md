@@ -200,3 +200,56 @@ codex exec <prompt + context line>
     - the environment check.
   - `crates/mcp/tests/chat_refused.rs`: over MCP, `run_command` and `batch`.
   - `chat_route_tests.rs`: the control channel and the app's MCP route.
+
+## R5c as built: the panel
+
+- **Where:** `crates/ui-egui/src/chat_ui.rs`, a submodule of `follow_agent` (its state is `app.ui.agent_view.chat`, since `lib.rs` is at its frozen length).
+  - **The composer** is a bottom panel inside the right panel, added from `panel_view::header`, so it stays put while the AI tab scrolls behind it. It shows only on the AI tab, and only with "Describe a change" on.
+  - **Its requests** (`chat.*`) reach it through `panel_view::request`; the confirmation is drawn from `dialogs::show`.
+- **The composer, top to bottom:**
+  - "Describe a change";
+  - the transcript (220 px at most, scrolling, kept at the bottom);
+  - the agent picker: the installed agents with a headless profile, looked up through `Services::find_program` at most every 5 s, Claude Code first, the binary's path in its tooltip;
+  - the field (two rows, "Describe a change…", named for screen readers);
+  - Send or Stop, and Clear;
+  - one status line: why Send can't go, or "{agent} is working · 0:42".
+- **With no agent installed:** "No agent found on this computer. Install Claude Code or Codex and sign in, then describe a change here." and a docs button for each.
+- **Keys:** ⌘↩ (Ctrl+Enter elsewhere) sends from the field. Esc stops a run from the field, or when nothing has the keyboard. Both are read before the field, which would otherwise add a line or let go of the keyboard.
+- **Send:**
+  1. The window looks the binary up afresh.
+  2. It asks the first time for that agent and path ("Run Claude Code?": what it does, "Program: …", and the whole command with `<your message>`; Run or Cancel).
+  3. It starts the run through `Services::start_agent`. The desktop app (`apps/figcraft/src/agent_runs.rs`) hands that to the R5a runner; elsewhere it says agent runs need the desktop app.
+- **What the run is given:**
+  - the profile's arguments, with the prompt and its context line, and this window's endpoint (and token variable);
+  - `PATH` and `HOME` from the app (`HOME` from `SCRIM_CHAT_CHILD_HOME` when set), and nothing else of the app's environment;
+  - the time limit.
+  - `SCRIM_CHAT_LIMIT_SECS`, for live checks, can only make the limit shorter.
+- **While it runs:**
+  - `tick` reads it each frame and each logic pass (so a hidden window's run goes on);
+  - it adds one line per edit an agent logged since the last look (a batch counts once, not once per step);
+  - it redraws every 0.25 s.
+- **When it ends:**
+  - the reply;
+  - the failure, if any, in the words the tests pin;
+  - "0:42 · Billed by your agent's plan." or the tokens and cost as reported;
+  - and the child's working state ends as `finish_working` ends it (`working_state::finish_where`, by its profile's `clientInfo` names, for clients active since the run began).
+- **Stop:** "Stopped. What the agent made so far stays: Undo takes it back."
+- **Closing the window** drops the run, and the desktop runner kills its tree.
+- **Look:** Scrim's tokens throughout; Send and Stop are `widgets::button`'s primary, on the accent helpers.
+  - **Contrast:** checked at 4.5:1 for the text (secondary and failure lines included) and 3:1 for the field's edge, in both themes. The first edge (`border_strong`) measured 1.5:1, so the edge uses the secondary text colour.
+- **Every new string** is in the English and Spanish catalogs, with plurals for the batch lines.
+- **Older tests:** three harnesses (`ai_tab_tests.rs`, `desktop_flow_tests.rs`, `agent_clients_ui_tests.rs`) click rows near the tab's bottom, now under the composer. They turn "Describe a change" off; the composer has its own tests.
+- **Tests** (`chat_ui_tests.rs`, 13, with a scripted run in place of the runner):
+  - the composer only on the AI tab and only while on;
+  - Send's reasons;
+  - no agent installed, with the docs buttons;
+  - the first use asks, then the spec is checked: binary, prompt and context line, endpoint, the three variables only, 15 min;
+  - a changed program asks again;
+  - a run's lines (yours, "Agent: made 3 layers", the reply, the cost line);
+  - reported tokens and cost;
+  - Stop, with the partial work undone by Undo;
+  - ⌘↩ and Esc;
+  - the failures: not signed in, redacted; an error exit; the time limit; Scrim unreachable; not installed; the endpoint off;
+  - closing the window lets the run go;
+  - the elapsed time's format;
+  - contrast.

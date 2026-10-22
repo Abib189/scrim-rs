@@ -252,7 +252,7 @@ use serde_json::{Value, json};
 
 pub use control::{ControlReply, ControlRequest};
 
-pub use services::{ProgramOutput, ProgramRun, Services};
+pub use services::{AgentEnd, AgentRun, AgentRunEvent, AgentRunSpec, ProgramOutput, ProgramRun, Services};
 
 pub type DialogFuture = Pin<Box<dyn Future<Output = Option<PathBuf>>>>;
 type DialogDone = Box<dyn FnOnce(&mut FigApp, PathBuf)>;

@@ -16,6 +16,7 @@
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 
 #[cfg(target_os = "macos")]
+mod agent_runs;
 mod app_nap;
 mod apple_events;
 mod args;

@@ -84,6 +84,8 @@ fn harness(home: &Path, programs: &[(&'static str, &str)]) -> (Harness, Arc<Mute
     h.app.services = Box::new(Platform(script.clone()));
     h.app.session.agents.mcp.port = Some(7601);
     h.app.session.agents.mcp.client_env = h.app.services.agent_client_env();
+    // The composer pinned at the tab's bottom covers the rows these tests click; it has its own tests (R5).
+    h.app.session.prefs.settings.describe_change = false;
     h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
     h.app.handle_ui_requests();
     h.frames(3);

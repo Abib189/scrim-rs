@@ -71,6 +71,8 @@ fn harness_with(path: &Path, npx: bool, bridge: Option<&str>) -> (Harness, Arc<M
     h.app.services = Box::new(Platform(script.clone()));
     h.app.session.agents.mcp.port = Some(7601);
     h.app.session.agents.mcp.desktop_config = Some(path.to_path_buf());
+    // The composer pinned at the tab's bottom covers the rows these tests click; it has its own tests (R5).
+    h.app.session.prefs.settings.describe_change = false;
     h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
     h.app.handle_ui_requests();
     h.frames(3);

@@ -32,6 +32,8 @@ use crate::FigApp;
 use crate::i18n::{tr, trf};
 use crate::theme::{Tokens, regular};
 
+#[path = "chat_ui.rs"]
+pub mod chat_ui;
 #[path = "follow_end.rs"]
 pub mod follow_end;
 #[path = "grace_hint.rs"]
@@ -100,6 +102,8 @@ pub struct State {
     pub(crate) ended: Option<figcraft_engine::settings::diagnostics::Cause>,
     /// The platform was asked to keep the app awake (agents are working).
     pub(crate) awake: bool,
+    /// "Describe a change": the composer, its transcript and its run (R5).
+    pub chat: chat_ui::State,
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -286,6 +290,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     // The run's end, if it ended since the last frame (Fix N clears a pause then).
     let ended = working_log::take_ended(app);
     follow_end::settle(app, now, ended);
+    chat_ui::tick(app, ctx);
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
     working_indicator::tick(app, ctx, now, &landed);
