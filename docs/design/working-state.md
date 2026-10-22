@@ -312,7 +312,7 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 
 **What changed:**
 - **The default is 60 s** (`DEFAULT_AGENT_GRACE_SECS`). The choices stay 15, 30, 60 and 120 s, and Settings shows "15 s, 30 s, 60 s (default), 120 s".
-- **The migration** (`settings_version` 8): any saved grace the person didn't choose (no `agent_grace_chosen`) becomes 60. A chosen one stays, 30 included.
+- **The migration** (`settings_version` 8): a saved grace below 60 s that the person didn't choose (no `agent_grace_chosen`) becomes 60. Since Fix U1 it never lowers a grace: an unmarked 120 stays. A chosen one always stays, 30 included.
 - **Agents still can't change it:** `pref.agentGrace` is the person's alone.
 - **The hint's wording names no number,** so it is unchanged.
 
@@ -326,4 +326,22 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
   - at a chosen 30 s only the 36 s gap breaks them. "grace too short: … came back after 36 s (the setting is 30 s)" is logged, and the hint shows once.
 - `settings_tests.rs`: the picker's labels.
 
-**Decision (overrule it):** the brief says a saved value with no marker becomes 60. That includes an unmarked 15 or 120, which only an older default, a script or an agent from before Fix Q1 could have left. The person's own picks have been marked since Fix Q1.
+**Decision (overruled by Fix U1):** T1 moved any unmarked value to 60, an unmarked 120 included. Fix U1 replaced that rule; see below.
+
+## Fix U1: the grace migration never lowers a value (22 Oct 2026)
+
+**Why:** T1's migration moved any unmarked grace to 60, so an unmarked 120 went down to 60. A longer grace only keeps the dots on longer, so lowering it is never what the person wants.
+
+**The rule now** (`Settings::sanitized`, still `settings_version` 8):
+- **An unmarked grace below 60 s** (5, 15, 30) becomes 60.
+- **An unmarked 60 or 120 stays.**
+- **A chosen value always stays,** a 15 or a 30 included. A chosen 5, no longer offered, still goes to the nearest choice (15), as since Fix Q1.
+
+**Test:** `agent_work_tests.rs` › `migration_raises_an_unchosen_grace_below_60_and_never_lowers_one`:
+- unmarked 5, 15 and 30 become 60;
+- unmarked 60 and 120 stay;
+- chosen 15, 30 and 120 stay.
+
+It fails on the unmarked 120 with T1's rule.
+
+**Decision (overrule it):** `settings_version` stays 8. A settings file a T1 build already migrated has lost its old value, so a version 9 couldn't restore it.

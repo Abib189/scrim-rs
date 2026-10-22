@@ -119,7 +119,8 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 7: the grace's default moved from 15 s to 30 s and its choices to 15, 30, 60 and 120 s (Fix Q).
 ///   A saved 5 or 15 that the person didn't choose (`agent_grace_chosen`) moves to 30.
 /// - 8: the grace's default moved from 30 s to 60 s (Fix T1): real agents pause 36 s between steps.
-///   Any saved grace the person didn't choose moves to 60; a chosen one stays.
+///   A saved grace below 60 s that the person didn't choose moves to 60 (Fix U1: never lowered, so an
+///   unmarked 120 stays); a chosen one always stays.
 pub const SETTINGS_VERSION: u32 = 8;
 
 /// How fast an agent's new layers enter (`pref.revealSpeed`), slowest first.
@@ -261,9 +262,10 @@ impl Settings {
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
             self.mcp.port = DEFAULT_MCP_PORT;
         }
-        // Versions 7 and 8 moved the grace's default (to 30 s, then 60 s): a grace nobody chose (an
-        // old default, or a value an agent or a script set) moves with it; a chosen one stays.
-        if self.settings_version < 8 && !self.agent_grace_chosen {
+        // Versions 7 and 8 moved the grace's default (to 30 s, then 60 s): a shorter grace nobody
+        // chose (an old default, or a value an agent or a script set) moves up with it. The
+        // migration never lowers a grace (Fix U1), and a chosen one stays.
+        if self.settings_version < 8 && !self.agent_grace_chosen && self.agent_grace_secs < DEFAULT_AGENT_GRACE_SECS {
             self.agent_grace_secs = DEFAULT_AGENT_GRACE_SECS;
         }
         self.settings_version = SETTINGS_VERSION;

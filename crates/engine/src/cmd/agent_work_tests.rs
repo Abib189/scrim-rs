@@ -60,15 +60,22 @@ fn the_grace_period_is_15_30_60_or_120_s_60_by_default_and_the_persons_choice_is
 }
 
 #[test]
-fn migration_moves_any_unchosen_grace_to_60_and_keeps_a_chosen_value() {
+fn migration_raises_an_unchosen_grace_below_60_and_never_lowers_one() {
     let read = |v: Value| serde_json::from_value::<crate::settings::Settings>(v).unwrap().sanitized().agent_grace_secs;
-    // Version 8 (Fix T1): a grace nobody chose follows the default to 60 s.
-    for unmarked in [15, 30, 60] {
+    // Version 8 (Fix T1, U1): a grace below 60 s that nobody chose follows the default up to 60 s.
+    for unmarked in [5, 15, 30] {
         assert_eq!(read(json!({"settings_version": 7, "agent_grace_secs": unmarked})), 60, "unmarked {unmarked}");
     }
-    assert_eq!(read(json!({"settings_version": 6, "agent_grace_secs": 5})), 60, "5, not chosen");
+    assert_eq!(read(json!({"settings_version": 6, "agent_grace_secs": 5})), 60, "5, not chosen, from version 6");
+    // The migration never lowers a grace: an unmarked 60 or 120 stays.
+    for unmarked in [60, 120] {
+        assert_eq!(read(json!({"settings_version": 7, "agent_grace_secs": unmarked})), unmarked, "unmarked {unmarked} stays");
+    }
+    // A chosen value always stays.
     assert_eq!(read(json!({"settings_version": 7, "agent_grace_secs": 30, "agent_grace_chosen": true})), 30, "a chosen 30 stays");
+    assert_eq!(read(json!({"settings_version": 7, "agent_grace_secs": 15, "agent_grace_chosen": true})), 15, "a chosen 15 stays");
     assert_eq!(read(json!({"settings_version": 6, "agent_grace_secs": 15, "agent_grace_chosen": true})), 15, "chosen 15 stays");
+    assert_eq!(read(json!({"settings_version": 7, "agent_grace_secs": 120, "agent_grace_chosen": true})), 120, "a chosen 120 stays");
     assert_eq!(
         read(json!({"settings_version": 6, "agent_grace_secs": 5, "agent_grace_chosen": true})),
         15,
