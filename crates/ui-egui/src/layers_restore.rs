@@ -4,7 +4,9 @@
 //!   Called while a snapshot still holds, it changes nothing and keeps it, so an agent's
 //!   `layers.collapse-all` stays idempotent and never restores.
 //! - **Restore** (`layers.restore-expansion`, the button's next press) opens exactly the rows the
-//!   snapshot kept, and nothing else, and scrolls the list back to where it was.
+//!   snapshot kept, plus the rows down to the selection (R2: a selection the panel hadn't revealed
+//!   when the snapshot was taken stays in view), and nothing else, and scrolls the list back to
+//!   where it was.
 //! - **The snapshot is dropped, for good,** by any row opened or closed afterwards (by hand, a new
 //!   selection revealed, a drag held over a row), another page, another file, or a structural change
 //!   to the layer tree: a layer added, deleted or moved to another parent, or an undo or redo of
@@ -102,15 +104,23 @@ pub(crate) fn collapse(app: &mut FigApp) {
     crate::layers_header::collapse_all(app);
 }
 
-/// `layers.restore-expansion`: open exactly the rows open before Collapse all, and scroll the list
-/// back, when its snapshot still holds and no filter is active; otherwise nothing. The selection
-/// isn't revealed again.
+/// The rows down to the selected layers on the page shown (their ancestors, not the page).
+fn selection_path(app: &FigApp) -> BTreeSet<NodeId> {
+    let Ok(ds) = app.session.ds() else { return BTreeSet::new() };
+    app.session.selection().iter().flat_map(|s| ds.doc.ancestors(*s)).filter(|a| *a != ds.page).collect()
+}
+
+/// `layers.restore-expansion`: open exactly the rows open before Collapse all, plus the rows down
+/// to the selection, and scroll the list back, when its snapshot still holds and no filter is
+/// active; otherwise nothing. The selection isn't revealed again (its rows are already open).
 pub(crate) fn restore(app: &mut FigApp) {
     if !restores_next(app) {
         return;
     }
     if let Some(s) = app.ui.layers_restore.snapshot.take() {
-        app.ui.expanded = s.open;
+        let mut open = s.open;
+        open.extend(selection_path(app));
+        app.ui.expanded = open;
         app.ui.layers_seen_sel = app.session.selection();
         app.ui.layers_restore.scroll_back = Some(s.scroll);
     }

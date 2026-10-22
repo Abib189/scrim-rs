@@ -204,3 +204,22 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
 - **The first try failed** on the list's scroll. That is fixed (`65f639c`) and covered by a test.
 - **By keyboard:** Tab to the button, Space collapses (the focused name becomes "Restore expanded layers"), and Space restores (0 px against the start).
 - **Contrast of the icon:** 7.82:1 (light) and 6.66:1 (dark) on the pressed fill; 9.33:1 and 8.05:1 at rest.
+
+## R2: restore keeps the way to the selection open (22 Oct 2026)
+
+**The open item:** H's overrule 1, the selection's ancestors. The brief: after the restore (the second press), the selected layers' ancestors stay open, and the restored snapshot is otherwise exact.
+
+**Where restore lost them:** the snapshot holds the rows open when Collapse all is pressed. A layer selected without the Layers panel revealing it first wasn't in it: a selection by a command with no frame drawn before the collapse (an agent's batch), or one made while the Assets tab was showing. Collapse marks that selection as seen, so the restore brought back the snapshot exactly and the selected layer stayed hidden in its closed parents.
+
+**The change** (`layers_restore::restore`): the rows open after a restore are the snapshot's rows **plus** the rows down to the selection (its ancestors on the page shown). Nothing else changes:
+- **Collapse all is D1's,** for the button, ⌥L and agents: every row closes, the way to the selection too.
+- **Otherwise exact:** a row closed by hand before the collapse stays closed, unless the selection is inside it.
+- **Still panel state only:** no document write, no revision, no undo step, nothing logged.
+
+**Tests** (`layers_restore_tests.rs`):
+- `restore_keeps_the_way_to_a_deep_selection_open_and_the_rest_exact`: a swatch two levels down, selected by a command before the collapse, with Poster's rows and Kiln's body closed by hand. After the restore Poster and its body are open, Kiln's body is still closed, the swatch is listed, and the document, revision, undo stack and change log are unchanged.
+- `an_agents_restore_command_keeps_the_way_to_the_selection_open_too`: the same through the control channel's commands.
+- `with_its_rows_already_in_the_snapshot_the_restore_is_unchanged`: the usual case gives back exactly the rows open before.
+- Without the change, the first two fail.
+
+**Overrule if you disagree:** Collapse all still closes the way to the selection (D0 decision 3). If "stay expanded" meant open through the collapse as well, that is the one-line change in `layers_header::collapse_all` H's overrule 1 described, and the snapshot check would then compare against the rows the collapse left open.

@@ -342,3 +342,65 @@ fn the_icon_reads_at_3_to_1_in_both_states_and_both_themes() {
         }
     }
 }
+
+/// R2: a layer deep in the tree selected without the panel revealing it first (by a command, with
+/// no frame drawn before the collapse, as an agent's batch or the Assets tab leaves it), with
+/// Poster's rows and Kiln's body closed by hand before.
+fn deep_selection_unrevealed() -> (Ui, [NodeId; 4], NodeId) {
+    let (mut u, ids @ [poster, poster_body, _, kiln_body]) = nested();
+    for id in [poster, poster_body, kiln_body] {
+        u.app.ui.expanded.remove(&id);
+    }
+    u.frame(vec![]);
+    let swatch = u.app.session.doc().unwrap().node(poster_body).and_then(|n| n.children.first().copied()).expect("Poster swatch");
+    u.app.run("select.set", json!({"ids": [swatch]}));
+    (u, ids, swatch)
+}
+
+#[test]
+fn restore_keeps_the_way_to_a_deep_selection_open_and_the_rest_exact() {
+    let (mut u, [poster, poster_body, kiln, kiln_body], swatch) = deep_selection_unrevealed();
+    let snapshot = open(&u);
+    assert_eq!(snapshot, BTreeSet::from([kiln]), "the rows open when the collapse comes: the selection not revealed yet");
+    let feed_before = u.app.run("history.changes", json!({})).unwrap()["changes"].clone();
+    let doc = doc_state(&u);
+    u.app.run("layers.collapse-all", json!({}));
+    u.frame(vec![]);
+    assert_eq!(rows(&mut u), ["Kiln", "Poster"], "Collapse all is D1's: every row closes");
+    click_named(&mut u, RESTORE);
+    let want = BTreeSet::from([kiln, poster, poster_body]);
+    assert_eq!(open(&u), want, "the snapshot's rows, plus the way to the selection");
+    assert!(!open(&u).contains(&kiln_body), "a row closed by hand before stays closed: otherwise exact");
+    assert!(rows(&mut u).iter().any(|r| r == "Poster swatch"), "the selected layer is listed: {:?}", rows(&mut u));
+    assert_eq!(u.app.session.selection(), [swatch], "the selection survives both presses");
+    assert_eq!(button(&mut u).0, COLLAPSE);
+    assert_doc_untouched(&u, &doc, "collapse and restore with a deep selection");
+    let feed = u.app.run("history.changes", json!({})).unwrap()["changes"].clone();
+    assert_eq!(feed, feed_before, "no undo entry and nothing logged");
+}
+
+#[test]
+fn an_agents_restore_command_keeps_the_way_to_the_selection_open_too() {
+    let (mut u, [poster, poster_body, kiln, _], _) = deep_selection_unrevealed();
+    let doc = doc_state(&u);
+    let revision = u.app.session.ds().unwrap().revision;
+    crate::control::handle(&mut u.app, &u.ctx.clone(), "engine.execute", &json!({"command": "layers.collapse-all"})).unwrap();
+    u.frame(vec![]);
+    crate::control::handle(&mut u.app, &u.ctx.clone(), "engine.execute", &json!({"command": "layers.restore-expansion"})).unwrap();
+    u.frame(vec![]);
+    assert_eq!(open(&u), BTreeSet::from([kiln, poster, poster_body]));
+    assert_eq!(u.app.session.ds().unwrap().revision, revision, "no revision bump");
+    assert_doc_untouched(&u, &doc, "the agent's collapse and restore");
+}
+
+#[test]
+fn with_its_rows_already_in_the_snapshot_the_restore_is_unchanged() {
+    // The common case: the selection was revealed before the collapse, so its rows are in the
+    // snapshot and the restore gives back exactly the rows open before.
+    let (mut u, [_, poster_body, ..]) = partly_open();
+    let before = open(&u);
+    assert!(before.contains(&poster_body));
+    click_named(&mut u, COLLAPSE);
+    click_named(&mut u, RESTORE);
+    assert_eq!(open(&u), before);
+}
