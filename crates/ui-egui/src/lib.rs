@@ -1397,11 +1397,10 @@ impl FigApp {
             windows::repaint_others(self, &ctx);
         }
         windows::show(self, &ctx);
-        // Plugins installed, removed or set up are kept at once: a crash doesn't lose them.
-        // So are the owner tokens of files put online.
-        if std::mem::take(&mut self.session.plugins.unsaved) | std::mem::take(&mut self.session.live.unsaved) {
-            self.services.save_prefs(&self.session.prefs);
-        }
+        // Plugins installed, removed or set up are kept at once: a crash doesn't lose them. So are the
+        // owner tokens of files put online, and since Fix V2 every change of Settings.
+        let at_once = std::mem::take(&mut self.session.plugins.unsaved) | std::mem::take(&mut self.session.live.unsaved);
+        self.services.keep_prefs(&self.session.prefs, at_once);
         #[cfg(not(target_arch = "wasm32"))]
         {
             self.ui.frame_ms = t0.elapsed().as_secs_f64() * 1000.0;

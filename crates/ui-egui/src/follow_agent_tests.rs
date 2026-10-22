@@ -285,11 +285,22 @@ fn the_ai_tab_says_who_and_what_it_follows_and_the_command_answers_the_state() {
     poster(&mut u, 8000.0);
     frames(&mut u, 5);
     assert_eq!(super::status(&u.app).as_deref(), Some("Following Claude Code · Poster"));
-    let r = agent(&mut u, "camera.follow-agents", json!({"on": false}));
+    // The command answers the state; only the person runs it (Fix V2: an agent is refused).
+    let ctx = u.ctx.clone();
+    let refused = crate::control::handle_route(
+        &mut u.app,
+        &ctx,
+        "mcp (http)",
+        "engine.execute",
+        &json!({"command": "camera.follow-agents", "params": {"on": false}}),
+    );
+    assert!(refused.is_err_and(|e| e.contains("only the person")), "an agent is refused");
+    assert_eq!(figcraft_engine::cmd::camera::follow_state(&u.app.session), "following");
+    let r = u.app.run("camera.follow-agents", json!({"on": false})).unwrap();
     assert_eq!(r["state"], "off", "{r}");
     frames(&mut u, 2);
     assert_eq!(super::status(&u.app), None);
-    let r = agent(&mut u, "camera.follow-agents", json!({}));
+    let r = u.app.run("camera.follow-agents", json!({})).unwrap();
     assert_eq!(r["state"], "following", "{r}");
 }
 

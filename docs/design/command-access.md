@@ -67,7 +67,7 @@ These are classified Write, and refused for agents on every route anyway (MCP, t
 - **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`, and the AI panel's (Fix T4): `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint`, `chat.grace-setting`
 - **pref:** `pref.describeChange`, `pref.chatTimeLimit`
 
-`pref.agentGrace` is refused for agents too (Fix Q1).
+`pref.agentGrace` is refused for agents too (Fix Q1). So is `camera.follow-agents` (Fix V2): only the person turns following on or off, and Settings ▸ Diagnostics notes an agent's attempt (`docs/design/follow-setting.md`).
 
 ## Read (58)
 

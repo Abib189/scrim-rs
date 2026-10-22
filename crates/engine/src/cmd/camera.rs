@@ -22,6 +22,7 @@ use serde_json::{Value, json};
 
 use super::CommandSpec;
 use crate::params::{boolean, id_of};
+use crate::settings::diagnostics;
 use crate::{EngineError, Result, Session, ViewState, bad, spec};
 
 /// The margin left around a focused layer, in screen pixels.
@@ -126,7 +127,17 @@ pub fn follow_state(s: &Session) -> &'static str {
     }
 }
 
+/// Why an agent can't change following (Fix V2).
+pub const FOLLOW_PERSON_ONLY: &str = "only the person turns following on or off: the Follow agents button in the AI panel, or Settings ▸ Agents";
+
 fn follow_agents(s: &mut Session, p: &Value) -> Result<Value> {
+    // The person's alone (Fix V2): an agent that asked is refused, and Settings ▸ Diagnostics says so.
+    if let crate::agents::Author::Agent(route) = &s.agents.author {
+        let (route, session, on) = (route.clone(), s.agents.session.clone(), s.prefs.settings.follow_agents);
+        let entry = diagnostics::Entry::FollowRefused { on, route: &route, session: session.as_deref() };
+        diagnostics::record(&mut s.prefs.settings, diagnostics::now(), entry);
+        return Err(bad("camera.follow-agents", FOLLOW_PERSON_ONLY));
+    }
     // Without `on`: following → off; paused or off → following. The window sees a resume (paused or
     // off, then following) and flies to the latest work.
     let on = boolean(p, "on").unwrap_or(follow_state(s) != "following");
@@ -184,7 +195,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "camera.follow-agents",
             "Follow agent",
-            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window keeps agents' latest work in the middle of the canvas as it lands; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings)",
+            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window keeps agents' latest work in the middle of the canvas as it lands; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings. The person's alone: an agent is refused, and Settings ▸ Diagnostics notes it)",
             false,
             follow_agents
         ),

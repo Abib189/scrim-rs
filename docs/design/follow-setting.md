@@ -71,3 +71,40 @@ In every agent case Diagnostics kept only "repro-agent 1.0 connected" and "worki
 - **Whether the person clicked the crosshair:** a person's click isn't logged either, so that route can't be excluded from the code alone. The person says they didn't, and it is the only other route.
 
 Fix V3 logs both from now on, with the origin.
+
+## V2: the fix
+
+**What changed:**
+- **Following is the person's alone.** `camera.follow-agents` refuses an agent on every route (MCP's `run_command` and `batch`, the CLI, the control channel, plugins), whatever it sends. The refusal reads "only the person turns following on or off: the Follow agents button in the AI panel, or Settings ▸ Agents".
+- **Each refusal is noted** in Settings ▸ Diagnostics: "follow setting: stays ON (refused: an agent asked, over MCP, session 3f1520b6…)". The route is in fixed words and the session in 8 letters and digits. Nothing the agent sent, nor a name a client or plugin gave, goes in (`Entry::FollowRefused`).
+- **One source of truth:** `prefs.settings.follow_agents`, read through `follow_state` by the camera, the reveal, the header button and now the Settings toggle too, which read the field directly before.
+- **Settings are kept as they change** (a second defect V2's restart test found):
+  - **Before:** a change of Settings (Follow agents among them, and every Diagnostics line) was written only when the app quit, or when a plugin, an online token or a panel width changed. A kill or a crash lost it.
+  - **Now:** the window hands the settings to `Services::keep_prefs` every frame. The desktop app writes them, atomically as before, whenever they differ from what it last wrote.
+  - **Why this isn't the root cause:** a lost write can only undo a change, never turn on into off by itself. The 11:43 pause events were saved, and following was saved with them.
+- **No marker for following:** no migration touches it, and a test now fails if a migration changes any key but its own. A marker like the grace's would only be needed if a migration ever had to move an unchosen value.
+- **A fresh install follows agents,** as before (`follow_agents: true` by default, and `serde(default = "yes")` when the key is missing).
+
+**Tests:**
+
+| Test | Without the fix |
+|---|---|
+| `camera_tests.rs` › `an_agent_cant_change_following_and_the_refusal_is_noted`: four routes, three forms and a batch, each refused, the setting unchanged, the line noted, no plugin-given name | fails (the agent turns it off) |
+| `crates/mcp/tests/follow_agent.rs`: `run_command` with `{}`, `on: false`, `on: true`, and `batch`, refused in plain words over MCP | fails (it asserted the toggle before) |
+| `apps/figcraft` › `follow_setting_tests.rs` › `the_persons_change_is_kept_across_a_restart`: off, killed, still off; on, quit, still on | fails ("off after a kill": it came back on) |
+| `follow_setting_tests.rs` › `a_file_from_the_build_before_fix_t_with_follow_on_stays_on`, the real files, start, quit, start | passes before too: (a) was false |
+| `follow_setting_tests.rs` › `every_supported_settings_version_keeps_follow_as_it_was`, versions 0 to 8, on and off | passes before too |
+| `follow_setting_tests.rs` › `a_fresh_settings_folder_follows_agents` | passes before too |
+| `follow_setting_tests.rs` › `a_migration_changes_nothing_but_its_own_keys`: only `settings_version` and the unmarked grace change | passes before too; it fails for any future migration that writes over another value |
+| `ai_panel_tests.rs` › `the_follow_button_and_the_settings_toggle_always_agree_and_survive_a_restart` | passes before too: (b) was false |
+
+**A flake found on the way:**
+- **The symptom:** the first V2 CI run failed `recovery_tests.rs` › `a_lock_freed_a_moment_later_is_not_a_run_that_is_still_going`, about 1 run in 4 with V2's tests and 0 in 8 without them.
+- **The cause:** the version sweep started the app's services 34 times. Each start forks `defaults read` for the system's language and motion setting, and a forked child holds a copy of the recovery test's lock until it execs (the #334 situation that test is about).
+- **The fix:** the sweep now reads and writes through `read_prefs` (taken out of `Desktop::load_from`, which uses it) and `write_prefs`, without starting the services. The suite then passed 10 runs in 10.
+
+**Decisions (overrule any):**
+1. **The CLI, the control channel and plugins count as agents here,** as they do for the chat and grace commands. A script that wants following off now needs the person.
+2. **The refusal line names the route and the session, not the client.** The client's name is the agent's own words; the session ties the line to that client's "connected" and "working" lines.
+3. **`pref.revealAgentWork`, `pref.workingIndicator` and `pref.revealSpeed` stay open to agents,** as the brief names only Follow. The same mystery could happen to them. Making them the person's too is a one-line change each.
+4. **All Settings are now written as they change,** not only Follow. That is the smallest rule that makes "a human change persists across a restart" hold. The file is written at most once a frame, and only when something in it changed.

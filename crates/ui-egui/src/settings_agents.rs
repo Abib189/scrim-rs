@@ -35,8 +35,10 @@ fn at_work(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let prefs = app.session.prefs.clone();
     heading(ui, tr("Agents at work"));
-    if widgets::checkbox(ui, prefs.settings.follow_agents, tr("Follow agents as they work")) {
-        app.run("camera.follow-agents", json!({"on": !prefs.settings.follow_agents}));
+    // Following's one source of truth, as the AI panel's button, the camera and the reveal read it (Fix V2).
+    let following = figcraft_engine::cmd::camera::follow_state(&app.session) != "off";
+    if widgets::checkbox(ui, following, tr("Follow agents as they work")) {
+        app.run("camera.follow-agents", json!({"on": !following}));
     }
     widgets::label(ui, tr("Keeps the agent's latest work in the middle of the canvas. Your own scroll, zoom or edit pauses it."), t.text_secondary);
     if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {

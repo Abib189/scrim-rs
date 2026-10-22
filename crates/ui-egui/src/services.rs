@@ -108,6 +108,14 @@ pub trait Services {
     /// Keep the preferences now (the installed plugins or their settings changed), as the app
     /// does when it quits.
     fn save_prefs(&mut self, _prefs: &figcraft_engine::Prefs) {}
+    /// Every frame: keep the preferences now when `at_once` (as [`save_prefs`](Self::save_prefs)),
+    /// or when Settings changed since they were last kept (Fix V2): a crash or a kill then loses no
+    /// setting, Follow agents among them, and no Diagnostics line.
+    fn keep_prefs(&mut self, prefs: &figcraft_engine::Prefs, at_once: bool) {
+        if at_once {
+            self.save_prefs(prefs);
+        }
+    }
     /// The AI panel's conversations as last kept (Fix T4): JSON, or nothing. Only the desktop app
     /// keeps them, in its settings folder, never in a document.
     fn load_conversations(&mut self) -> Option<String> {

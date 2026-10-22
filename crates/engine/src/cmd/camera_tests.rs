@@ -156,3 +156,38 @@ fn follow_agents_turns_on_off_and_resumes() {
     assert!(old.follow_agents, "a file from before follow reads on");
     assert_eq!(old.settings_version, crate::settings::SETTINGS_VERSION);
 }
+
+/// Fix V2: only the person turns following on or off. An agent, by any route and any form of the
+/// command (no `on`, `on: false`, `on: true`, inside `command.batch`), is refused in plain words,
+/// the setting stays as it was, and Settings ▸ Diagnostics notes the refusal: the route in fixed
+/// words and the session, nothing the agent sent.
+#[test]
+fn an_agent_cant_change_following_and_the_refusal_is_noted() {
+    let mut s = Session::new();
+    for (route, said) in [
+        ("mcp (http)", "over MCP, session 3f1520b6…"),
+        ("cli", "from the CLI"),
+        ("control channel", "over the control channel"),
+        ("plugin Evil \"name\"", "from a plugin"),
+    ] {
+        s.set_author(crate::agents::Author::agent(route));
+        s.agents.session = route.starts_with("mcp").then(|| "3f1520b6-77aa-4bcd".to_string());
+        for params in [json!({}), json!({"on": false}), json!({"on": true})] {
+            let e = s.execute("camera.follow-agents", &params).expect_err("refused");
+            assert!(e.to_string().contains("only the person turns following on or off"), "{route}: {e}");
+            assert!(s.prefs.settings.follow_agents, "{route} {params}: still on");
+        }
+        let e = s
+            .execute("command.batch", &json!({"commands": [{"command": "camera.follow-agents", "params": {}}]}))
+            .expect_err("refused in a batch too");
+        assert!(e.to_string().contains("only the person"), "{e}");
+        assert!(s.prefs.settings.follow_agents);
+        let last = s.prefs.settings.diagnostics.last().unwrap();
+        assert_eq!((last.kind.as_str(), last.detail.clone()), ("follow", format!("follow setting: stays ON (refused: an agent asked, {said})")));
+    }
+    assert!(s.prefs.settings.diagnostics.iter().all(|e| !e.detail.contains("Evil")), "never a name the plugin gave");
+    // The person's own change still works, off and on.
+    s.set_author(crate::agents::Author::Person);
+    assert_eq!(s.execute("camera.follow-agents", &json!({"on": false})).unwrap()["state"], "off");
+    assert_eq!(s.execute("camera.follow-agents", &json!({})).unwrap()["state"], "following");
+}

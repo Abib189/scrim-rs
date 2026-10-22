@@ -9,6 +9,7 @@
 //! - an MCP client connecting (its name and version as it gave them);
 //! - a command failing (its id, when it is a registered command, and the error's category; never
 //!   the message, which can quote the document);
+//! - an agent refused when it asks to change Follow agents: the route and its session (Fix V2);
 //! - following an agent pausing, and why ([`Pause`]), and the pause clearing ([`Cleared`], Fix N), and the reveal drawing an agent's new layers
 //!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2);
 //! - the working state's transitions: a client beginning, ending or being held, with the cause
@@ -56,6 +57,9 @@ pub enum Entry<'a> {
     McpClient { name: &'a str, version: &'a str },
     /// A command failed: its id and the error.
     Error { command: &'a str, error: &'a EngineError },
+    /// An agent asked to turn Follow agents on or off and was refused (Fix V2): the setting (`on`,
+    /// unchanged), the route it came by and its session. Nothing the agent sent.
+    FollowRefused { on: bool, route: &'a str, session: Option<&'a str> },
     /// Following the agent paused, for this reason.
     FollowPaused(Pause),
     /// The pause was cleared, for this reason (Fix N).
@@ -213,6 +217,30 @@ impl Skip {
     }
 }
 
+/// "ON" or "OFF", as the follow setting's lines say it.
+pub fn on_off(on: bool) -> &'static str {
+    if on { "ON" } else { "OFF" }
+}
+
+/// How an agent's request came, in fixed words (never a name a plugin or client gave), with its
+/// session's first 8 letters and digits when the route knows it.
+fn by(route: &str, session: Option<&str>) -> String {
+    let route = match route {
+        r if r.starts_with("mcp") => "over MCP",
+        "cli" => "from the CLI",
+        "control channel" => "over the control channel",
+        r if r.starts_with("plugin") => "from a plugin",
+        _ => "by another route",
+    };
+    let session = session.map(|s| s.chars().filter(char::is_ascii_alphanumeric).take(8).collect::<String>()).filter(|s| !s.is_empty());
+    session.map_or_else(|| route.to_string(), |s| format!("{route}, session {s}…"))
+}
+
+/// Seconds since 1970 (UTC), now.
+pub fn now() -> u64 {
+    web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0, |d| d.as_secs())
+}
+
 /// `s` without control characters, at most `max` characters.
 fn clean(s: &str, max: usize) -> String {
     s.chars().filter(|c| !c.is_control()).take(max).collect()
@@ -240,7 +268,7 @@ impl Entry<'_> {
             Entry::McpStarted(_) | Entry::McpFailed => "mcpServer",
             Entry::McpClient { .. } => "mcpClient",
             Entry::Error { .. } => "error",
-            Entry::FollowPaused(_) | Entry::FollowCleared(_) => "follow",
+            Entry::FollowPaused(_) | Entry::FollowCleared(_) | Entry::FollowRefused { .. } => "follow",
             Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
             Entry::ChatRun { .. } => "chat",
@@ -270,6 +298,9 @@ impl Entry<'_> {
                 format!("{id}: {}", category(error))
             }
             Entry::FollowPaused(why) => format!("following paused: {}", why.text()),
+            Entry::FollowRefused { on, route, session } => {
+                format!("follow setting: stays {} (refused: an agent asked, {})", on_off(*on), by(route, *session))
+            }
             Entry::FollowCleared(why) => format!("follow pause cleared: {}", why.text()),
             Entry::Reveal { entered, skipped } => {
                 let n: usize = skipped.iter().map(|s| s.1).sum();

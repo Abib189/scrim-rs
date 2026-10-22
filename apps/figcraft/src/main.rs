@@ -38,6 +38,8 @@ mod args_tests;
 #[cfg(test)]
 mod chat_e2e_tests;
 #[cfg(test)]
+mod follow_setting_tests;
+#[cfg(test)]
 mod graphics_tests;
 #[cfg(test)]
 mod migrate_tests;

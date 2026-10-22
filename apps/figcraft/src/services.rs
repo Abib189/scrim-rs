@@ -24,6 +24,8 @@ pub struct Desktop {
     pub mcp: Option<crate::mcp_endpoint::McpHandle>,
     /// The activity held while agents work, so the OS doesn't nap the app (R3a).
     awake: crate::app_nap::Awake,
+    /// Settings as last written to the settings folder (`keep_prefs`, Fix V2).
+    kept: Option<figcraft_engine::settings::Settings>,
 }
 
 /// Where the settings live: `design.scrim.app` under [`base_dir`] (FigCraft's are copied there
@@ -47,20 +49,7 @@ impl Desktop {
 
     /// With the preferences kept in `dir`.
     pub fn load_from(dir: Option<PathBuf>, recovery: crate::recovery::Shared) -> Self {
-        let state: Value =
-            dir.as_ref().and_then(|d| std::fs::read_to_string(d.join(STATE)).ok()).and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(json!({}));
-        let prefs = state.get("prefs").and_then(|p| serde_json::from_value::<Prefs>(p.clone()).ok()).map(|mut p| {
-            // Values that read but make no sense fall back (Stage C's settings).
-            p.settings = std::mem::take(&mut p.settings).sanitized();
-            // Recent files lived next to the preferences before they moved into them.
-            if p.recent_files.is_empty()
-                && let Some(old) = state.get("recents").and_then(Value::as_array)
-            {
-                p.recent_files = old.iter().filter_map(|v| v.as_str().map(str::to_string)).collect();
-            }
-            p.recent_files.truncate(figcraft_engine::cmd::file::MAX_RECENT);
-            p
-        });
+        let prefs = dir.as_deref().and_then(read_prefs);
         let reduce_motion = Arc::new(AtomicBool::new(false));
         let flag = reduce_motion.clone();
         std::thread::spawn(move || flag.store(system_reduce_motion(), Ordering::Relaxed));
@@ -73,6 +62,7 @@ impl Desktop {
             recovery,
             mcp: None,
             awake: Default::default(),
+            kept: None,
         }
     }
 }
@@ -204,6 +194,24 @@ pub fn shutdown(app: &mut FigApp, dir: Option<&Path>, recovery: Option<crate::re
         r.quit(&app.session, app.ui.quit);
     }
     drop(std::mem::take(&mut app.session.live));
+}
+
+/// The preferences kept in `dir`, read and brought up to date (Settings' migrations) as the app
+/// starts with them; `None` when there are none or they don't read.
+pub(crate) fn read_prefs(dir: &Path) -> Option<Prefs> {
+    let state: Value = std::fs::read_to_string(dir.join(STATE)).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(json!({}));
+    state.get("prefs").and_then(|p| serde_json::from_value::<Prefs>(p.clone()).ok()).map(|mut p| {
+        // Values that read but make no sense fall back (Stage C's settings).
+        p.settings = std::mem::take(&mut p.settings).sanitized();
+        // Recent files lived next to the preferences before they moved into them.
+        if p.recent_files.is_empty()
+            && let Some(old) = state.get("recents").and_then(Value::as_array)
+        {
+            p.recent_files = old.iter().filter_map(|v| v.as_str().map(str::to_string)).collect();
+        }
+        p.recent_files.truncate(figcraft_engine::cmd::file::MAX_RECENT);
+        p
+    })
 }
 
 /// Write `prefs` to `dir` atomically (a temporary file renamed over the old one: a crash leaves
@@ -386,6 +394,12 @@ impl Services for Desktop {
     fn save_prefs(&mut self, prefs: &Prefs) {
         if let Some(dir) = &self.dir {
             write_prefs(dir, prefs);
+            self.kept = Some(prefs.settings.clone());
+        }
+    }
+    fn keep_prefs(&mut self, prefs: &Prefs, at_once: bool) {
+        if at_once || self.kept.as_ref() != Some(&prefs.settings) {
+            self.save_prefs(prefs);
         }
     }
     fn load_conversations(&mut self) -> Option<String> {

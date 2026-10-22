@@ -385,3 +385,72 @@ fn new_chat_is_disabled_while_a_run_goes_and_says_stop_the_run_first() {
     click_named(&mut u, "New chat");
     assert_eq!(panel(&u)["header"]["title"], "New chat");
 }
+
+/// Fix V2: the AI panel header's Follow agents button and Settings ▸ Agents' toggle always show the
+/// same state, whichever the person uses, and after a restart (the settings as saved, read back).
+#[test]
+fn the_follow_button_and_the_settings_toggle_always_agree_and_survive_a_restart() {
+    use egui::accesskit::Toggled;
+    const NAME: &str = "Follow agents as they work";
+    let pressed = |n: &Node| n.toggled().map(|t| t == Toggled::True);
+    let centre = |n: &Node| n.bounds().map(|b| egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32)).unwrap();
+    // The header button's state (Settings closed).
+    let button = |u: &mut Ui| {
+        let nodes = tree(u);
+        let b = nodes.iter().find(|n| n.role() == Role::Button && n.label() == Some(NAME)).expect("the header button");
+        (pressed(b), centre(b))
+    };
+    // Settings ▸ Agents' toggle, scrolled into view.
+    let toggle = |u: &mut Ui| {
+        u.app.run("settings.open", json!({"section": "agents"}));
+        u.app.handle_ui_requests();
+        u.frame(vec![]);
+        for _ in 0..40 {
+            let nodes = tree(u);
+            if let Some(c) = nodes.iter().find(|n| n.role() == Role::CheckBox && n.label() == Some(NAME))
+                && (160.0..680.0).contains(&centre(c).y)
+            {
+                return (pressed(c), centre(c));
+            }
+            u.frame(vec![egui::Event::PointerMoved(egui::pos2(800.0, 450.0))]);
+            u.frame(vec![egui::Event::MouseWheel {
+                unit: egui::MouseWheelUnit::Point,
+                delta: egui::vec2(0.0, -120.0),
+                phase: egui::TouchPhase::Move,
+                modifiers: egui::Modifiers::NONE,
+            }]);
+        }
+        panic!("the toggle never came into view");
+    };
+    let close = |u: &mut Ui| click_named(u, "Done");
+    let state = |u: &Ui| figcraft_engine::cmd::camera::follow_state(&u.app.session);
+    let (mut u, _) = window();
+    assert_eq!(button(&mut u).0, Some(true));
+    assert_eq!(toggle(&mut u).0, Some(true));
+    close(&mut u);
+    // The header button turns it off: the toggle says off.
+    let (_, at) = button(&mut u);
+    crate::follow_agent::tests::click(&mut u, at);
+    assert_eq!(state(&u), "off");
+    let (on, at) = toggle(&mut u);
+    assert_eq!(on, Some(false), "the toggle agrees with the button");
+    // The toggle turns it on: the button says on.
+    crate::follow_agent::tests::click(&mut u, at);
+    assert_eq!(state(&u), "following");
+    assert_eq!(toggle(&mut u).0, Some(true));
+    close(&mut u);
+    assert_eq!(button(&mut u).0, Some(true), "the button agrees with the toggle");
+    // Off again from the toggle, then a restart: the saved settings, read as the app reads them.
+    let (_, at) = toggle(&mut u);
+    crate::follow_agent::tests::click(&mut u, at);
+    close(&mut u);
+    assert_eq!(button(&mut u).0, Some(false));
+    let saved = serde_json::to_value(&u.app.session.prefs).unwrap();
+    let (mut again, _) = window();
+    again.app.session.prefs = serde_json::from_value(saved).unwrap();
+    again.app.session.prefs.settings = std::mem::take(&mut again.app.session.prefs.settings).sanitized();
+    again.frame(vec![]);
+    assert_eq!(state(&again), "off");
+    assert_eq!(button(&mut again).0, Some(false), "the button after a restart");
+    assert_eq!(toggle(&mut again).0, Some(false), "the toggle after a restart");
+}
