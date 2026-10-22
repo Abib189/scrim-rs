@@ -11,6 +11,11 @@
 //!   gave it plus [`VIA`], and proxies everything; then it sends `notifications/tools/list_changed`
 //!   so the client lists the tools again. The app restarting, on the same port or another, is the
 //!   same: the next request (or the retry) finds it.
+//! - **A restart on the same port** is found from the note too (Fix S5): the app takes a session id
+//!   it doesn't know as the newest client's, so the old session would go on answering. While the
+//!   link is up the bridge compares the instance the note names ([`Config::instance`], the app's
+//!   process id) with the one it connected to, every retry and before every request; a new one is
+//!   initialized for the client again, which is told the list changed.
 //! - **The token** (`Bearer …` from `SCRIM_MCP_AUTH`) goes in each request's `Authorization`
 //!   header, and is never printed.
 //! - **It ends** when stdin closes, ending its session at the app first (`DELETE /mcp`).
@@ -44,6 +49,8 @@ pub struct Config {
     pub endpoint: Box<dyn Fn() -> SocketAddr + Send + Sync>,
     /// The tools the app last listed (`{"tools": […]}`), if it noted them.
     pub tools: Box<dyn Fn() -> Option<Value> + Send + Sync>,
+    /// The app instance the note names (its process id), if any: another one is a restart.
+    pub instance: Box<dyn Fn() -> Option<u64> + Send + Sync>,
     /// `Bearer <token>` when the app requires one.
     pub auth: Option<String>,
     /// How often to try the app while it's closed.
@@ -57,10 +64,11 @@ impl Config {
     /// token from [`TOKEN_VAR`], a 2 s retry, progress on stderr.
     pub fn from_env(dir: Option<PathBuf>) -> Config {
         let dir = dir.or_else(crate::discovery::settings_dir);
-        let (d1, d2) = (dir.clone(), dir);
+        let (d1, d2, d3) = (dir.clone(), dir.clone(), dir);
         Config {
             endpoint: Box::new(move || d1.as_deref().map_or_else(default_endpoint, crate::discovery::endpoint)),
             tools: Box::new(move || d2.as_deref().and_then(crate::discovery::tools)),
+            instance: Box::new(move || d3.as_deref().and_then(crate::discovery::instance)),
             auth: std::env::var(TOKEN_VAR).ok().filter(|t| !t.trim().is_empty()),
             retry: Duration::from_secs(2),
             log: Box::new(|m| {
@@ -79,6 +87,8 @@ fn default_endpoint() -> SocketAddr {
 struct Link {
     addr: Option<SocketAddr>,
     session: Option<String>,
+    /// The instance the note named when the link came up.
+    instance: Option<u64>,
     up: bool,
     /// The app refused the token (until it accepts it).
     refused: bool,
@@ -124,6 +134,7 @@ impl Shared {
         };
         let mut link = self.link.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         let addr = (self.cfg.endpoint)();
+        let instance = (self.cfg.instance)();
         let mut p = params;
         let name = p["clientInfo"]["name"].as_str().unwrap_or("").to_string();
         p["clientInfo"]["name"] = json!(format!("{}{VIA}", if name.trim().is_empty() { "an MCP client" } else { &name }));
@@ -132,7 +143,7 @@ impl Shared {
         // Quickly, and only Scrim: another program holding the port, or one answering slowly, isn't.
         match upstream::post(addr, None, auth, &init, upstream::QUICK) {
             upstream::Reply::Answer { status: 200, session, body: Some(b) } if b["result"]["serverInfo"]["name"] == "scrim" => {
-                *link = Link { addr: Some(addr), session, up: true, refused: false, said: std::mem::take(&mut link.said) };
+                *link = Link { addr: Some(addr), session, instance, up: true, refused: false, said: std::mem::take(&mut link.said) };
                 if initialized {
                     let n = json!({"jsonrpc": "2.0", "method": "notifications/initialized"});
                     let _ = upstream::post(addr, link.session.as_deref(), auth, &n, upstream::QUICK);
@@ -201,6 +212,26 @@ impl Shared {
         self.link.lock().unwrap_or_else(std::sync::PoisonError::into_inner).up
     }
 
+    /// The link is up, but the note names another instance than the one it came up with: the app
+    /// restarted (on the same port, or the next request would have found it gone). The link is
+    /// then marked down. A note that appeared since is taken as the same instance's.
+    fn restarted(&self) -> bool {
+        let noted = (self.cfg.instance)();
+        let mut link = self.link.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        if !link.up || noted.is_none() || noted == link.instance {
+            return false;
+        }
+        if link.instance.is_none() {
+            link.instance = noted;
+            return false;
+        }
+        let addr = link.addr.map_or_else(|| "its port".to_string(), |a| a.to_string());
+        self.say(&mut link, format!("Scrim at {addr} restarted; connecting again"));
+        link.up = false;
+        link.session = None;
+        true
+    }
+
     fn refused(&self) -> bool {
         self.link.lock().unwrap_or_else(std::sync::PoisonError::into_inner).refused
     }
@@ -227,7 +258,7 @@ impl Shared {
             };
             return json!({"jsonrpc": "2.0", "id": id, "result": result});
         }
-        let was_up = self.up();
+        let was_up = self.up() && !self.restarted();
         if !was_up && self.connect().is_some() {
             self.tools_changed();
         }
@@ -286,11 +317,13 @@ pub fn run(input: impl BufRead, output: Box<dyn Write + Send>, cfg: Config) -> s
     let shared = Arc::new(Shared { cfg, link: Mutex::new(Link::default()), client: Mutex::new(Client::default()), out: Mutex::new(output) });
     let stop = Arc::new(AtomicBool::new(false));
     let (sh, st) = (shared.clone(), stop.clone());
-    // While the app is closed, try it every `retry`, once the client has initialized.
+    // While the app is closed, try it every `retry`, once the client has initialized; while it's
+    // up, look for a restart in the note.
     let waiter = std::thread::Builder::new().name("scrim-bridge-wait".into()).spawn(move || {
         while !st.load(Ordering::Relaxed) {
             std::thread::sleep(retry);
-            let waiting = sh.client.lock().unwrap_or_else(std::sync::PoisonError::into_inner).init.is_some() && !sh.up();
+            let client = sh.client.lock().unwrap_or_else(std::sync::PoisonError::into_inner).init.is_some();
+            let waiting = client && (!sh.up() || sh.restarted());
             if waiting && !st.load(Ordering::Relaxed) && sh.connect().is_some() {
                 sh.tools_changed();
             }

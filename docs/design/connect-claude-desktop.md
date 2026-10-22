@@ -162,3 +162,42 @@ Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
 - `mcp_endpoint_tests.rs`: the app's note, which follows a restart and goes away when the endpoint is dropped;
 - `agent_clients_tests.rs`: the stdio snippet.
 
+
+
+## Fix S5: the bridge across Scrim restarts (22 Oct 2026)
+
+**Checked live** (`docs/scrim-ports/connect-agents/s5-bridge/`).
+- **Setup:** the real `figcraft mcp-bridge` (debug build) on a scratch HOME and settings folder, with a stub client on its stdin and stdout, connected throughout.
+- **The app quit and started again three times:**
+  - on the same port (7690);
+  - on another port (7691);
+  - on the same port with no call while it was down.
+- **Calls ran one after another across each quit,** so that one was at the app as it went.
+
+| Check | Same port | Another port | Same port, quiet |
+|---|---|---|---|
+| The call in flight at the quit | "Scrim is not running…", 2 ms | the same, 2 ms | no call made |
+| Every call while closed | "Scrim is not running…", 1 ms or less | the same | — |
+| `notifications/tools/list_changed` | yes, as the app came up | yes, 0.9 s after | **before the fix: never**; after: 1.5 s after |
+| The next call, without restarting the client | answered | answered | answered |
+
+- No call took more than 38 ms.
+- The app quit in 0.01–0.17 s each time.
+
+**Found and fixed: a quiet restart on the same port went unnoticed.**
+- **The cause:** the app takes a session id it doesn't know as the newest client's. So the bridge's old session went on answering, and the bridge's 404 branch never fired.
+- **The effect:** the client was never told the tool list might have changed, and the new app never got the client's `initialize`. It didn't know the client's name, so it couldn't say "{client} is working".
+- **The fix:** the bridge now remembers which app instance the note names (`mcp-endpoint.json` › `pid`, `discovery::instance`) when it connects.
+  - **When it checks:** every retry (2 s) while the link is up, and before every request.
+  - **On a new instance:** it initializes again for the client and sends `list_changed`.
+  - **A note that appears after the bridge connected** is taken as the same instance's.
+- **Why not a 404:** answering an unknown session with 404, as the spec allows, would change the endpoint for every client, Claude Desktop's mcp-remote among them. The bridge was the narrower place.
+- **Tests:** `crates/mcp/tests/bridge.rs` ›
+  - `a_restart_on_the_same_port_with_no_call_meanwhile_is_found_and_the_client_told` fails with the check disabled;
+  - `an_app_that_notes_no_instance_is_never_taken_for_a_restart`.
+
+**Not seen, not changed:** a request already queued for the window when the window closes. If its reply channel closes before the process exits, the app's endpoint (`mcp_endpoint.rs`) answers "timed out waiting for the Scrim window…" rather than "Scrim is not running". In every live quit the process went first, and the bridge answered "Scrim is not running".
+
+**Not verified:**
+- Claude Desktop itself across a restart. The stub stands in for it, and Desktop's handling of `list_changed` is its own.
+- A crash: the note stays behind with a dead pid, and the next request finds nothing listening.

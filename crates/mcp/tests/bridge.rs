@@ -1,8 +1,9 @@
 //! Fix P: `scrim mcp-bridge` waits for the app instead of exiting. With the app's endpoint down it
 //! starts, answers `initialize`, lists the noted tools, answers a tool call with "Scrim is not
 //! running", and stays; once the endpoint is up the next call goes through and the client is told
-//! the tool list changed; it follows the app to a new port; it ends when stdin closes (ending its
-//! session there); the token never shows in its output or log; the client's name is kept.
+//! the tool list changed; it follows the app to a new port, and to a new instance on the same port
+//! (Fix S5); it ends when stdin closes (ending its session there); the token never shows in its
+//! output or log; the client's name is kept.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::io::{BufReader, Read, Write};
@@ -85,6 +86,8 @@ struct Bridge {
     rx: Receiver<String>,
     log: Arc<Mutex<Vec<String>>>,
     at: Arc<Mutex<SocketAddr>>,
+    /// The app instance the note names (its process id).
+    instance: Arc<Mutex<Option<u64>>>,
     done: Option<std::thread::JoinHandle<()>>,
     seen_lines: Vec<String>,
 }
@@ -95,9 +98,11 @@ impl Bridge {
         let (out_tx, rx) = channel();
         let log = Arc::new(Mutex::new(Vec::new()));
         let at = Arc::new(Mutex::new(at));
-        let (l, a) = (log.clone(), at.clone());
+        let instance = Arc::new(Mutex::new(Some(1)));
+        let (l, a, i) = (log.clone(), at.clone(), instance.clone());
         let cfg = Config {
             endpoint: Box::new(move || *a.lock().unwrap()),
+            instance: Box::new(move || *i.lock().unwrap()),
             tools: Box::new(move || tools.clone()),
             auth: auth.map(str::to_string),
             retry: Duration::from_millis(100),
@@ -106,7 +111,7 @@ impl Bridge {
         let done = std::thread::spawn(move || {
             run(BufReader::new(Input { rx: in_rx, buf: Vec::new() }), Box::new(Output(out_tx, Vec::new())), cfg).unwrap();
         });
-        Bridge { tx: Some(tx), rx, log, at, done: Some(done), seen_lines: Vec::new() }
+        Bridge { tx: Some(tx), rx, log, at, instance, done: Some(done), seen_lines: Vec::new() }
     }
 
     fn send(&self, msg: Value) {
@@ -306,4 +311,56 @@ fn a_port_held_by_something_else_doesnt_hold_the_bridge() {
     assert!(log.iter().any(|l| l.contains("waiting")), "{log:?}");
     drop(squatter);
     endpoint.stop();
+}
+
+#[test]
+fn a_restart_on_the_same_port_with_no_call_meanwhile_is_found_and_the_client_told() {
+    // Fix S5: the app accepts a session id it doesn't know, so the old session goes on answering
+    // after a restart: the bridge must notice the new instance itself.
+    let seen = Arc::new(Mutex::new(Seen::default()));
+    let first = TcpListener::bind("127.0.0.1:0").unwrap();
+    let at = first.local_addr().unwrap();
+    let mut one = app(first, None, seen.clone());
+    let mut b = Bridge::start(at, None, None);
+    init(&b, "local-agent-mode-scrim");
+    b.answer(1);
+    b.send(json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+    call(&b, 2, "inspect_document");
+    assert_eq!(b.answer(2)["result"]["isError"], false);
+    // The app quits and starts again on the same port while the client is quiet: a new instance.
+    one.stop();
+    *b.instance.lock().unwrap() = Some(2);
+    let mut two = app(TcpListener::bind(at).unwrap(), None, seen.clone());
+    b.wait(5, |v| v["method"] == "notifications/tools/list_changed");
+    assert_eq!(
+        seen.lock().unwrap().started,
+        ["local-agent-mode-scrim (via scrim mcp-bridge)", "local-agent-mode-scrim (via scrim mcp-bridge)"],
+        "initialized at the new instance, with the client's name"
+    );
+    call(&b, 3, "inspect_document");
+    assert_eq!(b.answer(3)["result"]["isError"], false, "the next call goes through");
+    let (_, log) = b.close();
+    assert!(log.iter().any(|l| l.contains("restarted")), "{log:?}");
+    two.stop();
+}
+
+#[test]
+fn an_app_that_notes_no_instance_is_never_taken_for_a_restart() {
+    let seen = Arc::new(Mutex::new(Seen::default()));
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let at = listener.local_addr().unwrap();
+    let mut one = app(listener, None, seen.clone());
+    let mut b = Bridge::start(at, None, None);
+    *b.instance.lock().unwrap() = None;
+    init(&b, "claude-ai");
+    b.answer(1);
+    // The note appears after the bridge connected (an app writes it once its endpoint is up).
+    *b.instance.lock().unwrap() = Some(7);
+    std::thread::sleep(Duration::from_millis(400));
+    call(&b, 2, "inspect_document");
+    assert_eq!(b.answer(2)["result"]["isError"], false);
+    assert_eq!(seen.lock().unwrap().started.len(), 1, "one session: the note appearing isn't a restart");
+    assert!(!b.seen_lines.iter().any(|l| l.contains("list_changed")));
+    b.close();
+    one.stop();
 }

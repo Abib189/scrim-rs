@@ -69,6 +69,11 @@ pub fn endpoint(dir: &Path) -> SocketAddr {
     noted.unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], figcraft_engine::settings::saved_mcp(dir).port)))
 }
 
+/// The app instance the note names (its process id): another one at the same address is a restart.
+pub fn instance(dir: &Path) -> Option<u64> {
+    read_json(&dir.join(ENDPOINT_FILE))?["pid"].as_u64()
+}
+
 /// The app's `tools/list` answer (`{"tools": […]}`), for bridges to list while it's closed.
 pub fn write_tools(dir: &Path, list: &Value) -> std::io::Result<()> {
     write_atomic(dir, TOOLS_FILE, list.to_string().as_bytes())
