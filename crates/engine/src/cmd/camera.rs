@@ -141,8 +141,14 @@ fn follow_agents(s: &mut Session, p: &Value) -> Result<Value> {
     // Without `on`: following → off; paused or off → following. The window sees a resume (paused or
     // off, then following) and flies to the latest work.
     let on = boolean(p, "on").unwrap_or(follow_state(s) != "following");
+    let was = s.prefs.settings.follow_agents;
     s.prefs.settings.follow_agents = on;
     s.agents.follow_paused = false;
+    // Every change of the setting is noted with who made it (Fix V3); a resume alone isn't one.
+    if was != on {
+        let origin = diagnostics::FollowOrigin::from_param(p.get("origin").and_then(Value::as_str));
+        diagnostics::record(&mut s.prefs.settings, diagnostics::now(), diagnostics::Entry::FollowSetting { from: was, to: on, origin });
+    }
     Ok(json!({"on": on, "state": follow_state(s)}))
 }
 
@@ -195,7 +201,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "camera.follow-agents",
             "Follow agent",
-            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window keeps agents' latest work in the middle of the canvas as it lands; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings. The person's alone: an agent is refused, and Settings ▸ Diagnostics notes it)",
+            "{on? (default: toggle; on while paused resumes), origin? (button | settings | resume: the window's control, for Settings ▸ Diagnostics)} → {on, state: following|paused|off}  (the window keeps agents' latest work in the middle of the canvas as it lands; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings. The person's alone: an agent is refused, and Settings ▸ Diagnostics notes it)",
             false,
             follow_agents
         ),

@@ -10,6 +10,7 @@
     - **On:** accent on a selected fill.
     - **Paused, while an agent works (Fix N):** an amber dot, and the name "Follow agents as they work: paused, press to resume". Clicking resumes.
     - **Its tooltip** has a second line, following's status ("Following Codex · Poster").
+    - **Off (Fix V3):** the crosshair is drawn in the `disabled` token, and the tooltip reads "Following is off. Click to follow agents as they work". The accessible name stays "Follow agents as they work", not pressed. A click turns following on and is noted in Settings ▸ Diagnostics as the person's button (`docs/design/follow-setting.md`).
   - **New chat** (+, `chat.new`).
     - **While a composer run goes (Fix U3)** it is disabled: drawn in the `disabled` token (the colour of a disabled menu item), with no hover fill, neither clickable nor focusable (Tab skips it), disabled for screen readers, and its tooltip reads "Stop the run first".
     - **`chat.new` and `chat.clear` refuse with the same words** during a run, from any route. The window keeps the engine told (`agents.chat_running`) when a run starts and ends, and each frame.

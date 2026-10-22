@@ -81,7 +81,7 @@ Fix V3 logs both from now on, with the origin.
 - **Settings are kept as they change** (a second defect V2's restart test found):
   - **Before:** a change of Settings (Follow agents among them, and every Diagnostics line) was written only when the app quit, or when a plugin, an online token or a panel width changed. A kill or a crash lost it.
   - **Now:** the window hands the settings to `Services::keep_prefs` every frame. The desktop app writes them, atomically as before, whenever they differ from what it last wrote.
-  - **Why this isn't the root cause:** a lost write can only undo a change, never turn on into off by itself. The 11:43 pause events were saved, and following was saved with them.
+  - **Why this isn't the root cause:** a lost write can only undo a change, so the file would already have had to say off. Settings are written whole, so if the 11:43 events the person read came from the saved file, following was saved on with them. Whether they did can't be told from here.
 - **No marker for following:** no migration touches it, and a test now fails if a migration changes any key but its own. A marker like the grace's would only be needed if a migration ever had to move an unchosen value.
 - **A fresh install follows agents,** as before (`follow_agents: true` by default, and `serde(default = "yes")` when the key is missing).
 
@@ -108,3 +108,45 @@ Fix V3 logs both from now on, with the origin.
 2. **The refusal line names the route and the session, not the client.** The client's name is the agent's own words; the session ties the line to that client's "connected" and "working" lines.
 3. **`pref.revealAgentWork`, `pref.workingIndicator` and `pref.revealSpeed` stay open to agents,** as the brief names only Follow. The same mystery could happen to them. Making them the person's too is a one-line change each.
 4. **All Settings are now written as they change,** not only Follow. That is the smallest rule that makes "a human change persists across a restart" hold. The file is written at most once a frame, and only when something in it changed.
+
+## V3: never a mystery again
+
+**Settings ▸ Diagnostics notes every change of the setting, with who made it** (`Entry::FollowSetting`, kind `follow`). The window's controls name themselves through `camera.follow-agents`' `origin`:
+
+| Line | Made by |
+|---|---|
+| "follow setting: ON → OFF (made by the person's button)" | the AI panel header's crosshair (`origin: "button"`) |
+| "follow setting: OFF → ON (made by the person's Settings toggle)" | Settings ▸ Agents (`origin: "settings"`) |
+| "follow setting: OFF → ON (made by the person's resume)" | the canvas's resume while paused (`origin: "resume"`; only noted when it changes the setting) |
+| "follow setting: ON → OFF (made by the person's command)" | the command another way: the Actions palette, a menu, a shortcut |
+| "follow setting: ON → OFF (made by a settings migration)" | a migration (`Settings::sanitized`; none changes it, and one that did would say so) |
+| "follow setting: stays ON (refused: an agent asked, over MCP, session 3f1520b6…)" | an agent (V2) |
+| "following is OFF" | the app started with it off (`Desktop::load_from`) |
+
+- **Origin names only:** an unknown `origin` reads as the person's command. An agent can't pass one, because it is refused before the parameter is read: a refused agent sending `origin: "button"` gets the refusal's line.
+- **No line when nothing changed:** a resume while following is on, for example.
+- **Kept at once:** V2's `keep_prefs` writes these lines as they're made.
+- **Off is plain in the header** (`ai_panel.rs`):
+  - the crosshair is drawn in the `disabled` token (U3's);
+  - its tooltip reads "Following is off. Click to follow agents as they work";
+  - its accessible name stays "Follow agents as they work", not pressed.
+- **`ui.inspect` › `agent.aiPanel.header`** adds `followSetting` (ON or OFF), `followDimmed` and `followTooltip`, beside `follow` (following, paused or off).
+- **The reveal's "follow off" line is unchanged.**
+
+**Tests:**
+- `camera_tests.rs` › `every_change_of_following_is_noted_with_its_origin` covers:
+  - the button, the toggle, the command, the resume, a migration (`note_follow_migration`) and an agent;
+  - no line for a resume while on;
+  - no line from a real migration;
+  - an agent can't pass for the button.
+- `ai_panel_tests.rs` › `following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin` covers:
+  - a click on the header's crosshair noted as the button's;
+  - the `ui.inspect` fields;
+  - the crosshair's pixels in the `disabled` token and none in the icon colour (it fails with the crosshair drawn normally);
+  - the accessible name kept;
+  - the toggle's change noted as the toggle's.
+- `apps/figcraft` › `follow_setting_tests.rs` › `starting_with_following_off_says_so_in_diagnostics`: off says "following is OFF"; on says nothing.
+
+**Decisions (overrule any):**
+1. **"The person's resume" and "the person's command" are two more origins** than the brief lists: the canvas's resume and the palette or menu also run the command, and each should say which it was.
+2. **The startup line is the desktop app's:** the web build keeps no Diagnostics between visits.

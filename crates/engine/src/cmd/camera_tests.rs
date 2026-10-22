@@ -191,3 +191,43 @@ fn an_agent_cant_change_following_and_the_refusal_is_noted() {
     assert_eq!(s.execute("camera.follow-agents", &json!({"on": false})).unwrap()["state"], "off");
     assert_eq!(s.execute("camera.follow-agents", &json!({})).unwrap()["state"], "following");
 }
+
+/// Fix V3: every change of Follow agents is noted in Settings ▸ Diagnostics with who made it: the
+/// person's button, Settings toggle, resume or command (the palette, a menu), or a settings
+/// migration. No line when nothing changed (a resume while on); an agent's attempt is the refusal's
+/// line (V2).
+#[test]
+fn every_change_of_following_is_noted_with_its_origin() {
+    let mut s = Session::new();
+    let last = |s: &Session| s.prefs.settings.diagnostics.last().map(|e| (e.kind.clone(), e.detail.clone()));
+    let line = |text: &str| Some(("follow".to_string(), text.to_string()));
+    s.execute("camera.follow-agents", &json!({"on": false, "origin": "button"})).unwrap();
+    assert_eq!(last(&s), line("follow setting: ON → OFF (made by the person's button)"));
+    s.execute("camera.follow-agents", &json!({"on": true, "origin": "settings"})).unwrap();
+    assert_eq!(last(&s), line("follow setting: OFF → ON (made by the person's Settings toggle)"));
+    s.execute("camera.follow-agents", &json!({})).unwrap();
+    assert_eq!(last(&s), line("follow setting: ON → OFF (made by the person's command)"), "the palette or a menu: no origin");
+    s.execute("camera.follow-agents", &json!({"on": true, "origin": "resume"})).unwrap();
+    assert_eq!(last(&s), line("follow setting: OFF → ON (made by the person's resume)"));
+    s.execute("camera.follow-agents", &json!({"on": true, "origin": "made up"})).unwrap();
+    let n = s.prefs.settings.diagnostics.len();
+    // A resume while on changes nothing: no line.
+    s.agents.follow_paused = true;
+    s.execute("camera.follow-agents", &json!({"on": true, "origin": "resume"})).unwrap();
+    assert_eq!(s.prefs.settings.diagnostics.len(), n, "a resume alone isn't a change of the setting");
+    // A migration that changed it would say so.
+    let mut settings = crate::settings::Settings { follow_agents: false, ..Default::default() };
+    crate::settings::note_follow_migration(&mut settings, true);
+    assert_eq!(settings.diagnostics.last().map(|e| e.detail.as_str()), Some("follow setting: ON → OFF (made by a settings migration)"));
+    let mut same = crate::settings::Settings::default();
+    crate::settings::note_follow_migration(&mut same, true);
+    assert!(same.diagnostics.is_empty(), "no change, no line");
+    // The real migrations never do (every version keeps following: apps/figcraft follow_setting_tests).
+    let old: crate::settings::Settings = serde_json::from_value(json!({"settings_version": 3, "follow_agents": true})).unwrap();
+    assert!(old.sanitized().diagnostics.is_empty());
+    // An agent: the refusal's line, and nothing else.
+    s.set_author(crate::agents::Author::agent("mcp (http)"));
+    s.agents.session = None;
+    assert!(s.execute("camera.follow-agents", &json!({"on": false, "origin": "button"})).is_err());
+    assert_eq!(last(&s), line("follow setting: stays ON (refused: an agent asked, over MCP)"), "an agent can't pass for the button");
+}

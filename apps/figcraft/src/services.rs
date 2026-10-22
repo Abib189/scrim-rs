@@ -49,7 +49,12 @@ impl Desktop {
 
     /// With the preferences kept in `dir`.
     pub fn load_from(dir: Option<PathBuf>, recovery: crate::recovery::Shared) -> Self {
-        let prefs = dir.as_deref().and_then(read_prefs);
+        let mut prefs = dir.as_deref().and_then(read_prefs);
+        // Started with following off: said at once in Settings ▸ Diagnostics (Fix V3).
+        if let Some(p) = prefs.as_mut().filter(|p| !p.settings.follow_agents) {
+            let now = figcraft_engine::settings::diagnostics::now();
+            figcraft_engine::settings::diagnostics::record(&mut p.settings, now, figcraft_engine::settings::diagnostics::Entry::FollowOffAtStart);
+        }
         let reduce_motion = Arc::new(AtomicBool::new(false));
         let flag = reduce_motion.clone();
         std::thread::spawn(move || flag.store(system_reduce_motion(), Ordering::Relaxed));

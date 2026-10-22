@@ -10,6 +10,8 @@
 //! - a command failing (its id, when it is a registered command, and the error's category; never
 //!   the message, which can quote the document);
 //! - an agent refused when it asks to change Follow agents: the route and its session (Fix V2);
+//! - every change of Follow agents, from and to, and who made it ([`FollowOrigin`]); the app
+//!   starting with it off (Fix V3);
 //! - following an agent pausing, and why ([`Pause`]), and the pause clearing ([`Cleared`], Fix N), and the reveal drawing an agent's new layers
 //!   final at once: how many entered and how many didn't, by reason ([`Skip`]) (Fix L2);
 //! - the working state's transitions: a client beginning, ending or being held, with the cause
@@ -57,6 +59,10 @@ pub enum Entry<'a> {
     McpClient { name: &'a str, version: &'a str },
     /// A command failed: its id and the error.
     Error { command: &'a str, error: &'a EngineError },
+    /// The Follow agents setting changed, from `from` to `to`, made by `origin` (Fix V3).
+    FollowSetting { from: bool, to: bool, origin: FollowOrigin },
+    /// The app started with Follow agents off (Fix V3).
+    FollowOffAtStart,
     /// An agent asked to turn Follow agents on or off and was refused (Fix V2): the setting (`on`,
     /// unchanged), the route it came by and its session. Nothing the agent sent.
     FollowRefused { on: bool, route: &'a str, session: Option<&'a str> },
@@ -217,6 +223,45 @@ impl Skip {
     }
 }
 
+/// Who changed the Follow agents setting (Fix V3): the person, by the control they used, or a
+/// settings migration. An agent never does (it is refused, [`Entry::FollowRefused`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FollowOrigin {
+    /// The AI panel header's Follow agents button.
+    Button,
+    /// Settings ▸ Agents' toggle.
+    SettingsToggle,
+    /// The resume on the canvas while following is paused (Fix N).
+    Resume,
+    /// The command another way: the Actions palette, a menu or a shortcut.
+    Command,
+    /// A settings migration as the app starts.
+    Migration,
+}
+
+impl FollowOrigin {
+    /// `camera.follow-agents`' `origin` parameter (the window's own controls name themselves); any
+    /// other value, or none, is the command.
+    pub fn from_param(origin: Option<&str>) -> Self {
+        match origin {
+            Some("button") => FollowOrigin::Button,
+            Some("settings") => FollowOrigin::SettingsToggle,
+            Some("resume") => FollowOrigin::Resume,
+            _ => FollowOrigin::Command,
+        }
+    }
+
+    pub fn text(self) -> &'static str {
+        match self {
+            FollowOrigin::Button => "the person's button",
+            FollowOrigin::SettingsToggle => "the person's Settings toggle",
+            FollowOrigin::Resume => "the person's resume",
+            FollowOrigin::Command => "the person's command",
+            FollowOrigin::Migration => "a settings migration",
+        }
+    }
+}
+
 /// "ON" or "OFF", as the follow setting's lines say it.
 pub fn on_off(on: bool) -> &'static str {
     if on { "ON" } else { "OFF" }
@@ -268,7 +313,11 @@ impl Entry<'_> {
             Entry::McpStarted(_) | Entry::McpFailed => "mcpServer",
             Entry::McpClient { .. } => "mcpClient",
             Entry::Error { .. } => "error",
-            Entry::FollowPaused(_) | Entry::FollowCleared(_) | Entry::FollowRefused { .. } => "follow",
+            Entry::FollowPaused(_)
+            | Entry::FollowCleared(_)
+            | Entry::FollowRefused { .. }
+            | Entry::FollowSetting { .. }
+            | Entry::FollowOffAtStart => "follow",
             Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
             Entry::ChatRun { .. } => "chat",
@@ -298,6 +347,10 @@ impl Entry<'_> {
                 format!("{id}: {}", category(error))
             }
             Entry::FollowPaused(why) => format!("following paused: {}", why.text()),
+            Entry::FollowSetting { from, to, origin } => {
+                format!("follow setting: {} → {} (made by {})", on_off(*from), on_off(*to), origin.text())
+            }
+            Entry::FollowOffAtStart => "following is OFF".into(),
             Entry::FollowRefused { on, route, session } => {
                 format!("follow setting: stays {} (refused: an agent asked, {})", on_off(*on), by(route, *session))
             }

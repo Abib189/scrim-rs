@@ -254,6 +254,15 @@ impl Default for Settings {
     }
 }
 
+/// After the migrations: a change of Follow agents (from `before`) is noted in Settings ▸
+/// Diagnostics as a settings migration's (Fix V3).
+pub(crate) fn note_follow_migration(s: &mut Settings, before: bool) {
+    if s.follow_agents != before {
+        let entry = diagnostics::Entry::FollowSetting { from: before, to: s.follow_agents, origin: diagnostics::FollowOrigin::Migration };
+        diagnostics::record(s, diagnostics::now(), entry);
+    }
+}
+
 impl Settings {
     /// These settings with anything out of range put back in range.
     pub fn sanitized(mut self) -> Self {
@@ -262,6 +271,7 @@ impl Settings {
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
             self.mcp.port = DEFAULT_MCP_PORT;
         }
+        let follow = self.follow_agents;
         // Versions 7 and 8 moved the grace's default (to 30 s, then 60 s): a shorter grace nobody
         // chose (an old default, or a value an agent or a script set) moves up with it. The
         // migration never lowers a grace (Fix U1), and a chosen one stays.
@@ -269,6 +279,8 @@ impl Settings {
             self.agent_grace_secs = DEFAULT_AGENT_GRACE_SECS;
         }
         self.settings_version = SETTINGS_VERSION;
+        // No migration changes following; one that ever did would say so (Fix V3).
+        note_follow_migration(&mut self, follow);
         if !matches!(self.motion.as_str(), "system" | "on" | "off") {
             self.motion = system();
         }

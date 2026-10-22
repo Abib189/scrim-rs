@@ -35,8 +35,11 @@ pub struct Seen {
     pub follow: String,
     pub popover: Option<Value>,
     pub empty_state: bool,
-    /// Where the Follow agents button was drawn.
+    /// Where the Follow agents button was drawn; the setting off (the crosshair dimmed) and its
+    /// tooltip (Fix V3).
     pub follow_rect: Option<Rect>,
+    pub follow_off: bool,
+    pub follow_tip: String,
     pub read_only_note: bool,
     /// New chat could be used, and the colour its icon was drawn in (Fix U3).
     pub new_chat_enabled: bool,
@@ -56,9 +59,21 @@ pub(crate) fn icon_button(
     on: Option<bool>,
     draw: impl FnOnce(&egui::Painter, Rect, egui::Color32),
 ) -> egui::Response {
+    icon_button_tip(ui, id, label, label, on, draw)
+}
+
+/// [`icon_button`] whose tooltip says more than its accessible name (Fix V3: following off).
+pub(crate) fn icon_button_tip(
+    ui: &mut Ui,
+    id: &str,
+    label: &str,
+    tip: &str,
+    on: Option<bool>,
+    draw: impl FnOnce(&egui::Painter, Rect, egui::Color32),
+) -> egui::Response {
     let t = Tokens::get(ui.ctx());
     let (r, resp) = ui.allocate_exact_size(vec2(BUTTON, BUTTON), Sense::click());
-    let resp = resp.on_hover_text(label);
+    let resp = resp.on_hover_text(tip);
     match on {
         Some(v) => a11y::toggle(&resp, label, v),
         None => a11y::button(&resp, label),
@@ -137,7 +152,13 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     let follow = plus.translate(vec2(-BUTTON - 4.0, 0.0));
     let mut b = ui.new_child(egui::UiBuilder::new().max_rect(follow));
     let label = if paused { tr("Follow agents as they work: paused, press to resume") } else { tr("Follow agents as they work") };
-    let fresp = icon_button(&mut b, "follow", label, Some(state == "following" && !paused), |p, r, c| icons::paint(p, r, AiIcon::Crosshair, c));
+    // Off is plain to see (Fix V3): the crosshair dimmed, and the tooltip says so.
+    let off = state == "off";
+    let tip = if off { tr("Following is off. Click to follow agents as they work") } else { label };
+    (seen.follow_off, seen.follow_tip) = (off, tip.to_string());
+    let fresp = icon_button_tip(&mut b, "follow", label, tip, Some(state == "following" && !paused), |p, r, c| {
+        icons::paint(p, r, AiIcon::Crosshair, if off { t.disabled } else { c })
+    });
     seen.follow_rect = Some(fresp.rect);
     let fresp = match crate::follow_agent::status(app) {
         Some(s) => fresp.on_hover_text(s),
@@ -148,7 +169,7 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     }
     if fresp.clicked() {
         let on = paused || state != "following";
-        app.run("camera.follow-agents", json!({"on": on}));
+        app.run("camera.follow-agents", json!({"on": on, "origin": "button"}));
     }
     // New chat: not while a composer run goes, whose lines belong to the conversation shown (Fix U3).
     let mut b = ui.new_child(egui::UiBuilder::new().max_rect(plus));
@@ -309,6 +330,9 @@ pub fn inspect(app: &FigApp) -> Value {
             "follow": s.follow,
             "followLabel": tr("Follow agents as they work"),
             "followRect": s.follow_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
+            "followSetting": if s.follow_off { "OFF" } else { "ON" },
+            "followDimmed": s.follow_off,
+            "followTooltip": s.follow_tip,
             "newChat": tr("New chat"),
             "newChatEnabled": s.new_chat_enabled,
             "newChatTooltip": if s.new_chat_enabled { tr("New chat") } else { tr("Stop the run first") },

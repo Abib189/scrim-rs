@@ -131,7 +131,7 @@ pub fn chip(app: &mut FigApp, ui: &mut Ui) {
     }
     app.ui.agent_view.follow.chip = Some(r);
     if resp.clicked() {
-        app.run("camera.follow-agents", json!({"on": true}));
+        app.run("camera.follow-agents", json!({"on": true, "origin": "resume"}));
     }
 }
 

@@ -454,3 +454,46 @@ fn the_follow_button_and_the_settings_toggle_always_agree_and_survive_a_restart(
     assert_eq!(button(&mut again).0, Some(false), "the button after a restart");
     assert_eq!(toggle(&mut again).0, Some(false), "the toggle after a restart");
 }
+
+/// Fix V3: off is plain to see in the header (the crosshair in the `disabled` token, the tooltip
+/// "Following is off. Click to follow agents as they work", `ui.inspect`'s `followSetting`), and the
+/// header button's and Settings toggle's changes are noted with their origin. The reveal's "follow
+/// off" line is unchanged (`reveal_skip_tests.rs`).
+#[test]
+fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin() {
+    const NAME: &str = "Follow agents as they work";
+    let last = |u: &Ui| u.app.session.prefs.settings.diagnostics.last().map(|e| e.detail.clone()).unwrap_or_default();
+    let (mut u, _) = window();
+    let h = panel(&u)["header"].clone();
+    assert_eq!((h["followSetting"].clone(), h["followDimmed"].clone(), h["followTooltip"].clone()), (json!("ON"), json!(false), json!(NAME)));
+    // Off from the header button.
+    let nodes = tree(&mut u);
+    let b = nodes.iter().find(|n| n.role() == Role::Button && n.label() == Some(NAME)).unwrap().bounds().unwrap();
+    crate::follow_agent::tests::click(&mut u, egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32));
+    assert_eq!(last(&u), "follow setting: ON → OFF (made by the person's button)");
+    u.frame(vec![]);
+    let h = panel(&u)["header"].clone();
+    assert_eq!(h["follow"], "off");
+    assert_eq!((h["followSetting"].clone(), h["followDimmed"].clone()), (json!("OFF"), json!(true)));
+    assert_eq!(h["followTooltip"], "Following is off. Click to follow agents as they work");
+    // Drawn dimmed: the crosshair's strokes in the disabled token, none in the icon colour.
+    let t = crate::theme::Tokens::get(&u.ctx);
+    let r = egui::Rect::from_min_max(egui::pos2(b.x0 as f32, b.y0 as f32), egui::pos2(b.x1 as f32, b.y1 as f32));
+    let out = u.frame_output(vec![]);
+    let mut colours = std::collections::HashSet::new();
+    for p in u.ctx.tessellate(out.shapes, out.pixels_per_point) {
+        if let egui::epaint::Primitive::Mesh(m) = p.primitive {
+            colours.extend(m.vertices.iter().filter(|v| r.shrink(2.0).contains(v.pos) && v.color.a() == 255).map(|v| v.color));
+        }
+    }
+    assert!(colours.contains(&t.disabled) && !colours.contains(&t.icon), "{colours:?}");
+    // Its name stays the same for screen readers, not pressed.
+    let nodes = tree(&mut u);
+    let n = nodes.iter().find(|n| n.role() == Role::Button && n.label() == Some(NAME)).unwrap();
+    assert_eq!(n.toggled(), Some(egui::accesskit::Toggled::False));
+    // On from Settings ▸ Agents' toggle: noted as the toggle's.
+    u.app.run("camera.follow-agents", json!({"on": true, "origin": "settings"}));
+    assert_eq!(last(&u), "follow setting: OFF → ON (made by the person's Settings toggle)");
+    u.frame(vec![]);
+    assert_eq!(panel(&u)["header"]["followDimmed"], false);
+}

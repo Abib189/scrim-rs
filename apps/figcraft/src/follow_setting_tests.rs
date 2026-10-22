@@ -168,3 +168,19 @@ fn a_migration_changes_nothing_but_its_own_keys() {
     assert_eq!(changed, ["agent_grace_secs", "settings_version"], "only the documented migrations");
     assert_eq!(b["follow_agents"], true);
 }
+
+/// Fix V3: an app that starts with following off says so at once in Settings ▸ Diagnostics,
+/// "following is OFF"; one that starts with it on says nothing about it.
+#[test]
+fn starting_with_following_off_says_so_in_diagnostics() {
+    let lines = |file: &Value| {
+        let dir = root(&format!("start-{}", file["prefs"]["follow_agents"]));
+        std::fs::write(dir.join("state.json"), file.to_string()).unwrap();
+        let fig = start(&dir);
+        let follow: Vec<String> = fig.session.prefs.settings.diagnostics.iter().filter(|e| e.kind == "follow").map(|e| e.detail.clone()).collect();
+        let _ = std::fs::remove_dir_all(&dir);
+        follow
+    };
+    assert_eq!(lines(&at_version(7, false)), ["following is OFF"]);
+    assert!(lines(&at_version(7, true)).is_empty());
+}
