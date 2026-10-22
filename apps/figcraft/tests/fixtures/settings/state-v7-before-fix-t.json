@@ -1,0 +1,50 @@
+{
+ "prefs": {
+  "accent": "",
+  "agent_grace_chosen": false,
+  "agent_grace_secs": 30,
+  "auto_save": false,
+  "chat_time_limit_mins": 15,
+  "describe_change": true,
+  "diagnostics_days": 7,
+  "follow_agents": true,
+  "getting_started_dismissed": false,
+  "highlight_on_hover": true,
+  "home_order": "desc",
+  "home_sort": "modified",
+  "invite_links": null,
+  "keep_tool": false,
+  "language": "system",
+  "mcp": {
+   "port": 7691,
+   "port_chosen": true,
+   "require_auth": false
+  },
+  "motion": "system",
+  "nudge_big": 10.0,
+  "nudge_small": 1.0,
+  "number_keys_opacity": true,
+  "pages_height": null,
+  "panel": {
+   "mode": "design",
+   "tab": "design"
+  },
+  "panel_widths": [
+   240.0,
+   240.0
+  ],
+  "plugins": [],
+  "preserve_unsaved": true,
+  "publish_server": "",
+  "recent_files": [],
+  "reduce_motion": false,
+  "rename_duplicates": false,
+  "reveal_agent_work": true,
+  "reveal_speed": "normal",
+  "settings_version": 7,
+  "show_dimensions": true,
+  "theme": "system",
+  "user_name": "You",
+  "working_indicator": true
+ }
+}

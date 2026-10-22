@@ -1,0 +1,20 @@
+fresh                        read (no key) engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v7-before-fix-t-on           read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v8-fix-t-on                  read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v0-on                        read (no key) engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v1-on                        read (no key) engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v2-on                        read (no key) engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v3-on                        read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v4-on                        read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v5-on                        read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v6-on                        read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v7-on                        read True     engine following  button following  saved follow_agents True   settings_version 8 diagnostics on following 0
+v3-off                       read False    engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0
+v4-off                       read False    engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0
+v5-off                       read False    engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0
+v6-off                       read False    engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0
+v7-off                       read False    engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0
+agent-run-command-no-on      read True     engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0 | run_command: { "on": false, "state": "off" }
+agent-run-command-on-false   read True     engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0 | run_command: { "on": false, "state": "off" }
+agent-list-then-toggle       read True     engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0 | list_commands: Settings) camera.follow-agents — Follow agent {on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off} (the window keeps agents' latest work i | run_command: { "on": false, "state": "off" }
+agent-batch                  read True     engine off        button off        saved follow_agents False  settings_version 8 diagnostics on following 0 | batch: [ { "on": false, "state": "off" } ]
