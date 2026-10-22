@@ -58,6 +58,18 @@ pub fn started_by_agent_run(value: Option<&std::ffi::OsStr>) -> bool {
     value.is_some_and(|v| !v.is_empty())
 }
 
+/// Why New chat waits while a composer run goes (Fix U3): its lines belong to the conversation
+/// shown. The AI panel's + button says the same.
+pub const STOP_FIRST: &str = "Stop the run first";
+
+/// Refused while the composer's run goes.
+fn not_running(s: &Session, id: &str) -> Result<()> {
+    if s.agents.chat_running {
+        return Err(bad(id, STOP_FIRST));
+    }
+    Ok(())
+}
+
 /// Refused when an agent asks, whatever its route.
 fn person_only(s: &Session, id: &str) -> Result<()> {
     if s.agents.author.is_agent() {
@@ -106,6 +118,9 @@ fn send(s: &mut Session, p: &Value) -> Result<Value> {
 /// The AI panel's other actions (Fix T4): the person's, checked, then asked of the window.
 fn panel(s: &mut Session, p: &Value, id: &'static str) -> Result<Value> {
     person_only(s, id)?;
+    if id == "chat.new" {
+        not_running(s, id)?;
+    }
     let data = match id {
         "chat.open" => {
             let c = p.get("id").and_then(Value::as_str).filter(|x| !x.is_empty()).ok_or_else(|| bad(id, "`id` is required: the conversation"))?;
@@ -131,6 +146,7 @@ fn cancel(s: &mut Session, _: &Value) -> Result<Value> {
 
 fn clear(s: &mut Session, _: &Value) -> Result<Value> {
     person_only(s, "chat.clear")?;
+    not_running(s, "chat.clear")?;
     s.request_ui(CLEAR_REQUEST, json!({}));
     Ok(json!({"cleared": true}))
 }
@@ -224,7 +240,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "chat.new",
             "New chat",
-            "{} → {ok}  (the AI panel starts an empty chat, saved once something is sent; the person's alone)",
+            "{} → {ok}  (the AI panel starts an empty chat, saved once something is sent; refused while a run goes: \"Stop the run first\"; the person's alone)",
             false,
             |s, p| panel(s, p, "chat.new")
         ),

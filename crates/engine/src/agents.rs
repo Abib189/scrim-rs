@@ -174,6 +174,9 @@ pub struct Agents {
     /// This Scrim was started by an agent run (`SCRIM_CHAT_CHILD` in its environment): it can't start
     /// one (`chat.send`, R5).
     pub chat_child: bool,
+    /// The AI panel's composer has an agent run under way (the window keeps this up to date): a
+    /// new chat waits until it ends (`chat.new`, Fix U3).
+    pub chat_running: bool,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 

@@ -197,6 +197,8 @@ fn a_new_chat_is_made_on_its_first_send_and_kept_on_this_computer() {
     // A new chat: empty, the first kept.
     u.app.run("chat.cancel", json!({}));
     u.app.ui.agent_view.chat.running = None;
+    // The next frame tells the engine the run is over (Fix U3).
+    u.frame(vec![]);
     u.app.run("chat.new", json!({}));
     u.frame(vec![]);
     assert_eq!(panel(&u)["header"]["title"], "New chat");
@@ -338,4 +340,48 @@ fn at_its_minimum_width_nothing_is_clipped_or_scrolls_sideways() {
         let p = panel(&u);
         assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "no sideways scroll at {w}: {p}");
     }
+}
+
+/// Fix U3: while a composer run goes, New chat is dimmed with the disabled token, can't be clicked
+/// or reached by Tab, says "Stop the run first", and `chat.new` (and `chat.clear`) refuse with the
+/// same words; `ui.inspect` reports it. Once the run ends it works again.
+#[test]
+fn new_chat_is_disabled_while_a_run_goes_and_says_stop_the_run_first() {
+    let (mut u, script) = window();
+    assert_eq!(panel(&u)["header"]["newChatEnabled"], true);
+    crate::follow_agent::chat_ui::tests::send_allowed(&mut u, "Make a blue poster");
+    u.frame(vec![]);
+    assert!(u.app.ui.agent_view.chat.running.is_some(), "a run under way");
+    let header = &panel(&u)["header"];
+    assert_eq!((header["newChatEnabled"].clone(), header["newChatTooltip"].clone()), (json!(false), json!("Stop the run first")));
+    // Dimmed: drawn in the disabled token, never the icon colour.
+    let t = crate::theme::Tokens::get(&u.ctx);
+    assert_eq!(header["newChatColor"], json!(format!("{:?}", t.disabled)));
+    // Not clickable, not focusable, disabled for screen readers.
+    let nodes = tree(&mut u);
+    let plus = nodes.iter().find(|n| n.label() == Some("New chat")).expect("the New chat button");
+    assert!(plus.is_disabled(), "disabled");
+    assert!(!plus.supports_action(egui::accesskit::Action::Focus), "Tab skips it");
+    assert!(!plus.supports_action(egui::accesskit::Action::Click), "no click");
+    click_named(&mut u, "New chat");
+    assert_eq!(panel(&u)["header"]["title"], "Make a blue poster", "the conversation kept");
+    // The command refuses with the same words, whoever runs it.
+    for id in ["chat.new", "chat.clear"] {
+        let e = u.app.session.execute(id, &json!({})).expect_err("refused during the run");
+        assert!(e.to_string().contains("Stop the run first"), "{id}: {e}");
+    }
+    // The run ends: New chat works again.
+    crate::follow_agent::chat_ui::tests::feed(
+        &script,
+        vec![crate::services::AgentRunEvent::Ended { end: crate::services::AgentEnd::Exited(Some(0)), stderr: vec![], secs: 1.0 }],
+    );
+    u.frame(vec![]);
+    u.frame(vec![]);
+    assert!(u.app.ui.agent_view.chat.running.is_none());
+    assert_eq!(panel(&u)["header"]["newChatEnabled"], true);
+    let nodes = tree(&mut u);
+    let plus = nodes.iter().find(|n| n.label() == Some("New chat")).expect("the New chat button");
+    assert!(!plus.is_disabled() && plus.supports_action(egui::accesskit::Action::Focus));
+    click_named(&mut u, "New chat");
+    assert_eq!(panel(&u)["header"]["title"], "New chat");
 }

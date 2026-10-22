@@ -292,6 +292,7 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
             let rev = app.session.agents.last_edit(uid).unwrap_or(0);
             let started = now(app);
             app.ui.agent_view.chat.not_ready = None;
+            app.session.agents.chat_running = true;
             app.ui.agent_view.chat.running =
                 Some(Running { agent, started, handle, outcome: Default::default(), stopping: false, uid, start_doc, rev, limit });
             // Settings ▸ Diagnostics: the agent's name only, never the prompt.
@@ -313,6 +314,8 @@ fn cancel(app: &mut FigApp) {
 
 /// Each frame and each logic pass: read the run, add the lines of its new work, and end it.
 pub fn tick(app: &mut FigApp, ctx: &Context) {
+    // The engine refuses a new chat while a run goes (Fix U3).
+    app.session.agents.chat_running = app.ui.agent_view.chat.running.is_some();
     let Some(r) = app.ui.agent_view.chat.running.as_mut() else { return };
     let mut ended = None;
     for e in r.handle.poll() {
@@ -375,6 +378,7 @@ pub fn elapsed(secs: f64) -> String {
 
 fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
     let Some(r) = app.ui.agent_view.chat.running.take() else { return };
+    app.session.agents.chat_running = false;
     let name = r.agent.name.clone();
     let o = &r.outcome;
     let token = app.session.prefs.settings.mcp.require_auth.then(|| app.session.prefs.settings.mcp.token.clone());

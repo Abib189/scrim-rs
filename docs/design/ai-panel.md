@@ -11,6 +11,8 @@
     - **Paused, while an agent works (Fix N):** an amber dot, and the name "Follow agents as they work: paused, press to resume". Clicking resumes.
     - **Its tooltip** has a second line, following's status ("Following Codex · Poster").
   - **New chat** (+, `chat.new`).
+    - **While a composer run goes (Fix U3)** it is disabled: drawn in the `disabled` token (the colour of a disabled menu item), with no hover fill, neither clickable nor focusable (Tab skips it), disabled for screen readers, and its tooltip reads "Stop the run first".
+    - **`chat.new` and `chat.clear` refuse with the same words** during a run, from any route. The window keeps the engine told (`agents.chat_running`) when a run starts and ends, and each frame.
   - **No Share button or avatar:** they aren't Scrim features.
 - **The chevron's popover:**
   - "Search conversations…", matching titles and messages here only, ignoring case.
@@ -29,7 +31,7 @@
   - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
-**`ui.inspect` › `agent.aiPanel`** reports what was drawn: the header (with the Follow button's rectangle), the popover, the empty state, read-only, and the composer's controls, hint line, missing-CLI line and status.
+**`ui.inspect` › `agent.aiPanel`** reports what was drawn: the header (with the Follow button's rectangle, and New chat's state: `newChatEnabled`, `newChatTooltip` and `newChatColor`), the popover, the empty state, read-only, and the composer's controls, hint line, missing-CLI line and status.
 
 ## Where everything else went
 
@@ -67,14 +69,15 @@
    - **Claude Code** runs with no built-in tools (`--tools ''`), so it can't open a path: the button is hidden for it.
    - **An image path** goes only to the agent's argument list: never the document, and never Diagnostics.
 8. **The AI panel's own actions are commands,** the person's alone, like R5's. The new commands are `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint` and `chat.grace-setting`. The last is "Open the setting", which was a direct call before. Typing in the search field is window state, not a command.
-9. **New chat while a run goes does nothing:** the run's lines belong to its conversation. The old Clear button is gone, and `chat.clear` now means a new chat. The conversation shown is kept.
+9. **New chat waits for a run to end:** the run's lines belong to its conversation. Since Fix U3 the + button shows it is disabled and says "Stop the run first", and `chat.new` refuses with those words instead of doing nothing. The old Clear button is gone, and `chat.clear` now means a new chat, refused the same way. The conversation shown is kept.
 10. **Conversations of an unsaved document** are keyed by its window's document number. After a restart that document is a new one, and its old conversations show as another document's.
 11. **The three new icons** (crosshair, gear, Send's arrow) are drawn in `ai_icons.rs`: `icons.rs` is over the size limit.
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
+13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
 
 ## Tests
 
-- `ai_panel_tests.rs` (11):
+- `ai_panel_tests.rs` (12):
   - no connector, status or warning in the AI tab;
   - every captured row is in Settings ▸ Agents, with its commands;
   - `ui.inspect`'s header, popover, empty state and composer, with every icon button named;
@@ -85,7 +88,8 @@
   - the selection button;
   - the image button, with `--image` reaching the run;
   - the hint line;
-  - no sideways scroll or clipping at 240, 240 (the default) and 320 px.
+  - no sideways scroll or clipping at 240, 240 (the default) and 320 px;
+  - New chat during a run (Fix U3): disabled in `ui.inspect`, drawn in the `disabled` token, no focus or click action, a click changes nothing, `chat.new` and `chat.clear` refuse with "Stop the run first", and it works again once the run ends. It fails with the button drawn enabled.
 - `chat_ui_tests.rs`:
   - `command_return_sends_and_escape_stops` (⌘↩ and Esc);
   - `with_no_agent_installed_it_says_so_with_a_link_to_settings_agents`.

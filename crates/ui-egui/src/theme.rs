@@ -68,6 +68,9 @@ pub struct Tokens {
     pub menu_text: Color32,
     pub menu_hover: Color32,
     pub menu_dim: Color32,
+    /// A control that can't be used now: its icon or words (Fix U3), the colour of a disabled menu
+    /// item.
+    pub disabled: Color32,
     /// The ring around the control with the keyboard (keyboard navigation): at least 3:1 against
     /// the panels and the canvas.
     pub focus: Color32,
@@ -140,6 +143,7 @@ impl Tokens {
             menu_text: hex(0x18191B),
             menu_hover: hex(0xEBEBEA),
             menu_dim: hex(0x5F6268),
+            disabled: hex(0x5F6268),
             focus: hex(0xC53400),
         }
     }
@@ -186,6 +190,7 @@ impl Tokens {
             menu_text: hex(0xECECEE),
             menu_hover: hex(0x2C2D32),
             menu_dim: hex(0x91959C),
+            disabled: hex(0x91959C),
             focus: ACCENT,
         }
     }

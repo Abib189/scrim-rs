@@ -38,6 +38,9 @@ pub struct Seen {
     /// Where the Follow agents button was drawn.
     pub follow_rect: Option<Rect>,
     pub read_only_note: bool,
+    /// New chat could be used, and the colour its icon was drawn in (Fix U3).
+    pub new_chat_enabled: bool,
+    pub new_chat_color: egui::Color32,
     pub lines: usize,
     pub composer: Value,
     /// The widest thing drawn and the panel's width, for the layout checks.
@@ -71,6 +74,18 @@ pub(crate) fn icon_button(
     }
     let color = if on == Some(true) { t.accent } else { t.icon };
     draw(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), color);
+    resp
+}
+
+/// [`icon_button`] that can't be used now: dimmed with the disabled token, its tooltip saying why;
+/// neither clickable nor focusable (Tab skips it), and disabled for screen readers.
+pub(crate) fn icon_button_off(ui: &mut Ui, label: &str, why: &str, draw: impl FnOnce(&egui::Painter, Rect, egui::Color32)) -> egui::Response {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(BUTTON, BUTTON), Sense::hover());
+    let resp = resp.on_hover_text(why);
+    a11y::button(&resp, label);
+    a11y::disabled(&resp);
+    draw(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), t.disabled);
     resp
 }
 
@@ -135,9 +150,19 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
         let on = paused || state != "following";
         app.run("camera.follow-agents", json!({"on": on}));
     }
+    // New chat: not while a composer run goes, whose lines belong to the conversation shown (Fix U3).
     let mut b = ui.new_child(egui::UiBuilder::new().max_rect(plus));
-    if icon_button(&mut b, "new", tr("New chat"), None, |p, r, c| crate::icons::paint(p, r, Icon::Plus, c)).clicked() {
-        app.run("chat.new", json!({}));
+    seen.new_chat_enabled = app.ui.agent_view.chat.running.is_none();
+    let plus_icon = |p: &egui::Painter, r: Rect, c: egui::Color32| crate::icons::paint(p, r, Icon::Plus, c);
+    if !seen.new_chat_enabled {
+        // The engine's refusal says the same (`chat::STOP_FIRST`).
+        icon_button_off(&mut b, tr("New chat"), tr("Stop the run first"), plus_icon);
+        seen.new_chat_color = t.disabled;
+    } else {
+        seen.new_chat_color = t.icon;
+        if icon_button(&mut b, "new", tr("New chat"), None, plus_icon).clicked() {
+            app.run("chat.new", json!({}));
+        }
     }
     // The title and its chevron: the conversations.
     let title_r = Rect::from_min_max(pos2(row.min.x + PAD - 6.0, row.min.y + 7.0), pos2(follow.min.x - 6.0, row.max.y - 7.0));
@@ -285,6 +310,9 @@ pub fn inspect(app: &FigApp) -> Value {
             "followLabel": tr("Follow agents as they work"),
             "followRect": s.follow_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
             "newChat": tr("New chat"),
+            "newChatEnabled": s.new_chat_enabled,
+            "newChatTooltip": if s.new_chat_enabled { tr("New chat") } else { tr("Stop the run first") },
+            "newChatColor": format!("{:?}", s.new_chat_color),
         },
         "popover": s.popover,
         "emptyState": s.empty_state.then(|| tr("Describe what you want to create or change.")),
