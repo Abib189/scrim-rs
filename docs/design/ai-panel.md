@@ -96,3 +96,9 @@
   - the connect, Claude Desktop and client tests open Settings ▸ Agents and scroll (`live_tests::scroll_settings_to`);
   - the Activity, lint and lock tests open the Inspect tab;
   - the follow-resume tests use the header's button.
+
+## Captures and the live run (Fix T6)
+
+- **The panel and Settings ▸ Agents,** light and dark, at 240 px: `docs/scrim-ports/ai-panel/`. They are offscreen captures, because the screen was locked.
+- **The grace, centring and the reveal in the real app:** `docs/scrim-ports/follow-agent/t6/`.
+- **Settings ▸ Agents' first heading is "Connections"** beneath the page's own "Agents", so the page doesn't read "Agents, Agents".

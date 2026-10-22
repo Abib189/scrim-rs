@@ -1,0 +1,30 @@
+captures between the first batch and finish_working: 953
+  working state on (dots at full opacity): 953/953
+  dots drawn on the canvas: 950/953
+  not drawn at: [20.33, 56.33, 106.68]
+  after finish_working (+1 s): working 0/9
+batches (settled 3 s after each):
+  batch 0 at x 3000: view (3300.0, 150.0) zoom 0.8534 canvas 664×760: 0.00 px from the centre of its layers (x+300, 150), follow following
+  batch 1 at x 6000: view (6300.0, 150.0) zoom 0.8334 canvas 664×760: 0.00 px from the centre of its layers (x+300, 150), follow following
+  batch 2 at x 9000: view (9300.0, 150.0) zoom 0.8305 canvas 664×760: 0.00 px from the centre of its layers (x+300, 150), follow following
+  batch 3 at x 12000: view (12320.0, 240.0) zoom 0.8300 canvas 664×760: 0.00 px from the centre of the artboard with its layers (x+320, 240), follow following
+reveal tallies (newest last):
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+  created 1 entered 0 skipped {'landed while the window was hidden': 1} follow following
+diagnostics:
+  working: begin: local-agent-mode-scrim (via mcp-remote 0.14.3) (session f33d2ea5…), first request; the dots are on
+  working: end: local-agent-mode-scrim (via mcp-remote 0.14.3) (session f33d2ea5…), finish_working; the dots fade out

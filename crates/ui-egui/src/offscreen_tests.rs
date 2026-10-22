@@ -322,6 +322,65 @@ fn chat_screenshots() {
     }
 }
 
+/// Fix T4's captures of the AI panel at its default (and minimum) width, 240 px, light and dark:
+/// empty, the conversations' popover, a run under way, the grace hint's line, and Settings ▸ Agents.
+/// Offscreen: the screen was locked, so no window could be captured.
+#[test]
+#[ignore = "writes screenshots when SCRIM_AI_SHOTS_DIR is set"]
+fn ai_panel_screenshots() {
+    use crate::follow_agent::chat_ui::Line;
+    use crate::follow_agent::chat_ui::store::Conversation;
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
+    let Some(dir) = std::env::var_os("SCRIM_AI_SHOTS_DIR").map(std::path::PathBuf::from) else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    for dark in [false, true] {
+        let theme = if dark { "dark" } else { "light" };
+        let script = std::sync::Arc::new(std::sync::Mutex::new(Script { claude: Some(CLAUDE.into()), ..Default::default() }));
+        let mut o = ridgeline(dark, crate::PANEL_DEFAULT);
+        o.app.services = Box::new(Platform(script.clone()));
+        o.app.session.agents.mcp.port = Some(7690);
+        run(&mut o, "panel.tab.ai", json!({}));
+        save(&o, &dir, &format!("ai-{theme}-1-empty"));
+        // Two conversations of this file and one of another; the popover open.
+        let here = crate::follow_agent::chat_ui::store::doc_key(&o.app).map(|k| k.0).unwrap_or_default();
+        let conv = |id: &str, title: &str, doc: &str, name: &str, updated: u64| Conversation {
+            id: id.into(),
+            title: title.into(),
+            doc: doc.into(),
+            doc_name: name.into(),
+            updated,
+            lines: vec![Line::You(title.into())],
+        };
+        o.app.ui.agent_view.chat.store.list = vec![
+            conv("c1", "Make the trail cards' titles larger", &here, "Ridgeline", 20),
+            conv("c2", "A darker hero image", &here, "Ridgeline", 10),
+            conv("c3", "Landing page sections", "other.figcraft", "Site", 30),
+        ];
+        run(&mut o, "chat.open", json!({"id": "c1"}));
+        o.app.ui.agent_view.chat.store.open = true;
+        o.settle();
+        save(&o, &dir, &format!("ai-{theme}-2-popover"));
+        o.app.ui.agent_view.chat.store.open = false;
+        // A run under way.
+        run(&mut o, "chat.new", json!({}));
+        run(&mut o, "chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
+        o.app.ui.agent_view.chat.confirm = None;
+        run(&mut o, "chat.send", json!({"prompt": "Make the trail cards' titles larger", "agent": "claude-code"}));
+        o.settle();
+        save(&o, &dir, &format!("ai-{theme}-3-running"));
+        run(&mut o, "chat.cancel", json!({}));
+        o.app.ui.agent_view.chat.running = None;
+        // The grace hint's line, while it is pending.
+        let h = &mut o.app.ui.agent_view.grace_hint;
+        (h.shown, h.showing) = (true, true);
+        o.settle();
+        save(&o, &dir, &format!("ai-{theme}-4-hint"));
+        run(&mut o, "settings.open", json!({"section": "agents"}));
+        save(&o, &dir, &format!("ai-{theme}-5-settings-agents"));
+        o.app.ui.preferences = false;
+    }
+}
+
 #[test]
 #[ignore = "compares screenshots when SCRIM_SHOTS_BEFORE and SCRIM_SHOTS_DIR are set"]
 fn compare_outside_the_right_panel() {

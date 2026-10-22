@@ -98,7 +98,8 @@ fn at_work(app: &mut FigApp, ui: &mut Ui) {
 /// Who is connected (any MCP client, by name) and the connect flows: the AI tab's until Fix T4.
 pub(crate) fn connections(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    widgets::section_header(ui, tr("Agents"), &[], false);
+    // Under the page's own "Agents" heading (Fix T4): the connections.
+    widgets::section_header(ui, tr("Connections"), &[], false);
     let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
     let st = figcraft_engine::cmd::mcp::status(&app.session, now);
     let state = st["state"].as_str().unwrap_or("stopped");

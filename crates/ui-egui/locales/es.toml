@@ -2068,6 +2068,7 @@ status = "draft — needs native review"
 "This document" = "Este documento"
 "{agent} couldn't start: is it signed in?" = "{agent} no pudo iniciarse: ¿ha iniciado sesión?"
 "{title}, in {document}" = "{title}, en {document}"
+"Connections" = "Conexiones"
 
 [commands]
 "agent.finish-working" = "Terminar de trabajar"
