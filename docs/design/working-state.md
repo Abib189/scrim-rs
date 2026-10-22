@@ -270,3 +270,37 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 - **Scrim's rules 9** (CLAUDE.md, AGENTS.md): every live run uses a scratch settings folder and `HOME`. `cargo xtask live-scripts` fails a script that changes a setting without naming the override.
 - **The scripts already in `docs/`** (`ie.py`, `l2.py`, `bridge.py`, `n3.py`) now refuse to run unless the app says `override: true`. `p3.py` starts the app and the bridge with it.
 
+
+## R3a: transitions logged as they happen, and no napping while agents work (22 Oct 2026)
+
+**The report:** in a real session through `scrim mcp-bridge`, Settings ▸ Diagnostics showed the `begin` but no `end` after `finish_working` answered `finished: true`.
+
+**The cause:**
+- **The state only moved when the window drew.** A request marked its client as working (`touch_as`) and `finish_working` marked it finished, but the transitions were worked out and logged only in the frame's tick (`follow_agent::before_canvas`).
+- **A hidden window draws no frames.** Minimised or covered, eframe runs only the app's `logic`, which still answers requests (`control::drain_hidden`). So the end was never logged until the window was drawn again, and a grace period never ran out.
+- **Its clock was stuck too:** while hidden, egui's clock is the last frame's, so a request was stamped with that old time.
+- **App Nap:** macOS slows a hidden app's timers, so even a wake-up asked for at the grace period's end could come late.
+
+**What changed** (`crates/ui-egui/src/working_log.rs`):
+- **Processed and logged at once:** `control::handle_route` settles the state after every agent request: the `begin`, and the `end` that `finish_working` causes, reach Diagnostics as the request is answered. Frames do the same, and log nothing twice.
+- **Without frames:** the desktop app's `logic` settles the state each pass, hidden or not (`working_log::logic`, called from `apps/figcraft`). A wake-up is asked for at the next grace period's end, so a hidden window ends the state on time.
+- **The clock** is egui's while the window draws. While hidden, it carries on from the last frame by the wall clock. It never goes back.
+- **Every transition wakes the window** (`request_repaint`), so what it shows catches up when it is next drawn.
+- **Follow still hears of the end:** the cause is kept until the next frame takes it (Fix N clears a pause then).
+- **No napping while agents work:** the platform is asked to keep the app awake from the state's start to its end (`Services::keep_awake`).
+  - **macOS** (`apps/figcraft/src/app_nap.rs`): an `NSProcessInfo` activity, "user initiated, allowing idle system sleep". It prevents App Nap and timer coalescing but doesn't keep the computer awake.
+  - **Let go by releasing it:** `endActivity:` is unsafe to call, which the workspace forbids, and the activity ends when its token is released. Checked on this machine: the system lists the activity while it is held and drops it once released, both inside an autorelease pool.
+  - **Other platforms:** nothing to hold.
+
+**Tests:**
+- `working_log_tests.rs`:
+  - `finish_working` logs `end … finish_working` with no frame drawn, and wakes the window;
+  - a grace period ends while the window is minimised, in `logic` alone (the clock 6 s on, past a 5 s grace), logged `end … grace period expired` once;
+  - the wake-up is asked for at the grace's end;
+  - a visible window reads egui's clock;
+  - the app is kept awake from the first request to the end, and never while idle;
+  - frames after a logged end log nothing twice, and follow still gets the end.
+- `apps/figcraft/src/app_nap_tests.rs`: one activity while working; none while idle; the real activity is listed by `pmset -g assertions` while held and gone once released (with options the system lists).
+- **Mutations:** without the request path's settle, three fail; without the hidden clock, the grace test fails.
+
+**Not verified live:** a real Claude Desktop session with the window hidden. Activity Monitor's App Nap column can't be read from a script; the activity the app holds isn't one `pmset` lists.

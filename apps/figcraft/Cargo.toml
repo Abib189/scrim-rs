@@ -38,6 +38,10 @@ windows = { version = "0.62", default-features = false, features = ["UI_ViewMana
 # unsafe, which the workspace forbids). Pinned exactly: review the diff before bumping.
 [target.'cfg(target_os = "macos")'.dependencies]
 fmv-macos-events = "=0.1.0"
+# The activity held while agents work, so App Nap doesn't slow the app (`src/app_nap.rs`). Already
+# in the tree through winit; only safe calls are used.
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSProcessInfo", "NSString", "NSObject"] }
 
 [dev-dependencies]
 wat = { workspace = true }

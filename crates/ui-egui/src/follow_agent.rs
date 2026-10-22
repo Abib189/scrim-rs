@@ -40,6 +40,8 @@ pub mod grace_hint;
 pub mod reveal;
 #[path = "working_indicator.rs"]
 pub mod working_indicator;
+#[path = "working_log.rs"]
+pub mod working_log;
 #[path = "working_state.rs"]
 pub mod working_state;
 
@@ -92,6 +94,12 @@ pub struct State {
     pub focus_grace: bool,
     /// The grace's self-diagnosis hint (Fix Q2).
     pub grace_hint: grace_hint::State,
+    /// The working state's clock, which carries on while the window is hidden (R3a).
+    pub clock: working_log::Clock,
+    /// The cause of the run's end, until the next frame takes it (R3a: it can end between frames).
+    pub(crate) ended: Option<figcraft_engine::settings::diagnostics::Cause>,
+    /// The platform was asked to keep the app awake (agents are working).
+    pub(crate) awake: bool,
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -261,30 +269,18 @@ pub fn target(doc: &Document, landed: &[Landed]) -> Option<(NodeId, BTreeSet<Nod
 pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let now = ctx.input(|i| i.time);
     let gap = app.ui.agent_view.last_frame.replace(now).map_or(0.0, |t| (now - t).max(0.0));
+    working_log::frame(app, now);
+    let at = working_log::clock(app, ctx);
     let landed = scan(app);
     // A plugin's edits keep it working too (MCP clients and the control channel are noted per request).
     for l in landed.iter().filter(|l| l.agent && l.route.starts_with("plugin")) {
-        app.ui.agent_view.working.touch(working_state::key(None, None, &l.route), None, now);
+        app.ui.agent_view.working.touch(working_state::key(None, None, &l.route), None, at);
     }
-    let (grace, motion) = (grace(app), !app.reduce_motion());
-    app.ui.agent_view.working.tick(now, grace, motion);
-    // Each transition, with its cause, into Settings ▸ Diagnostics (Fix M0).
-    // The cause of the last client's end this tick, if the run ended (Fix N clears a pause then).
-    let mut ended = None;
-    for t in app.ui.agent_view.working.transitions() {
-        if t.change == figcraft_engine::settings::diagnostics::Change::End {
-            ended = Some(t.cause);
-        }
-        let e = figcraft_engine::settings::diagnostics::Entry::Working {
-            change: t.change,
-            cause: t.cause,
-            client: t.client.as_deref(),
-            session: t.session.as_deref(),
-            run: t.run,
-        };
-        crate::settings_privacy::record(app, e);
-    }
-    grace_hint::note(app);
+    // Each transition, with its cause, into Settings ▸ Diagnostics (Fix M0); requests between
+    // frames have already done the same (R3a).
+    working_log::settle(app, ctx, at);
+    // The run's end, if it ended since the last frame (Fix N clears a pause then).
+    let ended = working_log::take_ended(app);
     follow_end::settle(app, now, ended);
     follow(app, ctx, now, &landed);
     reveal::tick(app, ctx, now, gap, &landed);
@@ -337,7 +333,8 @@ pub fn working_text(app: &FigApp) -> Option<String> {
 pub fn finish(app: &mut FigApp, data: &serde_json::Value) {
     let s = |k: &str| data.get(k).and_then(serde_json::Value::as_str);
     let key = working_state::key(s("session"), s("client"), s("route").unwrap_or_default());
-    let now = now(app);
+    // The time of the request being answered (R3a: a hidden window's frames don't move).
+    let now = working_log::now(app);
     app.ui.agent_view.working.finish(&key, now);
 }
 

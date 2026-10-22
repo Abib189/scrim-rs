@@ -115,4 +115,7 @@ pub trait Services {
     fn agent_client_env(&self) -> Option<figcraft_engine::cmd::agent_clients::PathEnv> {
         None
     }
+    /// Agents started working (`on`) or stopped (R3a): the desktop app keeps the OS from napping it
+    /// meanwhile (macOS App Nap). Elsewhere nothing.
+    fn keep_awake(&mut self, _on: bool) {}
 }

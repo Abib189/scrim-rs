@@ -22,6 +22,8 @@ pub struct Desktop {
     recovery: crate::recovery::Shared,
     /// The app's MCP endpoint (set at startup, once the control queue exists).
     pub mcp: Option<crate::mcp_endpoint::McpHandle>,
+    /// The activity held while agents work, so the OS doesn't nap the app (R3a).
+    awake: crate::app_nap::Awake,
 }
 
 /// Where the settings live: `design.scrim.app` under [`base_dir`] (FigCraft's are copied there
@@ -62,7 +64,16 @@ impl Desktop {
         let reduce_motion = Arc::new(AtomicBool::new(false));
         let flag = reduce_motion.clone();
         std::thread::spawn(move || flag.store(system_reduce_motion(), Ordering::Relaxed));
-        Self { clipboard: arboard::Clipboard::new().ok(), dir, prefs, reduce_motion, language: system_language(), recovery, mcp: None }
+        Self {
+            clipboard: arboard::Clipboard::new().ok(),
+            dir,
+            prefs,
+            reduce_motion,
+            language: system_language(),
+            recovery,
+            mcp: None,
+            awake: Default::default(),
+        }
     }
 }
 
@@ -273,6 +284,9 @@ fn save_filters<'a>(exts: &'a [&'a str]) -> Vec<(&'static str, &'a [&'a str])> {
 }
 
 impl Services for Desktop {
+    fn keep_awake(&mut self, on: bool) {
+        self.awake.set(on);
+    }
     fn mcp_restart(&mut self, settings: &figcraft_engine::settings::McpSettings) -> Result<u16, String> {
         self.mcp.as_mut().ok_or_else(|| "the MCP endpoint isn't set up".to_string())?.restart(settings)
     }

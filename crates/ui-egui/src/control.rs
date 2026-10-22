@@ -280,7 +280,8 @@ pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, 
     let key = crate::follow_agent::working_state::key(session.as_deref(), client.as_deref(), route);
     let name = client.as_deref().and_then(figcraft_engine::agents::client_display_name);
     let mcp = (route == ROUTE_MCP_HTTP || session.is_some()) && !matches!(method, "mcp.client" | "mcp.session-ended");
-    let now = ctx.input(|i| i.time);
+    // The window's clock, carried on while it is hidden (R3a).
+    let now = crate::follow_agent::working_log::clock(app, ctx);
     if mcp {
         app.ui.agent_view.working.touch_as(key.clone(), name.clone(), client.as_deref(), now);
     }
@@ -290,6 +291,9 @@ pub fn handle_route(app: &mut FigApp, ctx: &Context, route: &str, method: &str, 
     if !mcp && edits(app) != edited_before {
         app.ui.agent_view.working.touch(key, name, now);
     }
+    // Processed and logged now, not when the window next draws (R3a): its begin, or the end its
+    // own finish_working caused.
+    crate::follow_agent::working_log::settle(app, ctx, now);
     r
 }
 
@@ -326,7 +330,7 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
             let key = crate::follow_agent::working_state::key(Some(session), None, "");
             // An --attach connection closing is a disconnect; an HTTP DELETE closes the session.
             let cause = if session.starts_with("attach-") { Cause::Disconnected } else { Cause::SessionClosed };
-            app.ui.agent_view.working.end_session(&key, ctx.input(|i| i.time), cause);
+            app.ui.agent_view.working.end_session(&key, crate::follow_agent::working_log::now(app), cause);
             Ok(json!({"ended": true}))
         }
         // The tools Settings ▸ Tool access turned off (`scrim mcp --attach` hides and refuses them).
