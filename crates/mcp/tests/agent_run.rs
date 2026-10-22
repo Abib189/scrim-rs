@@ -42,7 +42,7 @@ fn home() -> PathBuf {
 fn start(prompt: &str, url: &str, limit: Duration) -> Run {
     let p = headless::profile("claude-code").unwrap();
     let path = std::env::var("PATH").unwrap_or_default();
-    let env = headless::child_env(Some(&path), Some(&home().to_string_lossy()), None, &[]);
+    let env = headless::child_env(Some(&path), Some(&home().to_string_lossy()), Some("someone"), Some("someone"), None, &[]);
     Run::start(RunSpec { program: stub(), args: p.argv(prompt, url, false), env, limit }).unwrap()
 }
 
@@ -242,12 +242,14 @@ fn the_child_sees_only_its_minimal_environment() {
         .filter_map(|l| serde_json::from_str::<Value>(l).ok())
         .find_map(|v| v["env"].as_array().map(|a| a.iter().filter_map(|k| k.as_str().map(str::to_string)).collect()))
         .unwrap();
-    for k in ["PATH", "HOME", "SCRIM_CHAT_CHILD"] {
+    for k in ["PATH", "HOME", "USER", "LOGNAME", "SCRIM_CHAT_CHILD"] {
         assert!(env.contains(&k.to_string()), "{k} given: {env:?}");
     }
     // Cargo sets these for this test; none reach the child. (macOS adds its own text encoding.)
-    let extra: Vec<&String> =
-        env.iter().filter(|k| !["PATH", "HOME", "SCRIM_CHAT_CHILD", "__CF_USER_TEXT_ENCODING", "LC_CTYPE"].contains(&k.as_str())).collect();
+    let extra: Vec<&String> = env
+        .iter()
+        .filter(|k| !["PATH", "HOME", "USER", "LOGNAME", "SCRIM_CHAT_CHILD", "__CF_USER_TEXT_ENCODING", "LC_CTYPE"].contains(&k.as_str()))
+        .collect();
     assert!(extra.is_empty(), "nothing else: {extra:?}");
 }
 

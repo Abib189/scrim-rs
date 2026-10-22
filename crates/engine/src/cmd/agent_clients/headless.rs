@@ -7,8 +7,8 @@
 //!   so nothing in a prompt is ever interpreted.
 //! - **The token** never goes in an argument: the child gets it in its environment
 //!   ([`TOKEN_VAR`]), and the arguments name that variable.
-//! - **The environment** is minimal ([`child_env`]): `PATH`, `HOME`, the token when authentication
-//!   is on, and [`CHILD_VAR`].
+//! - **The environment** is minimal ([`child_env`]): `PATH`, `HOME`, `USER`, `LOGNAME`, the token
+//!   when authentication is on, and [`CHILD_VAR`].
 //! - **What is sent** is the prompt and one context line ([`context_line`]).
 
 use std::sync::OnceLock;
@@ -114,16 +114,26 @@ impl Headless {
     }
 }
 
-/// The child's environment, and nothing else: `PATH`, `HOME`, the token when authentication is
-/// on, and [`CHILD_VAR`]. `system` are the variables the platform can't start a program without
-/// (Windows: `SYSTEMROOT`, `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`; elsewhere none).
-pub fn child_env(path: Option<&str>, home: Option<&str>, token: Option<&str>, system: &[(String, String)]) -> Vec<(String, String)> {
+/// The child's environment, and nothing else: `PATH`, `HOME`, `USER` and `LOGNAME`, the token when
+/// authentication is on, and [`CHILD_VAR`]. `system` are the variables the platform can't start a
+/// program without (Windows: `SYSTEMROOT`, `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`;
+/// elsewhere none).
+/// - **`USER` and `LOGNAME`** (Fix S1): Claude Code's sign-in on macOS isn't found without them
+///   ("Not logged in · Please run /login" with only `PATH` and `HOME`; "ok" with them). They name
+///   the account, nothing secret.
+pub fn child_env(
+    path: Option<&str>,
+    home: Option<&str>,
+    user: Option<&str>,
+    logname: Option<&str>,
+    token: Option<&str>,
+    system: &[(String, String)],
+) -> Vec<(String, String)> {
     let mut env: Vec<(String, String)> = Vec::new();
-    if let Some(p) = path {
-        env.push(("PATH".into(), p.into()));
-    }
-    if let Some(h) = home {
-        env.push(("HOME".into(), h.into()));
+    for (k, v) in [("PATH", path), ("HOME", home), ("USER", user), ("LOGNAME", logname)] {
+        if let Some(v) = v.filter(|v| !v.is_empty()) {
+            env.push((k.into(), v.into()));
+        }
     }
     if let Some(t) = token {
         env.push((TOKEN_VAR.into(), t.into()));

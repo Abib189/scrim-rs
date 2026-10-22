@@ -1,0 +1,36 @@
+{
+  "diagnostics": [
+    "Claude Code run started",
+    "begin: claude-code (session b7396e6e…), first request; the dots are on",
+    "end: claude-code (session b7396e6e…), finish_working; the dots fade out",
+    "Claude Code run ended: finished, exit 0, 7 s"
+  ],
+  "endpoint_port_was_not_7680": true,
+  "events": [
+    {
+      "t": 0.02,
+      "what": "sent"
+    },
+    {
+      "t": 0.02,
+      "what": "running"
+    },
+    {
+      "t": 7.07,
+      "what": "ended"
+    }
+  ],
+  "follow_paused": false,
+  "rectangle_named_test": true,
+  "seen_working": true,
+  "size": [
+    100.0,
+    100.0
+  ],
+  "transcript": [
+    "You(\"Create one 100x100 rectangle named Test\")",
+    "Work(\"Agent: made one layer\")",
+    "Reply { agent: \"Claude Code\", text: \"I created a 100×100 rectangle named \\\"Test\\\" on Page 1. It sits at (0, 0) with the default light grey fill (#D9D9D9). The design check found no problems.\" }",
+    "Cost(\"0:07 · 6 tokens in, 294 out, $0.15, as the agent reported\")"
+  ]
+}

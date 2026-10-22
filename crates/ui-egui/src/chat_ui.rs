@@ -199,7 +199,14 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
     let env = app.services.agent_client_env().unwrap_or_default();
     let var = |k: &str| env.vars.get(k).cloned();
     let home = var(headless::CHILD_HOME_VAR).or_else(|| env.home.as_ref().map(|h| h.to_string_lossy().into_owned()));
-    let child_env = headless::child_env(var("PATH").as_deref(), home.as_deref(), token.as_deref(), &headless::system_env());
+    let child_env = headless::child_env(
+        var("PATH").as_deref(),
+        home.as_deref(),
+        var("USER").as_deref(),
+        var("LOGNAME").as_deref(),
+        token.as_deref(),
+        &headless::system_env(),
+    );
     let limit = limit_secs(app);
     let spec = AgentRunSpec { program: path, args, env: child_env, limit_secs: limit };
     match app.services.start_agent(spec) {

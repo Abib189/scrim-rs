@@ -11,7 +11,7 @@ At the bottom of the AI tab, a field: "Describe a change…". The person types w
 1. **No model of its own, no keys.** Scrim stores no API key and calls no model. It runs a local agent CLI the person already has, as a child process, and gives it Scrim's MCP endpoint.
 2. **Headless profiles, as data.** Claude Code (`claude -p`) and Codex (`codex exec`) first, each a profile next to the 16 client profiles: name, how to find the binary, the argument template, the output parser, the docs URL (`crates/engine/src/cmd/agent_clients/headless.json`).
 3. **Each run passes its own MCP configuration**, naming the endpoint the window is on now (after a port fallback too, and in a scratch test never the person's own Scrim). The CLI's strict mode keeps every other MCP server out of sight.
-4. **A minimal environment:** `PATH`, `HOME` (for the CLI's own login), the bearer token when authentication is on, and `SCRIM_CHAT_CHILD=1`. The child is spawned from an explicit argument list, never a shell, from a binary path resolved beforehand and shown.
+4. **A minimal environment:** `PATH`, `HOME` (for the CLI's own login), the bearer token when authentication is on, and `SCRIM_CHAT_CHILD=1`. *(Fix S1 adds `USER` and `LOGNAME`: Claude Code's macOS sign-in isn't found without them. See Fix S1 below.)* The child is spawned from an explicit argument list, never a shell, from a binary path resolved beforehand and shown.
 5. **Nothing new is granted.** The child is one more MCP client, held to Settings ▸ Tool access (the Read and Write classes of `command-access.md`).
 6. **The chat commands are the person's alone.** `chat.send`, `chat.cancel` and `chat.clear` are refused for agents on every route (MCP, the control channel, headless): an agent can't start agents. A Scrim started by an agent run (`SCRIM_CHAT_CHILD` in its environment) refuses `chat.send` too. They're classified in `command-access.md`, which stays complete.
 7. **First use of each agent asks once,** showing the exact command line and binary path, as Connect does. The answer is remembered per profile and binary path; a different path asks again.
@@ -281,3 +281,25 @@ The record is `docs/scrim-ports/chat/README.md`. In short:
   - **An error result** shown as a reply (above).
   - **The confirmation's command** dropping an empty argument (`command_line` now quotes it).
 - **Captures:** light and dark, from the offscreen renderer, under `docs/scrim-ports/chat/`.
+
+## Fix S1: Claude Code's sign-in needs `USER` and `LOGNAME` (22 Oct 2026)
+
+**The failed run (R5e):** it ran with the person's real `HOME` (the test passed `$HOME`; `SCRIM_CHAT_CHILD_HOME` wasn't set). The child's whole environment was `PATH`, `HOME` and `SCRIM_CHAT_CHILD=1`; authentication was off, so there was no token.
+
+**`claude -p "say ok"`** (Claude Code 2.1.296), once each, with `env -i` and nothing touching the sign-in:
+
+| Environment | Result |
+|---|---|
+| `HOME` (real), `PATH` | "Not logged in · Please run /login", exit 1 |
+| `HOME` (real), `PATH`, `USER`, `LOGNAME` | "ok", exit 0 |
+| `HOME` (scratch), `PATH` | "Not logged in", exit 1 |
+| `HOME` (scratch), `PATH`, `USER`, `LOGNAME` | "Not logged in", exit 1 |
+
+- **So the sign-in needs the account's name,** and it lives under the real `HOME`; a scratch `HOME` has none either way.
+- **What changed:** `child_env` now passes exactly `USER` and `LOGNAME` too, from the app's own environment (left out when unset or empty). They name the account and are not secrets. Nothing else was added.
+- **Verified:** the composer's real run again, its one retry after the failure, "Create one 100x100 rectangle named Test":
+  - Claude Code made the 100 × 100 rectangle named Test, said so, and called `finish_working` itself;
+  - it announced `claude-code`, the dots came and went, and following never paused;
+  - it took 7 s and reported 6 tokens in, 294 out and $0.15.
+  - The log is `docs/scrim-ports/chat/logs/real-claude-s1.json`.
+- **Tests:** `headless_tests.rs` (the environment's keys, in order, and unset ones left out), `agent_run.rs` (the child sees them, and nothing else), `chat_ui_tests.rs` (the composer passes them).

@@ -25,6 +25,7 @@ Run them with `cargo test -p figcraft --bin figcraft stub_ -- --ignored --test-t
 - **The setup:** once, a 2-minute cap, "Create one 100x100 rectangle named Test". Scrim ran in-process on a free port with no settings saved. Only the CLI got the real `HOME`, for its own sign-in.
 - **What happened:** Claude Code 2.1.296 accepted every argument (no usage error) and answered in `stream-json`. Its result event was an error, "Not logged in · Please run /login", exit 1 after 1.4 s, reporting 0 tokens and $0.00. Nothing was made.
 - **NOT verified: a real agent making a change.** As the brief says, the run wasn't retried and the sign-in wasn't touched.
+- **Fix S1 (later the same day):** the cause was the missing `USER` and `LOGNAME`. With them added, the same run made the rectangle (`logs/real-claude-s1.json`; `docs/design/chat-composer.md` › Fix S1).
 - **Why it wasn't signed in:** not known. Two likely causes:
   - the run's environment is only `PATH`, `HOME` and `SCRIM_CHAT_CHILD` (LOCKED decision 4), and Claude Code's sign-in on macOS may need more of it, `USER` for one;
   - or its keychain item can't be read while the screen is locked.

@@ -44,6 +44,11 @@ impl Services for E2e {
     fn agent_client_env(&self) -> Option<PathEnv> {
         let mut e = PathEnv { home: Some(PathBuf::from(&self.home)), ..Default::default() };
         e.vars.insert("PATH".into(), std::env::var("PATH").unwrap_or_default());
+        for k in ["USER", "LOGNAME"] {
+            if let Ok(v) = std::env::var(k) {
+                e.vars.insert(k.into(), v);
+            }
+        }
         if let Some(l) = self.limit {
             e.vars.insert(figcraft_ui_egui::follow_agent::chat_ui::LIMIT_VAR.into(), l.to_string());
         }

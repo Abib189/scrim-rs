@@ -43,7 +43,7 @@ fn with_authentication_on_the_token_is_named_never_written() {
     }
     let config = mcp_config(URL, true);
     assert!(config.contains("Bearer ${SCRIM_MCP_AUTH}"), "{config}");
-    let env = child_env(Some("/usr/bin"), Some("/h"), Some(token), &[]);
+    let env = child_env(Some("/usr/bin"), Some("/h"), None, None, Some(token), &[]);
     assert!(env.contains(&(TOKEN_VAR.to_string(), token.to_string())), "the token is in the child's environment");
 }
 
@@ -81,12 +81,14 @@ fn the_confirmation_shows_the_binary_and_every_argument_with_a_placeholder_for_t
 }
 
 #[test]
-fn the_environment_is_path_home_the_token_and_the_child_mark_only() {
-    let env = child_env(Some("/usr/bin:/bin"), Some("/Users/x"), None, &[]);
+fn the_environment_is_path_home_the_account_name_the_token_and_the_child_mark_only() {
+    let env = child_env(Some("/usr/bin:/bin"), Some("/Users/x"), Some("x"), Some("x"), None, &[]);
     let keys: Vec<&str> = env.iter().map(|(k, _)| k.as_str()).collect();
-    assert_eq!(keys, ["PATH", "HOME", CHILD_VAR]);
+    assert_eq!(keys, ["PATH", "HOME", "USER", "LOGNAME", CHILD_VAR], "Fix S1: the account's name too, for Claude Code's sign-in");
+    let without = child_env(Some("/usr/bin:/bin"), Some("/Users/x"), None, Some(""), None, &[]);
+    assert_eq!(without.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>(), ["PATH", "HOME", CHILD_VAR], "unset or empty: left out");
     assert!(env.contains(&(CHILD_VAR.to_string(), "1".to_string())));
-    let win = child_env(Some("p"), Some("h"), None, &[("SYSTEMROOT".into(), "C:\\Windows".into()), ("PATH".into(), "dup".into())]);
+    let win = child_env(Some("p"), Some("h"), None, None, None, &[("SYSTEMROOT".into(), "C:\\Windows".into()), ("PATH".into(), "dup".into())]);
     assert_eq!(win.iter().filter(|(k, _)| k == "PATH").count(), 1, "no variable twice");
     assert!(win.iter().any(|(k, _)| k == "SYSTEMROOT"));
 }

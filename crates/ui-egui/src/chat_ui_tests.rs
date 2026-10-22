@@ -70,6 +70,8 @@ impl Services for Platform {
     fn agent_client_env(&self) -> Option<figcraft_engine::cmd::agent_clients::PathEnv> {
         let mut e = figcraft_engine::cmd::agent_clients::PathEnv { home: Some("/Users/someone".into()), ..Default::default() };
         e.vars.insert("PATH".into(), "/usr/bin:/bin".into());
+        e.vars.insert("USER".into(), "someone".into());
+        e.vars.insert("LOGNAME".into(), "someone".into());
         e.vars.insert("SECRET_OF_THE_APP".into(), "never passed on".into());
         Some(e)
     }
@@ -186,7 +188,7 @@ fn the_first_use_asks_with_the_program_and_the_command_then_runs() {
     );
     assert!(after("--mcp-config").contains("http://127.0.0.1:7690/mcp"), "this window's endpoint");
     let keys: Vec<&str> = spec.env.iter().map(|(k, _)| k.as_str()).collect();
-    assert_eq!(keys, ["PATH", "HOME", "SCRIM_CHAT_CHILD"], "the app's other variables aren't passed on");
+    assert_eq!(keys, ["PATH", "HOME", "USER", "LOGNAME", "SCRIM_CHAT_CHILD"], "the app's other variables aren't passed on");
     assert_eq!(spec.limit_secs, 15 * 60);
     // Asked once for this agent and this program.
     type_and_send(&mut u, "and the title");
