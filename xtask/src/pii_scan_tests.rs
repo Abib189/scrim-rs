@@ -45,6 +45,7 @@ fn placeholders_loopback_and_example_domains_pass() {
         "Claude Code's .claude/settings.local.json",
         "~/.local/share/scrim",
         "apps/studio/src/home/useHomeActions.ts",
+        "<scratch>/home/Library/Application Support/Claude",
         "version 1.2.3, port 7680",
         "\"session\": \"<session-a>\"",
     ] {

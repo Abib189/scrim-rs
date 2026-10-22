@@ -1,0 +1,94 @@
+{
+ "events": [
+  {
+   "t": 0.44,
+   "what": "opened with `open`",
+   "pid_listed_by_launch_services": true,
+   "info": "\"Scrim\" ASN:0x0-0x21e21e: \n    bundleID=\"design.scrim.app\"\n    bundle path=[ NULL ] \n    executable path=[ NULL ] \n !cgsConnection !signalled type=\"Foreground\" flavor=[ NULL ]  Version=[ NULL ]  Arch=!!none"
+  },
+  {
+   "t": 0.46,
+   "what": "screen locked: macOS draws no window, so no capture and no keyboard input"
+  },
+  {
+   "t": 0.47,
+   "what": "MCP endpoint",
+   "port": 7690,
+   "server": {
+    "name": "scrim",
+    "title": "Scrim",
+    "version": "0.7.0"
+   }
+  },
+  {
+   "t": 0.47,
+   "what": "Claude Desktop entry",
+   "entry": {
+    "args": [
+     "mcp-bridge"
+    ],
+    "command": "<bundle>/Contents/MacOS/figcraft"
+   },
+   "config": "<scratch>/home/Library/Application Support/Claude/claude_desktop_config.json",
+   "state": "not configured"
+  },
+  {
+   "t": 1.59,
+   "what": "the bridge, as Claude Desktop starts it",
+   "server": {
+    "name": "scrim",
+    "title": "Scrim",
+    "version": "0.7.0"
+   },
+   "tools": 25,
+   "tool_call_error": false,
+   "bridge_listed_by_launch_services": false,
+   "apps_added_while_it_ran": 0
+  },
+  {
+   "t": 1.6,
+   "what": "bridge exited",
+   "code": 0
+  },
+  {
+   "t": 1.6,
+   "what": "entry written into the scratch configuration",
+   "state": "configured"
+  },
+  {
+   "t": 2.29,
+   "what": "opened from the new place",
+   "state": "out of date",
+   "registered": "<bundle>/Contents/MacOS/figcraft mcp-bridge",
+   "wants": {
+    "args": [
+     "mcp-bridge"
+    ],
+    "command": "<moved>/Contents/MacOS/figcraft"
+   }
+  },
+  {
+   "t": 3.3,
+   "what": "Re-register skipped: it needs the window drawn (the screen is locked)"
+  },
+  {
+   "t": 3.3,
+   "what": "after re-register",
+   "state": "out of date",
+   "entry_now": {
+    "args": [
+     "mcp-bridge"
+    ],
+    "command": "<bundle>/Contents/MacOS/figcraft"
+   },
+   "backups": 0
+  },
+  {
+   "t": 3.36,
+   "what": "moved copy unregistered and deleted",
+   "gone": true
+  }
+ ],
+ "screen_locked": true,
+ "real_unchanged": true
+}

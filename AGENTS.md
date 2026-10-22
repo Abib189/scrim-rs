@@ -137,6 +137,7 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
   (`python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])'`);
   sibling apps use the control channel too.
 - For a live check, start it with `SCRIM_SETTINGS_DIR=<scratch folder> HOME=<scratch folder>` (Scrim's rules 9).
+- A double-clickable app for this Mac: `cargo xtask bundle-macos` writes `target/bundle/Scrim.app` (signed ad hoc, not notarised; `docs/design/macos-bundle.md`).
 - Drive it with JSON lines, e.g.
   `{"id":1,"method":"engine.execute","params":{"command":"shape.rectangle","params":{"x":10,"y":10,"width":100,"height":50}}}`
   then `{"id":2,"method":"ui.screenshot","params":{"path":"/tmp/shot.png"}}`. Methods are documented

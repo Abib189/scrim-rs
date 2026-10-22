@@ -51,7 +51,7 @@ impl Scanner {
     pub fn new(allow: &str, local: &[String]) -> Option<Self> {
         let rule = |what, pattern: &str| Regex::new(pattern).ok().map(|re| Rule { what, re });
         let rules = [
-            rule("home folder", r"(?:^|[^A-Za-z0-9._/~-])((?:/Users|/home)/[A-Za-z0-9._-]+)"),
+            rule("home folder", r"(?:^|[^A-Za-z0-9._/~>-])((?:/Users|/home)/[A-Za-z0-9._-]+)"),
             rule("home folder", r"(?i)\b[A-Z]:\\Users\\[A-Za-z0-9._-]+"),
             rule("home folder (encoded)", r"-Users-[A-Za-z0-9._]+-"),
             rule("device name", r"(?i)\b[A-Za-z0-9-]+\.local(?:[^A-Za-z0-9.]|$)"),

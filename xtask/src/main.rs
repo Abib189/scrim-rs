@@ -16,10 +16,13 @@
 //! - `plugins` format-check, lint, test and build the plugin SDK and example plugins (`plugins/`, a
 //!   workspace of its own) for wasm32: `<target>/plugins/dist/<example>/` holds each manifest and
 //!   module, ready for Plugins ▸ Development ▸ Import plugin from manifest…
+//! - `bundle-macos` a double-clickable target/bundle/Scrim.app for this Mac: the release build, the
+//!   placeholder icon, signed ad hoc (docs/design/macos-bundle.md)
 //! - `bench`   release-build timings at 1k/10k/50k layers (`bench 1000,10000` for other sizes) and
 //!   with a synthetic design system used by 2,000 instances
 
 mod brand;
+mod bundle_macos;
 mod fidelity;
 mod icon;
 mod layers;
@@ -60,9 +63,10 @@ fn main() -> ExitCode {
         "wasm" => wasm(),
         "plugins" => plugins(),
         "bench" => bench(args.get(1).map_or("1000,10000,50000", String::as_str)),
+        "bundle-macos" => bundle_macos::bundle(&root(), &mut cargo()),
         _ => {
             eprintln!(
-                "tasks: ci, layers, assets, brand, size, live-scripts, pii-scan, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]"
+                "tasks: ci, layers, assets, brand, size, live-scripts, pii-scan, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES], bundle-macos"
             );
             task == "help"
         }
@@ -253,15 +257,20 @@ fn parity() -> bool {
     true
 }
 
-fn version(sub: Option<&str>, value: Option<&str>) -> bool {
-    let path = root().join("Cargo.toml");
-    let Ok(text) = std::fs::read_to_string(&path) else { return false };
-    let cur = text
-        .lines()
+/// `[workspace.package] version` in the root Cargo.toml.
+fn workspace_version() -> String {
+    let text = std::fs::read_to_string(root().join("Cargo.toml")).unwrap_or_default();
+    text.lines()
         .skip_while(|l| !l.starts_with("[workspace.package]"))
         .find_map(|l| l.strip_prefix("version = \"").and_then(|r| r.strip_suffix('"')))
         .unwrap_or("0.0.0")
-        .to_string();
+        .to_string()
+}
+
+fn version(sub: Option<&str>, value: Option<&str>) -> bool {
+    let path = root().join("Cargo.toml");
+    let Ok(text) = std::fs::read_to_string(&path) else { return false };
+    let cur = workspace_version();
     match (sub, value) {
         (Some("set"), Some(v)) => {
             let valid =
