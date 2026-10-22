@@ -1,4 +1,5 @@
-"""s5.py BINARY SCRATCH OUT — Fix S5: the real `figcraft mcp-bridge` with a stub client that stays
+"""s5.py BINARY SCRATCH OUT [BRIDGE] — Fix S5: the real bridge (BRIDGE mcp-bridge: the `scrim` CLI, or
+the app's own binary by default) with a stub client that stays
 connected while the app quits and starts again: on the same port, then on another, then on the same
 port with no call while it was down.
 The app runs on a scratch HOME and a scratch settings folder (SCRIM_SETTINGS_DIR, Scrim's rules 9;
@@ -6,13 +7,15 @@ MCP on 7690 then 7691, never 7680); the bridge reads the same scratch folder. Th
 script on the bridge's stdin and stdout. Around each quit, calls go one after another (the bridge
 answers in order), so one is at the app when it goes; every answer and how long it took is kept,
 and every `notifications/tools/list_changed`.
-Writes OUT/s5.json."""
+Writes OUT/s5.json (OUT/s5-scrim.json when BRIDGE is the `scrim` CLI)."""
 import json, os, subprocess, sys, threading, time
 HERE = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.insert(0, HERE)
 from d3 import App
 
 exe, scratch, out = sys.argv[1], sys.argv[2], sys.argv[3]
+bridge = sys.argv[4] if len(sys.argv) > 4 else exe
+name = 's5-scrim' if os.path.basename(bridge) == 'scrim' else 's5'
 home, settings = os.path.join(scratch, 'home'), os.path.join(scratch, 'settings')
 for d in (home, settings, out):
     os.makedirs(d, exist_ok=True)
@@ -72,7 +75,7 @@ def quit_app(app, a):
 
 class Client:
     def __init__(self):
-        self.p = subprocess.Popen([exe, 'mcp-bridge'], env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open(os.path.join(out, 'bridge.err'), 'w'), text=True, bufsize=1)
+        self.p = subprocess.Popen([bridge, 'mcp-bridge'], env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open(os.path.join(out, f'{name}-bridge.err'), 'w'), text=True, bufsize=1)
         self.n, self.answers, self.cv = 0, {}, threading.Condition()
         threading.Thread(target=self.read, daemon=True).start()
 
@@ -169,4 +172,4 @@ try:
     note('bridge ended', code=c.p.returncode)
 except subprocess.TimeoutExpired:
     note('bridge did not end')
-json.dump(events, open(os.path.join(out, 's5.json'), 'w'), indent=1)
+json.dump(events, open(os.path.join(out, f'{name}.json'), 'w'), indent=1)

@@ -1,0 +1,679 @@
+[
+ {
+  "t": 1.466,
+  "kind": "app started",
+  "pid": 23839,
+  "port": 7690,
+  "state": "not connected"
+ },
+ {
+  "t": 2.132,
+  "kind": "initialize",
+  "server": {
+   "name": "scrim",
+   "title": "Scrim",
+   "version": "0.7.0"
+  },
+  "listChanged": true
+ },
+ {
+  "t": 2.135,
+  "kind": "tools/list",
+  "tools": 25
+ },
+ {
+  "t": 2.159,
+  "kind": "call",
+  "label": "before any restart",
+  "sent": 2.135,
+  "took": 0.024,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.173,
+  "kind": "call",
+  "label": "restart 1 (same port): call 0 across the quit",
+  "sent": 2.159,
+  "took": 0.014,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.232,
+  "kind": "call",
+  "label": "restart 1 (same port): call 1 across the quit",
+  "sent": 2.229,
+  "took": 0.003,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.29,
+  "kind": "call",
+  "label": "restart 1 (same port): call 2 across the quit",
+  "sent": 2.286,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.355,
+  "kind": "call",
+  "label": "restart 1 (same port): call 3 across the quit",
+  "sent": 2.341,
+  "took": 0.014,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.424,
+  "kind": "call",
+  "label": "restart 1 (same port): call 4 across the quit",
+  "sent": 2.41,
+  "took": 0.014,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.482,
+  "kind": "call",
+  "label": "restart 1 (same port): call 5 across the quit",
+  "sent": 2.477,
+  "took": 0.005,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.541,
+  "kind": "call",
+  "label": "restart 1 (same port): call 6 across the quit",
+  "sent": 2.537,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.607,
+  "kind": "call",
+  "label": "restart 1 (same port): call 7 across the quit",
+  "sent": 2.597,
+  "took": 0.01,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.674,
+  "kind": "call",
+  "label": "restart 1 (same port): call 8 across the quit",
+  "sent": 2.662,
+  "took": 0.012,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.733,
+  "kind": "call",
+  "label": "restart 1 (same port): call 9 across the quit",
+  "sent": 2.729,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.807,
+  "kind": "call",
+  "label": "restart 1 (same port): call 10 across the quit",
+  "sent": 2.789,
+  "took": 0.018,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 2.859,
+  "kind": "call",
+  "label": "restart 1 (same port): call 11 across the quit",
+  "sent": 2.858,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 2.869,
+  "kind": "app quit",
+  "after": 0.08
+ },
+ {
+  "t": 2.914,
+  "kind": "call",
+  "label": "restart 1 (same port): call 12 across the quit",
+  "sent": 2.913,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 2.967,
+  "kind": "call",
+  "label": "restart 1 (same port): call 13 across the quit",
+  "sent": 2.966,
+  "took": 0.0,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.023,
+  "kind": "call",
+  "label": "restart 1 (same port): call 14 across the quit",
+  "sent": 3.022,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.077,
+  "kind": "call",
+  "label": "restart 1 (same port): call 15 across the quit",
+  "sent": 3.073,
+  "took": 0.004,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.13,
+  "kind": "call",
+  "label": "restart 1 (same port): call 16 across the quit",
+  "sent": 3.128,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.187,
+  "kind": "call",
+  "label": "restart 1 (same port): call 17 across the quit",
+  "sent": 3.185,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.244,
+  "kind": "call",
+  "label": "restart 1 (same port): call 18 across the quit",
+  "sent": 3.242,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.3,
+  "kind": "call",
+  "label": "restart 1 (same port): call 19 across the quit",
+  "sent": 3.298,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.354,
+  "kind": "call",
+  "label": "restart 1 (same port): call 20 across the quit",
+  "sent": 3.353,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.416,
+  "kind": "call",
+  "label": "restart 1 (same port): call 21 across the quit",
+  "sent": 3.409,
+  "took": 0.007,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.469,
+  "kind": "call",
+  "label": "restart 1 (same port): call 22 across the quit",
+  "sent": 3.468,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.525,
+  "kind": "call",
+  "label": "restart 1 (same port): call 23 across the quit",
+  "sent": 3.524,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.579,
+  "kind": "call",
+  "label": "restart 1 (same port): call 24 across the quit",
+  "sent": 3.578,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.634,
+  "kind": "call",
+  "label": "restart 1 (same port): call 25 across the quit",
+  "sent": 3.633,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.691,
+  "kind": "call",
+  "label": "restart 1 (same port): call 26 across the quit",
+  "sent": 3.689,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.746,
+  "kind": "call",
+  "label": "restart 1 (same port): call 27 across the quit",
+  "sent": 3.746,
+  "took": 0.0,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.798,
+  "kind": "call",
+  "label": "restart 1 (same port): call 28 across the quit",
+  "sent": 3.797,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.852,
+  "kind": "call",
+  "label": "restart 1 (same port): call 29 across the quit",
+  "sent": 3.85,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 3.908,
+  "kind": "call",
+  "label": "restart 1: while the app is closed",
+  "sent": 3.907,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 4.132,
+  "kind": "from the bridge",
+  "method": "notifications/tools/list_changed"
+ },
+ {
+  "t": 4.188,
+  "kind": "app started",
+  "pid": 23895,
+  "port": 7690,
+  "state": "connected"
+ },
+ {
+  "t": 9.223,
+  "kind": "call",
+  "label": "restart 1: the first call after it",
+  "sent": 9.194,
+  "took": 0.029,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.238,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 0 across the quit",
+  "sent": 9.223,
+  "took": 0.015,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.298,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 1 across the quit",
+  "sent": 9.293,
+  "took": 0.005,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.353,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 2 across the quit",
+  "sent": 9.349,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.41,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 3 across the quit",
+  "sent": 9.408,
+  "took": 0.002,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.469,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 4 across the quit",
+  "sent": 9.465,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.528,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 5 across the quit",
+  "sent": 9.524,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.582,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 6 across the quit",
+  "sent": 9.579,
+  "took": 0.003,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.641,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 7 across the quit",
+  "sent": 9.638,
+  "took": 0.003,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.699,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 8 across the quit",
+  "sent": 9.696,
+  "took": 0.003,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.759,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 9 across the quit",
+  "sent": 9.754,
+  "took": 0.005,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.814,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 10 across the quit",
+  "sent": 9.811,
+  "took": 0.003,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.873,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 11 across the quit",
+  "sent": 9.869,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 9.931,
+  "kind": "app quit",
+  "after": 0.076
+ },
+ {
+  "t": 9.932,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 12 across the quit",
+  "sent": 9.93,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 9.988,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 13 across the quit",
+  "sent": 9.986,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.045,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 14 across the quit",
+  "sent": 10.043,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.1,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 15 across the quit",
+  "sent": 10.099,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.157,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 16 across the quit",
+  "sent": 10.155,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.211,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 17 across the quit",
+  "sent": 10.207,
+  "took": 0.004,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.265,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 18 across the quit",
+  "sent": 10.264,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.321,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 19 across the quit",
+  "sent": 10.319,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.376,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 20 across the quit",
+  "sent": 10.375,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.432,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 21 across the quit",
+  "sent": 10.429,
+  "took": 0.003,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.489,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 22 across the quit",
+  "sent": 10.484,
+  "took": 0.005,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.543,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 23 across the quit",
+  "sent": 10.542,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.597,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 24 across the quit",
+  "sent": 10.595,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.651,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 25 across the quit",
+  "sent": 10.65,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.708,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 26 across the quit",
+  "sent": 10.706,
+  "took": 0.002,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.764,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 27 across the quit",
+  "sent": 10.763,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.817,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 28 across the quit",
+  "sent": 10.815,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.873,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 29 across the quit",
+  "sent": 10.872,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 10.929,
+  "kind": "call",
+  "label": "restart 2 (port 7691): call 30 across the quit",
+  "sent": 10.928,
+  "took": 0.001,
+  "ok": false,
+  "text": "Scrim is not running. Open the Scrim app and try again."
+ },
+ {
+  "t": 11.289,
+  "kind": "app started",
+  "pid": 23962,
+  "port": 7691,
+  "state": "not connected"
+ },
+ {
+  "t": 12.155,
+  "kind": "from the bridge",
+  "method": "notifications/tools/list_changed"
+ },
+ {
+  "t": 16.299,
+  "kind": "call",
+  "label": "restart 2: the first call after it",
+  "sent": 16.295,
+  "took": 0.004,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 16.408,
+  "kind": "app quit",
+  "after": 0.072
+ },
+ {
+  "t": 16.697,
+  "kind": "app started",
+  "pid": 24029,
+  "port": 7691,
+  "state": "not connected"
+ },
+ {
+  "t": 18.17,
+  "kind": "from the bridge",
+  "method": "notifications/tools/list_changed"
+ },
+ {
+  "t": 21.707,
+  "kind": "call",
+  "label": "restart 3 (no call while down): the first call after it",
+  "sent": 21.702,
+  "took": 0.005,
+  "ok": true,
+  "text": "15 commands (id \u2014 label [menu] (shortcut) params; * = undoable):\nview.zoomIn \u2014 Zoom in [Vi"
+ },
+ {
+  "t": 21.798,
+  "kind": "app quit",
+  "after": 0.076
+ },
+ {
+  "t": 21.799,
+  "kind": "bridge ended",
+  "code": 0
+ }
+]

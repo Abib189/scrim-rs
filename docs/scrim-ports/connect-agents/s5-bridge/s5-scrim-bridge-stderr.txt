@@ -1,0 +1,7 @@
+scrim mcp-bridge: connected to Scrim at 127.0.0.1:7690
+scrim mcp-bridge: Scrim isn't running (no answer from 127.0.0.1:7690); waiting for it
+scrim mcp-bridge: connected to Scrim at 127.0.0.1:7690
+scrim mcp-bridge: Scrim isn't running (no answer from 127.0.0.1:7690); waiting for it
+scrim mcp-bridge: connected to Scrim at 127.0.0.1:7691
+scrim mcp-bridge: Scrim at 127.0.0.1:7691 restarted; connecting again
+scrim mcp-bridge: connected to Scrim at 127.0.0.1:7691

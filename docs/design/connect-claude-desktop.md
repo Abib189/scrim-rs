@@ -167,7 +167,7 @@ Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
 ## Fix S5: the bridge across Scrim restarts (22 Oct 2026)
 
 **Checked live** (`docs/scrim-ports/connect-agents/s5-bridge/`).
-- **Setup:** the real `figcraft mcp-bridge` (debug build) on a scratch HOME and settings folder, with a stub client on its stdin and stdout, connected throughout.
+- **Setup:** the real bridge (debug builds), run as both `figcraft mcp-bridge` and the `scrim` CLI's `scrim mcp-bridge`, each in its own run with the same results. Both used a scratch HOME and settings folder, with a stub client on stdin and stdout, connected throughout. The table is the `figcraft` run; the `scrim` run's figures are in the folder's README.
 - **The app quit and started again three times:**
   - on the same port (7690);
   - on another port (7691);
