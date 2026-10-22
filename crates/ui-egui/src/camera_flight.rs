@@ -9,6 +9,8 @@
 //!   compares the view with what the flight last wrote, so no input path needs to know about it.
 //! - **Never before the canvas has its size:** a focus asked for before the first sizing (whose page
 //!   fit would overwrite it) is kept and applied once the canvas knows its size.
+//! - **Whose it is:** a flight or a waiting focus an agent's request started is the agent's
+//!   ([`State::agents`]), so following counts the camera's moves meanwhile as the agent's own (R3b).
 
 use figcraft_doc::NodeId;
 use figcraft_engine::cmd::camera::reveal;
@@ -30,6 +32,8 @@ struct Flight {
     start: Option<f64>,
     /// What this flight last wrote: anything else in the view means someone else moved it.
     last: [f64; 3],
+    /// An agent's request started it.
+    agent: bool,
 }
 
 /// The window's camera flight, and a focus waiting for the canvas's size.
@@ -37,12 +41,20 @@ struct Flight {
 pub struct State {
     flight: Option<Flight>,
     pending: Option<(u64, Vec<NodeId>)>,
+    /// The waiting focus is an agent's.
+    pending_agent: bool,
 }
 
 impl State {
     /// A flight is in progress.
     pub fn flying(&self) -> bool {
         self.flight.is_some()
+    }
+
+    /// An agent's flight is in progress, or an agent's focus waits for the canvas's size: the
+    /// camera's moves meanwhile are the agent's (R3b).
+    pub fn agents(&self) -> bool {
+        self.flight.as_ref().is_some_and(|f| f.agent) || (self.pending.is_some() && self.pending_agent)
     }
 
     /// Stop the flight where the camera is now (following paused mid-flight).
@@ -64,11 +76,18 @@ pub(crate) fn sized(app: &FigApp) -> bool {
 
 /// `camera.fly` from `camera.focus-layer`: animate from `from` to where the camera is now.
 pub fn request(app: &mut FigApp, data: &Value) {
+    let agent = app.session.agents.author.is_agent();
+    // An agent's focus is its own camera move, even one that doesn't move it: it ends any flight
+    // under way, follow's included, and following mustn't take that for the person's (R3b).
+    if agent {
+        crate::follow_agent::agent_moved_camera(app);
+    }
     let Ok(ds) = app.session.ds() else { return };
     let uid = ds.uid;
     if !sized(app) {
         let ids = data["ids"].as_array().into_iter().flatten().filter_map(figcraft_engine::params::id_of).collect();
         app.ui.camera.pending = Some((uid, ids));
+        app.ui.camera.pending_agent = agent;
         return;
     }
     let to = [ds.view.cx, ds.view.cy, ds.view.zoom];
@@ -78,7 +97,7 @@ pub fn request(app: &mut FigApp, data: &Value) {
         app.ui.camera.flight = None;
         return;
     }
-    app.ui.camera.flight = Some(Flight { uid, from, to, start: None, last: from });
+    app.ui.camera.flight = Some(Flight { uid, from, to, start: None, last: from, agent });
     set_view(app, uid, from);
 }
 

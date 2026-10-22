@@ -160,6 +160,10 @@ struct Follow {
     /// The view follow (or an agent) left the camera at: document, page, centre and zoom. Anything
     /// else is the person's doing.
     expected: Option<(u64, NodeId, [f64; 3])>,
+    /// An agent's request moved the camera and its effects are still settling (a file it opened
+    /// fitted on the canvas's first sizing, its focus's flight): until then, every move is its own
+    /// (R3b).
+    agent_settling: bool,
     /// A flight of follow's own is in progress.
     flying: bool,
     /// The state last frame (a change to `following` is a resume).
@@ -372,10 +376,14 @@ fn view_now(app: &FigApp) -> Option<(u64, NodeId, [f64; 3])> {
     app.session.ds().ok().map(|ds| (ds.uid, ds.page, [ds.view.cx, ds.view.cy, ds.view.zoom]))
 }
 
-/// An agent moved the camera itself (`view.set`, `camera.focus-layer` over MCP or the control
-/// channel): its own move, not the person's, so following doesn't pause.
+/// An agent moved the camera itself (`view.set`, `camera.focus-layer`, `page.select`, `file.open`
+/// over MCP or the control channel): its own move, not the person's, so following doesn't pause.
+/// What follows from it on later frames is its own too (R3b): the new file's fit on the canvas's
+/// first sizing, the flight its focus starts. The view it settles at is the one expected.
 pub fn agent_moved_camera(app: &mut FigApp) {
-    app.ui.agent_view.follow.expected = view_now(app);
+    let f = &mut app.ui.agent_view.follow;
+    f.expected = None;
+    f.agent_settling = true;
 }
 
 fn pause(app: &mut FigApp, why: Pause) {
@@ -454,8 +462,17 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     // The person wins: their edit, their input on the canvas, or a camera move of theirs.
     let person_edit = landed.iter().any(|l| !l.agent);
     let view = view_now(app);
+    let agents_camera = app.ui.camera.agents();
     let f = &mut app.ui.agent_view.follow;
-    let moved = if f.flying {
+    let moved = if f.agent_settling || agents_camera {
+        // An agent's own move, still settling (R3b): it replaces follow's flight, and the view it
+        // comes to rest at is the one expected.
+        f.flying = false;
+        let settled = !agents_camera && !app.ui.camera.flying();
+        f.expected = settled.then_some(view).flatten();
+        f.agent_settling = !settled;
+        false
+    } else if f.flying {
         if app.ui.camera.flying() {
             false
         } else {
@@ -603,3 +620,6 @@ pub(crate) mod tests;
 #[cfg(test)]
 #[path = "client_names_tests.rs"]
 mod client_names_tests;
+#[cfg(test)]
+#[path = "follow_moves_tests.rs"]
+mod follow_moves_tests;

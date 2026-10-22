@@ -300,3 +300,29 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
 - **Window state only:** nothing reaches the document, undo, the change log, MCP results, screenshots or exports. The revision moves only as any view change moves it: the person's scroll easing.
 - **Tests:** `follow_end_tests.rs` (7).
 
+
+## R3b: an agent's camera moves are its own (22 Oct 2026)
+
+**The report:** an agent's `file.open` was followed by "following paused: a camera move that wasn't follow's or an agent's", and its first batch was drawn off screen with no entrance.
+
+**What was reproduced** (`follow_moves_tests.rs`, requests queued as the app's MCP endpoint queues them):
+- **An agent's focus that moves nothing pauses following.** `camera.focus-layer` while follow's own flight is under way, on a layer already in view, answers `moved: false`. The window's flight request for it ended the flight under way (follow's), and left the view as it was. `handle_agent` compares the view before and after a request, saw no change, and didn't credit the agent. On the next frame follow found its own flight gone and the camera short of its target, and paused. It fails before the change.
+- **Not reproduced: the open-file pause itself.** Opening a file (an SVG, and a saved `.figcraft` by its path followed by `document.inspect`, as the `open_file` tool does), before or during follow's flight, with or without a focus asked for before the canvas's first sizing: following never paused, before the change or after it. The first sizing's fit happens in the frame follow skips because the canvas isn't sized yet. So the report's cause is likely elsewhere. One candidate: the agent focused something right after opening (the reproduced case above). Another, for "no entrance": while the window is hidden, work lands with no entrance by design (I2).
+
+**What changed:**
+- **A flight or a waiting focus remembers whether an agent's request started it** (`camera_flight::State::agents`).
+- **Any camera request an agent makes** (`camera.fly`, from its `camera.focus-layer`, even one that moves nothing) counts as the agent's own move.
+- **Following waits for an agent's move to settle:** `agent_moved_camera` no longer takes the view at the request. Until the view is sized and no agent flight or waiting focus remains, every camera change is the agent's: a new file's fit, its focus's flight, follow's own flight ended by it. The view it comes to rest at is the one expected. An agent's move also ends follow's claim to a flight it replaced.
+- **The person still wins:** a press, scroll or pinch on the canvas pauses during an agent's move as before (`person_on_canvas`), and a camera move of theirs after it settles pauses ("a camera move that wasn't follow's or an agent's").
+
+**Tests** (`follow_moves_tests.rs`, each ending with the first batch far away followed by the camera, given its entrance, with no pause logged):
+- opening a file and focusing in it before the canvas's first sizing;
+- opening a file mid-flight;
+- the `open_file` tool's two requests mid-flight;
+- switching page mid-flight;
+- a focus that moves nothing, mid-flight (fails before the change);
+- the person's zoom after an agent's page switch still pauses.
+
+**Not verified:** the report's own session. The open-file and page-switch tests pass with or without the change, so they guard the behaviour but don't prove the report's cause.
+
+**Also seen, not changed:** an agent's `file.open` while the person is on Home leaves Home in front, so nothing of the agent's work is shown or followed until the person opens the tab. Whether an agent's open should close Home is the owner's call.
