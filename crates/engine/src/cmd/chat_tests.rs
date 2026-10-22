@@ -74,7 +74,7 @@ fn turned_off_or_inside_an_agent_run_nothing_is_sent() {
     let mut s = Session::new();
     s.execute("pref.describeChange", &json!({"on": false})).unwrap();
     assert!(!s.prefs.settings.describe_change);
-    assert!(s.execute("chat.send", &json!({"prompt": "x"})).unwrap_err().to_string().contains("off in Settings ▸ AI & agents"));
+    assert!(s.execute("chat.send", &json!({"prompt": "x"})).unwrap_err().to_string().contains("off in Settings ▸ Agents"));
     let mut s = Session::new();
     s.agents.chat_child = true;
     let err = s.execute("chat.send", &json!({"prompt": "x"})).unwrap_err().to_string();
@@ -123,4 +123,44 @@ fn a_process_started_by_an_agent_run_is_told_by_its_environment() {
     assert!(started_by_agent_run(Some(OsStr::new("1"))));
     assert!(!started_by_agent_run(Some(OsStr::new(""))));
     assert!(!started_by_agent_run(None));
+}
+
+/// Fix T4: the AI panel's actions are commands, the person's alone, and check what they're given.
+#[test]
+fn the_ai_panels_commands_are_the_persons_and_check_their_parameters() {
+    use super::PANEL_REQUESTS;
+    let mut s = Session::new();
+    for id in PANEL_REQUESTS {
+        let p = match id {
+            "chat.open" => json!({"id": "c1"}),
+            "chat.scope" => json!({"scope": "all"}),
+            "chat.agent" => json!({"agent": "codex"}),
+            _ => json!({}),
+        };
+        assert!(s.execute(id, &p).is_ok(), "{id} for the person");
+        assert_eq!(s.ui_requests.last().map(|r| r.kind.clone()), Some(id.to_string()), "{id} asks the window");
+    }
+    assert!(s.execute("chat.open", &json!({})).is_err(), "an id");
+    assert!(s.execute("chat.scope", &json!({"scope": "everything"})).is_err());
+    assert!(s.execute("chat.agent", &json!({"agent": "gpt"})).is_err());
+    // An image only for an agent that takes one.
+    s.prefs.settings.describe_change = true;
+    assert!(s.execute("chat.send", &json!({"prompt": "x", "agent": "claude-code", "image": "/tmp/a.png"})).is_err());
+    assert!(s.execute("chat.send", &json!({"prompt": "x", "agent": "codex", "image": "/tmp/a.png"})).is_ok());
+    // Agents: refused, every one.
+    s.set_author(crate::agents::Author::agent("mcp (http)"));
+    for id in PANEL_REQUESTS {
+        let e = s.execute(id, &json!({"id": "c1", "scope": "all"})).unwrap_err().to_string();
+        assert!(e.contains("the person's"), "{id}: {e}");
+    }
+}
+
+/// Fix T4: Settings ▸ Agents is the `ai` section; `agents` opens it too, and nothing else is new.
+#[test]
+fn settings_open_takes_agents_for_the_agents_section() {
+    let mut s = Session::new();
+    let r = s.execute("settings.open", &json!({"section": "agents"})).unwrap();
+    assert_eq!(r["section"], "ai");
+    assert_eq!(s.ui_requests.last().map(|q| (q.kind.as_str(), q.data["section"].clone())), Some(("dialog.settings", json!("ai"))));
+    assert!(s.execute("settings.open", &json!({"section": "chat"})).is_err());
 }

@@ -1,4 +1,5 @@
-//! Settings ▸ General (C3): appearance (theme, accent), animations, your name in shared rooms,
+//! Settings ▸ General (C3): appearance (theme, accent), animations (agents at work moved to
+//! Settings ▸ Agents in Fix T4), your name in shared rooms,
 //! keeping unsaved work, snapping, then the rows the Preferences window had (editing, files,
 //! sharing, language). Every control runs a registry command.
 
@@ -40,62 +41,6 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     if prefs.settings.motion == "system" && app.services.reduce_motion() {
         widgets::label(ui, tr("Your system asks for reduced motion: animations stay off."), t.text_secondary);
     }
-
-    heading(ui, tr("Agents at work"));
-    if widgets::checkbox(ui, prefs.settings.follow_agents, tr("Follow agents as they work")) {
-        app.run("camera.follow-agents", json!({"on": !prefs.settings.follow_agents}));
-    }
-    widgets::label(ui, tr("Keeps the agent's latest work in the middle of the canvas. Your own scroll, zoom or edit pauses it."), t.text_secondary);
-    if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {
-        app.run("pref.revealAgentWork", json!({}));
-    }
-    // Each speed with its timing (Fix M3), one a row: too long for a segmented control.
-    ui.label(tr("Reveal speed"));
-    let speeds = [
-        ("fast", tr_noop("Fast (0.2 s per layer, about 1 s per step)")),
-        ("normal", tr_noop("Normal (0.5 s per layer, about 4 s per step)")),
-        ("slow", tr_noop("Slow (0.7 s per layer, about 6 s per step)")),
-    ];
-    let current = speeds.iter().position(|(id, _)| prefs.settings.reveal_speed == *id).unwrap_or(1);
-    for (i, (id, label)) in speeds.iter().enumerate() {
-        if widgets::radio(ui, i == current, tr(label)) && i != current {
-            app.run("pref.revealSpeed", json!({"speed": id}));
-        }
-    }
-    if widgets::checkbox(ui, prefs.settings.working_indicator, tr("Show working indicator")) {
-        app.run("pref.workingIndicator", json!({}));
-    }
-    widgets::label(
-        ui,
-        tr("New layers fade in as an agent adds them, and dots above the artboard show it is working. Animations Off shows them still."),
-        t.text_secondary,
-    );
-    // The grace (Fix Q, T1): 15, 30, 60 (the default) or 120 s. The person's choice is kept through
-    // migrations; Fix Q2's hint scrolls here.
-    let grace_row = ui.label(tr("Keep the working indicator after the last agent request")).rect;
-    ui.horizontal(|ui| {
-        use figcraft_engine::settings::{AGENT_GRACE_SECS, DEFAULT_AGENT_GRACE_SECS};
-        let labels: Vec<String> =
-            AGENT_GRACE_SECS
-                .iter()
-                .map(|s| {
-                    if *s == DEFAULT_AGENT_GRACE_SECS {
-                        trf("{seconds} s (default)", &[("seconds", s)])
-                    } else {
-                        trf("{seconds} s", &[("seconds", s)])
-                    }
-                })
-                .collect();
-        let labels: Vec<&str> = labels.iter().map(String::as_str).collect();
-        let current = AGENT_GRACE_SECS.iter().position(|s| *s == prefs.settings.agent_grace_secs).unwrap_or(2);
-        if let Some(i) = widgets::segmented_text(ui, &labels, current) {
-            app.run("pref.agentGrace", json!({"seconds": AGENT_GRACE_SECS[i]}));
-        }
-    });
-    if std::mem::take(&mut app.ui.agent_view.focus_grace) {
-        ui.scroll_to_rect(grace_row, Some(egui::Align::Center));
-    }
-    widgets::label(ui, tr("An agent that says it has finished, or disconnects, stops showing as working at once."), t.text_secondary);
 
     heading(ui, tr("Shared rooms"));
     ui.horizontal(|ui| {

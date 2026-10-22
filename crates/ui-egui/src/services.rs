@@ -108,6 +108,13 @@ pub trait Services {
     /// Keep the preferences now (the installed plugins or their settings changed), as the app
     /// does when it quits.
     fn save_prefs(&mut self, _prefs: &figcraft_engine::Prefs) {}
+    /// The AI panel's conversations as last kept (Fix T4): JSON, or nothing. Only the desktop app
+    /// keeps them, in its settings folder, never in a document.
+    fn load_conversations(&mut self) -> Option<String> {
+        None
+    }
+    /// Keep the AI panel's conversations (JSON).
+    fn save_conversations(&mut self, _json: &str) {}
     /// The OS or browser language as a tag ("es-ES"), for the "system" language preference.
     fn system_language(&self) -> Option<String> {
         None

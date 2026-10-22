@@ -117,3 +117,25 @@ fn quitting_keeps_the_preferences_and_ends_the_live_sessions() {
     assert_eq!(start(&dir).session.prefs.user_name, "Ada", "the preferences were kept");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// Fix T4: the AI panel's conversations are kept beside the settings, owner-only, read back as
+/// written; none kept reads as none.
+#[test]
+fn conversations_are_kept_beside_the_settings_owner_only() {
+    use figcraft_ui_egui::Services;
+    let dir = root("conversations");
+    let mut svc = Desktop::load_from(Some(dir.clone()), Arc::new(Mutex::new(None)));
+    assert_eq!(svc.load_conversations(), None);
+    let json = r#"[{"id":"c1","title":"Blue poster","doc":"unsaved:1","doc_name":"Untitled","updated":1,"lines":[]}]"#;
+    svc.save_conversations(json);
+    let path = dir.join("conversations.json");
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), json);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        assert_eq!(std::fs::metadata(&path).unwrap().permissions().mode() & 0o777, 0o600);
+    }
+    let mut again = Desktop::load_from(Some(dir.clone()), Arc::new(Mutex::new(None)));
+    assert_eq!(again.load_conversations().as_deref(), Some(json));
+    let _ = std::fs::remove_dir_all(&dir);
+}

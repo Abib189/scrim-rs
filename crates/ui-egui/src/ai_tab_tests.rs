@@ -1,6 +1,7 @@
-//! The AI tab (B3): the connection and its connect command, the activity feed (select, undo an
-//! agent's latest change), the lint findings by rule, and keeping agents off the selection. Every
-//! control runs a command, and screen readers get each by name.
+//! The agents' review (B3; the AI tab's until Fix T4, now the Inspect tab's end): the activity feed
+//! (select, undo an agent's latest change), the lint findings by rule, and keeping agents off the
+//! selection. Every control runs a command, and screen readers get each by name. The connection's
+//! status row, in Settings ▸ Agents since Fix T4, is checked there too.
 
 use std::sync::{Arc, Mutex};
 
@@ -18,7 +19,7 @@ impl crate::Services for Clipboard {
     }
 }
 
-/// The AI tab on a file where an agent drew a rectangle "Badge" after the person's rectangle.
+/// The Inspect tab on a file where an agent drew a rectangle "Badge" after the person's rectangle.
 fn harness() -> (Harness, Arc<Mutex<Vec<String>>>, u64) {
     let (mut h, _) = Harness::new();
     let copied = Arc::new(Mutex::new(Vec::new()));
@@ -30,12 +31,31 @@ fn harness() -> (Harness, Arc<Mutex<Vec<String>>>, u64) {
             .unwrap();
     h.app.session.execute_as(agent, None, "object.rename", &json!({"ids": [badge], "name": "Badge"})).unwrap();
     h.app.session.execute("select.none", &json!({})).unwrap();
-    // The composer pinned at the tab's bottom covers the rows this test clicks; it has its own tests (R5).
-    h.app.session.prefs.settings.describe_change = false;
-    h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
+    // The review is at the Inspect tab's end since Fix T4.
+    h.app.session.execute("view.devMode", &json!({})).unwrap();
     h.app.handle_ui_requests();
     h.frames(3);
     (h, copied, badge)
+}
+
+/// The right panel scrolled until `text` is well inside the window (the review is at the Inspect
+/// tab's end since Fix T4); what was drawn then.
+fn scroll_to(h: &mut Harness, text: &str) -> Vec<egui::Shape> {
+    let mut shapes = h.frames(2);
+    for _ in 0..40 {
+        if crate::live_tests::texts(&shapes).iter().any(|(t, p, _)| t == text && p.y > 80.0 && p.y < 760.0) {
+            return shapes;
+        }
+        h.frame(vec![egui::Event::PointerMoved(egui::pos2(1340.0, 500.0))]);
+        h.frame(vec![egui::Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Point,
+            delta: egui::vec2(0.0, -120.0),
+            phase: egui::TouchPhase::Move,
+            modifiers: egui::Modifiers::NONE,
+        }]);
+        shapes = h.frames(2);
+    }
+    shapes
 }
 
 fn sel(h: &Harness) -> Vec<u64> {
@@ -45,7 +65,10 @@ fn sel(h: &Harness) -> Vec<u64> {
 #[test]
 fn the_status_row_says_stopped_not_connected_or_connected() {
     let (mut h, _, _) = harness();
-    let shapes = h.frames(1);
+    // In Settings ▸ Agents since Fix T4.
+    h.app.session.execute("settings.open", &json!({"section": "agents"})).unwrap();
+    h.app.handle_ui_requests();
+    let shapes = h.frames(2);
     assert!(has_text(&shapes, "Server stopped") && has_text(&shapes, "Restart"), "no endpoint in the test harness");
     h.app.session.agents.mcp.port = Some(7601);
     let shapes = h.frames(2);
@@ -60,11 +83,13 @@ fn the_status_row_says_stopped_not_connected_or_connected() {
 #[test]
 fn the_feed_selects_a_changes_layers_and_undoes_the_agents_latest_change() {
     let (mut h, _, badge) = harness();
-    let shapes = h.frames(1);
+    let shapes = scroll_to(&mut h, "Agent (mcp): Rename");
     assert!(has_text(&shapes, "Agent (mcp): Rename"), "the newest change first, with its author");
     h.click(text_center(&shapes, "Agent (mcp): Rename"));
-    let shapes = h.frames(2);
+    h.frames(2);
     assert_eq!(sel(&h), [badge]);
+    // Selected, the Inspect tab shows the layer above the feed: back down to it.
+    let shapes = scroll_to(&mut h, "Agent (mcp): Rename");
     // Its Undo: the agent's rename is the latest step.
     let rename = text_center(&shapes, "Agent (mcp): Rename");
     let undo = texts_at_row(&shapes, "Undo", rename.y);
@@ -99,7 +124,7 @@ fn findings_are_grouped_with_counts_and_select_their_layers() {
         texts.push(r["id"].as_u64().unwrap());
     }
     h.app.session.execute("select.none", &json!({})).unwrap();
-    let shapes = h.frames(2);
+    let shapes = scroll_to(&mut h, "Overused font");
     assert!(has_text(&shapes, "Overused font"), "the rule's group");
     h.click(text_center(&shapes, "Overused font"));
     let shapes = h.frames(2);
@@ -113,7 +138,7 @@ fn findings_are_grouped_with_counts_and_select_their_layers() {
 fn the_lock_keeps_agents_off_the_selection() {
     let (mut h, _, badge) = harness();
     h.app.session.execute("select.set", &json!({"ids": [badge]})).unwrap();
-    let shapes = h.frames(2);
+    let shapes = scroll_to(&mut h, "Keep agents off the selection");
     h.click(text_center(&shapes, "Keep agents off the selection"));
     h.frames(2);
     assert!(h.app.session.doc().unwrap().node(figcraft_doc::NodeId(badge)).is_some_and(|n| n.locked));
@@ -141,7 +166,7 @@ fn screen_readers_get_every_control_by_name() {
     let (mut h, _, _) = harness();
     let nodes = tree(&mut h);
     let named = |role: Role, label: &str| nodes.iter().any(|n| n.role() == role && n.label() == Some(label));
-    for label in ["Restart", "Agent (mcp): Rename", "Undo Rename"] {
+    for label in ["Agent (mcp): Rename", "Undo Rename"] {
         assert!(named(Role::Button, label), "a button named {label:?}");
     }
     assert!(named(Role::CheckBox, "Keep agents off the selection"));
@@ -178,16 +203,8 @@ fn overused_font_findings_are_grouped_by_family() {
     for (i, family) in ["Inter", "Inter", "Inter", "Geist", "Geist"].iter().enumerate() {
         h.app.session.execute("text.create", &json!({"text": "Hello", "x": 0, "y": 300 + 40 * i, "props": {"fontFamily": family}})).unwrap();
     }
-    let shapes = h.frames(2);
-    // The lint is below the connect sections: scroll the tab to it, as a person would.
-    h.frame(vec![egui::Event::PointerMoved(text_center(&shapes, "Design lint"))]);
-    h.frame(vec![egui::Event::MouseWheel {
-        unit: egui::MouseWheelUnit::Point,
-        delta: egui::vec2(0.0, -400.0),
-        phase: egui::TouchPhase::Move,
-        modifiers: Default::default(),
-    }]);
-    let shapes = h.frames(3);
+    // The lint is at the Inspect tab's end: scroll to it, as a person would.
+    let shapes = scroll_to(&mut h, "Overused font");
     h.click(text_center(&shapes, "Overused font"));
     let shapes = h.frames(2);
     assert!(has_text(&shapes, "Inter") && has_text(&shapes, "Geist"), "a row per family");

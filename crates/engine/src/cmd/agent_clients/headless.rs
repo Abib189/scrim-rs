@@ -53,6 +53,11 @@ pub struct Headless {
     pub args: Vec<String>,
     #[serde(default)]
     pub auth_args: Vec<String>,
+    /// An image for the prompt, as a path (`{image}`), where the CLI takes one; placed at
+    /// `{image_args}` in `args` (Fix T4). Empty: this agent takes no image, and the panel hides
+    /// its image button.
+    #[serde(default)]
+    pub image_args: Vec<String>,
     pub output: Output,
     pub docs: String,
     #[serde(default)]
@@ -89,11 +94,22 @@ fn fill(arg: &str, prompt: &str, url: &str, auth: bool) -> String {
 impl Headless {
     /// The arguments for a run: the template filled in, one argument each.
     pub fn argv(&self, prompt: &str, url: &str, auth: bool) -> Vec<String> {
+        self.argv_with(prompt, url, auth, None)
+    }
+
+    /// [`Self::argv`] with an image (a path) where the agent takes one.
+    pub fn argv_with(&self, prompt: &str, url: &str, auth: bool, image: Option<&str>) -> Vec<String> {
         let mut out = Vec::new();
         for a in &self.args {
             if a == "{auth_args}" {
                 if auth {
                     out.extend(self.auth_args.iter().map(|x| fill(x, prompt, url, auth)));
+                }
+                continue;
+            }
+            if a == "{image_args}" {
+                if let Some(path) = image {
+                    out.extend(self.image_args.iter().map(|x| x.replace("{image}", path)));
                 }
                 continue;
             }

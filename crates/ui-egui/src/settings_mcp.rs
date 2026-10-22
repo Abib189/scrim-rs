@@ -1,9 +1,4 @@
-//! Settings ▸ AI & agents and Settings ▸ MCP (C3c).
-//!
-//! **AI & agents:** Describe a change (R5d: the switch, the time limit, the agents allowed to run),
-//! then Claude Code's status and the connect flow, the same ones the AI tab shows
-//! (`ai_tab::connection`, `connect_flow`). There are no models or API keys: agents bring their
-//! own.
+//! Settings ▸ MCP (C3c); Settings ▸ Agents is [`agents`] (Fix T4).
 //!
 //! **MCP:** the endpoint's status, address (Copy), version and Restart; Require authentication;
 //! the folder file tools may use (Use default, Choose folder…); and Connect Claude Code.
@@ -18,19 +13,8 @@ use crate::settings_dialog::heading;
 use crate::theme::{Tokens, regular};
 use crate::{FigApp, a11y, widgets};
 
-pub fn ai(app: &mut FigApp, ui: &mut Ui) {
-    let t = Tokens::get(ui.ctx());
-    heading(ui, tr("AI & agents"));
-    widgets::label(
-        ui,
-        tr("Agents work on the canvas beside you through MCP. Scrim has no models and keeps no API keys: each agent brings its own."),
-        t.text_secondary,
-    );
-    // Describe a change first: the agents' connections below run long (R5d).
-    crate::follow_agent::chat_ui::settings(app, ui);
-    ui.add_space(6.0);
-    crate::panel_view::ai_tab::connection(app, ui);
-}
+#[path = "settings_agents.rs"]
+pub mod agents;
 
 pub fn mcp(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());

@@ -31,7 +31,6 @@ use serde_json::json;
 
 use crate::FigApp;
 use crate::i18n::{tr, trf};
-use crate::theme::{Tokens, regular};
 
 #[path = "camera_log.rs"]
 pub mod camera_log;
@@ -400,6 +399,8 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
         "finished": finished_text(app),
         "degraded": v.budget.level,
         "cameraLog": camera_log::inspect(app),
+        // The AI panel as drawn last frame (Fix T4).
+        "aiPanel": crate::panel_view::ai_tab::panel::inspect(app),
     })
 }
 
@@ -554,7 +555,8 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     follow_centre::fly(app, page, &ids, now);
 }
 
-/// What the AI tab says: "Following Claude · Poster", paused, or nothing when it's off.
+/// What following is doing: "Following Claude · Poster", paused, or nothing when it's off (the AI
+/// panel's Follow button says it under its name, Fix T4).
 pub fn status(app: &FigApp) -> Option<String> {
     let f = &app.ui.agent_view.follow;
     let artboard = f.artboard.and_then(|id| app.session.doc().ok().and_then(|d| d.node(id).map(|n| n.name.clone())));
@@ -576,56 +578,6 @@ pub fn status(app: &FigApp) -> Option<String> {
 pub fn working_on(app: &FigApp) -> (Option<String>, Option<NodeId>) {
     let f = &app.ui.agent_view.follow;
     (f.agent.clone(), f.artboard)
-}
-
-/// The AI tab's Follow row: the switch, Resume while paused, and what it is doing.
-/// Shown once there's an agent to follow (an MCP client connected, or an agent's edit seen), and
-/// whenever following is paused or off (so it can be turned back on here). Settings ▸ General and
-/// the Actions palette always have it.
-pub fn ai_section(app: &mut FigApp, ui: &mut Ui) {
-    let t = Tokens::get(ui.ctx());
-    let on = app.session.prefs.settings.follow_agents;
-    // Paused while an agent works; fading out for FADE once that work has ended (Fix N).
-    let paused = follow_end::shown(app);
-    let fade = if paused { None } else { follow_end::fading(app, now(app)) };
-    let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
-    let connected = figcraft_engine::cmd::mcp::status(&app.session, now)["state"] == "connected";
-    if follow_state(&app.session) == "following" && !connected && !app.ui.agent_view.follow.seen_agent {
-        return;
-    }
-    let (s, color) = match (fade, status(app)) {
-        (Some(a), _) => (tr("Paused: you moved the camera or edited").to_string(), t.text_secondary.gamma_multiply(a)),
-        (None, Some(s)) => (s, if paused { t.text_secondary } else { t.text }),
-        (None, None) => (tr("Off: the camera stays where you leave it while agents work.").to_string(), t.text_secondary),
-    };
-    // The switch and Resume while paused; then what it is doing now.
-    // Resume first, at the row's end, so the switch (as wide as it may be) can't push it out of a
-    // narrow or scrolling panel.
-    crate::right::row(ui, 30.0, |ui| {
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if paused && crate::widgets::button(ui, tr("Resume"), true, true).clicked() {
-                app.run("camera.follow-agents", json!({"on": true}));
-            }
-            if let Some(a) = fade {
-                // Fading out: painted, not pressable.
-                ui.ctx().request_repaint();
-                ui.scope(|ui| {
-                    ui.multiply_opacity(a);
-                    ui.disable();
-                    crate::widgets::button(ui, tr("Resume"), true, true);
-                });
-            }
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                if crate::widgets::checkbox(ui, on, tr("Follow agent")) {
-                    app.run("camera.follow-agents", json!({"on": !on}));
-                }
-            });
-        });
-    });
-    crate::right::row(ui, 20.0, |ui| {
-        let resp = ui.add(egui::Label::new(egui::RichText::new(&s).color(color).font(regular(11.0))).truncate()).on_hover_text(&s);
-        crate::a11y::status(&resp, &s, &s);
-    });
 }
 
 #[cfg(test)]

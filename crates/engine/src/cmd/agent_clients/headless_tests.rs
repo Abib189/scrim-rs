@@ -177,3 +177,18 @@ fn an_outcome_keeps_only_what_was_reported() {
     assert_eq!((out.input_tokens, out.output_tokens, out.cost_usd), (None, None, None), "nothing estimated");
     assert_eq!(out.finished, Some(false));
 }
+
+/// Fix T4: an image goes as a path to an agent whose CLI takes one, right after `exec` for Codex
+/// (`--image` takes a list: the next flag ends it); Claude Code takes none.
+#[test]
+fn an_image_goes_where_the_profile_takes_it_and_nowhere_else() {
+    let codex = super::profile("codex").unwrap();
+    let a = codex.argv_with("make it blue", URL, false, Some("/tmp/ref.png"));
+    assert_eq!(&a[..4], ["exec", "--image", "/tmp/ref.png", "--json"], "{a:?}");
+    assert_eq!(a.last().map(String::as_str), Some("make it blue"));
+    let without = codex.argv("make it blue", URL, false);
+    assert!(!without.iter().any(|x| x.contains("image")), "no image, no flag: {without:?}");
+    let claude = super::profile("claude-code").unwrap();
+    assert!(claude.image_args.is_empty(), "Claude Code runs with no built-in tools: it can't open a path");
+    assert_eq!(claude.argv_with("x", URL, false, Some("/tmp/ref.png")), claude.argv("x", URL, false));
+}

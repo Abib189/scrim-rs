@@ -66,10 +66,10 @@ fn at_a_chosen_30_s_only_the_36_s_gap_breaks_and_the_return_is_noted_with_a_hint
     assert_eq!(steps(&mut u, &[20.0, 36.0]), [true, false]);
     assert_eq!(grace_events(&u), [format!("grace too short: {BRIDGE} came back after 36 s (the setting is 30 s)")]);
     assert!(u.app.ui.agent_view.grace_hint.showing, "the hint");
-    // The button opens Settings ▸ General at the setting; the hint is done.
+    // The link opens Settings ▸ Agents at the setting; the hint is done (Fix T4).
     super::open_setting(&mut u.app);
     u.frame(vec![]);
-    assert!(u.app.ui.preferences && u.app.ui.settings_section == "general");
+    assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai");
     assert!(!u.app.ui.agent_view.grace_hint.showing);
     u.app.ui.preferences = false;
     // Another return: noted, but the hint isn't shown again this run.

@@ -23,7 +23,7 @@ use crate::{FigApp, a11y, widgets};
 pub const SECTIONS: &[(&str, &str)] = &[
     ("general", tr_noop("General")),
     ("toolbar", tr_noop("Toolbar")),
-    ("ai", tr_noop("AI & agents")),
+    ("ai", tr_noop("Agents")),
     ("mcp", tr_noop("MCP")),
     ("tools", tr_noop("Tool access")),
     ("privacy", tr_noop("Privacy")),
@@ -34,7 +34,11 @@ pub const SECTIONS: &[(&str, &str)] = &[
 pub fn request(app: &mut FigApp, kind: &str, data: &Value) -> bool {
     match kind {
         "dialog.settings" => {
-            let wanted = data.get("section").and_then(Value::as_str).unwrap_or("general");
+            // Settings ▸ Agents is `ai` (it was "AI & agents"); `agents` names it too (Fix T4).
+            let wanted = match data.get("section").and_then(Value::as_str).unwrap_or("general") {
+                "agents" => "ai",
+                other => other,
+            };
             app.ui.settings_section = SECTIONS.iter().find(|(id, _)| *id == wanted).map_or("general", |(id, _)| id);
             app.ui.preferences = true;
         }
@@ -110,7 +114,7 @@ fn section(app: &mut FigApp, ui: &mut Ui) {
     // (Each section is its own module; C3 adds them one commit at a time.)
     match app.ui.settings_section {
         "toolbar" => crate::settings_toolbar::show(app, ui),
-        "ai" => crate::settings_mcp::ai(app, ui),
+        "ai" => crate::settings_mcp::agents::show(app, ui),
         "mcp" => crate::settings_mcp::mcp(app, ui),
         "tools" => crate::settings_tools::show(app, ui),
         "privacy" => crate::settings_privacy::privacy(app, ui),

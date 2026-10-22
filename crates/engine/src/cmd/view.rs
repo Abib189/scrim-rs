@@ -460,10 +460,12 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "settings.open",
             "Settings",
-            "{section?: general|toolbar|ai|mcp|tools|privacy|diagnostics} → {section, sections, appearance, motion, preserveUnsaved}  (opens Settings for the person; an agent gets the settings back instead, since programmatic calls open no dialogs)",
+            "{section?: general|toolbar|ai (Agents; also `agents`)|mcp|tools|privacy|diagnostics} → {section, sections, appearance, motion, preserveUnsaved}  (opens Settings for the person; an agent gets the settings back instead, since programmatic calls open no dialogs)",
             false,
             |s, p| {
                 let section = string(p, "section").map(|x| x.to_ascii_lowercase()).unwrap_or_else(|| "general".into());
+                // Settings ▸ Agents is `ai`; `agents` names it too (Fix T4).
+                let section = if section == "agents" { "ai".to_string() } else { section };
                 if !crate::settings::SECTIONS.contains(&section.as_str()) {
                     return Err(bad("settings.open", "section: general|toolbar|ai|mcp|tools|privacy|diagnostics"));
                 }

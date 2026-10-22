@@ -86,7 +86,9 @@ fn harness(home: &Path, programs: &[(&'static str, &str)]) -> (Harness, Arc<Mute
     h.app.session.agents.mcp.client_env = h.app.services.agent_client_env();
     // The composer pinned at the tab's bottom covers the rows these tests click; it has its own tests (R5).
     h.app.session.prefs.settings.describe_change = false;
-    h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
+    // The connections are in Settings ▸ Agents since Fix T4.
+    h.app.session.execute("settings.open", &serde_json::json!({"section": "ai"})).unwrap();
+    h.app.handle_ui_requests();
     h.app.handle_ui_requests();
     h.frames(3);
     (h, script)
@@ -139,9 +141,10 @@ fn found_clients_come_first_with_their_status_and_the_rest_under_more() {
     // Settings ▸ MCP: the same section, with room to see it.
     h.app.run("settings.open", json!({"section": "mcp"}));
     h.app.handle_ui_requests();
-    let shapes = h.frames(3);
+    let more = figcraft_engine::cmd::agent_clients::profiles().len() - 4;
+    let shapes = crate::live_tests::scroll_settings_to(&mut h, &format!("More ({more})"));
     assert!(has_text(&shapes, "Connect other agents"), "{:?}", texts_containing(&shapes, "agents"));
-    assert!(has_text(&shapes, "Codex") && has_text(&shapes, "Cursor"), "{:?}", texts_containing(&shapes, " · "));
+    assert!(has_text(&shapes, "Codex") && has_text(&shapes, "Cursor"), "{:?}", texts_containing(&shapes, ""));
     // The status, then how it was verified, and when.
     assert!(has_text(&shapes, "Not configured · Registered live, 21 Oct"), "{:?}", texts_containing(&shapes, " · "));
     assert!(has_text(&shapes, "Configured · Registration from its docs, 21 Oct"));
@@ -149,7 +152,6 @@ fn found_clients_come_first_with_their_status_and_the_rest_under_more() {
     assert!(has_text(&shapes, "Tools not yet used live"));
     assert!(super::short_date("2026-10-21") == "21 Oct" && super::short_date("2026-01-05") == "5 Jan" && super::short_date("bad") == "bad");
     assert!(!has_text(&shapes, "Zed"), "the rest wait under More");
-    let more = figcraft_engine::cmd::agent_clients::profiles().len() - 4;
     assert!(has_text(&shapes, &format!("More ({more})")));
     assert!(!crate::live_tests::texts(&shapes).iter().any(|(t, _, _)| t.contains(" · Connected")), "a file never says Connected");
     h.app.ui.connect.others.more = true;
@@ -325,25 +327,15 @@ fn copy_only_when_scrim_cant_and_the_card_for_any_other_agent() {
     let r = report(&h.app.session, "devin").unwrap();
     assert_eq!(super::how(&h.app, &r, Confirm::Write), How::Copy);
     h.app.session.prefs.settings.mcp.require_auth = false;
-    // Any other agent: the card (scrolled into view in the AI tab), and its Copy.
+    // Any other agent: the card (scrolled into view in Settings ▸ Agents), and its Copy.
     h.app.ui.connect.others.any = true;
     h.app.ui.connect.others.open = None;
     h.app.ui.connect.others.more = false;
-    let shapes = h.frames(3);
+    let shapes = crate::live_tests::scroll_settings_to(&mut h, "JSON");
     for part in ["Any MCP client on this computer can use this canvas. Give it one of these:", "Address", "JSON"] {
         assert!(has_text(&shapes, part), "{part:?} in {:?}", texts_containing(&shapes, ""));
     }
-    let at = text_center(&shapes, "Connect other agents");
-    h.frame(vec![egui::Event::PointerMoved(at)]);
-    for _ in 0..8 {
-        h.frame(vec![egui::Event::MouseWheel {
-            unit: egui::MouseWheelUnit::Point,
-            delta: egui::vec2(0.0, -200.0),
-            phase: egui::TouchPhase::Move,
-            modifiers: Default::default(),
-        }]);
-    }
-    let shapes = h.frames(3);
+    let shapes = crate::live_tests::scroll_settings_to(&mut h, &format!("npx -y mcp-remote@0.14.3 {URL}"));
     for part in ["TOML", "Command (stdio)", &format!("npx -y mcp-remote@0.14.3 {URL}")] {
         assert!(has_text(&shapes, part), "{part:?} in {:?}", texts_containing(&shapes, ""));
     }

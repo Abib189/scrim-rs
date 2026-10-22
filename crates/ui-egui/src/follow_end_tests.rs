@@ -164,9 +164,10 @@ fn without_motion_the_chip_goes_at_once() {
     }
 }
 
-/// The AI tab's paused row: Resume only while paused and working.
+/// The AI panel's Follow agents button (Fix T4; the AI tab's Resume row before): it shows paused,
+/// and resumes, only while paused and working.
 #[test]
-fn the_ai_tabs_resume_follows_the_same_rule() {
+fn the_ai_panels_follow_button_shows_paused_by_the_same_rule() {
     let (mut h, _) = crate::live_tests::Harness::new();
     h.app.session.agents.mcp.port = Some(7601);
     h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
@@ -189,11 +190,12 @@ fn the_ai_tabs_resume_follows_the_same_rule() {
     req(&mut h, json!({"command": "frame.create", "params": {"x": 0, "y": 0, "width": 100, "height": 100}}));
     h.frames(30);
     h.app.run("frame.create", json!({"x": 400, "y": 0, "width": 100, "height": 100, "name": "Mine"}));
-    let shapes = h.frames(3);
+    h.frames(3);
     assert_eq!(figcraft_engine::cmd::camera::follow_state(&h.app.session), "paused");
-    assert!(crate::live_tests::has_text(&shapes, "Resume"), "Resume while paused and working");
+    let follow = |h: &crate::live_tests::Harness| crate::follow_agent::inspect(&h.app)["aiPanel"]["header"]["follow"].clone();
+    assert_eq!(follow(&h), "paused", "paused while working");
     req(&mut h, json!({"command": "agent.finish-working"}));
-    let shapes = h.frames(20);
-    assert!(!crate::live_tests::has_text(&shapes, "Resume"), "gone once the work ended");
+    h.frames(20);
+    assert_eq!(follow(&h), "following", "not once the work ended");
     assert_eq!(figcraft_engine::cmd::camera::follow_state(&h.app.session), "following");
 }

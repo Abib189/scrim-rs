@@ -1,6 +1,6 @@
 //! Fix S2: every input's edge reads at 3:1 (WCAG 1.4.11, the boundary of a control).
 //! Real screens are drawn (the properties panel's number fields, the Layers and Assets searches,
-//! the AI tab's composer, Settings ▸ General and Tool access, the batch rename dialog, the
+//! the AI panel's composer and its conversations' search (Fix T4), Settings ▸ General and Tool access, the batch rename dialog, the
 //! shortcuts panel), in both themes and with every accent preset. For each text input, spin
 //! button and combo box AccessKit reports, the smallest stroked rectangle drawn around it is its
 //! edge. That edge must reach 3:1 against the field's fill, the panels and the floating surface
@@ -34,6 +34,11 @@ fn screens() -> Vec<Screen> {
         }),
         ("AI tab composer", |u: &mut Ui| {
             u.app.run("panel.tab.ai", json!({}));
+        }),
+        // Fix T4: the conversations' popover and its search.
+        ("AI panel popover", |u: &mut Ui| {
+            u.app.run("panel.tab.ai", json!({}));
+            u.app.ui.agent_view.chat.store.open = true;
         }),
         ("Settings ▸ General", |u: &mut Ui| {
             u.app.ui.settings_section = "general";

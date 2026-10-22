@@ -25,6 +25,7 @@
     "program": "codex",
     "args": [
       "exec",
+      "{image_args}",
       "--json",
       "--ephemeral",
       "--skip-git-repo-check",
@@ -36,9 +37,10 @@
       "{prompt}"
     ],
     "auth_args": ["-c", "mcp_servers.scrim.bearer_token_env_var=\"{token_var}\""],
+    "image_args": ["--image", "{image}"],
     "output": "codex-jsonl",
     "docs": "https://developers.openai.com/codex/cli",
     "client_names": ["codex-mcp-client"],
-    "verified": "codex exec --help, Codex CLI 0.162.1, 22 Oct 2026; no --mcp-config flag: -c mcp_servers.* overrides"
+    "verified": "codex exec --help, Codex CLI 0.162.1, 22 Oct 2026; no --mcp-config flag: -c mcp_servers.* overrides; -i/--image <FILE>... in 0.163.0 (Fix T4), right after exec so the next flag ends its list"
   }
 ]

@@ -1,9 +1,11 @@
-//! The AI tab, v1 (`docs/design/panel-redesign.md`, B3): the agents already working on the canvas,
-//! not a chat. The connection and the command that connects an agent; the activity feed (Port 3's
-//! change log), where an entry selects its layers and an agent's latest change can be undone; the
-//! design lint's findings (Port 6) grouped by rule with counts; and locking the selection, which
-//! agents can't change. Every row and button runs a command (`ai.*`, `object.toggleLock`), and
-//! everything shown is what those commands return to an agent too. No chat, keys or providers.
+//! The agents' review (`docs/design/panel-redesign.md`, B3): the activity feed (Port 3's change
+//! log), where an entry selects its layers and an agent's latest change can be undone; the design
+//! lint's findings (Port 6) grouped by rule with counts; and locking the selection, which agents
+//! can't change. Every row and button runs a command (`ai.*`, `object.toggleLock`), and everything
+//! shown is what those commands return to an agent too.
+//!
+//! **Since Fix T4** the AI tab is a chat ([`panel`], `docs/design/ai-panel.md`): these sections are
+//! at the end of the Inspect tab ([`review`]), and the connections are in Settings ▸ Agents.
 
 use egui::{Align2, CornerRadius, Id, Rect, Sense, Ui, pos2, vec2};
 use figcraft_engine::cmd::ai;
@@ -15,14 +17,23 @@ use crate::theme::{Tokens, regular, semibold};
 use crate::widgets::{self, PAD};
 use crate::{FigApp, a11y};
 
+#[path = "ai_icons.rs"]
+pub(crate) mod icons;
+#[path = "ai_panel.rs"]
+pub(crate) mod panel;
+
 /// How many of the newest changes the feed lists.
 const FEED: usize = 30;
 /// How many findings of a rule show when it's opened.
 const PER_RULE: usize = 8;
 
+/// The AI tab: the chat panel (Fix T4).
 pub fn tab(app: &mut FigApp, ui: &mut Ui) {
-    connection(app, ui);
-    crate::follow_agent::ai_section(app, ui);
+    panel::show(app, ui);
+}
+
+/// The agents' review, at the end of the Inspect tab (Fix T4).
+pub fn review(app: &mut FigApp, ui: &mut Ui) {
     widgets::separator(ui);
     activity(app, ui);
     widgets::separator(ui);
@@ -37,64 +48,6 @@ pub fn tab(app: &mut FigApp, ui: &mut Ui) {
 /// one an agent gets.
 fn read(app: &mut FigApp, cmd: &str, p: Value) -> Value {
     figcraft_engine::find_command(cmd).and_then(|c| (c.run)(&mut app.session, &p).ok()).unwrap_or(Value::Null)
-}
-
-/// Who is connected (any MCP client, by name) and the connect flows (Settings ▸ AI & agents shows
-/// it too).
-pub(crate) fn connection(app: &mut FigApp, ui: &mut Ui) {
-    let t = Tokens::get(ui.ctx());
-    widgets::section_header(ui, tr("Agents"), &[], false);
-    let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs()).ok();
-    let st = figcraft_engine::cmd::mcp::status(&app.session, now);
-    let state = st["state"].as_str().unwrap_or("stopped");
-    let (label, color) = match state {
-        "connected" => (tr("Connected"), t.success),
-        "not connected" => (tr("Not connected"), t.text_secondary),
-        _ => (tr("Server stopped"), t.danger),
-    };
-    crate::right::row(ui, 28.0, |ui| {
-        let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
-        ui.painter().circle_filled(dot.center(), 4.0, color);
-        // Every client connected now, by the name a person knows it by (Stage J).
-        let names: Vec<String> = st["clients"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .map(|c| c["display"].as_str().map(str::to_string).unwrap_or_else(|| tr("an agent").to_string()))
-            .collect();
-        let client = if names.is_empty() { String::new() } else { format!(" · {}", names.join(", ")) };
-        let resp = ui.label(egui::RichText::new(format!("{label}{client}")).color(t.text).font(regular(12.0)));
-        a11y::status(&resp, label, &trf("The MCP endpoint is {state}", &[("state", &label)]));
-        if state == "stopped" && widgets::button(ui, tr("Restart"), false, true).clicked() {
-            app.run("mcp.restart-server", json!({}));
-        }
-    });
-    // Who is working now (Stage I.1's working state), on its own line. Plain text: the working
-    // indicator's AccessKit node is the one live status, so it isn't announced twice.
-    if let Some(text) = crate::follow_agent::working_text(app) {
-        crate::right::row(ui, 22.0, |ui| {
-            ui.add(egui::Label::new(egui::RichText::new(&text).color(t.text).font(regular(11.0))).truncate()).on_hover_text(&text);
-        });
-    }
-    // The grace period ended before an agent's next step (Fix Q2): once per run.
-    crate::follow_agent::grace_hint::row(app, ui);
-    crate::mcp_registration::row(app, ui);
-    if app.ui.connect.open {
-        crate::connect_flow::panel(app, ui);
-    } else if state != "connected" {
-        widgets::note(
-            ui,
-            tr("Any MCP client can see and edit this canvas through Scrim: connect it once, and every session of it can use Scrim."),
-            t.text_secondary,
-        );
-        crate::right::row(ui, 32.0, |ui| {
-            if widgets::button(ui, tr("Connect Claude Code"), true, true).clicked() {
-                app.run("mcp.connect-claude-code", json!({}));
-            }
-        });
-    }
-    crate::desktop_flow::section(app, ui);
-    crate::connect_flow::agent_clients_ui::section(app, ui);
 }
 
 fn activity(app: &mut FigApp, ui: &mut Ui) {

@@ -185,6 +185,10 @@ fn reveal(path: &Path) -> std::io::Result<()> {
 
 /// The preferences' file in the config folder.
 const STATE: &str = "state.json";
+/// The AI panel's conversations (Fix T4), beside the settings; owner-only, like them.
+const CONVERSATIONS: &str = "conversations.json";
+/// The most of it read back.
+const CONVERSATIONS_MAX: u64 = 16 << 20;
 
 /// Everything quitting keeps, all done when it returns (macOS then ends the process): the
 /// preferences in `dir`, this run's recovery copies ([`Recovery::quit`](crate::recovery::Recovery::quit))
@@ -382,6 +386,23 @@ impl Services for Desktop {
     fn save_prefs(&mut self, prefs: &Prefs) {
         if let Some(dir) = &self.dir {
             write_prefs(dir, prefs);
+        }
+    }
+    fn load_conversations(&mut self) -> Option<String> {
+        use std::io::Read;
+        let f = std::fs::File::open(self.dir.as_ref()?.join(CONVERSATIONS)).ok()?;
+        let mut s = String::new();
+        f.take(CONVERSATIONS_MAX).read_to_string(&mut s).ok()?;
+        Some(s)
+    }
+    fn save_conversations(&mut self, json: &str) {
+        let Some(dir) = &self.dir else { return };
+        let tmp = dir.join("conversations.json.tmp");
+        let written = std::fs::create_dir_all(dir)
+            .and_then(|()| write_private(&tmp, json.as_bytes()))
+            .and_then(|()| std::fs::rename(&tmp, dir.join(CONVERSATIONS)));
+        if let Err(e) = written {
+            log::warn!("conversations: couldn't keep them in {}: {e}", dir.display());
         }
     }
     fn emergency_save(&mut self, session: &Session) {

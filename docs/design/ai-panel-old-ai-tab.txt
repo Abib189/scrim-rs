@@ -1,0 +1,71 @@
+# The old AI tab (before Fix T4), every labelled AccessKit node inside its pane: captured at 43aace8
+# with the endpoint up, Claude Code installed and Connect other agents › More opened.
+# Fix T4 moves each row under "agents" to Settings > Agents (ai_panel_tests.rs checks they are there),
+# the rows under "inspect" to the Inspect tab; "composer" stays in the AI panel; "chrome" is the
+# panel around the tab, not the tab.
+
+[agents]
+Button	Connect
+Button	Connect Claude Code
+Button	Connect Claude Desktop
+Button	Fewer
+Button	More (14)
+Button	Other agent
+Label	Any MCP client can see and edit this canvas through Scrim: connect it once, and every session of it can use Scrim.
+Label	Let Claude Desktop use this canvas: Scrim adds itself to Claude Desktop's configuration, after you confirm.
+Label	Not checked · Registered live, 21 Oct
+Label	Not checked · Registration from its docs, 21 Oct
+Label	Tools not yet used live
+Status	Not checked
+Status	Not configured
+Status	Not connected
+TextRun	Amp
+TextRun	Cline
+TextRun	Codex
+TextRun	Continue
+TextRun	Cursor
+TextRun	Devin
+TextRun	Gemini CLI
+TextRun	Goose
+TextRun	Grok
+TextRun	LM Studio
+TextRun	Not checked · Registered live, 21 Oct
+TextRun	Not configured
+TextRun	Not connected
+TextRun	OpenCode
+TextRun	Tools not yet used live
+TextRun	VS Code
+TextRun	Windsurf
+TextRun	Zed
+
+[inspect]
+CheckBox	Keep agents off the selection
+Label	Agents can't change a locked layer or anything inside it. Your own edits aren't affected.
+Label	No changes yet. Edits by you and by agents appear here, newest first.
+Label	No findings: the design lint has nothing to say about this file.
+Label	Select layers to lock them.
+TextRun	Select layers to lock them.
+
+[composer]
+Button	Agent: Claude Code
+Button	Send
+Label	Describe a change
+Label	Type what to change
+TextInput	Describe a change
+TextRun	Describe a change
+TextRun	Type what to change
+
+[chrome]
+Button	Animate mode
+Button	Design mode
+Button	People in this file
+Button	Present
+Button	Present or preview
+Button	Share: live session, export
+Button	Toggle light/dark theme
+ComboBox	Zoom
+Pane	AI
+Tab	AI
+Tab	Code
+Tab	Design
+Tab	Prototype

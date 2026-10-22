@@ -60,14 +60,17 @@ fn harness(claude: bool, answers: Vec<ProgramOutput>) -> (Harness, Arc<Mutex<Scr
     let script = Arc::new(Mutex::new(Script { claude, answers: answers.into(), ..Default::default() }));
     h.app.services = Box::new(Platform(script.clone()));
     h.app.session.agents.mcp.port = Some(7601);
-    h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
+    // The connections are in Settings ▸ Agents since Fix T4.
+    h.app.session.execute("settings.open", &serde_json::json!({"section": "ai"})).unwrap();
+    h.app.handle_ui_requests();
     h.app.handle_ui_requests();
     h.frames(3);
     (h, script)
 }
 
 fn click(h: &mut Harness, text: &str) {
-    let shapes = h.frames(2);
+    // Scrolled into view in Settings ▸ Agents (Fix T4).
+    let shapes = crate::live_tests::scroll_settings_to(h, text);
     h.click(text_center(&shapes, text));
     h.frames(3);
 }

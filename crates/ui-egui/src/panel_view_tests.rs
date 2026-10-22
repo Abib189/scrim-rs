@@ -28,7 +28,10 @@ fn clicks_switch_tabs_and_modes_and_never_touch_the_document() {
     h.click(text_center(&shapes, "AI"));
     let shapes = h.frames(2);
     assert_eq!(h.app.ui.right_tab, RightTab::Ai);
-    assert!(has_text(&shapes, "Agents") && has_text(&shapes, "Activity"), "the AI tab's sections");
+    // A chat since Fix T4: its header and empty state (the connections are in Settings ▸ Agents, the
+    // activity and lint at the Inspect tab's end).
+    assert!(has_text(&shapes, "New chat") && has_text(&shapes, "Describe what you want to create or change."), "the AI panel");
+    assert!(!has_text(&shapes, "Connect Claude Code") && !has_text(&shapes, "Activity"), "nothing else");
     // Animate: a placeholder, without the tabs; back to Design comes back to the AI tab.
     h.click(text_center(&shapes, "Animate"));
     let shapes = h.frames(2);

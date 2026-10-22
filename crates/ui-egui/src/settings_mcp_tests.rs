@@ -1,4 +1,4 @@
-//! Settings ▸ AI & agents, MCP and Tool access (C3c): the controls run their commands, the counts
+//! Settings ▸ Agents, MCP and Tool access (C3c): the controls run their commands, the counts
 //! follow, and the connect flow is the AI tab's.
 
 use egui::accesskit::{Node, Role, Toggled};
@@ -49,7 +49,7 @@ fn at(section: &str) -> Ui {
 fn the_rail_lists_the_built_sections() {
     let mut u = at("general");
     let nodes = tree(&mut u);
-    for s in ["General", "Toolbar", "AI & agents", "MCP", "Tool access"] {
+    for s in ["General", "Toolbar", "Agents", "MCP", "Tool access"] {
         find(&nodes, Role::Tab, s);
     }
 }
@@ -223,7 +223,7 @@ fn tab_stays_inside_settings() {
     u.app.ui.preferences = true;
     u.frame(vec![]);
     let inside: Vec<String> =
-        ["General", "Toolbar", "AI & agents", "MCP", "Tool access", "Privacy", "Diagnostics", "Done"].iter().map(|s| s.to_string()).collect();
+        ["General", "Toolbar", "Agents", "MCP", "Tool access", "Privacy", "Diagnostics", "Done"].iter().map(|s| s.to_string()).collect();
     let mut seen = Vec::new();
     for _ in 0..40 {
         u.frame(vec![

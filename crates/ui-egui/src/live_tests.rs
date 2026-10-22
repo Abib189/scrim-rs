@@ -176,6 +176,49 @@ pub(crate) fn texts(shapes: &[Shape]) -> Vec<(String, Pos2, egui::Vec2)> {
         .collect()
 }
 
+/// Settings is open: scroll its pane until `s` is in view (going down: near the pane's top, so what
+/// opens below it has room; then, if the page ends first, back up), and what was drawn then.
+/// Without Settings, the frames as they are. (Fix T4: Settings ▸ Agents holds the AI tab's
+/// connections, on a longer page.)
+pub(crate) fn scroll_settings_to(h: &mut Harness, s: &str) -> Vec<Shape> {
+    let mut shapes = h.frames(2);
+    if !has_text(&shapes, "Done") || !has_text(&shapes, "General") {
+        return shapes;
+    }
+    for down in [true, false] {
+        let mut last = None;
+        for _ in 0..60 {
+            // The pane: from the rail's first row to above the footer's Done (labels outside it aren't
+            // drawn; buttons are, clipped).
+            let (top, bottom) = (text_center(&shapes, "General").y, text_center(&shapes, "Done").y - 20.0);
+            let at = texts(&shapes).into_iter().find(|(t, p, size)| t == s && p.y >= top - 10.0 && p.y + size.y <= bottom).map(|(_, p, _)| p.y);
+            if at.is_some_and(|y| !down || y <= top + 160.0) {
+                return shapes;
+            }
+            let pointer = text_center(&shapes, "Done") + vec2(-120.0, -220.0);
+            h.frame(vec![Event::PointerMoved(pointer)]);
+            h.frame(vec![Event::MouseWheel {
+                unit: egui::MouseWheelUnit::Point,
+                delta: vec2(0.0, if down { -90.0 } else { 90.0 }),
+                phase: egui::TouchPhase::Move,
+                modifiers: egui::Modifiers::NONE,
+            }]);
+            shapes = h.frames(3);
+            // The page doesn't move any more: its end.
+            let print: f32 = texts(&shapes).iter().map(|(_, p, _)| p.y).sum();
+            if last == Some(print) {
+                // Going down, the text may be in view but not near the top: take it.
+                if down && texts(&shapes).iter().any(|(t, p, size)| t == s && p.y >= top - 10.0 && p.y + size.y <= bottom) {
+                    return shapes;
+                }
+                break;
+            }
+            last = Some(print);
+        }
+    }
+    shapes
+}
+
 pub(crate) fn has_text(shapes: &[Shape], s: &str) -> bool {
     texts(shapes).iter().any(|(t, _, _)| t == s)
 }

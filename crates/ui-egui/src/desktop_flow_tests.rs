@@ -73,14 +73,17 @@ fn harness_with(path: &Path, npx: bool, bridge: Option<&str>) -> (Harness, Arc<M
     h.app.session.agents.mcp.desktop_config = Some(path.to_path_buf());
     // The composer pinned at the tab's bottom covers the rows these tests click; it has its own tests (R5).
     h.app.session.prefs.settings.describe_change = false;
-    h.app.session.execute("panel.tab.ai", &json!({})).unwrap();
+    // The connections are in Settings ▸ Agents since Fix T4.
+    h.app.session.execute("settings.open", &serde_json::json!({"section": "ai"})).unwrap();
+    h.app.handle_ui_requests();
     h.app.handle_ui_requests();
     h.frames(3);
     (h, script)
 }
 
 fn click(h: &mut Harness, text: &str) {
-    let shapes = h.frames(2);
+    // Scrolled into view in Settings ▸ Agents (Fix T4).
+    let shapes = crate::live_tests::scroll_settings_to(h, text);
     h.click(text_center(&shapes, text));
     h.frames(3);
 }
@@ -134,7 +137,10 @@ fn connect_shows_the_file_and_entry_and_writes_only_after_one_confirmation() {
         Some((Ok("Scrim was added to Claude Desktop. Quit Claude Desktop completely and open it again to use it.".into()), "configured".into())),
         "the restart is the person's"
     );
-    assert!(has_text(&h.frames(3), "Configured · waits for Scrim to start"), "read back from the file");
+    assert!(
+        has_text(&crate::live_tests::scroll_settings_to(&mut h, "Configured · waits for Scrim to start"), "Configured · waits for Scrim to start"),
+        "read back from the file"
+    );
     assert!(backups(&d).is_empty(), "no file before, nothing to back up");
     let _ = std::fs::remove_dir_all(&d);
 }

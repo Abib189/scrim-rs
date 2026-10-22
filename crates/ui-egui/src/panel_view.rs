@@ -180,6 +180,12 @@ fn tab_row(app: &mut FigApp, ui: &mut Ui, t: &Tokens, tabs: Rect) {
     }
 }
 
+/// The Inspect tab: its own content, then the agents' review (Fix T4: the AI tab's until then).
+pub fn inspect_tab(app: &mut FigApp, ui: &mut Ui, inspect: fn(&mut FigApp, &mut Ui)) {
+    inspect(app, ui);
+    ai_tab::review(app, ui);
+}
+
 /// What the panel shows instead of a tab's usual content: Animate's placeholder, and the Code and
 /// AI tabs. `false`: draw the tab as before.
 pub fn content(app: &mut FigApp, ui: &mut Ui) -> bool {

@@ -5,6 +5,9 @@
 //!   [`crate::agents::Agents::chat_child`]) refuses `chat.send`, so runs can't nest.
 //! - **The commands only ask the window** (`Session::request_ui`): the window starts, stops and
 //!   shows the run. They change nothing in the document.
+//! - **The AI panel's own actions** (Fix T4, `docs/design/ai-panel.md`) are commands too: a new chat,
+//!   opening a conversation, its list's scope, adding the selection or an image to the prompt,
+//!   picking the agent, the grace hint's line and its link to the setting.
 
 use serde_json::{Value, json};
 
@@ -19,6 +22,9 @@ pub const CANCEL_REQUEST: &str = "chat.cancel";
 pub const CLEAR_REQUEST: &str = "chat.clear";
 /// An agent was confirmed: the send waiting for it goes ahead.
 pub const ALLOWED_REQUEST: &str = "chat.allowed";
+/// The AI panel's requests (Fix T4): each command's own id.
+pub const PANEL_REQUESTS: [&str; 8] =
+    ["chat.new", "chat.open", "chat.scope", "chat.add-selection", "chat.attach-image", "chat.agent", "chat.dismiss-hint", "chat.grace-setting"];
 /// The longest prompt, in characters.
 pub const MAX_PROMPT: usize = 20_000;
 /// The time limits Settings offers, in minutes.
@@ -28,8 +34,23 @@ pub const DEFAULT_TIME_LIMIT: u32 = 15;
 pub const DEFAULT_AGENT: &str = "claude-code";
 
 /// Every command here: none of them is an agent's to run.
-pub const PERSON_ONLY: [&str; 7] =
-    ["chat.send", "chat.cancel", "chat.clear", "chat.allow-agent", "chat.forget-agents", "pref.describeChange", "pref.chatTimeLimit"];
+pub const PERSON_ONLY: [&str; 15] = [
+    "chat.send",
+    "chat.cancel",
+    "chat.clear",
+    "chat.allow-agent",
+    "chat.forget-agents",
+    "pref.describeChange",
+    "pref.chatTimeLimit",
+    "chat.new",
+    "chat.open",
+    "chat.scope",
+    "chat.add-selection",
+    "chat.attach-image",
+    "chat.agent",
+    "chat.dismiss-hint",
+    "chat.grace-setting",
+];
 
 /// Whether this process was started by an agent run: `SCRIM_CHAT_CHILD` set and not empty (its
 /// value, `std::env::var_os`). The app reads it at startup.
@@ -59,7 +80,7 @@ fn send(s: &mut Session, p: &Value) -> Result<Value> {
         return Err(bad("chat.send", "this Scrim was started by an agent run, so it can't start another"));
     }
     if !s.prefs.settings.describe_change {
-        return Err(bad("chat.send", "Describe a change is off in Settings ▸ AI & agents"));
+        return Err(bad("chat.send", "Describe a change is off in Settings ▸ Agents"));
     }
     let prompt = p.get("prompt").and_then(Value::as_str).map(str::trim).unwrap_or("");
     if prompt.is_empty() {
@@ -69,8 +90,37 @@ fn send(s: &mut Session, p: &Value) -> Result<Value> {
         return Err(bad("chat.send", format!("the prompt is longer than {MAX_PROMPT} characters")));
     }
     let agent = agent_id(p, "chat.send")?;
-    s.request_ui(SEND_REQUEST, json!({"prompt": prompt, "agent": agent.id}));
+    // An image goes as a path, to an agent whose CLI takes one (Fix T4).
+    let image = p.get("image").and_then(Value::as_str).map(str::trim).filter(|x| !x.is_empty());
+    if image.is_some() && agent.image_args.is_empty() {
+        return Err(bad("chat.send", format!("{} takes no image", agent.name)));
+    }
+    let mut data = json!({"prompt": prompt, "agent": agent.id});
+    if let Some(path) = image {
+        data["image"] = json!(path);
+    }
+    s.request_ui(SEND_REQUEST, data);
     Ok(json!({"sent": true, "agent": agent.id}))
+}
+
+/// The AI panel's other actions (Fix T4): the person's, checked, then asked of the window.
+fn panel(s: &mut Session, p: &Value, id: &'static str) -> Result<Value> {
+    person_only(s, id)?;
+    let data = match id {
+        "chat.open" => {
+            let c = p.get("id").and_then(Value::as_str).filter(|x| !x.is_empty()).ok_or_else(|| bad(id, "`id` is required: the conversation"))?;
+            json!({"id": c})
+        }
+        "chat.scope" => match p.get("scope").and_then(Value::as_str) {
+            Some(v @ ("document" | "all")) => json!({"scope": v}),
+            _ => return Err(bad(id, "`scope` is document or all")),
+        },
+        "chat.agent" => json!({"agent": agent_id(p, id)?.id}),
+        "chat.attach-image" => json!({"path": p.get("path").and_then(Value::as_str)}),
+        _ => json!({}),
+    };
+    s.request_ui(id, data.clone());
+    Ok(json!({"ok": true, "request": data}))
 }
 
 fn cancel(s: &mut Session, _: &Value) -> Result<Value> {
@@ -171,6 +221,60 @@ pub fn specs() -> Vec<CommandSpec> {
             describe_change
         ),
         spec!("pref.chatTimeLimit", "Stop an agent run after", "{minutes: 5|15|30|60} → {minutes}  (the person's alone)", false, time_limit),
+        spec!(
+            "chat.new",
+            "New chat",
+            "{} → {ok}  (the AI panel starts an empty chat, saved once something is sent; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.new")
+        ),
+        spec!(
+            "chat.open",
+            "Open a conversation",
+            "{id} → {ok}  (the AI panel shows that conversation; another document's opens read-only; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.open")
+        ),
+        spec!(
+            "chat.scope",
+            "Conversations to list",
+            "{scope: document|all} → {ok}  (the AI panel's list: this document's or every one; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.scope")
+        ),
+        spec!(
+            "chat.add-selection",
+            "Add the selection to the prompt",
+            "{} → {ok}  (the selected layers' names and ids go into the prompt; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.add-selection")
+        ),
+        spec!(
+            "chat.attach-image",
+            "Attach an image",
+            "{path?} → {ok}  (an image file for the agent, as a path, for agents that take one; without `path` a file is chosen; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.attach-image")
+        ),
+        spec!("chat.agent", "Agent to run", "{agent: claude-code|codex} → {ok}  (the composer's agent; the person's alone)", false, |s, p| panel(
+            s,
+            p,
+            "chat.agent"
+        )),
+        spec!(
+            "chat.dismiss-hint",
+            "Dismiss the indicator hint",
+            "{} → {ok}  (hides the AI panel's grace hint line for this run; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.dismiss-hint")
+        ),
+        spec!(
+            "chat.grace-setting",
+            "Open the setting",
+            "{} → {ok}  (Settings ▸ Agents at the working indicator's grace; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.grace-setting")
+        ),
     ]
 }
 

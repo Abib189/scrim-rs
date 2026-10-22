@@ -4,18 +4,15 @@
 //!   setting is shorter than its pauses between steps.
 //! - **Kept:** a `working` event in Settings ▸ Diagnostics, "grace too short: {client} came back
 //!   after {n} s (the setting is {s} s)", fixed words, no content.
-//! - **Said once per run** in the AI tab: "The indicator ended before the agent's next step. A
-//!   longer setting keeps it on.", with a button that opens Settings ▸ General at the setting.
+//! - **Said once per run** as one dismissible line above the AI panel's composer (Fix T4): "The
+//!   indicator ended before the agent's next step. A longer setting keeps it on.", with a link to
+//!   the setting (Settings ▸ Agents, which says it beside the setting for the rest of the run).
 //! - **Nothing changes the setting on its own.**
 
-use egui::Ui;
 use figcraft_engine::settings::diagnostics::Entry;
 use serde_json::json;
 
 use crate::FigApp;
-use crate::i18n::tr;
-use crate::theme::Tokens;
-use crate::widgets;
 
 /// Whether the hint shows, and whether it has this run.
 #[derive(Default, Debug)]
@@ -43,25 +40,11 @@ pub fn note(app: &mut FigApp) {
     }
 }
 
-/// The AI tab's hint row, while it shows: its words and the button to the setting.
-pub fn row(app: &mut FigApp, ui: &mut Ui) {
-    if !app.ui.agent_view.grace_hint.showing {
-        return;
-    }
-    let t = Tokens::get(ui.ctx());
-    widgets::note(ui, tr("The indicator ended before the agent's next step. A longer setting keeps it on."), t.warning);
-    crate::right::row(ui, 32.0, |ui| {
-        if widgets::button(ui, tr("Open the setting"), false, true).clicked() {
-            open_setting(app);
-        }
-    });
-}
-
-/// Settings ▸ General, scrolled to the grace; the hint is done.
+/// Settings ▸ Agents, scrolled to the grace; the hint is done.
 pub fn open_setting(app: &mut FigApp) {
     app.ui.agent_view.grace_hint.showing = false;
     app.ui.agent_view.focus_grace = true;
-    crate::settings_dialog::request(app, "dialog.settings", &json!({"section": "general"}));
+    crate::settings_dialog::request(app, "dialog.settings", &json!({"section": "ai"}));
 }
 
 #[cfg(test)]

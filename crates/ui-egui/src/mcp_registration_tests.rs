@@ -82,7 +82,9 @@ fn a_busy_port_falls_back_the_mismatch_shows_and_reregister_fixes_it() {
 
     // Claude Code still points at the preferred port: the AI tab says so.
     script.lock().unwrap().answers = VecDeque::from([registered(&old)]);
-    h.app.session.execute("panel.tab.ai", &serde_json::json!({})).unwrap();
+    // The connections are in Settings ▸ Agents since Fix T4.
+    h.app.session.execute("settings.open", &serde_json::json!({"section": "ai"})).unwrap();
+    h.app.handle_ui_requests();
     h.app.handle_ui_requests();
     let shapes = h.frames(4);
     assert!(has_text(&shapes, "Registered address is out of date"), "the mismatch is detected");

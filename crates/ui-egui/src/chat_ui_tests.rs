@@ -31,6 +31,9 @@ pub(crate) struct Script {
     pub(crate) stops: usize,
     pub(crate) dropped: usize,
     pub(crate) opened: Vec<String>,
+    /// The conversations as the app kept them (Fix T4), and how many times.
+    pub(crate) conversations: Option<String>,
+    pub(crate) saves: usize,
 }
 
 pub(crate) type Shared = Arc<Mutex<Script>>;
@@ -77,6 +80,14 @@ impl Services for Platform {
     }
     fn open_url(&mut self, url: &str) {
         self.0.lock().unwrap().opened.push(url.to_string());
+    }
+    fn load_conversations(&mut self) -> Option<String> {
+        self.0.lock().unwrap().conversations.clone()
+    }
+    fn save_conversations(&mut self, json: &str) {
+        let mut s = self.0.lock().unwrap();
+        s.conversations = Some(json.to_string());
+        s.saves += 1;
     }
 }
 
@@ -160,12 +171,19 @@ fn send_says_why_it_cant_go() {
 }
 
 #[test]
-fn with_no_agent_installed_it_says_so_with_the_install_docs() {
+fn with_no_agent_installed_it_says_so_with_a_link_to_settings_agents() {
+    // Fix T4: one line and a link to Settings ▸ Agents, instead of the old list of docs buttons.
     let (mut u, script) = window();
     script.lock().unwrap().claude = None;
     u.app.ui.agent_view.chat = Default::default();
     let n = names(&mut u);
-    assert!(n.iter().any(|(_, l)| l == "Claude Code docs") && n.iter().any(|(_, l)| l == "Codex docs"), "{n:?}");
+    assert!(n.iter().any(|(_, l)| l == "Settings ▸ Agents"), "{n:?}");
+    assert!(!n.iter().any(|(_, l)| l.ends_with(" docs")), "no docs buttons: {n:?}");
+    let line = crate::follow_agent::inspect(&u.app)["aiPanel"]["composer"]["missingCli"].clone();
+    assert_eq!(line, "No agent found on this computer: install Claude Code or Codex and sign in.");
+    crate::layers_header::tests::click_named(&mut u, "Settings ▸ Agents");
+    u.app.handle_ui_requests();
+    assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai", "the link opens Settings ▸ Agents");
 }
 
 #[test]
@@ -321,7 +339,7 @@ fn each_failure_is_said_in_plain_words() {
         ),
         (
             vec![AgentRunEvent::Ended { end: AgentEnd::TimedOut, stderr: vec![], secs: 900.0 }],
-            "Stopped after 15 min, the time limit in Settings ▸ AI & agents.",
+            "Stopped after 15 min, the time limit in Settings ▸ Agents.",
         ),
         (
             vec![line_ev(r#"{"type":"system","subtype":"init","mcp_servers":[{"name":"scrim","status":"failed"}]}"#), end(1, 8.0, "")],

@@ -1,5 +1,5 @@
 //! Connect Claude Code (`docs/design/settings-and-connect.md`, C2): one implementation, shown in the
-//! AI tab and in Settings ▸ AI & agents and ▸ MCP.
+//! Settings ▸ Agents and ▸ MCP (the AI tab's until Fix T4).
 //!
 //! The flow:
 //! 1. **The command.** "Connect Claude Code" (`mcp.connect-claude-code`) shows the exact command:

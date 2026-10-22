@@ -303,3 +303,14 @@ The record is `docs/scrim-ports/chat/README.md`. In short:
   - it took 7 s and reported 6 tokens in, 294 out and $0.15.
   - The log is `docs/scrim-ports/chat/logs/real-claude-s1.json`.
 - **Tests:** `headless_tests.rs` (the environment's keys, in order, and unset ones left out), `agent_run.rs` (the child sees them, and nothing else), `chat_ui_tests.rs` (the composer passes them).
+
+
+## Fix T4: the composer in a chat-first AI panel (22 Oct 2026)
+
+The AI tab is now a chat (`docs/design/ai-panel.md`): a header (the conversation, Follow agents, New chat), the transcript, and this composer pinned below.
+- **The field** reads "Describe a change…".
+- **The row under it:** the selection, an image (only for agents that take one: Codex's `--image`), the agent, the settings gear, and Send.
+- **Unchanged** from R5 and S1: the run, its commands (the person's alone), the first-use dialog, no keys, `USER` and `LOGNAME`, the time cap, ⌘↩ and Esc.
+- **Two readings of this page change:**
+  - **The transcript is kept** with its conversation, on this computer by document. Reading 8 had it go with the window.
+  - **Settings ▸ AI & agents is now Settings ▸ Agents.**

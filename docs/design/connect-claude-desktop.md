@@ -201,3 +201,8 @@ Captures and the bridge check: `docs/scrim-ports/settings/f2/README.md`.
 **Not verified:**
 - Claude Desktop itself across a restart. The stub stands in for it, and Desktop's handling of `list_changed` is its own.
 - A crash: the note stays behind with a dead pid, and the next request finds nothing listening.
+
+
+## Fix T4: where Claude Desktop's block lives now (22 Oct 2026)
+
+Register, Re-register and the block's status left the AI tab for **Settings ▸ Agents**, with the same commands (`mcp.connect-claude-desktop`, `mcp.write-claude-desktop`). They are also still on Settings ▸ MCP. The AI tab is a chat (`docs/design/ai-panel.md`).

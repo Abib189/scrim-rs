@@ -80,9 +80,19 @@ fn every_place_names_the_client_and_behaves_the_same_for_each() {
         let out = u.frame_output(vec![]);
         let nodes: Vec<egui::accesskit::Node> = out.platform_output.accesskit_update.expect("a tree").nodes.into_iter().map(|(_, n)| n).collect();
         assert_eq!(nodes.iter().filter(|n| n.label() == Some(working.as_str())).count(), 1, "{raw:?}: one polite status");
-        let seen = texts(&mut u);
+        // The connection's row: in Settings ▸ Agents since Fix T4.
+        u.app.run("settings.open", json!({"section": "agents"}));
+        u.app.handle_ui_requests();
+        frames(&mut u, 3);
+        let mut seen = texts(&mut u);
         let connected = format!("Connected · {mid}");
         assert!(seen.contains(&connected), "{raw:?}: {connected:?} in {seen:?}");
+        u.app.ui.preferences = false;
+        // The Activity row: at the Inspect tab's end since Fix T4.
+        u.app.run("view.devMode", json!({}));
+        u.app.handle_ui_requests();
+        frames(&mut u, 3);
+        seen.extend(texts(&mut u));
         let row = format!("{start}: Create frame");
         let row = if raw.is_empty() { "Agent (mcp (http)): Create frame".to_string() } else { row };
         assert!(seen.contains(&row), "{raw:?}: the Activity row {row:?}");

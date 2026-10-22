@@ -353,3 +353,8 @@ A client is a **profile**: one entry in `crates/engine/src/cmd/agent_clients/cli
 
 - **The panel** shows both, in plain words, under each client: "Not configured · Registered live, 21 Oct", then "Tools not yet used live". Claude Code and Claude Desktop keep their own sections, which don't show the labels; `mcp.agent-clients` and `mcp.client-status` return both for every client.
 - **The test:** `agent_clients_tests.rs` › `every_profile_is_well_formed_and_labelled_honestly` passes a level of `verified-live` only when its evidence file exists in the repository and names the client and the date. Only these three clients may claim a live run.
+
+
+## Fix T4: where Connect lives now (22 Oct 2026)
+
+Every client's row, its status, registration date, tool-use line and Connect left the AI tab for **Settings ▸ Agents** (`settings_agents.rs`), with the same commands and the same behaviour. They are also still on Settings ▸ MCP. The AI tab is a chat (`docs/design/ai-panel.md`).

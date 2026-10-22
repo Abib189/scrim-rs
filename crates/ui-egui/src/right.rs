@@ -135,7 +135,7 @@ pub fn right_panel(app: &mut FigApp, ui: &mut Ui) {
             RightTab::Design if app.session.tool.tool == figcraft_engine::ToolId::Frame => crate::frame_presets::panel(app, ui),
             RightTab::Design => design(app, ui),
             RightTab::Prototype => crate::proto_panel::prototype(app, ui),
-            RightTab::Inspect => inspect(app, ui),
+            RightTab::Inspect => crate::panel_view::inspect_tab(app, ui, inspect),
             RightTab::Code | RightTab::Ai => {}
         }
         ui.add_space(80.0);

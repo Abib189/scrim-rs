@@ -333,7 +333,7 @@ fn the_systems_reduced_motion_is_a_jump_no_entrance_and_the_static_row() {
 /// Paused, the AI tab's Resume sits inside the panel, also when the tab scrolls (its scrollbar
 /// takes width): the switch leaves it room.
 #[test]
-fn resume_stays_inside_the_ai_tab_when_it_scrolls() {
+fn the_follow_button_stays_inside_the_ai_panel() {
     let (mut h, _) = crate::live_tests::Harness::new();
     h.app.session.agents.mcp.port = Some(7601);
     h.app.session.agents.mcp.clients.push(("codex-mcp-client".into(), "1".into(), 0));
@@ -353,9 +353,11 @@ fn resume_stays_inside_the_ai_tab_when_it_scrolls() {
     h.app.run("frame.create", json!({"x": 400, "y": 0, "width": 100, "height": 100, "name": "Mine"}));
     h.frames(30);
     assert_eq!(figcraft_engine::cmd::camera::follow_state(&h.app.session), "paused");
-    let shapes = h.frames(2);
-    let (_, p, s) = crate::live_tests::texts(&shapes).into_iter().find(|(t, _, _)| t == "Resume").expect("Resume");
+    h.frames(2);
+    // The header's Follow agents button (Fix T4: the AI tab's Resume before), paused, inside the window.
+    let header = crate::follow_agent::inspect(&h.app)["aiPanel"]["header"].clone();
+    assert_eq!(header["follow"], "paused");
     let right = 1440.0; // The harness window's width.
-
-    assert!(p.x + s.x <= right - 4.0, "Resume ends at {} of {right}", p.x + s.x);
+    let x1 = header["followRect"][2].as_f64().expect("drawn");
+    assert!(x1 <= right - 4.0, "the button ends at {x1} of {right}");
 }
