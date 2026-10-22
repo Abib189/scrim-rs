@@ -266,7 +266,75 @@ fn the_row_stays_in_view_when_the_artboards_corner_is_off_screen() {
     assert_eq!(room, 1192.0 - 700.0);
     let (cols, row) = super::place(corner, room, &[]).expect("drawn");
     assert!(cols > 0 && canvas.contains_rect(row), "{row:?}");
-    // Wholly off the canvas: hidden.
+    // Wholly off the canvas (Fix U2): held at the nearest edge, one group wide, and not "in view".
     let away = egui::Rect::from_min_max(egui::pos2(1300.0, 100.0), egui::pos2(1500.0, 300.0));
-    assert_eq!(super::anchor(away, canvas), None);
+    assert_eq!(super::anchor(away, canvas), Some((egui::pos2(1192.0, 100.0), width(MIN_COLUMNS))));
+    assert!(!super::shows(away, canvas) && super::shows(inside, canvas));
+    let below_left = egui::Rect::from_min_max(egui::pos2(-900.0, 1000.0), egui::pos2(-500.0, 1300.0));
+    let (corner, room) = super::anchor(below_left, canvas).expect("held at the corner");
+    let (_, row) = super::place(corner, room, &[]).expect("drawn");
+    assert!(canvas.contains_rect(row) && (row.min.x - 308.0).abs() < 1e-3 && (row.max.y - 892.0).abs() < 1e-3, "{row:?}");
+    // A narrow artboard still hides it, on screen or off.
+    let narrow = egui::Rect::from_min_max(egui::pos2(1300.0, 100.0), egui::pos2(1310.0, 300.0));
+    assert!(super::anchor(narrow, canvas).is_some_and(|(c, room)| super::place(c, room, &[]).is_none()));
+}
+
+/// Fix U2: following flies 3,000 units from one artboard to the next, so for part of the flight
+/// neither artboard is on screen. The row is drawn in every frame of it, inside the canvas, held to
+/// the nearest edge while its artboard's corner is off screen, and it never jumps: each frame it
+/// moves at most as far as the camera did plus one frame of the glide.
+#[test]
+fn the_row_is_drawn_in_every_frame_of_a_3000_unit_flight_and_never_jumps() {
+    let (mut u, home) = calm();
+    agent(&mut u, "shape.rectangle", json!({"x": 20, "y": 20, "width": 10, "height": 10, "parent": home}));
+    frames(&mut u, 30);
+    assert!(u.app.ui.agent_view.indicator.drawn.get().is_some(), "drawn on Home");
+    let far = id(&agent(&mut u, "frame.create", json!({"x": 3000, "y": 0, "width": 640, "height": 480, "name": "Far"})));
+    agent(&mut u, "shape.rectangle", json!({"x": 20, "y": 20, "width": 60, "height": 60, "parent": far}));
+    let canvas = u.app.canvas.rect;
+    // One frame of the glide at its fastest (smoothstep: 1.5 × the mean) across the whole canvas.
+    let glide = canvas.size().length() * 1.5 / (super::GLIDE as f32 * 60.0);
+    let (mut flying, mut last) = (0, None::<(Rect, f64)>);
+    for f in 0..120 {
+        u.frame(vec![]);
+        flying += usize::from(u.app.ui.camera.flying());
+        let (row, cols) = u.app.ui.agent_view.indicator.drawn.get().unwrap_or_else(|| panic!("frame {f}: no dots"));
+        assert!(cols >= MIN_COLUMNS && canvas.contains_rect(row), "frame {f}: {cols} columns at {row:?}, canvas {canvas:?}");
+        let v = &u.app.session.ds().unwrap().view;
+        let cx = v.cx * v.zoom;
+        if let Some((prev, pcx)) = last {
+            let step = (row.max - prev.max).length();
+            let camera = (cx - pcx).abs() as f32;
+            assert!(step <= camera + glide + 0.5, "frame {f}: the row jumped {step} px (the camera moved {camera} px)");
+        }
+        last = Some((row, cx));
+    }
+    assert!(flying >= 20, "a flight of at least 20 frames: {flying}");
+    // Landed: on Far's top-right corner, as before.
+    let b = u.app.session.doc().unwrap().world_bounds(far).unwrap();
+    let art = Rect::from_two_pos(u.app.to_screen(b.x0, b.y0), u.app.to_screen(b.x1, b.y1));
+    let (row, _) = u.app.ui.agent_view.indicator.drawn.get().unwrap();
+    assert!((row.max.x - art.max.x).abs() < 0.5 && (art.min.y - row.max.y - super::ABOVE).abs() < 0.5, "{row:?} on {art:?}");
+}
+
+/// Fix U2 with reduced motion: the camera jumps, and so does the row, straight to its new place, and
+/// it is drawn in every frame.
+#[test]
+fn with_reduced_motion_the_row_is_drawn_throughout_and_moves_at_once() {
+    let (mut u, home) = calm();
+    u.app.session.prefs.settings.motion = "off".into();
+    agent(&mut u, "shape.rectangle", json!({"x": 20, "y": 20, "width": 10, "height": 10, "parent": home}));
+    frames(&mut u, 30);
+    let far = id(&agent(&mut u, "frame.create", json!({"x": 3000, "y": 0, "width": 640, "height": 480, "name": "Far"})));
+    agent(&mut u, "shape.rectangle", json!({"x": 20, "y": 20, "width": 60, "height": 60, "parent": far}));
+    for f in 0..60 {
+        u.frame(vec![]);
+        assert!(!u.app.ui.camera.flying(), "frame {f}: no flight");
+        let (row, _) = u.app.ui.agent_view.indicator.drawn.get().unwrap_or_else(|| panic!("frame {f}: no dots"));
+        let b = u.app.session.doc().unwrap().world_bounds(u.app.ui.agent_view.indicator.artboard().unwrap()).unwrap();
+        let art = Rect::from_two_pos(u.app.to_screen(b.x0, b.y0), u.app.to_screen(b.x1, b.y1));
+        let corner = super::anchor(art, u.app.canvas.rect).unwrap().0;
+        assert!((row.max.x - corner.x).abs() < 0.5, "frame {f}: at its place, no glide: {row:?} for {corner:?}");
+    }
+    assert_eq!(u.app.ui.agent_view.indicator.artboard(), Some(far));
 }

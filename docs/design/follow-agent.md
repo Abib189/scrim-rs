@@ -414,3 +414,24 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
 - `reveal_tests.rs` › `the_reveal_and_the_working_indicator_run_in_the_same_frames`: once entering, the reveal and the dots share at least 90% of the frames (50 of 50 now; 22 of 50 with T2 alone).
 - **Mutation check:** with the hold off, the three tests about the new behaviour fail. The paused/off test guards what T3 must not change, so it passes either way.
 - **Retimed:** the reveal tests that time a far batch now count from the release (`until_released`). The long-landing test puts its layer at the canvas's centre, where following doesn't fly.
+
+## Fix U2: the dots stay on through a long flight (22 Oct 2026)
+
+**The evidence:** in Fix T6's live run, 3 of 953 captures had no dots. Each was mid-flight between artboards 3,000 units apart, while neither artboard was on screen: the row hung from its artboard's top-right corner, and T2's pull into the canvas still needed part of the artboard in view.
+
+**What changed** (`working_indicator.rs`):
+- **Held at the nearest edge:** when the artboard's corner is off the canvas, the row hangs from the nearest point inside the canvas, 8 px in (`EDGE`), at least one group wide. The clamp is continuous, so the row slides along the edge with the camera and rides in with the artboard's corner as it arrives.
+- **A glide between artboards:** when the row moves to the agent's next artboard (once that one is in view, or the one shown no longer is), it glides from where it was drawn to its new place over 280 ms (`GLIDE`, smoothstep) instead of jumping across the canvas. With reduced motion it moves at once, as the camera does.
+- **Unchanged:** the row moves to the next artboard by the same rule as before (`shows`, which is T2's "in view"). It is never wider than its artboard, an artboard narrower than one group hides it, labels still push it up or hide it, and the outline is drawn only where the artboard is on screen.
+
+**Tests** (`working_indicator_tests.rs`):
+- `the_row_is_drawn_in_every_frame_of_a_3000_unit_flight_and_never_jumps`: following flies 3,000 units; in all 120 frames the row is drawn, inside the canvas, with at least one group. Each frame it moves no further than the camera did plus one frame of the glide at its fastest. It lands on the new artboard's corner. Without the fix it fails at frame 14 (no dots). Without the glide it fails on a 757 px jump in one frame (the camera moved 155 px).
+- `with_reduced_motion_the_row_is_drawn_throughout_and_moves_at_once`: no flight, the row drawn every frame and always at its place.
+- `the_row_stays_in_view_when_the_artboards_corner_is_off_screen`: an artboard wholly off the canvas, to the right or below-left, now places the row at the nearest edge; a narrow one still hides it.
+
+**Decisions (overrule any):**
+1. **The row can now be detached from its artboard,** held at the canvas's edge while the artboard is off screen. The brief asks for that; until T2 the row was only ever above its artboard.
+2. **An artboard narrower than one group still hides the row,** on screen or off. Following's 10% fit keeps the agent's artboard wide enough, so this doesn't happen during a follow flight.
+3. **The glide only covers a move to another artboard.** On the same artboard the row already follows the camera continuously; a switch between its own place and the row above the labels stays a step, as before.
+
+**Live** (`docs/scrim-ports/follow-agent/u2/`): T6's script again, on the U2 build with scratch settings and the screen unlocked. The dots were drawn in **804 of 804** captures between the first batch and `finish_working` (950 of 953 before), the 17 captured mid-flight included, 4 of them with neither artboard on screen. One `begin`, one `end` at `finish_working`, each batch centred to 0.00 px.

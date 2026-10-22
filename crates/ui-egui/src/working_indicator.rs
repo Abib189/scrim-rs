@@ -9,7 +9,11 @@
 //!   label layout step after the labels (`canvas_labels::draw`): where a title, icon or other label
 //!   is in the way it drops columns from the left; when not even one group fits there, it goes one
 //!   row higher, above the labels (still right-aligned to the artboard); failing that, it hides. It
-//!   is never wider than its artboard, so never detached from it.
+//!   is never wider than its artboard, and an artboard narrower than one group hides it.
+//! - **Off screen** (Fix T2, U2): when the artboard's top-right corner is off the canvas, the row is
+//!   held at the canvas's nearest edge, [`EDGE`] in, at least one group wide, so it stays in view
+//!   for a whole flight between far artboards. When it moves to another artboard it glides there
+//!   from where it was over [`GLIDE`]; with reduced motion it moves at once.
 //! - **The wave:** each dot's opacity and radius follow [`wave`], a cosine seeded per column (a pure
 //!   function of seed, row, column and time; a [`LOOP`] loop). It shows for as long as the working
 //!   state (`working_state`, Stage I.1) says agents work, continuous across the gaps between their
@@ -44,6 +48,8 @@ pub const ABOVE: f32 = 12.0;
 pub const ABOVE_LABELS: f32 = crate::canvas_labels::ROW_TOP + crate::canvas_labels::GAP + 1.0;
 /// Fewer columns than this fit: the row hides.
 pub const MIN_COLUMNS: usize = GROUP;
+/// How long the row glides to its new place when it moves to another artboard (Fix U2).
+pub const GLIDE: f64 = 0.28;
 /// The wave's loop.
 pub const LOOP: f64 = 1.6;
 /// The fades (the working state's).
@@ -63,6 +69,16 @@ pub struct State {
     /// The agent's newest artboard while it is still out of view (the camera on its way): the row
     /// stays on the one shown until this one is in view, so it never blinks out between steps.
     next: Option<(u64, NodeId)>,
+    /// Where the row was drawn last (its artboard, its bottom-right corner) and the glide under way.
+    glide: Cell<Glide>,
+}
+
+/// The row's glide to its new place (Fix U2): the offset from that place it started at, and when.
+#[derive(Clone, Copy, Default)]
+struct Glide {
+    at: Option<(NodeId, Pos2)>,
+    from: egui::Vec2,
+    start: f64,
 }
 
 impl State {
@@ -133,18 +149,47 @@ pub fn place(corner: Pos2, room: f32, taken: &[Rect]) -> Option<(usize, Rect)> {
 /// The space kept between the row and the canvas's edge when the row is pulled in.
 const EDGE: f32 = 8.0;
 
-/// Where the row hangs from on `canvas` for the artboard at `r` (screen), and the artboard's
-/// on-screen width: its top-right corner, pulled inside the canvas when that corner is off screen
-/// (Fix T2: following centres the latest work, which can leave the artboard's corner out of view).
-/// `None` when no part of the artboard is on the canvas.
+/// Where the row hangs from on `canvas` for the artboard at `r` (screen), and the room it has: the
+/// artboard's top-right corner, pulled to the nearest point inside the canvas, [`EDGE`] in, when
+/// that corner is off screen (Fix T2: following centres the latest work, which can leave the corner
+/// out of view; Fix U2: during a long flight neither artboard may be on screen, and the row stays at
+/// the canvas's edge nearest its artboard). The room is what is seen of the artboard left of that
+/// point, at least one group, never more than the artboard's width: a narrow artboard still hides
+/// it. `None` only for a rectangle that isn't finite.
 pub fn anchor(r: Rect, canvas: Rect) -> Option<(Pos2, f32)> {
-    let seen = r.intersect(canvas);
-    if !r.is_finite() || !seen.is_positive() {
+    if !r.is_finite() || !canvas.is_positive() {
         return None;
     }
-    let x = r.max.x.min(canvas.max.x - EDGE);
-    let y = r.min.y.max(canvas.min.y + EDGE + ABOVE + height());
-    Some((pos2(x, y), (x - seen.min.x).max(0.0)))
+    let least = width(MIN_COLUMNS);
+    let x = r.max.x.min(canvas.max.x - EDGE).max(canvas.min.x + EDGE + least);
+    let y = r.min.y.max(canvas.min.y + EDGE + ABOVE + height()).min(canvas.max.y - EDGE + ABOVE);
+    let room = (x - r.min.x.max(canvas.min.x + EDGE)).max(least).min(r.width());
+    Some((pos2(x, y), room))
+}
+
+/// Enough of the artboard at `r` (screen) is on `canvas` for the row's fewest columns at its own
+/// corner: the row moves to the agent's newest artboard once this holds for it, or no longer holds
+/// for the one shown.
+pub fn shows(r: Rect, canvas: Rect) -> bool {
+    let seen = r.intersect(canvas);
+    r.is_finite() && seen.is_positive() && r.max.x.min(canvas.max.x - EDGE) - seen.min.x >= width(MIN_COLUMNS)
+}
+
+/// Where the row is drawn this frame for the place `row` it has on artboard `id`: there, or, just
+/// after it moved to another artboard, on its way there from where it was drawn last, over
+/// [`GLIDE`] (smoothstep), so it never jumps. Reduced motion: there at once.
+fn glide(st: &State, id: NodeId, row: Rect, now: f64, motion: bool) -> Rect {
+    let mut g = st.glide.get();
+    match g.at {
+        Some((was, at)) if was != id && motion => (g.from, g.start) = (at - row.max, now),
+        _ if !motion => g.from = egui::Vec2::ZERO,
+        _ => {}
+    }
+    let k = ((now - g.start) / GLIDE).clamp(0.0, 1.0) as f32;
+    let shown = row.translate(g.from * (1.0 - k * k * (3.0 - 2.0 * k)));
+    g.at = Some((id, shown.max));
+    st.glide.set(g);
+    shown
 }
 
 /// Every frame, before the canvas (after the working state's tick): the agent's latest artboard is
@@ -157,13 +202,13 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let w = &app.ui.agent_view.working;
     let (working, alpha, expiry) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
     let finished = w.finished(now).is_some();
-    // Where the row can be seen: enough of its artboard on the canvas for its fewest columns (it
-    // hangs from the artboard's top-right corner, pulled into the canvas when that is off screen).
+    // Where the artboard can be seen: enough of it on the canvas for the row's fewest columns.
     let in_view = |id: NodeId| {
-        app.session.doc().ok().and_then(|d| d.world_bounds(id)).is_some_and(|b| {
-            let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
-            anchor(r, app.canvas.rect).is_some_and(|(_, room)| room >= width(MIN_COLUMNS))
-        })
+        app.session
+            .doc()
+            .ok()
+            .and_then(|d| d.world_bounds(id))
+            .is_some_and(|b| shows(Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1)), app.canvas.rect))
     };
     let next = match (uid, artboard) {
         (Some(uid), Some(art)) if landed.iter().any(|l| l.agent) => Some((uid, art)),
@@ -199,6 +244,8 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     let st = &app.ui.agent_view.indicator;
     st.drawn.set(None);
     st.outlined.set(None);
+    // Not drawn this frame: the next row starts where it is placed, with no glide.
+    let glided = st.glide.take();
     let Some((uid, id)) = st.on else { return };
     let Ok(ds) = app.session.ds() else { return };
     if ds.uid != uid || doc.page_of(id) != Some(ds.page) {
@@ -209,7 +256,7 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     let a = app.ui.agent_view.working.alpha(now, motion) as f32;
     let Some(b) = doc.world_bounds(id).filter(|_| a > 0.0) else { return };
     let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
-    if !r.is_finite() || !r.intersects(painter.clip_rect().expand(height() + ABOVE)) {
+    if !r.is_finite() {
         return;
     }
     let level = app.ui.agent_view.budget.level;
@@ -217,7 +264,7 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     // The wave runs on the clock, so it carries on unbroken across the gaps between steps.
     let t = now;
     // The outline, unless the person's selection outline and handles are there.
-    if !sel.contains(&id) {
+    if !sel.contains(&id) && r.intersects(painter.clip_rect()) {
         let pulse = if motion && level < 2 { 0.85 + 0.15 * wave(seed, 0, 0, t) as f32 } else { 1.0 };
         painter.rect_stroke(r, 0.0, Stroke::new(2.0, ink::overlay().gamma_multiply(a * pulse)), egui::StrokeKind::Outside);
         st.outlined.set(Some(r));
@@ -227,6 +274,8 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     }
     let Some((corner, room)) = anchor(r, app.canvas.rect) else { return };
     let Some((cols, row)) = place(corner, room, taken) else { return };
+    st.glide.set(glided);
+    let row = glide(st, id, row, now, motion);
     let animated = motion && level < 1;
     let color = ink::overlay();
     for rw in 0..ROWS {
