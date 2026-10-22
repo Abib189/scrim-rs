@@ -124,7 +124,7 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
    - One scoped task per commit; `cargo xtask ci` green before every commit.
    - Never use `--no-verify`, and never push a red tree.
    - Never commit or push on a red CI run, with no exception for docs-only commits. If a flake fails it, rerun until it is green first.
-   - Read the CI result in a separate step from the commit, never chained with it.
+   - Run `cargo xtask ci` in one command, read its result in a separate step, and commit only after a green read. Printing CI and committing in one command is not reading CI.
    - Label any timing measured under load or swap as INVALID.
 9. **Live checks never touch the person's own settings** (Fix Q3).
    - Every live verification run starts the app (and any bridge) with `SCRIM_SETTINGS_DIR` set to a scratch settings folder, and `HOME` set to a scratch folder.
