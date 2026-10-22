@@ -148,7 +148,12 @@ fn the_persons_camera_move_after_an_agents_still_pauses() {
     u.app.run("view.zoomIn", json!({}));
     frames(&mut u, 3);
     assert_eq!(state(&u), "paused", "the person's own move pauses");
-    assert_eq!(pauses(&u), ["following paused: a camera move that wasn't follow's or an agent's"]);
+    assert_eq!(
+        pauses(&u),
+        [
+            "following paused: a camera move that wasn't follow's or an agent's (made by the window outside the canvas: a shortcut, menu, panel, tab or collaborator)"
+        ]
+    );
 }
 
 /// A request other than a command, as the endpoint queues it, answered in the next frame.

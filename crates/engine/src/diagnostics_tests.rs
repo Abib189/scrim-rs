@@ -190,3 +190,22 @@ fn an_agent_runs_lines_name_a_known_agent_how_it_ended_and_nothing_it_said() {
         "only a headless profile's name and the four endings; any other text is dropped"
     );
 }
+
+#[test]
+fn a_pause_for_a_camera_move_names_where_the_move_was_made() {
+    use super::Mover;
+    let mut s = Session::new();
+    let st = &mut s.prefs.settings;
+    for by in [Mover::Sizing, Mover::Window, Mover::Follow] {
+        record(st, NOW, Entry::FollowPaused(Pause::CameraMoved(by)));
+    }
+    let details: Vec<&str> = st.diagnostics.iter().map(|e| e.detail.as_str()).collect();
+    assert_eq!(
+        details,
+        [
+            "following paused: a camera move that wasn't follow's or an agent's (made by the canvas's sizing)",
+            "following paused: a camera move that wasn't follow's or an agent's (made by the window outside the canvas: a shortcut, menu, panel, tab or collaborator)",
+            "following paused: a camera move that wasn't follow's or an agent's (made by following's own move)",
+        ]
+    );
+}

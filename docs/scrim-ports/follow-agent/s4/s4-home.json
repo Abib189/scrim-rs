@@ -1,0 +1,3950 @@
+{
+ "start": "home",
+ "steps": [
+  [
+   0.01,
+   "open_file"
+  ],
+  [
+   4.03,
+   "batch 0 at x 3000"
+  ],
+  [
+   8.06,
+   "batch 1 at x 3700"
+  ],
+  [
+   12.07,
+   "batch 2 at x 4400"
+  ],
+  [
+   16.1,
+   "batch 3 at x 5100"
+  ],
+  [
+   20.1,
+   "batch 4 at x 5800"
+  ],
+  [
+   24.11,
+   "batch 5 at x 6500"
+  ]
+ ],
+ "samples": [
+  {
+   "t": 0.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "An agent is working",
+   "last": {
+    "at": 0.317950875,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 352.0,
+     "cy": 330.0,
+     "document": 1,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.close"
+   }
+  },
+  {
+   "t": 0.17,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 0.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 0.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 0.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 0.81,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 0.97,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.13,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.29,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.45,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.6,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.76,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 1.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.24,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 2.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.7,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 3.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.17,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.34,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.5,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.66,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.82,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 4.98,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.14,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.3,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.46,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.78,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 5.93,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.1,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.26,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.42,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.58,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.74,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 6.9,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.06,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.22,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.53,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.69,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 7.86,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.02,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.19,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.35,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.51,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.67,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.84,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 8.99,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.16,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.48,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.64,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.8,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 9.96,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.12,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.27,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.44,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.61,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.76,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 10.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 11.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.06,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.37,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.7,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 12.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.02,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.2,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.36,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.51,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.67,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.83,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 13.98,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.14,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.3,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.45,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.61,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.77,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 14.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.24,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 15.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.06,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.22,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.37,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.53,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.69,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 16.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.17,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.81,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 17.97,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.13,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.29,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.46,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.77,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 18.93,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.26,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.42,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.58,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 19.9,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.06,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.7,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 20.86,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.02,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.18,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.34,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.5,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.66,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.82,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 21.98,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.15,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.31,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.47,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.78,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 22.94,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.1,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.26,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 23.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.04,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.2,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.36,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.52,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.68,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.83,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 24.99,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.15,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.31,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.47,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.63,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.8,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 25.95,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.11,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.27,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.43,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.6,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.76,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 26.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.08,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.4,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.56,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 27.87,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.03,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.2,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.36,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.51,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.67,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.83,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 28.99,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.15,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.31,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.46,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.78,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 29.94,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 30.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.22,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.53,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.69,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 31.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  },
+  {
+   "t": 32.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.83933475,
+    "by": "an agent's request",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": "file.open"
+   }
+  }
+ ],
+ "cameraLog": [
+  {
+   "at": 0.056867959,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 500.0,
+    "cy": 300.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "mcp.status"
+  },
+  {
+   "at": 0.056867959,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 352.0,
+    "cy": 330.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 0.2545815,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 500.0,
+    "cy": 300.0,
+    "document": 2,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.new"
+  },
+  {
+   "at": 0.2545815,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 232.0,
+    "cy": 260.0,
+    "document": 2,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 0.291107,
+   "by": "following's own move",
+   "count": 1,
+   "to": {
+    "cx": 232.2986472392456,
+    "cy": 260.07110648553464,
+    "document": 2,
+    "page": 1,
+    "zoom": 0.9994887292153887
+   },
+   "what": ""
+  },
+  {
+   "at": 0.317950875,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 352.0,
+    "cy": 330.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.close"
+  },
+  {
+   "at": 1.83933475,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 400.0,
+    "cy": 300.0,
+    "document": 3,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.open"
+  }
+ ],
+ "pausedBy": null,
+ "follow": "following",
+ "diagnostics": []
+}

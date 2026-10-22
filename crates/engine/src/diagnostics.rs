@@ -115,16 +115,51 @@ impl Cause {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Pause {
     PersonEdit,
-    CameraMoved,
+    /// And where the move behind it was made (Fix S4).
+    CameraMoved(Mover),
     CanvasInput,
 }
 
 impl Pause {
+    pub fn text(self) -> String {
+        match self {
+            Pause::PersonEdit => "the person's edit".into(),
+            Pause::CameraMoved(by) => format!("a camera move that wasn't follow's or an agent's (made by {})", by.text()),
+            Pause::CanvasInput => "the person's press, scroll or pinch on the canvas".into(),
+        }
+    }
+}
+
+/// Where a change of the camera was made (Fix S4): the window notes each one as it happens.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Mover {
+    /// An agent's request (MCP or the control channel).
+    Agent,
+    /// A camera flight an agent's request started.
+    AgentFlight,
+    /// Following's own move, or its flight.
+    Follow,
+    /// A camera flight the person started (a Layers click, a zoom command).
+    PersonFlight,
+    /// The person's input on the canvas: a pan, a scroll, a pinch, a tool.
+    Canvas,
+    /// The canvas's size changed, and with it the first fit of a file.
+    Sizing,
+    /// Anywhere else in the window, outside the canvas: a shortcut, a menu, a panel, a tab, a
+    /// collaborator's view.
+    Window,
+}
+
+impl Mover {
     pub fn text(self) -> &'static str {
         match self {
-            Pause::PersonEdit => "the person's edit",
-            Pause::CameraMoved => "a camera move that wasn't follow's or an agent's",
-            Pause::CanvasInput => "the person's press, scroll or pinch on the canvas",
+            Mover::Agent => "an agent's request",
+            Mover::AgentFlight => "an agent's camera flight",
+            Mover::Follow => "following's own move",
+            Mover::PersonFlight => "a camera flight the person started",
+            Mover::Canvas => "the person's input on the canvas",
+            Mover::Sizing => "the canvas's sizing",
+            Mover::Window => "the window outside the canvas: a shortcut, menu, panel, tab or collaborator",
         }
     }
 }

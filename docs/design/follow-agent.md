@@ -326,3 +326,38 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
 **Not verified:** the report's own session. The open-file and page-switch tests pass with or without the change, so they guard the behaviour but don't prove the report's cause.
 
 **Also seen, not changed:** an agent's `file.open` while the person is on Home leaves Home in front, so nothing of the agent's work is shown or followed until the person opens the tab. Whether an agent's open should close Home is the owner's call.
+
+
+## Fix S4: who moved the camera (22 Oct 2026)
+
+**The report:** in real sessions, "following paused: a camera move that wasn't follow's or an agent's" appeared about 25 s after an agent began. The agent had opened a file, then created a batch of layers about 3,000 units away.
+
+**Not reproduced.**
+- **In the window** (`follow_pause_cause_tests.rs`): an agent opens a saved file with the `open_file` tool (`file.open` by its path, then `document.inspect`), then sends six batches 3,000–6,500 units away. Following never paused in any of these ways:
+  - the file in front;
+  - 4 s between calls with no frames, as an idle window draws nothing while the agent thinks;
+  - from Home, with the person opening the agent's tab at the third batch;
+  - the batches answered while the window was minimised or covered (`control::drain_hidden`), then shown;
+  - everything answered hidden, then shown.
+- **Live** (`docs/scrim-ports/follow-agent/s4/`): the debug app on a scratch HOME and settings folder, MCP on 7690. An MCP client named like Claude Desktop's bridge sent the same requests 4 s apart. Neither run paused:
+  - the file in front: 197 samples;
+  - Home in front: 201 samples.
+- **The installed app the reports came from**, `/Applications/Scrim.app` at `d549f3a`, already had R3b. So R3b's fix wasn't enough, or the move came from somewhere these runs don't have: the person's own input, a second window, or a collaborator.
+
+**What changed instead: every camera change is noted where it's made, and a pause names it.**
+- **`camera_log`** (window state only) notes each change of the view (document, page, centre, zoom) with its origin (`diagnostics::Mover`):
+  - an agent's request, with its command or method (`control::handle_agent`);
+  - an agent's flight, following's own move or flight, or a flight the person started (`camera_flight::tick`, `follow_agent::fly`);
+  - the canvas: its sizing when its size changed, else the person's input (after `canvas::show`);
+  - anything else, found where following looks (the start of `before_canvas`): the window outside the canvas, meaning a shortcut, a menu, a panel, a tab or a collaborator's view.
+  - A flight's frames are counted in one entry, and the last 24 entries are kept.
+- **`ui.inspect`** › `agent.cameraLog` lists them (`at`, `by`, `what`, `to`, `count`).
+- **The pause names its move.** Settings ▸ Diagnostics and `pausedBy` now say, for example, "following paused: a camera move that wasn't follow's or an agent's (made by the window outside the canvas: a shortcut, menu, panel, tab or collaborator)". If the report's pause happens again, its line says where the move came from, which these runs couldn't.
+- **Tests:**
+  - `follow_pause_cause_tests.rs` (3). With `mover` forced to always answer the window, the pause test fails.
+  - `diagnostics_tests.rs` › `a_pause_for_a_camera_move_names_where_the_move_was_made`.
+  - `follow_moves_tests.rs`: its existing pause now names the window.
+
+**Not verified:** the owner's own session, and a second window or a collaborator moving the camera during an agent's run.
+
+**Also seen, not changed:** the MCP endpoint takes its roots when it starts. If `~/Documents/Scrim` is made by something else after that, `mcp_ui::ensure_root` finds the folder there and doesn't take the roots again. The agent's file tools are then refused ("no root for it was given") until the app restarts. The live script makes the folder before starting the app.

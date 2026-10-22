@@ -14,9 +14,11 @@
 
 use figcraft_doc::NodeId;
 use figcraft_engine::cmd::camera::reveal;
+use figcraft_engine::settings::diagnostics::Mover;
 use serde_json::{Value, json};
 
 use crate::FigApp;
+use crate::follow_agent::camera_log;
 use crate::i18n::trf;
 
 /// How long a flight lasts, in seconds.
@@ -111,6 +113,8 @@ fn set_view(app: &mut FigApp, uid: u64, v: [f64; 3]) {
 
 /// Every frame, after the canvas: a waiting focus once the canvas has its size, then the flight.
 pub fn tick(app: &mut FigApp, ctx: &egui::Context) {
+    // What the canvas did to the camera this frame (Fix S4).
+    camera_log::after_canvas(app);
     if let Some((uid, ids)) = app.ui.camera.pending.clone()
         && sized(app)
     {
@@ -122,6 +126,8 @@ pub fn tick(app: &mut FigApp, ctx: &egui::Context) {
             ds.view.cx = cx;
             ds.view.cy = cy;
         }
+        let by = if app.ui.camera.pending_agent { Mover::AgentFlight } else { Mover::PersonFlight };
+        camera_log::note(app, by, "");
     }
     let Some(f) = app.ui.camera.flight.clone() else { return };
     let Some(ds) = app.session.docs.iter().find(|d| d.uid == f.uid) else {
@@ -145,6 +151,12 @@ pub fn tick(app: &mut FigApp, ctx: &egui::Context) {
         [f.from[0] + (f.to[0] - f.from[0]) * e, f.from[1] + (f.to[1] - f.from[1]) * e, zoom]
     };
     set_view(app, f.uid, v);
+    let by = match (f.agent, app.ui.agent_view.follow_flying()) {
+        (true, _) => Mover::AgentFlight,
+        (false, true) => Mover::Follow,
+        (false, false) => Mover::PersonFlight,
+    };
+    camera_log::note(app, by, "");
     app.ui.camera.flight = (t < 1.0).then_some(Flight { last: v, start: Some(start), ..f });
     ctx.request_repaint();
 }

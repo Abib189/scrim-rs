@@ -32,6 +32,8 @@ use crate::FigApp;
 use crate::i18n::{tr, trf};
 use crate::theme::{Tokens, regular};
 
+#[path = "camera_log.rs"]
+pub mod camera_log;
 #[path = "chat_ui.rs"]
 pub mod chat_ui;
 #[path = "follow_end.rs"]
@@ -104,6 +106,15 @@ pub struct State {
     pub(crate) awake: bool,
     /// "Describe a change": the composer, its transcript and its run (R5).
     pub chat: chat_ui::State,
+    /// Who moved the camera, change by change (Fix S4).
+    pub cameras: camera_log::Log,
+}
+
+impl State {
+    /// A flight of following's own is in progress (the camera log names its frames, Fix S4).
+    pub(crate) fn follow_flying(&self) -> bool {
+        self.follow.flying
+    }
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -278,6 +289,7 @@ pub fn before_canvas(app: &mut FigApp, ctx: &Context) {
     let now = ctx.input(|i| i.time);
     let gap = app.ui.agent_view.last_frame.replace(now).map_or(0.0, |t| (now - t).max(0.0));
     working_log::frame(app, now);
+    camera_log::before_canvas(app);
     let at = working_log::clock(app, ctx);
     let landed = scan(app);
     // A plugin's edits keep it working too (MCP clients and the control channel are noted per request).
@@ -373,6 +385,7 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
         "workingAlpha": v.working.alpha(now(app), !app.reduce_motion()),
         "finished": finished_text(app),
         "degraded": v.budget.level,
+        "cameraLog": camera_log::inspect(app),
     })
 }
 
@@ -498,7 +511,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let why = if person_edit {
         Some(Pause::PersonEdit)
     } else if moved {
-        Some(Pause::CameraMoved)
+        Some(Pause::CameraMoved(camera_log::mover(app)))
     } else if person_on_canvas(app, ctx) {
         Some(Pause::CanvasInput)
     } else {
@@ -539,6 +552,7 @@ fn fly(app: &mut FigApp, ids: &BTreeSet<NodeId>, now: f64) {
     }
     let target = view_now(app);
     app.handle_ui_requests();
+    camera_log::note(app, figcraft_engine::settings::diagnostics::Mover::Follow, "");
     let f = &mut app.ui.agent_view.follow;
     f.expected = target;
     f.flying = app.ui.camera.flying();
@@ -628,3 +642,6 @@ mod client_names_tests;
 #[cfg(test)]
 #[path = "follow_moves_tests.rs"]
 mod follow_moves_tests;
+#[cfg(test)]
+#[path = "follow_pause_cause_tests.rs"]
+mod follow_pause_cause_tests;

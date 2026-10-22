@@ -306,6 +306,9 @@ fn handle_agent(app: &mut FigApp, ctx: &Context, route: &str, method: &str, p: &
     if app.session.ds().map(|d| (d.uid, d.page, d.view.cx, d.view.cy, d.view.zoom)).ok() != view {
         crate::follow_agent::agent_moved_camera(app);
     }
+    // Noted with what the agent asked for (Fix S4).
+    let what = p.get("command").and_then(Value::as_str).unwrap_or(method);
+    crate::follow_agent::camera_log::note(app, figcraft_engine::settings::diagnostics::Mover::Agent, what);
     app.session.set_author(author);
     app.session.set_since(since);
     r

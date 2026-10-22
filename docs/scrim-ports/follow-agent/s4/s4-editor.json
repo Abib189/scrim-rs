@@ -1,0 +1,3926 @@
+{
+ "start": "editor",
+ "steps": [
+  [
+   0.0,
+   "open_file"
+  ],
+  [
+   4.01,
+   "batch 0 at x 3000"
+  ],
+  [
+   8.05,
+   "batch 1 at x 3700"
+  ],
+  [
+   12.08,
+   "batch 2 at x 4400"
+  ],
+  [
+   16.09,
+   "batch 3 at x 5100"
+  ],
+  [
+   20.09,
+   "batch 4 at x 5800"
+  ],
+  [
+   24.1,
+   "batch 5 at x 6500"
+  ]
+ ],
+ "samples": [
+  {
+   "t": 0.0,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "An agent is working",
+   "last": {
+    "at": 0.153106375,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 232.0,
+     "cy": 260.0,
+     "document": 3,
+     "page": 1,
+     "zoom": 1.0
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.16,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.81,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 0.97,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 1.13,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 1.29,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 1.44,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 1.61,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 1.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.04,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 2.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.04,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 3.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Poster",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 1.66539875,
+    "by": "the canvas's sizing",
+    "count": 1,
+    "to": {
+     "cx": 400.0,
+     "cy": 300.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 5.8569315,
+    "by": "following's own move",
+    "count": 10,
+    "to": {
+     "cx": 2009.2649300451935,
+     "cy": 266.93291239633163,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.023303209,
+    "by": "following's own move",
+    "count": 20,
+    "to": {
+     "cx": 3320.0,
+     "cy": 240.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.190204417,
+    "by": "following's own move",
+    "count": 25,
+    "to": {
+     "cx": 3532.7581404145308,
+     "cy": 226.5073275438048,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.356754292,
+    "by": "following's own move",
+    "count": 35,
+    "to": {
+     "cx": 6190.71319750323,
+     "cy": 57.945424724427966,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 4.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.04,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 5.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.22,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 6.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 7.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 0",
+   "last": {
+    "at": 6.456978334,
+    "by": "following's own move",
+    "count": 40,
+    "to": {
+     "cx": 6316.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 9.856400959,
+    "by": "following's own move",
+    "count": 48,
+    "to": {
+     "cx": 5681.375711918158,
+     "cy": 102.51681826461234,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.023277709,
+    "by": "following's own move",
+    "count": 58,
+    "to": {
+     "cx": 4022.907328837477,
+     "cy": 239.75941094114953,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.189906125,
+    "by": "following's own move",
+    "count": 63,
+    "to": {
+     "cx": 4077.8706583785315,
+     "cy": 237.02504732361444,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.359173959,
+    "by": "following's own move",
+    "count": 70,
+    "to": {
+     "cx": 7260.751980172001,
+     "cy": 73.40290145219691,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 8.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 9.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.11,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.27,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.43,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.59,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.75,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 10.91,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.07,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.23,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.39,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.55,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.71,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 11.87,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.03,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.19,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.35,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.51,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.67,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.83,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 12.99,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.15,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.31,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.46,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.79,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 13.95,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.11,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.28,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.45,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.61,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.77,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 14.93,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.42,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.59,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.75,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 15.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.08,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.58,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.75,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 16.91,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.07,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.24,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.4,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.56,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 17.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.38,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.54,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.7,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 18.87,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.02,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.19,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.35,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.51,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.68,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 19.83,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.0,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.16,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.32,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.82,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 20.98,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.14,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.3,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.47,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.63,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.79,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 21.95,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.11,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.27,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.43,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.58,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.75,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 22.91,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.07,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.23,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.39,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.56,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.72,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 23.88,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.04,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.2,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.36,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.52,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.69,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 24.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.17,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.81,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 25.97,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.13,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.29,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.45,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.6,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.77,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 26.93,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.09,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.25,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.41,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.57,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.73,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 27.89,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.05,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.21,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.37,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.53,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.69,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 28.85,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.01,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.17,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.33,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.49,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.65,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.81,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 29.98,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.13,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.3,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.46,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.62,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.78,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 30.94,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.1,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.27,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.43,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.59,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.76,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 31.92,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  },
+  {
+   "t": 32.08,
+   "follow": "following",
+   "pausedBy": null,
+   "working": "local-agent-mode-scrim (via mcp-\u2026 is working on Batch 1",
+   "last": {
+    "at": 10.468424417,
+    "by": "following's own move",
+    "count": 76,
+    "to": {
+     "cx": 7716.0,
+     "cy": 50.0,
+     "document": 4,
+     "page": 1,
+     "zoom": 0.67
+    },
+    "what": ""
+   }
+  }
+ ],
+ "cameraLog": [
+  {
+   "at": 0.01485725,
+   "by": "the window outside the canvas: a shortcut, menu, panel, tab or collaborator",
+   "count": 1,
+   "to": {
+    "cx": 500.0,
+    "cy": 300.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 0.01485725,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 352.0,
+    "cy": 330.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 0.144484167,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 500.0,
+    "cy": 300.0,
+    "document": 2,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.new"
+  },
+  {
+   "at": 0.144484167,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 232.0,
+    "cy": 260.0,
+    "document": 2,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 0.147585375,
+   "by": "following's own move",
+   "count": 1,
+   "to": {
+    "cx": 232.0003546367506,
+    "cy": 260.00008443732156,
+    "document": 2,
+    "page": 1,
+    "zoom": 0.9999993927225929
+   },
+   "what": ""
+  },
+  {
+   "at": 0.152166292,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 352.0,
+    "cy": 330.0,
+    "document": 1,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.close"
+  },
+  {
+   "at": 0.153106375,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 500.0,
+    "cy": 300.0,
+    "document": 3,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.new"
+  },
+  {
+   "at": 0.153106375,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 232.0,
+    "cy": 260.0,
+    "document": 3,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": ""
+  },
+  {
+   "at": 1.66539875,
+   "by": "an agent's request",
+   "count": 1,
+   "to": {
+    "cx": 400.0,
+    "cy": 300.0,
+    "document": 4,
+    "page": 1,
+    "zoom": 1.0
+   },
+   "what": "file.open"
+  },
+  {
+   "at": 1.66539875,
+   "by": "the canvas's sizing",
+   "count": 1,
+   "to": {
+    "cx": 400.0,
+    "cy": 300.0,
+    "document": 4,
+    "page": 1,
+    "zoom": 0.67
+   },
+   "what": ""
+  },
+  {
+   "at": 10.468424417,
+   "by": "following's own move",
+   "count": 76,
+   "to": {
+    "cx": 7716.0,
+    "cy": 50.0,
+    "document": 4,
+    "page": 1,
+    "zoom": 0.67
+   },
+   "what": ""
+  }
+ ],
+ "pausedBy": null,
+ "follow": "following",
+ "diagnostics": []
+}
