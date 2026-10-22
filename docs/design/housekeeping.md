@@ -46,4 +46,4 @@ This TypeScript editor (React, Electron and an MCP server) was Scrim's first ver
 
 **Also from tonight's report, for you to decide:**
 - whether to rewrite pushed history to drop the five captures and the relay log that showed personal data (`docs/design/pii-scan.md`; a force push);
-- whether agent runs may get `USER` in their environment, if Claude Code still says "Not logged in" when you try Describe a change (`docs/scrim-ports/chat/README.md`).
+- ~~whether agent runs may get `USER` in their environment~~ settled by Fix S1 (`9320dc1`): Claude Code's sign-in on macOS needs `USER` and `LOGNAME`, and agent runs now get both (`docs/design/chat-composer.md` › Fix S1).
