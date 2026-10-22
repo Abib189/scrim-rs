@@ -69,6 +69,9 @@ jobs:
       - name: Asset attribution
         run: cargo run --locked -q -p xtask -- assets
 
+      - name: No personal data in docs and scripts
+        run: cargo run --locked -q -p xtask -- pii-scan
+
   wasm:
     timeout-minutes: 30
     name: wasm32 check

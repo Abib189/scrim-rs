@@ -6,6 +6,8 @@
 //! - `brand`   the ArtCraft marks stay out of this fork (docs/FORK.md)
 //! - `fidelity` the export guarantee: canvas vs HTML export in browsers, against
 //!   xtask/fidelity-baseline.json (needs Node and playwright-core; not part of `ci`)
+//! - `pii-scan` no personal data (home folders, device names, emails, tokens, session ids, IPs)
+//!   in the text under docs/ and scripts/; deliberate values in xtask/pii-allow.txt
 //! - `size`    no source file over 1,000 lines; longer files are frozen in xtask/size-allowlist.txt
 //! - `parity`  menu-catalog coverage → docs/parity-checklist.md
 //! - `version` print the version, or `version set X.Y.Z`
@@ -22,6 +24,7 @@ mod fidelity;
 mod icon;
 mod layers;
 mod live_scripts;
+mod pii_scan;
 mod size;
 
 use std::process::{Command, ExitCode};
@@ -50,6 +53,7 @@ fn main() -> ExitCode {
         "fidelity" => fidelity::run(&root(), &args[1..]),
         "size" => size::check(&root()),
         "live-scripts" => live_scripts::check(&root()),
+        "pii-scan" => pii_scan::check(&root()),
         "parity" => parity(),
         "version" => version(args.get(1).map(String::as_str), args.get(2).map(String::as_str)),
         "icon" => icon::generate(&root()),
@@ -58,7 +62,7 @@ fn main() -> ExitCode {
         "bench" => bench(args.get(1).map_or("1000,10000,50000", String::as_str)),
         _ => {
             eprintln!(
-                "tasks: ci, layers, assets, brand, size, live-scripts, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]"
+                "tasks: ci, layers, assets, brand, size, live-scripts, pii-scan, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]"
             );
             task == "help"
         }
@@ -75,6 +79,7 @@ fn ci() -> bool {
         && brand::check(&root())
         && size::check(&root())
         && live_scripts::check(&root())
+        && pii_scan::check(&root())
         && wasm()
 }
 

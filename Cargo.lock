@@ -5943,6 +5943,7 @@ name = "xtask"
 version = "0.7.0"
 dependencies = [
  "figcraft-engine",
+ "regex",
  "serde_json",
 ]
 
