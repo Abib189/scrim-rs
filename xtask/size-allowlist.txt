@@ -38,6 +38,6 @@
 1247 crates/ui-egui/src/proto_panel.rs
 2206 crates/ui-egui/src/right.rs
 1135 crates/ui-egui/src/style_picker.rs
-1426 crates/ui-egui/src/typography.rs
+1421 crates/ui-egui/src/typography.rs
 1016 crates/ui-egui/src/variables_panel.rs
-1138 crates/ui-egui/src/widgets.rs
+1120 crates/ui-egui/src/widgets.rs

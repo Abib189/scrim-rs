@@ -662,7 +662,7 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
                         ui.add_space(16.0);
                         crate::variable_ui::bindable(app, ui, ids, &field, figcraft_doc::VariableType::Color, 208.0, |_, ui| {
                             let (r, _) = ui.allocate_exact_size(vec2(208.0, widgets::FIELD_H), Sense::hover());
-                            ui.painter().rect_filled(r, CornerRadius::same(5), t.field);
+                            crate::theme::paint_field(ui.painter(), r, &t, false, false);
                             let sw = Rect::from_center_size(pos2(r.min.x + 13.0, r.center().y), vec2(14.0, 14.0));
                             if let Some(c) = stop {
                                 widgets::paint_swatch(ui.painter(), sw, &Paint::solid(c));

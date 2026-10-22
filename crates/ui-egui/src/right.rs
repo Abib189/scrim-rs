@@ -979,7 +979,7 @@ fn range_fill(app: &mut FigApp, ui: &mut Ui, doc: &Document, id: NodeId, start: 
     row(ui, 32.0, |ui| {
         let w = ui.available_width() - 28.0;
         let (r, _) = ui.allocate_exact_size(vec2(w, FIELD_H), Sense::hover());
-        ui.painter().rect_filled(r, CornerRadius::same(5), t.field);
+        crate::theme::paint_field(ui.painter(), r, &t, false, false);
         let sw = Rect::from_min_size(pos2(r.min.x + 4.0, r.center().y - 8.0), vec2(16.0, 16.0));
         let text_r = Rect::from_min_max(pos2(sw.max.x + 8.0, r.min.y), pos2(r.max.x - 4.0, r.max.y));
         match fills.as_ref().and_then(|f| f.first()) {
@@ -1470,7 +1470,7 @@ fn paint_row(app: &mut FigApp, ui: &mut Ui, ids: &[NodeId], i: usize, p: &Paint,
     row_rect(ui, 32.0, |ui| {
         let w = ui.available_width() - 56.0;
         let (r, _) = ui.allocate_exact_size(vec2(w, FIELD_H), Sense::hover());
-        ui.painter().rect_filled(r, CornerRadius::same(5), t.field);
+        crate::theme::paint_field(ui.painter(), r, &t, false, false);
         let sw = Rect::from_min_size(pos2(r.min.x + 4.0, r.center().y - 8.0), vec2(16.0, 16.0));
         widgets::paint_swatch(ui.painter(), sw, p);
         let sresp = ui.interact(sw.expand(2.0), Id::new(("swatch", fills, i)), Sense::click());

@@ -302,7 +302,7 @@ fn search_row(app: &mut FigApp, ui: &mut Ui, w: f32) -> String {
     let mut filter: String = ui.data(|d| d.get_temp(filter_id)).unwrap_or_default();
     let (fr, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
     let field = Rect::from_min_max(pos2(fr.min.x + 12.0, fr.min.y + 8.0), pos2(fr.max.x - 44.0, fr.max.y - 4.0));
-    ui.painter().rect_filled(field, CornerRadius::same(5), t.field);
+    crate::theme::paint_field(ui.painter(), field, &t, false, false);
     icons::paint(ui.painter(), Rect::from_center_size(pos2(field.min.x + 12.0, field.center().y), vec2(12.0, 12.0)), Icon::Search, t.icon_secondary);
     let te_rect = Rect::from_min_max(pos2(field.min.x + 24.0, field.center().y - 7.0), pos2(field.max.x - 6.0, field.center().y + 7.0));
     let mut child = ui.new_child(egui::UiBuilder::new().max_rect(te_rect));

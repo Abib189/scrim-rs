@@ -415,7 +415,7 @@ fn batch_rename_dialog(app: &mut FigApp, ctx: &Context) {
         });
         ui.horizontal(|ui| {
             ui.label(tr("Start ascending from / stop descending at"));
-            ui.add(egui::DragValue::new(&mut b.start).range(0..=1_000_000));
+            crate::theme::add_input(ui, egui::DragValue::new(&mut b.start).range(0..=1_000_000));
         });
         ui.add_space(8.0);
         match &rename {

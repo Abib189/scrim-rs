@@ -533,7 +533,7 @@ fn table(app: &mut FigApp, ui: &mut Ui, view: &View, st: &mut Editor) {
     // Search.
     let (sr, _) = ui.allocate_exact_size(vec2(ui.available_width(), 40.0), Sense::hover());
     let field = Rect::from_min_size(pos2(sr.min.x + 16.0, sr.center().y - 12.0), vec2(220.0, 24.0));
-    ui.painter().rect_filled(field, CornerRadius::same(5), t.field);
+    crate::theme::paint_field(ui.painter(), field, &t, false, false);
     icons::paint(ui.painter(), Rect::from_center_size(pos2(field.min.x + 13.0, field.center().y), vec2(12.0, 12.0)), Icon::Search, t.icon_secondary);
     let mut child = ui.new_child(
         UiBuilder::new().max_rect(Rect::from_min_max(pos2(field.min.x + 24.0, field.min.y + 4.0), pos2(field.max.x - 4.0, field.max.y - 4.0))),

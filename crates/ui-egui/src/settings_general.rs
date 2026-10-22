@@ -151,8 +151,8 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         ui.label(tr("Nudge amount"));
         let mut small = prefs.nudge_small;
         let mut big = prefs.nudge_big;
-        let a = ui.add(egui::DragValue::new(&mut small).range(0.1..=100.0));
-        let b = ui.add(egui::DragValue::new(&mut big).range(1.0..=1000.0));
+        let a = crate::theme::add_input(ui, egui::DragValue::new(&mut small).range(0.1..=100.0));
+        let b = crate::theme::add_input(ui, egui::DragValue::new(&mut big).range(1.0..=1000.0));
         if a.changed() || b.changed() {
             app.run("pref.nudge", json!({"small": small, "big": big}));
         }

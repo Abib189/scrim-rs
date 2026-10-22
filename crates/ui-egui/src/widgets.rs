@@ -215,12 +215,7 @@ fn number_field_impl(
     // The label scrubs with the pointer; the keyboard stops at the value only.
     let lead_resp = ui.interact(lead_rect, id.with("lead"), Sense::CLICK | Sense::DRAG);
     let hovered = field_resp.hovered() || lead_resp.hovered() || editing.is_some();
-    ui.painter().rect_filled(rect, CornerRadius::same(5), t.field);
-    if editing.is_some() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.accent), StrokeKind::Inside);
-    } else if hovered {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    crate::theme::paint_field(ui.painter(), rect, &t, hovered, editing.is_some());
     match lead {
         Lead::Text(s) => {
             let galley = crate::bidi::name_galley(ui.painter(), s, regular(11.0), t.text_secondary, lead_w - 12.0);
@@ -389,10 +384,7 @@ pub fn bound_field(ui: &mut Ui, id: Id, lead: Lead, rect: Rect, name: &str) -> O
     let t = Tokens::get(ui.ctx());
     let resp = ui.interact(rect, id.with("bound"), Sense::click());
     a11y::combo(&resp, lead.name(), name, false);
-    ui.painter().rect_filled(rect, CornerRadius::same(5), t.field);
-    if resp.hovered() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    crate::theme::paint_field(ui.painter(), rect, &t, resp.hovered(), false);
     let lead_w = match lead {
         Lead::None | Lead::Named(_) => 4.0,
         Lead::Text(s) => {
@@ -450,17 +442,19 @@ pub fn multiline_field(ui: &mut Ui, id: Id, value: &str, hint: &str, rows: usize
     ui.horizontal(|ui| {
         ui.add_space(PAD);
         let w = ui.available_width() - PAD;
-        let r = egui::Frame::NONE.fill(t.field).corner_radius(CornerRadius::same(5)).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
-            ui.add(
-                egui::TextEdit::multiline(&mut text)
-                    .id(te)
-                    .frame(egui::Frame::NONE)
-                    .font(regular(11.0))
-                    .hint_text(hint)
-                    .desired_rows(rows)
-                    .desired_width(w - 12.0),
-            )
-        });
+        let edge = crate::theme::field_stroke(&t, false, focused);
+        let r =
+            egui::Frame::NONE.fill(t.field).stroke(edge).corner_radius(CornerRadius::same(5)).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
+                ui.add(
+                    egui::TextEdit::multiline(&mut text)
+                        .id(te)
+                        .frame(egui::Frame::NONE)
+                        .font(regular(11.0))
+                        .hint_text(hint)
+                        .desired_rows(rows)
+                        .desired_width(w - 12.0),
+                )
+            });
         done = r.inner.lost_focus();
     });
     if done {
@@ -505,12 +499,7 @@ fn text_field_in(ui: &mut Ui, id: Id, value: &str, rect: Rect, placeholder: &str
     let mut editing: Option<String> = ui.data(|d| d.get_temp(editing_id));
     let resp = ui.interact(rect, id.with("click"), Sense::click());
     a11y::text(&resp, name, value);
-    ui.painter().rect_filled(rect, CornerRadius::same(5), t.field);
-    if editing.is_some() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.accent), StrokeKind::Inside);
-    } else if resp.hovered() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    crate::theme::paint_field(ui.painter(), rect, &t, resp.hovered(), editing.is_some());
     let started = editing.is_none() && resp.clicked();
     if started {
         editing = Some(value.to_string());
@@ -569,11 +558,8 @@ pub fn text_input(ui: &mut Ui, id: Id, text: &mut String, width: f32, hint: &str
     let (rect, _) = ui.allocate_exact_size(vec2(width, FIELD_H), Sense::hover());
     ui.painter().rect_filled(rect, CornerRadius::same(5), t.field);
     let r = field_editor(ui, rect, id, text, hint);
-    if r.has_focus() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.accent), StrokeKind::Inside);
-    } else if ui.rect_contains_pointer(rect) {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    let edge = crate::theme::field_stroke(&t, ui.rect_contains_pointer(rect), r.has_focus());
+    ui.painter().rect_stroke(rect, CornerRadius::same(5), edge, StrokeKind::Inside);
     r
 }
 
@@ -658,11 +644,7 @@ pub fn dropdown_lead(ui: &mut Ui, label: &str, width: f32, lead: Option<DropLead
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(width, FIELD_H), Sense::click());
     a11y::combo(&resp, "", label, a11y::menu_open(&resp));
-    let bg = t.field;
-    ui.painter().rect_filled(rect, CornerRadius::same(5), bg);
-    if resp.hovered() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    crate::theme::paint_field(ui.painter(), rect, &t, resp.hovered(), false);
     let mut x = rect.min.x + 8.0;
     match lead {
         Some(DropLead::Icon(i)) => {

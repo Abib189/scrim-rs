@@ -81,7 +81,7 @@ fn collapse_icon(ui: &Ui, r: Rect, color: egui::Color32, restore: bool) {
 fn search_field(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, id: Id) {
     let (fr, _) = ui.allocate_exact_size(vec2(w, 32.0), Sense::hover());
     let field = Rect::from_min_max(pos2(fr.min.x + 12.0, fr.min.y + 2.0), pos2(fr.max.x - 12.0, fr.max.y - 6.0));
-    ui.painter().rect_filled(field, CornerRadius::same(5), t.field);
+    crate::theme::paint_field(ui.painter(), field, t, false, false);
     icons::paint(ui.painter(), Rect::from_center_size(pos2(field.min.x + 12.0, field.center().y), vec2(12.0, 12.0)), Icon::Search, t.icon_secondary);
     let te_rect = Rect::from_min_max(pos2(field.min.x + 24.0, field.center().y - 7.0), pos2(field.max.x - 6.0, field.center().y + 7.0));
     let mut child = ui.new_child(egui::UiBuilder::new().max_rect(te_rect));

@@ -1023,12 +1023,7 @@ fn lead_field(ui: &mut Ui, id: Id, glyph: LeadGlyph, value: &str, width: f32, ti
     let mut editing: Option<String> = ui.data(|d| d.get_temp(editing_id));
     let resp = ui.interact(rect, id.with("click"), Sense::click()).on_hover_text(tip);
     crate::a11y::text(&resp, tip, value);
-    ui.painter().rect_filled(rect, CornerRadius::same(5), t.field);
-    if editing.is_some() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.accent), StrokeKind::Inside);
-    } else if resp.hovered() {
-        ui.painter().rect_stroke(rect, CornerRadius::same(5), Stroke::new(1.0, t.field_hover_border), StrokeKind::Inside);
-    }
+    crate::theme::paint_field(ui.painter(), rect, &t, resp.hovered(), editing.is_some());
     paint_lead(ui.painter(), lead, glyph, t.icon_secondary);
     let started = editing.is_none() && resp.clicked();
     if started {

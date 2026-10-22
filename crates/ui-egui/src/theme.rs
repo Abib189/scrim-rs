@@ -11,6 +11,9 @@ pub mod accent;
 #[path = "accent_tests.rs"]
 mod accent_tests;
 #[cfg(test)]
+#[path = "field_edges_tests.rs"]
+pub(crate) mod field_edges_tests;
+#[cfg(test)]
 #[path = "theme_tokens_tests.rs"]
 mod theme_tokens_tests;
 
@@ -30,6 +33,10 @@ pub struct Tokens {
     pub hover: Color32,
     pub pressed: Color32,
     pub field: Color32,
+    /// An input's edge at rest (Fix S2): 3:1 against the field, the panels, the floating surface,
+    /// the pressed fill and the canvas. [`field_stroke`] picks it.
+    pub field_edge: Color32,
+    /// An input's edge under the pointer: stronger than [`Tokens::field_edge`].
     pub field_hover_border: Color32,
     /// The accent's mark: icons, the selected edge, the focus ring, coloured text. 4.5:1 on the
     /// panels and fields.
@@ -106,7 +113,8 @@ impl Tokens {
             hover: hex(0xF4F4F3),
             pressed: hex(0xEBEBEA),
             field: hex(0xF4F4F3),
-            field_hover_border: hex(0xD4D4D1),
+            field_edge: hex(0x80838A),
+            field_hover_border: hex(0x5F6268),
             // The accent derived for this ramp (`accent::derive`; checked by theme_tokens_tests).
             accent: hex(0xC53400),
             accent_fill: ACCENT,
@@ -153,7 +161,8 @@ impl Tokens {
             hover: hex(0x1B1C1F),
             pressed: hex(0x232428),
             field: hex(0x1B1C1F),
-            field_hover_border: hex(0x313338),
+            field_edge: hex(0x74777E),
+            field_hover_border: hex(0x91959C),
             accent: ACCENT,
             accent_fill: ACCENT,
             accent_hover: hex(0xEB531D),
@@ -267,6 +276,37 @@ pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
     });
 }
 
+/// An input's edge (Fix S2): the accent's mark while it has the keyboard, else the hover edge
+/// under the pointer, else [`Tokens::field_edge`]. Every input draws this, so none falls under 3:1.
+pub fn field_stroke(t: &Tokens, hovered: bool, focused: bool) -> Stroke {
+    Stroke::new(
+        1.0,
+        if focused {
+            t.accent
+        } else if hovered {
+            t.field_hover_border
+        } else {
+            t.field_edge
+        },
+    )
+}
+
+/// An input's fill and edge in `rect` (corner radius 5, as every field).
+pub fn paint_field(painter: &egui::Painter, rect: egui::Rect, t: &Tokens, hovered: bool, focused: bool) {
+    painter.rect_filled(rect, egui::CornerRadius::same(5), t.field);
+    painter.rect_stroke(rect, egui::CornerRadius::same(5), field_stroke(t, hovered, focused), egui::StrokeKind::Inside);
+}
+
+/// Add egui's `DragValue` (or another input egui frames as a button) with an input's edge: egui
+/// 0.36 frames buttons from its own button style, so the edge is drawn over it (Fix S2).
+pub fn add_input(ui: &mut egui::Ui, widget: impl egui::Widget) -> egui::Response {
+    let r = ui.add(widget);
+    let t = Tokens::get(ui.ctx());
+    let stroke = field_stroke(&t, r.hovered(), r.has_focus() || r.dragged());
+    ui.painter().rect_stroke(r.rect, ui.visuals().widgets.inactive.corner_radius, stroke, egui::StrokeKind::Inside);
+    r
+}
+
 /// egui visuals for tokens `t`.
 fn visuals(t: Tokens) -> Visuals {
     let mut v = if t.dark { Visuals::dark() } else { Visuals::light() };
@@ -294,7 +334,9 @@ fn visuals(t: Tokens) -> Visuals {
     v.widgets.noninteractive.bg_fill = t.panel;
     v.widgets.inactive.bg_fill = t.field;
     v.widgets.inactive.weak_bg_fill = t.field;
-    v.widgets.inactive.bg_stroke = Stroke::NONE;
+    // egui's own inputs (a framed TextEdit, DragValue, ComboBox) draw these edges (Fix S2); egui's
+    // menus clear them for their items.
+    v.widgets.inactive.bg_stroke = Stroke::new(1.0, t.field_edge);
     v.widgets.hovered.bg_fill = t.pressed;
     v.widgets.hovered.weak_bg_fill = t.pressed;
     v.widgets.hovered.bg_stroke = Stroke::new(1.0, t.field_hover_border);
