@@ -1,6 +1,7 @@
 //! Settings ▸ AI & agents and Settings ▸ MCP (C3c).
 //!
-//! **AI & agents:** Claude Code's status and the connect flow, the same ones the AI tab shows
+//! **AI & agents:** Describe a change (R5d: the switch, the time limit, the agents allowed to run),
+//! then Claude Code's status and the connect flow, the same ones the AI tab shows
 //! (`ai_tab::connection`, `connect_flow`). There are no models or API keys: agents bring their
 //! own.
 //!
@@ -25,6 +26,8 @@ pub fn ai(app: &mut FigApp, ui: &mut Ui) {
         tr("Agents work on the canvas beside you through MCP. Scrim has no models and keeps no API keys: each agent brings its own."),
         t.text_secondary,
     );
+    // Describe a change first: the agents' connections below run long (R5d).
+    crate::follow_agent::chat_ui::settings(app, ui);
     ui.add_space(6.0);
     crate::panel_view::ai_tab::connection(app, ui);
 }

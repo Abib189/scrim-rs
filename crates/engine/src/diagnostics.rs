@@ -37,7 +37,7 @@ const MAX_FAMILIES: usize = 30;
 pub struct Event {
     /// Seconds since 1970 (UTC).
     pub at: u64,
-    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient`, `error`, `follow` or `reveal`.
+    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient`, `error`, `follow`, `reveal`, `working` or `chat`.
     pub kind: String,
     pub detail: String,
 }
@@ -69,6 +69,10 @@ pub enum Entry<'a> {
     /// A client's working state ended at the grace period's end, and it came back `after` seconds
     /// after its request before: the setting (`setting` seconds) is shorter than its pauses (Fix Q2).
     GraceTooShort { client: Option<&'a str>, after: u64, setting: u32 },
+    /// An agent run from "Describe a change" (R5): the agent's name, and how it ended once it has
+    /// (`finished`, `stopped`, `timed out`, `failed`), its exit code and how long it took. Never the
+    /// prompt or what the agent said.
+    ChatRun { agent: &'a str, ended: Option<(&'a str, Option<i32>, u64)> },
 }
 
 /// A working-state transition (Fix M0).
@@ -201,6 +205,7 @@ impl Entry<'_> {
             Entry::FollowPaused(_) | Entry::FollowCleared(_) => "follow",
             Entry::Reveal { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
+            Entry::ChatRun { .. } => "chat",
         }
     }
 
@@ -232,6 +237,18 @@ impl Entry<'_> {
                 let n: usize = skipped.iter().map(|s| s.1).sum();
                 let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();
                 format!("agent layers: {entered} entered, {n} drawn final at once ({})", why.join("; "))
+            }
+            Entry::ChatRun { agent, ended } => {
+                // A headless profile's name; anything else reads "an agent".
+                let agent = crate::cmd::agent_clients::headless::profiles().iter().find(|p| p.name == *agent).map_or("an agent", |p| p.name.as_str());
+                match ended {
+                    None => format!("{agent} run started"),
+                    Some((how, code, secs)) => {
+                        let how = if matches!(*how, "finished" | "stopped" | "timed out" | "failed") { *how } else { "ended" };
+                        let code = code.map_or_else(|| "no exit code".to_string(), |c| format!("exit {c}"));
+                        format!("{agent} run ended: {how}, {code}, {secs} s")
+                    }
+                }
             }
             Entry::GraceTooShort { client, after, setting } => {
                 let who = client.map(|c| clean(c, 80)).filter(|c| !c.trim().is_empty()).unwrap_or_else(|| "an agent".into());

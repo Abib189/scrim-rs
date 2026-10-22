@@ -21,19 +21,19 @@ use crate::services::{AgentEnd, AgentRun, AgentRunEvent, AgentRunSpec};
 
 /// What the scripted runs saw and were told.
 #[derive(Default)]
-struct Script {
+pub(crate) struct Script {
     /// Where each agent's binary is found (none: not installed).
-    claude: Option<String>,
-    codex: Option<String>,
-    specs: Vec<AgentRunSpec>,
+    pub(crate) claude: Option<String>,
+    pub(crate) codex: Option<String>,
+    pub(crate) specs: Vec<AgentRunSpec>,
     /// Events the current run gives on its next poll.
-    events: VecDeque<AgentRunEvent>,
-    stops: usize,
-    dropped: usize,
-    opened: Vec<String>,
+    pub(crate) events: VecDeque<AgentRunEvent>,
+    pub(crate) stops: usize,
+    pub(crate) dropped: usize,
+    pub(crate) opened: Vec<String>,
 }
 
-type Shared = Arc<Mutex<Script>>;
+pub(crate) type Shared = Arc<Mutex<Script>>;
 
 struct Platform(Shared);
 
@@ -78,11 +78,11 @@ impl Services for Platform {
     }
 }
 
-const CLAUDE: &str = "/opt/agents/bin/claude";
+pub(crate) const CLAUDE: &str = "/opt/agents/bin/claude";
 
 /// The AI tab of a window with a frame "Poster" selected, its MCP endpoint on 7690, and Claude Code
 /// installed at [`CLAUDE`].
-fn window() -> (Ui, Shared) {
+pub(crate) fn window() -> (Ui, Shared) {
     let mut s = figcraft_engine::Session::new();
     let f = s.execute("frame.create", &json!({"x": 0, "y": 0, "width": 200, "height": 200, "name": "Poster"})).unwrap();
     s.execute("select.set", &json!({"ids": [f["id"]]})).unwrap();
@@ -107,7 +107,7 @@ fn type_and_send(u: &mut Ui, prompt: &str) {
 }
 
 /// Send `prompt`, answering the first-use confirmation with Run.
-fn send_allowed(u: &mut Ui, prompt: &str) {
+pub(crate) fn send_allowed(u: &mut Ui, prompt: &str) {
     type_and_send(u, prompt);
     if u.app.ui.agent_view.chat.confirm.is_some() {
         u.app.run("chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
@@ -115,11 +115,11 @@ fn send_allowed(u: &mut Ui, prompt: &str) {
     }
 }
 
-fn feed(script: &Shared, events: Vec<AgentRunEvent>) {
+pub(crate) fn feed(script: &Shared, events: Vec<AgentRunEvent>) {
     script.lock().unwrap().events.extend(events);
 }
 
-fn line_ev(s: &str) -> AgentRunEvent {
+pub(crate) fn line_ev(s: &str) -> AgentRunEvent {
     AgentRunEvent::Line(s.to_string())
 }
 

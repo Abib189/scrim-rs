@@ -253,3 +253,17 @@ codex exec <prompt + context line>
   - closing the window lets the run go;
   - the elapsed time's format;
   - contrast.
+
+## R5d as built: Settings, Diagnostics, the confirmation
+
+- **Settings ▸ AI & agents** opens with "Describe a change" (`chat_ui::settings`), before the agents' connections, which run long:
+  - "Describe a change in the AI tab" (`pref.describeChange`); off hides the composer and refuses `chat.send`;
+  - "Stop a run after": 5, 15 (default), 30 or 60 min (`pref.chatTimeLimit`). The next run gets it;
+  - the agents allowed to run, each with its program's path, and **Forget** (`chat.forget-agents`), after which each asks again. With none: "No agent has been allowed to run yet: each asks the first time."
+- **Diagnostics** (`Entry::ChatRun`, kind `chat`): "Claude Code run started", then "Claude Code run ended: finished, exit 0, 42 s".
+  - **The endings:** finished, stopped, timed out, failed.
+  - **Nothing else:** the name must be a headless profile's ("an agent" otherwise), and an unknown ending reads "ended". The prompt, the reply and the error output never reach Diagnostics.
+- **The confirmation** (R5c) is remembered per agent and program in `chat_allowed`, and Forget clears it.
+- **Tests:**
+  - `chat_settings_tests.rs` (5): the switch; the time limit picked is the next run's; allowed agents listed and Forget asks again; a run's Diagnostics lines hold no words of the prompt, reply or stderr (finished, stopped, timed out); a failed start.
+  - `diagnostics_tests.rs` › `an_agent_runs_lines_name_a_known_agent_how_it_ended_and_nothing_it_said`.

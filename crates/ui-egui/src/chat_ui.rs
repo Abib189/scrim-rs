@@ -17,6 +17,7 @@ use egui::{Context, Id, RichText, Ui};
 use figcraft_doc::Document;
 use figcraft_engine::cmd::agent_clients::headless::{self, Headless, output};
 use figcraft_engine::cmd::chat;
+use figcraft_engine::settings::diagnostics::Entry;
 use serde_json::{Value, json};
 
 use crate::i18n::{tr, trf, trn};
@@ -206,6 +207,8 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
             let started = now(app);
             app.ui.agent_view.chat.running =
                 Some(Running { agent, started, handle, outcome: Default::default(), stopping: false, uid, start_doc, rev });
+            // Settings ▸ Diagnostics: the agent's name only, never the prompt.
+            crate::settings_privacy::record(app, Entry::ChatRun { agent: &agent.name, ended: None });
         }
         Err(e) => line(app, Line::Failure(trf("{agent} couldn't start: {error}", &[("agent", &agent.name), ("error", &e)]))),
     }
@@ -327,7 +330,12 @@ fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
     let at = now(app);
     let agent = r.agent;
     app.ui.agent_view.working.finish_where(at, |raw| raw.is_some_and(|n| agent.announces(n)), r.started);
-    let _ = (outcome, end);
+    let code = match end {
+        AgentEnd::Exited(c) => c,
+        _ => None,
+    };
+    // How it ended, its exit code and how long it took; never what it said.
+    crate::settings_privacy::record(app, Entry::ChatRun { agent: &name, ended: Some((outcome, code, secs.max(0.0).round() as u64)) });
 }
 
 /// "0:42 · Billed by your agent's plan.", or the tokens and cost the agent reported.
@@ -492,6 +500,50 @@ fn transcript(app: &FigApp, ui: &mut Ui, t: &Tokens) {
     ui.add_space(6.0);
 }
 
+/// Settings ▸ AI & agents › Describe a change (R5d): the switch, the time limit, and the agents
+/// allowed to run, each with its program, with Forget.
+pub fn settings(app: &mut FigApp, ui: &mut Ui) {
+    let t = Tokens::get(ui.ctx());
+    crate::settings_dialog::heading(ui, tr("Describe a change"));
+    let on = app.session.prefs.settings.describe_change;
+    if widgets::checkbox(ui, on, tr("Describe a change in the AI tab")) {
+        app.run("pref.describeChange", json!({"on": !on}));
+    }
+    widgets::label(
+        ui,
+        tr(
+            "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys.",
+        ),
+        t.text_secondary,
+    );
+    ui.add_space(6.0);
+    widgets::label(ui, tr("Stop a run after"), t.text);
+    let labels: Vec<String> = chat::TIME_LIMITS
+        .iter()
+        .map(|m| if *m == chat::DEFAULT_TIME_LIMIT { trf("{n} min (default)", &[("n", m)]) } else { trf("{n} min", &[("n", m)]) })
+        .collect();
+    let labels: Vec<&str> = labels.iter().map(String::as_str).collect();
+    let current = chat::TIME_LIMITS.iter().position(|m| *m == app.session.prefs.settings.chat_time_limit_mins).unwrap_or(1);
+    if let Some(i) = widgets::segmented_text(ui, &labels, current) {
+        app.run("pref.chatTimeLimit", json!({"minutes": chat::TIME_LIMITS[i]}));
+    }
+    widgets::label(ui, tr("What the agent made by then stays, and Undo takes it back."), t.text_secondary);
+    ui.add_space(6.0);
+    let allowed = app.session.prefs.settings.chat_allowed.clone();
+    if allowed.is_empty() {
+        widgets::label(ui, tr("No agent has been allowed to run yet: each asks the first time."), t.text_secondary);
+        return;
+    }
+    widgets::label(ui, tr("Allowed to run"), t.text);
+    for a in &allowed {
+        let name = headless::profile(&a.agent).map_or(a.agent.as_str(), |p| p.name.as_str());
+        widgets::label(ui, &format!("{name}: {}", a.path), t.text_secondary);
+    }
+    if widgets::button(ui, tr("Forget"), false, true).on_hover_text(tr("Each agent asks again before it next runs")).clicked() {
+        app.run("chat.forget-agents", json!({}));
+    }
+}
+
 /// The first-use confirmation: the exact command and the binary's path. Only the person answers it.
 pub fn dialogs(app: &mut FigApp, ctx: &Context) {
     let Some((agent, path, _)) = app.ui.agent_view.chat.confirm.clone() else { return };
@@ -521,5 +573,8 @@ pub fn dialogs(app: &mut FigApp, ctx: &Context) {
 }
 
 #[cfg(test)]
+#[path = "chat_settings_tests.rs"]
+mod settings_tests;
+#[cfg(test)]
 #[path = "chat_ui_tests.rs"]
-mod tests;
+pub(crate) mod tests;

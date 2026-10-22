@@ -8,6 +8,16 @@
 name = "English"
 
 [ui]
+"Describe a change in the AI tab" = "Describe a change in the AI tab"
+"Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys."
+"Stop a run after" = "Stop a run after"
+"{n} min (default)" = "{n} min (default)"
+"{n} min" = "{n} min"
+"What the agent made by then stays, and Undo takes it back." = "What the agent made by then stays, and Undo takes it back."
+"No agent has been allowed to run yet: each asks the first time." = "No agent has been allowed to run yet: each asks the first time."
+"Allowed to run" = "Allowed to run"
+"Forget" = "Forget"
+"Each agent asks again before it next runs" = "Each agent asks again before it next runs"
 "Billed by your agent's plan." = "Billed by your agent's plan."
 "Describe a change" = "Describe a change"
 "Describe a change…" = "Describe a change…"

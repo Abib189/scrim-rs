@@ -172,3 +172,21 @@ fn the_settings_carry_a_version_and_odd_values_fall_back() {
     let s = read.settings.sanitized();
     assert_eq!((s.settings_version, s.motion.as_str(), s.mcp.port), (crate::settings::SETTINGS_VERSION, "system", crate::settings::DEFAULT_MCP_PORT));
 }
+
+#[test]
+fn an_agent_runs_lines_name_a_known_agent_how_it_ended_and_nothing_it_said() {
+    let mut st = crate::settings::Settings::default();
+    record(&mut st, NOW, Entry::ChatRun { agent: "Claude Code", ended: None });
+    record(&mut st, NOW, Entry::ChatRun { agent: "Codex", ended: Some(("finished", Some(0), 42)) });
+    record(&mut st, NOW, Entry::ChatRun { agent: "make my secret logo", ended: Some(("whatever it said", None, 3)) });
+    let lines: Vec<(&str, &str)> = st.diagnostics.iter().map(|e| (e.kind.as_str(), e.detail.as_str())).collect();
+    assert_eq!(
+        lines,
+        [
+            ("chat", "Claude Code run started"),
+            ("chat", "Codex run ended: finished, exit 0, 42 s"),
+            ("chat", "an agent run ended: ended, no exit code, 3 s"),
+        ],
+        "only a headless profile's name and the four endings; any other text is dropped"
+    );
+}
