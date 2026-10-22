@@ -92,6 +92,13 @@ pub const READ: &[&str] = &[
 /// Commands outside the undo history that change something: the selection, the view, a setting,
 /// the clipboard, a file, a live session or the network.
 pub const WRITE: &[&str] = &[
+    "chat.allow-agent",
+    "chat.cancel",
+    "chat.clear",
+    "chat.forget-agents",
+    "chat.send",
+    "pref.chatTimeLimit",
+    "pref.describeChange",
     "camera.focus-layer",
     "camera.follow-agents",
     "ai.copyConnectCommand",

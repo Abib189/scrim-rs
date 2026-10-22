@@ -8,6 +8,7 @@ pub mod analyze;
 pub mod appearance;
 pub mod arrange;
 pub mod camera;
+pub mod chat;
 pub mod claude_desktop;
 pub mod code;
 pub mod comment;
@@ -104,6 +105,7 @@ fn registry() -> &'static Registry {
         list.extend(claude_desktop::specs());
         list.extend(agent_clients::specs());
         list.extend(agent_work::specs());
+        list.extend(chat::specs());
         list.extend(diagnostics::specs());
         list.extend(layers::specs());
         list.extend(camera::specs());
@@ -159,8 +161,9 @@ pub fn all_commands() -> &'static [CommandSpec] {
 
 /// `id` changes only what a panel shows (no new document revision; `layers::VIEW_ONLY`).
 pub fn view_only(id: &str) -> bool {
-    // `agent.finish-working` only tells the window an agent is done (Stage I.1).
-    layers::VIEW_ONLY.contains(&id) || id == "agent.finish-working"
+    // `agent.finish-working` only tells the window an agent is done (Stage I.1); the composer's
+    // send, stop and clear only ask the window (R5).
+    layers::VIEW_ONLY.contains(&id) || matches!(id, "agent.finish-working" | "chat.send" | "chat.cancel" | "chat.clear")
 }
 
 pub fn find_command(id: &str) -> Option<&'static CommandSpec> {

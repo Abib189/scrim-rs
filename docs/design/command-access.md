@@ -12,6 +12,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
   - Commands that only *fetch* over the network (`plugin.directory.list`, `collab.serverInfo`, `collab.files`) are classified Write: they reach outside the machine.
   - Changing only the selection or the view is classified Write: the `select` tool is not read-only either.
 - **A test** (`access_tests.rs` › `every_registered_command_is_classified_once`) fails when a registered command is in neither list. An unclassified command is refused for agents (deny by default).
+- **Another** (`this_page_lists_every_classified_command`, R5b) fails when a classified command is missing from this page, or a heading's count is wrong.
 
 ## Commands that do what a tool does
 
@@ -59,7 +60,16 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 | `select.sameStroke` | `select` |
 | `select.sameText` | `select` |
 
-## Read (54)
+## The person's alone (R5)
+
+These are classified Write, and refused for agents on every route anyway (MCP, the control channel, the headless CLI, plugins): an agent can't start, stop or set up agent runs (`docs/design/chat-composer.md`). Tool access never makes them an agent's.
+
+- **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`
+- **pref:** `pref.describeChange`, `pref.chatTimeLimit`
+
+`pref.agentGrace` is refused for agents too (Fix Q1).
+
+## Read (58)
 
 - **agent:** `agent.finish-working` (Finish working; Stage I.1: it changes nothing but what the window shows, so it runs with only read-only tools on)
 - **ai:** `ai.findings` (Design lint findings by rule), `ai.status` (Agent connection)
@@ -79,7 +89,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 - **instance:** `instance.exposed` (Exposed nested instances)
 - **library:** `library.list` (List libraries), `library.updates` (Library updates), `library.usage` (Library usage)
 - **lint:** `lint.run` (Lint design)
-- **mcp:** `mcp.status` (MCP endpoint status), `mcp.tools` (MCP tool access)
+- **mcp:** `mcp.agent-clients` (MCP clients Scrim can connect), `mcp.claude-desktop-status` (Claude Desktop status), `mcp.client-status` (Agent client status), `mcp.status` (MCP endpoint status), `mcp.tools` (MCP tool access)
 - **measure:** `measure.distances` (Measure distances), `measure.padding` (Measure auto layout padding)
 - **node:** `node.get` (Get layer), `node.query` (Find layers)
 - **page:** `page.list` (List pages)
@@ -100,11 +110,13 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 - **view:** `view.get` (Get view)
 - **widget:** `widget.list` (List widgets)
 
-## Write, outside the undo history (262)
+## Write, outside the undo history (287)
 
 - **ai:** `ai.copyConnectCommand`, `ai.selectChange`, `ai.selectFinding`, `ai.undoChange`
 - **app:** `app.actions`, `app.preferences`
 - **branch:** `branch.archive`, `branch.create`, `branch.merge`, `branch.open`, `branch.updateFromMain`
+- **camera:** `camera.focus-layer`, `camera.follow-agents`
+- **chat:** `chat.allow-agent`, `chat.cancel`, `chat.clear`, `chat.forget-agents`, `chat.send`
 - **code:** `code.copy`, `code.copyStandaloneHtml`, `code.setFormat`
 - **codeConnect:** `codeConnect.export`
 - **collab:** `collab.cursor`, `collab.cursorChat`, `collab.files`, `collab.follow`, `collab.forgetFile`, `collab.host`, `collab.join`, `collab.leave`, `collab.manageFile`, `collab.openFile`, `collab.publish`, `collab.recoverFile`, `collab.registerLinks`, `collab.removePerson`, `collab.report`, `collab.serverInfo`, `collab.share`, `collab.spotlight`, `collab.stop`
@@ -122,12 +134,12 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 - **layers:** `layers.collapse-all`, `layers.restore-expansion`
 - **libraries:** `libraries.open`, `libraries.publish`
 - **library:** `library.publishToServer`
-- **mcp:** `mcp.connect-claude-code`, `mcp.copy-address`, `mcp.copy-command`, `mcp.remove-old-entry`, `mcp.reregister`, `mcp.restart-server`, `mcp.restore-tools`, `mcp.run-connect`, `mcp.set-port`, `mcp.set-root-dir`, `mcp.set-tool`, `mcp.set-tool-group`, `mcp.toggle-auth`
+- **mcp:** `mcp.connect-claude-code`, `mcp.connect-claude-desktop`, `mcp.connect-client`, `mcp.copy-address`, `mcp.copy-agent-snippet`, `mcp.copy-claude-desktop-entry`, `mcp.copy-client-entry`, `mcp.copy-command`, `mcp.remove-old-client-entry`, `mcp.remove-old-desktop-entry`, `mcp.remove-old-entry`, `mcp.reregister`, `mcp.reregister-claude-desktop`, `mcp.reregister-client`, `mcp.restart-server`, `mcp.restore-tools`, `mcp.run-connect`, `mcp.set-port`, `mcp.set-root-dir`, `mcp.set-tool`, `mcp.set-tool-group`, `mcp.toggle-auth`, `mcp.write-claude-desktop`, `mcp.write-client`
 - **page:** `page.select`
 - **panel:** `panel.mode.animate`, `panel.mode.design`, `panel.tab.ai`, `panel.tab.code`, `panel.tab.design`, `panel.tab.prototype`
 - **plugin:** `plugin.close`, `plugin.directory.install`, `plugin.directory.list`, `plugin.directory.publish`, `plugin.directory.unpublish`, `plugin.event`, `plugin.import`, `plugin.remove`, `plugin.run`, `plugin.ui`
 - **plugins:** `plugins.manage`, `plugins.runLast`
-- **pref:** `pref.accent`, `pref.appearance`, `pref.autoSave`, `pref.highlightHover`, `pref.keepTool`, `pref.language`, `pref.motion`, `pref.nudge`, `pref.numberKeysOpacity`, `pref.preserveUnsaved`, `pref.publishServer`, `pref.reduceMotion`, `pref.renameDuplicates`, `pref.showDimensions`, `pref.theme`, `pref.userName`
+- **pref:** `pref.accent`, `pref.agentGrace`, `pref.appearance`, `pref.autoSave`, `pref.chatTimeLimit`, `pref.describeChange`, `pref.highlightHover`, `pref.keepTool`, `pref.language`, `pref.motion`, `pref.nudge`, `pref.numberKeysOpacity`, `pref.preserveUnsaved`, `pref.publishServer`, `pref.reduceMotion`, `pref.renameDuplicates`, `pref.revealAgentWork`, `pref.revealSpeed`, `pref.showDimensions`, `pref.theme`, `pref.userName`, `pref.workingIndicator`
 - **proto:** `proto.closePreview`, `proto.present`, `proto.presentOptions`, `proto.preview`
 - **select:** `select.add`, `select.all`, `select.area`, `select.byName`, `select.children`, `select.inverse`, `select.matching`, `select.next`, `select.none`, `select.parent`, `select.previous`, `select.remove`, `select.sameEffect`, `select.sameFill`, `select.sameFont`, `select.sameInstance`, `select.sameProperties`, `select.sameStroke`, `select.sameText`, `select.set`
 - **selection:** `selection.selectColor`

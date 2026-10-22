@@ -169,3 +169,34 @@ codex exec <prompt + context line>
     - only the minimal environment;
     - the empty folder, removed.
   - **Mutation:** without the process group, the three stop tests fail.
+
+## R5b as built: the commands, the person's alone
+
+- **`crates/engine/src/cmd/chat.rs`** registers seven commands, none of them an undo step:
+  - `chat.send {prompt, agent?}` (Claude Code unless named; the prompt trimmed, at most 20,000 characters);
+  - `chat.cancel`, `chat.clear`;
+  - `chat.allow-agent {agent, path}` (the first-use confirmation: remembered, and the waiting send goes on);
+  - `chat.forget-agents`;
+  - `pref.describeChange {on}`;
+  - `pref.chatTimeLimit {minutes: 5|15|30|60}`.
+- **What they do:** they only ask the window (`chat.send`, `chat.cancel`, `chat.clear`, `chat.allowed` requests) or change their settings. Send, stop and clear add no revision, like `agent.finish-working`.
+- **Refused for agents on every route,** with one sentence: "Describe a change is the person's: agents can't start, stop or set up agent runs". The check is the command's own (the author of the request), so MCP's `run_command` and `batch`, the control channel, the headless CLI and plugins all meet it.
+- **Started by an agent run:** the app reads `SCRIM_CHAT_CHILD` at startup (`Agents::chat_child`). Such a Scrim refuses `chat.send` even from the person: "this Scrim was started by an agent run, so it can't start another".
+- **The settings:**
+  - `describe_change` (on), and `chat_time_limit_mins` (15; another value goes to the nearest of 5, 15, 30, 60);
+  - `chat_allowed` (agent and path, empty pairs dropped, no duplicates);
+  - all with serde defaults, so no version bump.
+- **`command-access.md`** lists all seven under Write, and under a new "The person's alone" section. It was behind: 20 commands from Stages I–K and Fix Q were missing (`camera.*`, the Connect commands, `pref.agentGrace`, `pref.revealSpeed`…). They're added. A new test, `access_tests.rs` › `this_page_lists_every_classified_command`, fails when a classified command is missing or a heading's count is wrong.
+- **Tests:**
+  - `chat_tests.rs` (13):
+    - every command refused for agents on five routes, with no setting changed and the window not asked;
+    - a batch can't carry one;
+    - the person's send asks the window;
+    - an empty, unknown or too long prompt;
+    - off, or started by an agent run;
+    - the time limits;
+    - allowing per binary, and forgetting;
+    - every command classified Write;
+    - the environment check.
+  - `crates/mcp/tests/chat_refused.rs`: over MCP, `run_command` and `batch`.
+  - `chat_route_tests.rs`: the control channel and the app's MCP route.

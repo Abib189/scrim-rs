@@ -171,6 +171,9 @@ pub struct Agents {
     pub test_hooks: bool,
     /// The grace a test set through the hook, in place of the setting. Never saved.
     pub grace_for_tests: Option<u32>,
+    /// This Scrim was started by an agent run (`SCRIM_CHAT_CHILD` in its environment): it can't start
+    /// one (`chat.send`, R5).
+    pub chat_child: bool,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 

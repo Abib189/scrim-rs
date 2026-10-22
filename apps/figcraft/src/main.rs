@@ -242,6 +242,9 @@ fn main() -> eframe::Result {
     // The interface language from the first frame on, and for the message when the window can't
     // open (no frame then).
     figcraft_ui_egui::i18n::set(&session.prefs.language, figcraft_ui_egui::Services::system_language(&svc).as_deref());
+    // A Scrim an agent run started can't start one itself (R5): runs don't nest.
+    session.agents.chat_child =
+        figcraft_engine::cmd::chat::started_by_agent_run(std::env::var_os(figcraft_engine::cmd::agent_clients::headless::CHILD_VAR).as_deref());
     let mut fig = FigApp::new(session, Box::new(svc));
     fig.automation_roots = roots;
     // MCP over HTTP on 127.0.0.1 (Settings ▸ MCP): Claude Code connects with one URL.

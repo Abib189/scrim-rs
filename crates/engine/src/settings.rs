@@ -140,6 +140,17 @@ fn grace() -> u32 {
 /// The Settings sections (`settings.open {section}`).
 pub const SECTIONS: [&str; 7] = ["general", "toolbar", "ai", "mcp", "tools", "privacy", "diagnostics"];
 
+fn chat_limit() -> u32 {
+    crate::cmd::chat::DEFAULT_TIME_LIMIT
+}
+
+/// An agent the person confirmed running from a binary (R5).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChatAllowed {
+    pub agent: String,
+    pub path: String,
+}
+
 fn yes() -> bool {
     true
 }
@@ -189,6 +200,17 @@ pub struct Settings {
     /// is Stage I2's timing).
     #[serde(default = "normal")]
     pub reveal_speed: String,
+    /// "Describe a change", the AI tab's composer (R5, `pref.describeChange`; on by default).
+    #[serde(default = "yes")]
+    pub describe_change: bool,
+    /// An agent run is stopped after this many minutes (`pref.chatTimeLimit`; one of
+    /// `cmd::chat::TIME_LIMITS`).
+    #[serde(default = "chat_limit")]
+    pub chat_time_limit_mins: u32,
+    /// Agents the person confirmed running, each with its binary's path (`chat.allow-agent`): a
+    /// different path asks again.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub chat_allowed: Vec<ChatAllowed>,
     /// The toolbar (Settings ▸ Toolbar); empty: the default (`cmd::toolbar`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub toolbar: crate::cmd::toolbar::Layout,
@@ -217,6 +239,9 @@ impl Default for Settings {
             agent_grace_secs: grace(),
             agent_grace_chosen: false,
             reveal_speed: normal(),
+            describe_change: true,
+            chat_time_limit_mins: chat_limit(),
+            chat_allowed: Vec::new(),
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
             diagnostics: Vec::new(),
@@ -258,6 +283,12 @@ impl Settings {
             let g = self.agent_grace_secs;
             self.agent_grace_secs = AGENT_GRACE_SECS.iter().copied().min_by_key(|c| c.abs_diff(g)).unwrap_or(DEFAULT_AGENT_GRACE_SECS);
         }
+        if !crate::cmd::chat::TIME_LIMITS.contains(&self.chat_time_limit_mins) {
+            let m = self.chat_time_limit_mins;
+            self.chat_time_limit_mins = crate::cmd::chat::TIME_LIMITS.iter().copied().min_by_key(|c| c.abs_diff(m)).unwrap_or_else(chat_limit);
+        }
+        self.chat_allowed.retain(|a| !a.agent.trim().is_empty() && !a.path.trim().is_empty());
+        self.chat_allowed.dedup();
         if !diagnostics::RETENTION_DAYS.contains(&self.diagnostics_days) {
             self.diagnostics_days = week();
         }

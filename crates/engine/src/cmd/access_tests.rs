@@ -50,3 +50,18 @@ fn an_unclassified_command_is_refused() {
     let e = check_spec(&spec, &[]).unwrap_err();
     assert!(e.contains("isn't classified"), "{e}");
 }
+
+/// `docs/design/command-access.md` stays complete (R5b): every classified command is on it, and
+/// its headings count them.
+#[test]
+fn this_page_lists_every_classified_command() {
+    let page = include_str!("../../../../docs/design/command-access.md");
+    let missing: Vec<&&str> = super::READ.iter().chain(super::WRITE.iter()).filter(|c| !page.contains(&format!("`{c}`"))).collect();
+    assert!(missing.is_empty(), "add these to docs/design/command-access.md: {missing:?}");
+    assert!(page.contains(&format!("## Read ({})", super::READ.len())), "the Read heading counts {}", super::READ.len());
+    assert!(
+        page.contains(&format!("## Write, outside the undo history ({})", super::WRITE.len())),
+        "the Write heading counts {}",
+        super::WRITE.len()
+    );
+}

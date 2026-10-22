@@ -874,3 +874,7 @@ mod roots_tests;
 #[cfg(test)]
 #[path = "control_agents_tests.rs"]
 mod agents_tests;
+
+#[cfg(test)]
+#[path = "chat_route_tests.rs"]
+mod chat_route_tests;
