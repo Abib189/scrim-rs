@@ -140,8 +140,9 @@ fn a_16_layer_batch_enters_in_order_and_the_document_never_sees_it() {
 fn screenshot_export_and_inspect_mid_reveal_equal_those_after() {
     let (mut u, _) = calm();
     let ids = poster_batch(&mut u);
-    // After the camera's flight (320 ms), while the 16 entrances still run (0.6 s of stagger).
-    frames(&mut u, 24);
+    // After the camera's flight (up to 600 ms for a far jump, Fix T2), while the 16 entrances
+    // still run.
+    frames(&mut u, 40);
     assert!(canvas_doc(&u.app).is_some(), "mid-reveal");
     assert!(u.app.ui.agent_view.indicator.drawn.get().is_some() || u.app.ui.agent_view.indicator.outlined.get().is_some(), "and the indicator");
     let ctx = u.ctx.clone();
@@ -303,14 +304,17 @@ fn an_edit_after_a_quiet_minute_still_enters() {
 fn the_reveal_and_the_working_indicator_run_in_the_same_frames() {
     let (mut u, _) = calm();
     poster_batch(&mut u);
-    let mut both = 0;
-    for _ in 0..40 {
+    let (mut both, mut revealing) = (0, 0);
+    for _ in 0..90 {
         u.frame(vec![]);
+        revealing += usize::from(u.app.ui.agent_view.reveal.active());
         if u.app.ui.agent_view.reveal.active() && u.app.ui.agent_view.indicator.drawn.get().is_some() {
             both += 1;
         }
     }
-    assert!(both >= 20, "both active together for most of the reveal: {both} frames");
+    // Fix T2's longer flight (600 ms for this far jump) runs the entrances while the camera is still
+    // on its way, so they overlap the dots for only part of the reveal; T3 makes the reveal wait.
+    assert!(both >= 10, "both active together for part of the reveal: {both} of {revealing} frames");
 }
 
 #[test]

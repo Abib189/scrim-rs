@@ -184,7 +184,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "camera.follow-agents",
             "Follow agent",
-            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window's camera goes to agents' edits as they land, and stays with them; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings)",
+            "{on? (default: toggle; on while paused resumes)} → {on, state: following|paused|off}  (the window keeps agents' latest work in the middle of the canvas as it lands; the person's own scroll, pan, zoom, canvas click or edit pauses it until they resume. Saved in Settings)",
             false,
             follow_agents
         ),

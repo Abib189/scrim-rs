@@ -1,7 +1,8 @@
 //! The camera's flight to a focused layer (D2, `docs/design/layers-collapse-and-focus.md`).
 //!
 //! `camera.focus-layer` sets the camera at once; the window then animates there from where it was:
-//! 320 ms, ease-in-out (the old Scrim's), the zoom eased geometrically.
+//! 320 ms, ease-in-out (the old Scrim's), the zoom eased geometrically. Following's flights ask for
+//! longer ones, up to 600 ms for a far jump (`secs`, Fix T2).
 //! - **A jump** when Settings ▸ Animations is off, the system asks for reduced motion, or the page
 //!   changed.
 //! - **Input cancels it:** if anything else moves the camera mid-flight (a scroll, pan, zoom or
@@ -21,7 +22,7 @@ use crate::FigApp;
 use crate::follow_agent::camera_log;
 use crate::i18n::trf;
 
-/// How long a flight lasts, in seconds.
+/// How long a flight lasts, in seconds, unless its request asks for another length.
 pub const FLIGHT_SECS: f64 = 0.32;
 
 /// A flight in progress, in the document `uid`.
@@ -36,6 +37,8 @@ struct Flight {
     last: [f64; 3],
     /// An agent's request started it.
     agent: bool,
+    /// How long it lasts, in seconds.
+    secs: f64,
 }
 
 /// The window's camera flight, and a focus waiting for the canvas's size.
@@ -62,6 +65,16 @@ impl State {
     /// Stop the flight where the camera is now (following paused mid-flight).
     pub fn stop(&mut self) {
         self.flight = None;
+    }
+
+    /// How long the flight in progress lasts, in seconds.
+    pub fn secs(&self) -> Option<f64> {
+        self.flight.as_ref().map(|f| f.secs)
+    }
+
+    /// Where the flight in progress goes (centre and zoom).
+    pub fn target(&self) -> Option<[f64; 3]> {
+        self.flight.as_ref().map(|f| f.to)
     }
 }
 
@@ -99,7 +112,8 @@ pub fn request(app: &mut FigApp, data: &Value) {
         app.ui.camera.flight = None;
         return;
     }
-    app.ui.camera.flight = Some(Flight { uid, from, to, start: None, last: from, agent });
+    let secs = data["secs"].as_f64().filter(|s| s.is_finite() && *s > 0.0).unwrap_or(FLIGHT_SECS);
+    app.ui.camera.flight = Some(Flight { uid, from, to, start: None, last: from, agent, secs });
     set_view(app, uid, from);
 }
 
@@ -142,7 +156,7 @@ pub fn tick(app: &mut FigApp, ctx: &egui::Context) {
     }
     let now = ctx.input(|i| i.time);
     let start = f.start.unwrap_or(now);
-    let t = ((now - start) / FLIGHT_SECS).clamp(0.0, 1.0);
+    let t = ((now - start) / f.secs).clamp(0.0, 1.0);
     let e = ease_in_out_cubic(t);
     let v = if t >= 1.0 {
         f.to

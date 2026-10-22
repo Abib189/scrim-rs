@@ -130,6 +130,23 @@ pub fn place(corner: Pos2, room: f32, taken: &[Rect]) -> Option<(usize, Rect)> {
     })
 }
 
+/// The space kept between the row and the canvas's edge when the row is pulled in.
+const EDGE: f32 = 8.0;
+
+/// Where the row hangs from on `canvas` for the artboard at `r` (screen), and the artboard's
+/// on-screen width: its top-right corner, pulled inside the canvas when that corner is off screen
+/// (Fix T2: following centres the latest work, which can leave the artboard's corner out of view).
+/// `None` when no part of the artboard is on the canvas.
+pub fn anchor(r: Rect, canvas: Rect) -> Option<(Pos2, f32)> {
+    let seen = r.intersect(canvas);
+    if !r.is_finite() || !seen.is_positive() {
+        return None;
+    }
+    let x = r.max.x.min(canvas.max.x - EDGE);
+    let y = r.min.y.max(canvas.min.y + EDGE + ABOVE + height());
+    Some((pos2(x, y), (x - seen.min.x).max(0.0)))
+}
+
 /// Every frame, before the canvas (after the working state's tick): the agent's latest artboard is
 /// the one shown; it is let go once the run has ended and faded.
 pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
@@ -140,12 +157,12 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
     let w = &app.ui.agent_view.working;
     let (working, alpha, expiry) = (w.working(), w.alpha(now, motion), w.next_change(now, grace));
     let finished = w.finished(now).is_some();
-    // Where the row can be seen: its artboard's top-right corner, which it hangs from, inside the
-    // canvas (an artboard only partly in view can have that corner off screen).
+    // Where the row can be seen: enough of its artboard on the canvas for its fewest columns (it
+    // hangs from the artboard's top-right corner, pulled into the canvas when that is off screen).
     let in_view = |id: NodeId| {
         app.session.doc().ok().and_then(|d| d.world_bounds(id)).is_some_and(|b| {
-            let corner = app.to_screen(b.x1, b.y0);
-            corner.is_finite() && app.canvas.rect.contains(corner)
+            let r = Rect::from_two_pos(app.to_screen(b.x0, b.y0), app.to_screen(b.x1, b.y1));
+            anchor(r, app.canvas.rect).is_some_and(|(_, room)| room >= width(MIN_COLUMNS))
         })
     };
     let next = match (uid, artboard) {
@@ -208,7 +225,8 @@ pub fn paint(app: &FigApp, painter: &Painter, doc: &Document, sel: &[NodeId], ta
     if !app.session.prefs.settings.working_indicator {
         return;
     }
-    let Some((cols, row)) = place(pos2(r.max.x, r.min.y), r.width(), taken) else { return };
+    let Some((corner, room)) = anchor(r, app.canvas.rect) else { return };
+    let Some((cols, row)) = place(corner, room, taken) else { return };
     let animated = motion && level < 1;
     let color = ink::overlay();
     for rw in 0..ROWS {

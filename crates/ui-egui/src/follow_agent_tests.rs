@@ -82,20 +82,17 @@ fn an_agent_edit_off_screen_flies_the_camera_there() {
 }
 
 #[test]
-fn work_already_in_view_doesnt_move_the_camera_and_work_just_out_moves_it_the_least() {
+fn work_in_view_is_centred_and_work_already_at_the_centre_doesnt_move_the_camera() {
+    // Fix T2 replaced D2's least move for following: the latest work goes to the canvas's centre.
     let (mut u, home) = scene();
-    let before = view(&u);
     agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home}));
-    frames(&mut u, 30);
-    assert_eq!(view(&u), before, "in view: no move");
-    // Just past the right margin: moved by about that much, not centred.
-    let ds = u.app.session.ds().unwrap();
-    let right = ds.view.cx + ds.view.vw / 2.0 - 32.0;
-    agent(&mut u, "shape.rectangle", json!({"x": right + 10.0, "y": 50, "width": 20, "height": 20}));
     frames(&mut u, 40);
-    let after = view(&u);
-    assert!((after.0 - before.0 - 30.0).abs() < 1.0, "the least move: {after:?} from {before:?}");
-    assert_eq!(after.1, before.1);
+    let (cx, cy, zoom) = view(&u);
+    assert_eq!((cx, cy, zoom), (20.0, 20.0, 1.0), "in view: centred, the zoom kept");
+    // The next step lands where the camera already is: no move.
+    agent(&mut u, "shape.rectangle", json!({"x": 15, "y": 15, "width": 20, "height": 20, "parent": home}));
+    frames(&mut u, 40);
+    assert_eq!(view(&u), (cx, cy, zoom), "within 16 px of the centre: no move");
 }
 
 #[test]
@@ -132,9 +129,10 @@ fn the_persons_edit_never_moves_the_camera_and_pauses_following() {
     frames(&mut u, 30);
     assert_eq!(view(&u), before, "the person's own edit: no move");
     assert_eq!(figcraft_engine::cmd::camera::follow_state(&u.app.session), "following", "nothing followed yet");
-    // An agent works (in view), then the person edits: paused.
+    // An agent works (in view: centred, Fix T2), then the person edits: paused.
     agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home}));
-    frames(&mut u, 30);
+    frames(&mut u, 40);
+    let before = view(&u);
     u.app.run("frame.create", json!({"x": 9500, "y": 0, "width": 100, "height": 100, "name": "Mine 2"}));
     frames(&mut u, 30);
     assert_eq!(view(&u), before, "the person's own edit: no move");

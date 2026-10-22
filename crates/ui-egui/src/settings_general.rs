@@ -45,7 +45,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     if widgets::checkbox(ui, prefs.settings.follow_agents, tr("Follow agents as they work")) {
         app.run("camera.follow-agents", json!({"on": !prefs.settings.follow_agents}));
     }
-    widgets::label(ui, tr("The camera goes to an agent's edits as they land. Your own scroll, zoom or edit pauses it."), t.text_secondary);
+    widgets::label(ui, tr("Keeps the agent's latest work in the middle of the canvas. Your own scroll, zoom or edit pauses it."), t.text_secondary);
     if widgets::checkbox(ui, prefs.settings.reveal_agent_work, tr("Reveal agent work")) {
         app.run("pref.revealAgentWork", json!({}));
     }

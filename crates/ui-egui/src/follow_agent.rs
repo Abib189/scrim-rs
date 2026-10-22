@@ -3,9 +3,10 @@
 //! - **Whose edits:** the change log's entries whose author is an agent, the single source of truth
 //!   (`agents::Change`). The person's edits never move the camera; they pause following.
 //! - **Where:** the union of the changed layers on the page of the newest one; a new top-level frame
-//!   whole; more than [`MANY`] layers, their top-level frames. The move is D2's: `camera.focus-layer
-//!   {ids, fit}` (the least move, or a zoom out just enough to fit) and its flight, which jumps with
-//!   Animations off or reduced motion.
+//!   whole; [`MANY`] layers or more, their top-level frames; across artboards, the latest edit's.
+//!   It goes to the middle of the canvas ([`follow_centre`], Fix T2), zoomed out only if it doesn't
+//!   fit with a 10% margin, with an eased flight of 320–600 ms that jumps with Animations off or
+//!   reduced motion. A Layers click (`camera.focus-layer`) keeps D2's least move.
 //! - **One smooth move per burst:** the first edit flies at once; while edits keep coming, at most
 //!   one new flight per [`FLIGHT_EVERY`], to the latest union, starting from where the camera is.
 //! - **The person wins:** once an agent's work has been seen in the file, a press, scroll or pinch on
@@ -36,6 +37,8 @@ use crate::theme::{Tokens, regular};
 pub mod camera_log;
 #[path = "chat_ui.rs"]
 pub mod chat_ui;
+#[path = "follow_centre.rs"]
+pub mod follow_centre;
 #[path = "follow_end.rs"]
 pub mod follow_end;
 #[path = "grace_hint.rs"]
@@ -51,7 +54,7 @@ pub mod working_state;
 
 /// While edits keep coming, at most one new flight this often (seconds).
 pub const FLIGHT_EVERY: f64 = 0.4;
-/// More changed layers than this in a burst frame their top-level frames instead.
+/// This many changed layers or more in a burst frame their top-level frames instead.
 pub const MANY: usize = 60;
 /// Presses this close to the canvas's bottom edge are on the toolbar or the help button.
 const TOOLBAR_BAND: f32 = 72.0;
@@ -181,6 +184,8 @@ struct Follow {
     agent_settling: bool,
     /// A flight of follow's own is in progress.
     flying: bool,
+    /// The artboard of the agent's latest edit (Fix T2: work across artboards is centred on it).
+    board: Option<NodeId>,
     /// The state last frame (a change to `following` is a resume).
     was: &'static str,
     /// An agent's edit has been seen; the name of who made the latest (`None`: it announced none),
@@ -255,6 +260,13 @@ fn scan(app: &mut FigApp) -> Vec<Landed> {
         .collect()
 }
 
+/// The artboard (top-level frame) of the newest live layer an agent edited, if it is in one.
+pub fn newest_board(doc: &Document, landed: &[Landed]) -> Option<NodeId> {
+    let live = |id: &NodeId| doc.node(*id).is_some_and(|n| !n.is_page());
+    let newest = landed.iter().rev().filter(|l| l.agent).flat_map(|l| l.created.iter().chain(&l.changed).rev()).find(|id| live(id))?;
+    doc.top_level_frame(*newest)
+}
+
 /// Where an agent's edits are: the page of the newest live layer, and the layers to frame there.
 pub fn target(doc: &Document, landed: &[Landed]) -> Option<(NodeId, BTreeSet<NodeId>)> {
     let live = |id: &NodeId| doc.node(*id).is_some_and(|n| !n.is_page());
@@ -268,7 +280,7 @@ pub fn target(doc: &Document, landed: &[Landed]) -> Option<(NodeId, BTreeSet<Nod
         .filter(|id| live(id) && doc.page_of(*id) == Some(page))
         .collect();
     let created: BTreeSet<NodeId> = landed.iter().filter(|l| l.agent).flat_map(|l| l.created.iter().copied()).collect();
-    let framed: BTreeSet<NodeId> = if ids.len() > MANY {
+    let framed: BTreeSet<NodeId> = if ids.len() >= MANY {
         // A big batch: the artboards, not every leaf.
         ids.iter().map(|id| doc.top_level_frame(*id).unwrap_or(*id)).collect()
     } else {
@@ -390,7 +402,7 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
 }
 
 /// The view now: document, page, centre and zoom.
-fn view_now(app: &FigApp) -> Option<(u64, NodeId, [f64; 3])> {
+pub(crate) fn view_now(app: &FigApp) -> Option<(u64, NodeId, [f64; 3])> {
     app.session.ds().ok().map(|ds| (ds.uid, ds.page, [ds.view.cx, ds.view.cy, ds.view.zoom]))
 }
 
@@ -447,6 +459,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         f.seen_agent = true;
         f.agent = name;
         f.artboard = ids.iter().next_back().and_then(|id| doc.top_level_frame(*id));
+        f.board = newest_board(&doc, landed).or(f.board);
         f.latest = Some((page, ids.clone()));
         f.pending = match f.pending.take() {
             Some((p, mut old)) if p == page => {
@@ -526,7 +539,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         return;
     }
     let f = &app.ui.agent_view.follow;
-    let Some((_, ids)) = f.pending.clone() else { return };
+    let Some((page, ids)) = f.pending.clone() else { return };
     if mid_gesture(app, ctx) {
         return;
     }
@@ -536,26 +549,7 @@ fn follow(app: &mut FigApp, ctx: &Context, now: f64, landed: &[Landed]) {
         ctx.request_repaint_after(std::time::Duration::from_secs_f64(FLIGHT_EVERY - (now - last)));
         return;
     }
-    fly(app, &ids, now);
-}
-
-/// Move to `ids` with D2's camera (`camera.focus-layer {ids, fit}` and its flight). The command's
-/// function runs directly: it moves the view only, so it adds no revision or journal entry.
-fn fly(app: &mut FigApp, ids: &BTreeSet<NodeId>, now: f64) {
-    let f = &mut app.ui.agent_view.follow;
-    f.pending = None;
-    f.last_flight = Some(now);
-    let Some(cmd) = figcraft_engine::find_command("camera.focus-layer") else { return };
-    let p = json!({"ids": ids.iter().map(|i| i.0).collect::<Vec<_>>(), "fit": true});
-    if (cmd.run)(&mut app.session, &p).is_err() {
-        return;
-    }
-    let target = view_now(app);
-    app.handle_ui_requests();
-    camera_log::note(app, figcraft_engine::settings::diagnostics::Mover::Follow, "");
-    let f = &mut app.ui.agent_view.follow;
-    f.expected = target;
-    f.flying = app.ui.camera.flying();
+    follow_centre::fly(app, page, &ids, now);
 }
 
 /// What the AI tab says: "Following Claude · Poster", paused, or nothing when it's off.

@@ -249,3 +249,24 @@ fn the_switches_are_saved_and_answer_over_the_route() {
     let old = old.sanitized();
     assert!(old.reveal_agent_work && old.working_indicator, "a file from version 3 reads them on");
 }
+
+/// Fix T2: following centres the latest work, which can leave its artboard's top-right corner off
+/// screen; the row then hangs from the corner pulled into the canvas, and the room is what is seen.
+#[test]
+fn the_row_stays_in_view_when_the_artboards_corner_is_off_screen() {
+    let canvas = egui::Rect::from_min_max(egui::pos2(300.0, 40.0), egui::pos2(1200.0, 900.0));
+    // In view: the corner itself, the room the artboard's width.
+    let inside = egui::Rect::from_min_max(egui::pos2(500.0, 300.0), egui::pos2(900.0, 600.0));
+    assert_eq!(super::anchor(inside, canvas), Some((egui::pos2(900.0, 300.0), 400.0)));
+    // Its right and top beyond the canvas: pulled in, with the room left of the edge.
+    let big = egui::Rect::from_min_max(egui::pos2(700.0, -200.0), egui::pos2(1600.0, 600.0));
+    let (corner, room) = super::anchor(big, canvas).expect("partly in view");
+    assert!(canvas.contains(corner) && corner.x == 1200.0 - 8.0, "{corner:?}");
+    assert!(corner.y - super::ABOVE - super::height() >= canvas.min.y, "the row's top in the canvas: {corner:?}");
+    assert_eq!(room, 1192.0 - 700.0);
+    let (cols, row) = super::place(corner, room, &[]).expect("drawn");
+    assert!(cols > 0 && canvas.contains_rect(row), "{row:?}");
+    // Wholly off the canvas: hidden.
+    let away = egui::Rect::from_min_max(egui::pos2(1300.0, 100.0), egui::pos2(1500.0, 300.0));
+    assert_eq!(super::anchor(away, canvas), None);
+}

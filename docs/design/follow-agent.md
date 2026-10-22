@@ -361,3 +361,35 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
 **Not verified:** the owner's own session, and a second window or a collaborator moving the camera during an agent's run.
 
 **Also seen, not changed:** the MCP endpoint takes its roots when it starts. If `~/Documents/Scrim` is made by something else after that, `mcp_ui::ensure_root` finds the folder there and doesn't take the roots again. The agent's file tools are then refused ("no root for it was given") until the app restarts. The live script makes the folder before starting the app.
+
+
+## Fix T2: the agent's latest work in the middle of the canvas (22 Oct 2026)
+
+**The evidence:** after a file open, the first batch was drawn "final at once (off screen, follow paused)". The camera wasn't on the new work yet. D2's least move left work arriving near an edge on that edge.
+
+**What changed (following only; `camera.focus-layer`, a Layers click, keeps D2's least move):**
+- **The target** (`follow_centre.rs`) is the centre of the bounds of the layers the agent changed since the last flight, on the page of the newest change. It goes to the centre of the canvas, the area between the panels (`ViewState`'s `cx`/`cy` is that centre).
+  - **Large batches:** 60 layers or more (`MANY`, it was "more than 60") frame their artboard.
+  - **Across artboards:** when the work spans several artboards, the target is the artboard of the latest edit (`newest_board`).
+- **The zoom** is kept if the bounds fit with a 10% margin on every side. Otherwise it goes down just enough to fit with that margin, never up, and never below the minimum zoom.
+- **A dead zone:** within 16 screen px of the target with the zoom unchanged, the camera stays.
+- **The flight** stays eased. It lasts 320 ms for a short move and up to 600 ms for a move of 3 canvas widths or more (at the lower of the two zooms), so a 3,000-unit jump is readable. It jumps with Animations off or reduced motion, and to another page. `camera_flight` takes the length per request (`secs`).
+- **Resume** flies to the latest work the same way. Pauses are unchanged: the person's scroll, pan, zoom or edit. The camera log records following's moves as before.
+- **The working indicator's row** used to hang from the artboard's top-right corner only while that corner was on the canvas. Centring on a batch inside a big artboard often leaves that corner off screen. The row now hangs from the corner pulled into the canvas (`working_indicator::anchor`), with room from the artboard's visible width. It moves to the next artboard once there is room for its fewest columns, so the dots don't drop out mid-flight.
+- **Wording:** Settings explains "Keeps the agent's latest work in the middle of the canvas. Your own scroll, zoom or edit pauses it." (Spanish too), and so does the `camera.follow-agents` help.
+
+**Decisions (overrule any):**
+1. **The least-move rule is dropped for following,** as the brief asks. D2's least move and Stage I4's "partly in view: least move" remain for Layers clicks only.
+2. **"A 10% margin"** is read as 10% of the canvas on each side, so the work fits in the middle 80%.
+3. **"Spans several artboards"** is read as centring on the latest edit's whole artboard, not on the layers changed inside it.
+4. **The flight's length** scales with the distance in canvas widths, reaching the 600 ms cap at 3 widths.
+5. **The indicator's row** is pulled into the canvas: a change outside "camera follow" that the centring makes necessary.
+6. **Large means 60 or more,** per the brief; it was "more than 60".
+
+**Tests:**
+- `follow_centre_tests.rs` (9): a far batch, an edge batch at two zooms, a large batch with the 10% margin, two artboards, the dead zone, the flight's length, reduced motion, Resume after the person's scroll, and a Layers click's least move. All nine fail with the old behaviour put back (`reveal_or_fit`, the union, 320 ms, no dead zone).
+- `working_indicator_tests.rs` › `the_row_stays_in_view_when_the_artboards_corner_is_off_screen`.
+- **Updated to the new rule:**
+  - `follow_agent_tests.rs` › `work_in_view_is_centred_and_work_already_at_the_centre_doesnt_move_the_camera` replaces the least-move test;
+  - the person's-edit test compares with the view after the agent's centring;
+  - `reveal_tests.rs` waits out the longer flight. The reveal and the dots now overlap for only part of the reveal, which T3 addresses.
