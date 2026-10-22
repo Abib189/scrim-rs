@@ -36,6 +36,8 @@ mod apple_events_tests;
 #[cfg(test)]
 mod args_tests;
 #[cfg(test)]
+mod chat_e2e_tests;
+#[cfg(test)]
 mod graphics_tests;
 #[cfg(test)]
 mod migrate_tests;

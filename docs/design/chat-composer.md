@@ -267,3 +267,17 @@ codex exec <prompt + context line>
 - **Tests:**
   - `chat_settings_tests.rs` (5): the switch; the time limit picked is the next run's; allowed agents listed and Forget asks again; a run's Diagnostics lines hold no words of the prompt, reply or stderr (finished, stopped, timed out); a failed start.
   - `diagnostics_tests.rs` › `an_agent_runs_lines_name_a_known_agent_how_it_ended_and_nothing_it_said`.
+
+## R5e: verified, and not
+
+The record is `docs/scrim-ports/chat/README.md`. In short:
+- **The screen was locked,** so the real window was never drawn. End to end ran headless instead, in the app crate (`chat_e2e_tests.rs`): the window's code frame by frame, the app's real endpoint, the real runner, a real stub process.
+  - **A run:** send, dots, reveal, follow, the batch lines, the reply, the cost line, Diagnostics.
+  - **Stop:** the process group gone in 0.04 s, the dots ended at once, two Undo steps took the work back.
+  - **The time limit:** stopped at 3 s.
+- **One real Claude Code run:** every flag accepted, `stream-json` spoken, then "Not logged in · Please run /login". Not retried; the sign-in wasn't touched. **A real agent making a change is NOT verified.**
+- **Fixed on the way:**
+  - **Stop's working state:** it ended the run's clients only by the profile's `clientInfo` names, so a child announcing another name kept its dots until the grace ran out. `finish_where` now also ends clients that first appeared during the run (`working_state_tests.rs` › `an_ended_agent_run_stops_its_own_clients_and_no_others`).
+  - **An error result** shown as a reply (above).
+  - **The confirmation's command** dropping an empty argument (`command_line` now quotes it).
+- **Captures:** light and dark, from the offscreen renderer, under `docs/scrim-ports/chat/`.

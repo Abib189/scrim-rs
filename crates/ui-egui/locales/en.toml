@@ -8,6 +8,7 @@
 name = "English"
 
 [ui]
+"Stopped after {n} s, this run's time limit." = "Stopped after {n} s, this run's time limit."
 "Describe a change in the AI tab" = "Describe a change in the AI tab"
 "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys."
 "Stop a run after" = "Stop a run after"

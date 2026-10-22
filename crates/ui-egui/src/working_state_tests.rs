@@ -110,3 +110,21 @@ fn without_motion_it_is_on_for_the_whole_run_then_off() {
     w.tick(5.0, 5.0, false);
     assert_eq!(w.alpha(5.0, false), 0.0, "no fade out");
 }
+
+#[test]
+fn an_ended_agent_run_stops_its_own_clients_and_no_others() {
+    let mut s = State::default();
+    s.touch_as("session:desktop".into(), Some("Claude".into()), Some("claude-ai"), 1.0);
+    s.touch_as("session:named".into(), Some("Claude Code".into()), Some("claude-code"), 1.5);
+    // The run begins at 2.0; a client that first appears after it is the run's, whatever its name.
+    s.touch_as("session:child".into(), None, Some("scrim-stub-agent"), 3.0);
+    s.touch_as("session:desktop".into(), Some("Claude".into()), Some("claude-ai"), 3.5);
+    s.touch_as("session:named".into(), Some("Claude Code".into()), Some("claude-code"), 3.6);
+    s.tick(4.0, 30.0, true);
+    s.finish_where(5.0, |raw| raw == Some("claude-code"), 2.0);
+    s.tick(5.0, 30.0, true);
+    assert_eq!(s.count(5.0, 30.0), 1, "Claude Desktop, there before the run under another name, keeps working");
+    let ends: Vec<_> =
+        s.transitions().into_iter().filter(|t| t.cause == figcraft_engine::settings::diagnostics::Cause::FinishWorking).map(|t| t.client).collect();
+    assert_eq!(ends.len(), 2, "the run's child and the client named like its agent: {ends:?}");
+}

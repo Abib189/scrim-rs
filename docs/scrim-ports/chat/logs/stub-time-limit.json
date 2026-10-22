@@ -1,0 +1,26 @@
+{
+  "diagnostics": [
+    "Claude Code run started",
+    "begin: scrim-stub-agent (session 7fa2f481…), first request; the dots are on",
+    "Claude Code run ended: timed out, no exit code, 3 s",
+    "end: scrim-stub-agent (session 7fa2f481…), finish_working; the dots fade out"
+  ],
+  "endpoint_port_was_not_7680": true,
+  "events": [
+    {
+      "t": 0.0,
+      "what": "sent"
+    },
+    {
+      "t": 3.04,
+      "what": "timed out"
+    }
+  ],
+  "rectangles": 1,
+  "transcript": [
+    "You(\"rectangle named Capped slow 40\")",
+    "Work(\"Agent: made one layer\")",
+    "Failure(\"Stopped after 3 s, this run's time limit.\")",
+    "Cost(\"0:03 · Billed by your agent's plan.\")"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "diagnostics": [
+    "Claude Code run started",
+    "begin: scrim-stub-agent (session 12996da5…), first request; the dots are on",
+    "end: scrim-stub-agent (session 12996da5…), finish_working; the dots fade out",
+    "Claude Code run ended: finished, exit 0, 4 s"
+  ],
+  "endpoint_port_was_not_7680": true,
+  "events": [
+    {
+      "t": 0.02,
+      "what": "sent"
+    },
+    {
+      "t": 0.02,
+      "what": "running"
+    },
+    {
+      "t": 1.15,
+      "what": "three batches landed"
+    },
+    {
+      "t": 3.72,
+      "what": "ended"
+    },
+    {
+      "t": 3.72,
+      "what": "the dots gone"
+    }
+  ],
+  "follow_paused": false,
+  "rectangles": 9,
+  "seen_reveal": true,
+  "seen_working": true,
+  "transcript": [
+    "You(\"batches 3 slow 2\")",
+    "Work(\"Agent: made 3 layers\")",
+    "Work(\"Agent: made 3 layers\")",
+    "Work(\"Agent: made 3 layers\")",
+    "Reply { agent: \"Claude Code\", text: \"Made batch 1, batch 2, batch 3.\" }",
+    "Cost(\"0:03 · Billed by your agent's plan.\")"
+  ]
+}

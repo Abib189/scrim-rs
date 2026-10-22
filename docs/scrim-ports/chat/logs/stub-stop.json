@@ -1,0 +1,45 @@
+{
+  "diagnostics": [
+    "Claude Code run started",
+    "begin: scrim-stub-agent (session 157dc31b…), first request; the dots are on",
+    "Claude Code run ended: stopped, no exit code, 1 s",
+    "end: scrim-stub-agent (session 157dc31b…), finish_working; the dots fade out"
+  ],
+  "endpoint_port_was_not_7680": true,
+  "events": [
+    {
+      "t": 0.01,
+      "what": "sent"
+    },
+    {
+      "t": 0.58,
+      "what": "two batches landed"
+    },
+    {
+      "t": 0.63,
+      "what": "the stub waits"
+    },
+    {
+      "t": 0.65,
+      "what": "Stop pressed"
+    },
+    {
+      "t": 0.69,
+      "what": "stopped"
+    },
+    {
+      "t": 0.69,
+      "what": "the dots gone at once"
+    }
+  ],
+  "process_group_left": false,
+  "rectangles_after_two_undos": 0,
+  "stop_to_ended_secs": 0.04,
+  "transcript": [
+    "You(\"batches 2 slow 37\")",
+    "Work(\"Agent: made 3 layers\")",
+    "Work(\"Agent: made 3 layers\")",
+    "Note(\"Stopped. What the agent made so far stays: Undo takes it back.\")",
+    "Cost(\"0:00 · Billed by your agent's plan.\")"
+  ]
+}

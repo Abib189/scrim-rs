@@ -693,8 +693,10 @@ pub fn generic(s: &Session, format: &str) -> crate::Result<String> {
 /// A command line as a person would type it (arguments with spaces or `$` quoted for a POSIX
 /// shell). Only for showing and copying: Scrim itself runs the argument list, never this text.
 pub fn command_line(program: &str, args: &[String]) -> String {
-    let quoted: Vec<String> =
-        args.iter().map(|x| if x.contains([' ', '"', '{', '$']) { format!("'{}'", x.replace('\'', "'\\''")) } else { x.clone() }).collect();
+    // Quoted as a shell would need it, so what is shown is exactly what runs: an empty argument
+    // too (`--tools ''`).
+    let plain = |x: &str| !x.is_empty() && x.chars().all(|c| c.is_ascii_alphanumeric() || "_@%+=:,./-".contains(c));
+    let quoted: Vec<String> = args.iter().map(|x| if plain(x) { x.clone() } else { format!("'{}'", x.replace('\'', "'\\''")) }).collect();
     format!("{program} {}", quoted.join(" "))
 }
 

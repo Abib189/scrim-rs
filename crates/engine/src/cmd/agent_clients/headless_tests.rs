@@ -77,6 +77,7 @@ fn the_confirmation_shows_the_binary_and_every_argument_with_a_placeholder_for_t
     let shown = profile("claude-code").unwrap().display("/opt/bin/claude", URL, false);
     assert!(shown.starts_with("/opt/bin/claude -p"), "{shown}");
     assert!(shown.contains(PROMPT_SHOWN) && shown.contains("--strict-mcp-config") && shown.contains(URL), "{shown}");
+    assert!(shown.contains("--tools '' --allowedTools"), "the empty argument shows: {shown}");
 }
 
 #[test]

@@ -1,0 +1,31 @@
+{
+  "diagnostics": [
+    "Claude Code run started",
+    "Claude Code run ended: failed, exit 1, 1 s"
+  ],
+  "endpoint_port_was_not_7680": true,
+  "events": [
+    {
+      "t": 0.02,
+      "what": "sent"
+    },
+    {
+      "t": 0.02,
+      "what": "running"
+    },
+    {
+      "t": 1.42,
+      "what": "ended"
+    }
+  ],
+  "follow_paused": false,
+  "rectangle_named_test": false,
+  "seen_working": false,
+  "size": null,
+  "transcript": [
+    "You(\"Create one 100x100 rectangle named Test\")",
+    "Reply { agent: \"Claude Code\", text: \"Not logged in · Please run /login\" }",
+    "Failure(\"Claude Code stopped with an error (exit 1): no message\")",
+    "Cost(\"0:01 · 0 tokens in, 0 out, $0.00, as the agent reported\")"
+  ]
+}

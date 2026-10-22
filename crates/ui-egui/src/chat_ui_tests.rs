@@ -35,7 +35,7 @@ pub(crate) struct Script {
 
 pub(crate) type Shared = Arc<Mutex<Script>>;
 
-struct Platform(Shared);
+pub(crate) struct Platform(pub(crate) Shared);
 
 struct Scripted(Shared);
 
@@ -325,6 +325,16 @@ fn each_failure_is_said_in_plain_words() {
             vec![line_ev(r#"{"type":"system","subtype":"init","mcp_servers":[{"name":"scrim","status":"failed"}]}"#), end(1, 8.0, "")],
             "Claude Code couldn't reach Scrim's MCP server.",
         ),
+        // As the real Claude Code said it on 22 Oct 2026: its error as its result, nothing on stderr.
+        (
+            vec![
+                line_ev(
+                    r#"{"type":"result","subtype":"success","is_error":true,"result":"Not logged in · Please run /login","usage":{"input_tokens":0,"output_tokens":0},"total_cost_usd":0}"#,
+                ),
+                end(1, 1.4, ""),
+            ],
+            "Claude Code stopped before it began: Not logged in · Please run /login",
+        ),
     ];
     for (events, want) in cases {
         let (mut u, script) = window();
@@ -332,6 +342,7 @@ fn each_failure_is_said_in_plain_words() {
         feed(&script, events);
         u.frame(vec![]);
         assert!(lines(&u).contains(&Line::Failure(want.into())), "{want}: {:?}", lines(&u));
+        assert!(!lines(&u).iter().any(|l| matches!(l, Line::Reply { .. })), "an error isn't shown as a reply: {:?}", lines(&u));
     }
     // Not installed, and the endpoint down: nothing is started.
     let (mut u, script) = window();

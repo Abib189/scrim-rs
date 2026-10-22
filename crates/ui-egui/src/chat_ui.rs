@@ -63,6 +63,8 @@ pub struct Running {
     uid: u64,
     start_doc: Arc<Document>,
     rev: u64,
+    /// Its time limit, in seconds.
+    limit: u64,
 }
 
 /// The composer's state in a window.
@@ -198,7 +200,8 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
     let var = |k: &str| env.vars.get(k).cloned();
     let home = var(headless::CHILD_HOME_VAR).or_else(|| env.home.as_ref().map(|h| h.to_string_lossy().into_owned()));
     let child_env = headless::child_env(var("PATH").as_deref(), home.as_deref(), token.as_deref(), &headless::system_env());
-    let spec = AgentRunSpec { program: path, args, env: child_env, limit_secs: limit_secs(app) };
+    let limit = limit_secs(app);
+    let spec = AgentRunSpec { program: path, args, env: child_env, limit_secs: limit };
     match app.services.start_agent(spec) {
         Ok(handle) => {
             let Ok(ds) = app.session.ds() else { return };
@@ -206,7 +209,7 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
             let rev = app.session.agents.last_edit(uid).unwrap_or(0);
             let started = now(app);
             app.ui.agent_view.chat.running =
-                Some(Running { agent, started, handle, outcome: Default::default(), stopping: false, uid, start_doc, rev });
+                Some(Running { agent, started, handle, outcome: Default::default(), stopping: false, uid, start_doc, rev, limit });
             // Settings ▸ Diagnostics: the agent's name only, never the prompt.
             crate::settings_privacy::record(app, Entry::ChatRun { agent: &agent.name, ended: None });
         }
@@ -292,20 +295,30 @@ fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
     let o = &r.outcome;
     let token = app.session.prefs.settings.mcp.require_auth.then(|| app.session.prefs.settings.mcp.token.clone());
     let last = stderr.last().map(|l| headless::redact(l, token.as_deref())).unwrap_or_default();
-    if let Some(text) = &o.reply {
+    // A result the CLI marks as an error ("Not logged in · Please run /login") is its failure's
+    // words, not a reply.
+    let cli_error = o.finished == Some(true);
+    let said = o.reply.clone().filter(|_| cli_error).map(|r| headless::redact(&r, token.as_deref()));
+    if let Some(text) = o.reply.as_ref().filter(|_| !cli_error) {
         line(app, Line::Reply { agent: name.clone(), text: text.clone() });
     }
     let (failure, outcome) = match &end {
         AgentEnd::Stopped => (None, "stopped"),
-        AgentEnd::TimedOut => {
-            let mins = app.session.prefs.settings.chat_time_limit_mins.to_string();
+        AgentEnd::TimedOut if r.limit % 60 == 0 => {
+            let mins = (r.limit / 60).to_string();
             (Some(trf("Stopped after {n} min, the time limit in Settings ▸ AI & agents.", &[("n", &mins)])), "timed out")
         }
+        // A live check's shorter limit (`SCRIM_CHAT_LIMIT_SECS`).
+        AgentEnd::TimedOut => (Some(trf("Stopped after {n} s, this run's time limit.", &[("n", &r.limit)])), "timed out"),
         _ if o.scrim_connected == Some(false) => (Some(trf("{agent} couldn't reach Scrim's MCP server.", &[("agent", &name)])), "failed"),
         AgentEnd::Exited(code) if *code != Some(0) => {
             let code = code.map_or_else(|| tr("a signal").to_string(), |c| c.to_string());
-            let detail = if last.is_empty() { tr("no message").to_string() } else { last.clone() };
-            if secs < AT_ONCE_SECS && o.reply.is_none() && o.tools == 0 {
+            let detail = said
+                .clone()
+                .or_else(|| o.failure.clone())
+                .or_else(|| Some(last.clone()).filter(|l| !l.is_empty()))
+                .unwrap_or_else(|| tr("no message").to_string());
+            if secs < AT_ONCE_SECS && (o.reply.is_none() || cli_error) && o.tools == 0 {
                 (Some(trf("{agent} stopped before it began: {detail}", &[("agent", &name), ("detail", &detail)])), "failed")
             } else {
                 (
@@ -315,7 +328,7 @@ fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
             }
         }
         _ if o.finished == Some(true) || o.failure.is_some() => {
-            let detail = o.failure.clone().unwrap_or_else(|| tr("see its reply").to_string());
+            let detail = said.clone().or_else(|| o.failure.clone()).unwrap_or_else(|| tr("see its reply").to_string());
             (Some(trf("{agent} reported an error: {detail}", &[("agent", &name), ("detail", &detail)])), "failed")
         }
         _ => (None, "finished"),

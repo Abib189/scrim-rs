@@ -269,6 +269,59 @@ fn screenshots() {
     }
 }
 
+/// R5e: "Describe a change" in the AI tab, each state light and dark, on Ridgeline with a scripted
+/// agent run (the screen being locked, no window could be captured).
+#[test]
+#[ignore = "writes screenshots when SCRIM_CHAT_SHOTS_DIR is set"]
+fn chat_screenshots() {
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
+    use crate::services::{AgentEnd, AgentRunEvent};
+    let Some(dir) = std::env::var_os("SCRIM_CHAT_SHOTS_DIR").map(std::path::PathBuf::from) else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    for dark in [false, true] {
+        let theme = if dark { "dark" } else { "light" };
+        let script = std::sync::Arc::new(std::sync::Mutex::new(Script { claude: Some(CLAUDE.into()), ..Default::default() }));
+        let mut o = ridgeline(dark, 300.0);
+        o.app.services = Box::new(Platform(script.clone()));
+        o.app.session.agents.mcp.port = Some(7690);
+        run(&mut o, "panel.tab.ai", json!({}));
+        // The first use asks.
+        o.app.ui.agent_view.chat.draft = "Make the trail cards' titles larger".into();
+        run(&mut o, "chat.send", json!({"prompt": "Make the trail cards' titles larger", "agent": "claude-code"}));
+        save(&o, &dir, &format!("chat-{theme}-1-first-use-asks"));
+        run(&mut o, "chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
+        // At work: two batches land through the app's MCP route.
+        let ctx = o.ctx.clone();
+        for k in 0..2 {
+            let cmds: Vec<serde_json::Value> = (0..3)
+                .map(|j| json!({"command": "shape.rectangle", "params": {"x": 2000 + 60 * j, "y": 80 * k, "width": 40, "height": 40}}))
+                .collect();
+            let _ = crate::control::handle_route(
+                &mut o.app,
+                &ctx,
+                crate::control::ROUTE_MCP_HTTP,
+                "engine.execute",
+                &json!({"command": "command.batch", "params": {"commands": cmds}}),
+            );
+            o.settle();
+        }
+        save(&o, &dir, &format!("chat-{theme}-2-running"));
+        script.lock().unwrap().events.extend([
+            AgentRunEvent::Line(r#"{"type":"result","subtype":"success","result":"I set the three trail cards' titles to 18 px semibold and left the rest as it was."}"#.into()),
+            AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 38.0 },
+        ]);
+        o.settle();
+        save(&o, &dir, &format!("chat-{theme}-3-finished"));
+        run(&mut o, "settings.open", json!({"section": "ai"}));
+        save(&o, &dir, &format!("chat-{theme}-4-settings"));
+        o.app.ui.preferences = false;
+        script.lock().unwrap().claude = None;
+        o.app.ui.agent_view.chat = Default::default();
+        o.settle();
+        save(&o, &dir, &format!("chat-{theme}-5-no-agent-installed"));
+    }
+}
+
 #[test]
 #[ignore = "compares screenshots when SCRIM_SHOTS_BEFORE and SCRIM_SHOTS_DIR are set"]
 fn compare_outside_the_right_panel() {

@@ -8,6 +8,7 @@ name = "Español"
 status = "draft — needs native review"
 
 [ui]
+"Stopped after {n} s, this run's time limit." = "Detenido tras {n} s, el límite de esta ejecución."
 "Describe a change in the AI tab" = "Describir un cambio en la pestaña IA"
 "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Ejecuta Claude Code o Codex, ya instalados y con la sesión iniciada, en este lienzo a través del servidor MCP de Scrim. Lo paga el plan de tu agente; Scrim no guarda claves."
 "Stop a run after" = "Detener una ejecución tras"

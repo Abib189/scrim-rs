@@ -43,7 +43,8 @@ struct Client {
     name: Option<String>,
     /// The name it announced (`clientInfo`), for diagnostics.
     raw: Option<String>,
-    /// Its last request.
+    /// Its first request, and its last.
+    first: f64,
     last: f64,
     /// When it said it finished (or its session ended).
     finished: Option<f64>,
@@ -115,8 +116,16 @@ impl State {
 
     /// [`State::touch`], with the name the client announced (`clientInfo`), for diagnostics.
     pub fn touch_as(&mut self, key: String, name: Option<String>, raw: Option<&str>, now: f64) {
-        let c =
-            self.clients.entry(key).or_insert(Client { name: None, raw: None, last: now, finished: None, stop: None, was: false, expired_at: None });
+        let c = self.clients.entry(key).or_insert(Client {
+            name: None,
+            raw: None,
+            first: now,
+            last: now,
+            finished: None,
+            stop: None,
+            was: false,
+            expired_at: None,
+        });
         if name.is_some() {
             c.name = name;
         }
@@ -154,10 +163,12 @@ impl State {
         }
     }
 
-    /// Every client whose announced name `matches` and that made a request at or after `since`
-    /// stopped at `now`, as `finish_working` stops it (an agent run Scrim started has ended, R5).
+    /// The clients of an agent run Scrim started, which has ended (R5), stopped at `now` as
+    /// `finish_working` stops them: those that made a request at or after `since` and either
+    /// announced a name that `matches`, or first appeared during the run.
     pub fn finish_where(&mut self, now: f64, matches: impl Fn(Option<&str>) -> bool, since: f64) {
-        let keys: Vec<String> = self.clients.iter().filter(|(_, c)| c.last >= since && matches(c.raw.as_deref())).map(|(k, _)| k.clone()).collect();
+        let keys: Vec<String> =
+            self.clients.iter().filter(|(_, c)| c.last >= since && (c.first >= since || matches(c.raw.as_deref()))).map(|(k, _)| k.clone()).collect();
         for k in keys {
             self.end_session(&k, now, Cause::FinishWorking);
         }
