@@ -345,3 +345,25 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 It fails on the unmarked 120 with T1's rule.
 
 **Decision (overrule it):** `settings_version` stays 8. A settings file a T1 build already migrated has lost its old value, so a version 9 couldn't restore it.
+
+## Fix V4: connection lines can't bury the work (22 Oct 2026)
+
+**Why:** Codex clients connected to the person's Scrim in threes every few minutes without doing any work. Each connect was a Diagnostics line, so the lines that explain what happened (working, following, the reveal) were hard to find, and in time they could be pushed out.
+
+**The rule** (`diagnostics.rs` › `record`, `prune`):
+- **Counted, not repeated:**
+  - The same client connecting again within 60 s of its line's first time (`CONNECT_WINDOW_SECS`), with nothing else noted in between, is counted on that line: "codex-mcp-client 0.163.0-alpha.11 connected ×3".
+  - The line keeps its first time.
+  - After the minute, after any other line, or for another client, it is a new line, so the order stays true.
+  - The count follows "connected", so a client named "tool ×9" isn't mistaken for a count.
+- **Connection lines are capped:** the newest 200 (`MAX_CONNECT_EVENTS`) are kept.
+- **Past 1,000 events** (`MAX_EVENTS`), the oldest go first, by kind:
+  1. connections and the server starting (`mcpClient`, `mcpServer`);
+  2. then everything else (errors, reloads, fonts, chat runs);
+  3. an agent's work last: `working`, `follow`, `reveal`.
+- **The retention** (1, 7 or 30 days, or none) applies to every kind alike. A week-old working line goes after a week, whatever else there is.
+- **Not in scope:** what starts the Codex clients. That is the person's to check.
+
+**Tests** (`diagnostics_tests.rs`):
+- `a_client_connecting_again_within_a_minute_is_counted_on_its_line`: ×3, ×4 at 60 s, a new line at 61 s, another client and a working line in between keep the order, and a name that looks like a count.
+- `connection_lines_never_push_out_an_agents_work`: 5,000 clients over six days keep only the newest 200 connection lines and every working, follow and reveal line. 1,200 errors then go before the work, and the connection lines before either. The retention still ends the work after a week.

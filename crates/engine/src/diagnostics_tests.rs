@@ -220,3 +220,76 @@ fn a_reveal_that_waited_out_the_cap_says_how_long_and_how_many() {
         ("reveal", "agent layers: 18 waited 700 ms for the camera, then entered while it was still on its way")
     );
 }
+
+/// Fix V4: the same client connecting again within a minute of its line's first is counted on that
+/// line; after the minute, after anything else, or another client, it is a line of its own.
+#[test]
+fn a_client_connecting_again_within_a_minute_is_counted_on_its_line() {
+    let mut st = crate::settings::Settings::default();
+    let codex = || Entry::McpClient { name: "codex-mcp-client", version: "0.163.0-alpha.11" };
+    let details = |st: &crate::settings::Settings| st.diagnostics.iter().map(|e| e.detail.clone()).collect::<Vec<_>>();
+    for t in [0, 1, 2] {
+        record(&mut st, NOW + t, codex());
+    }
+    assert_eq!(details(&st), ["codex-mcp-client 0.163.0-alpha.11 connected ×3"]);
+    assert_eq!(st.diagnostics[0].at, NOW, "the line keeps its first time");
+    record(&mut st, NOW + 60, codex());
+    assert_eq!(details(&st), ["codex-mcp-client 0.163.0-alpha.11 connected ×4"], "60 s: still the same line");
+    record(&mut st, NOW + 61, codex());
+    assert_eq!(details(&st).last().map(String::as_str), Some("codex-mcp-client 0.163.0-alpha.11 connected"), "61 s: a new line");
+    record(&mut st, NOW + 62, Entry::McpClient { name: "claude-ai", version: "0.1.0" });
+    record(&mut st, NOW + 63, codex());
+    record(
+        &mut st,
+        NOW + 64,
+        Entry::Working { change: Change::Begin, cause: Cause::FirstRequest, client: Some("claude-ai"), session: None, run: true },
+    );
+    record(&mut st, NOW + 65, codex());
+    assert_eq!(
+        details(&st)[2..],
+        [
+            "claude-ai 0.1.0 connected".to_string(),
+            "codex-mcp-client 0.163.0-alpha.11 connected".into(),
+            "begin: claude-ai (no session), first request; the dots are on".into(),
+            "codex-mcp-client 0.163.0-alpha.11 connected".into(),
+        ],
+        "another client, or anything in between, keeps the order"
+    );
+    // A name that looks like a count is the client's own name, never counted.
+    let mut odd = crate::settings::Settings::default();
+    record(&mut odd, NOW, Entry::McpClient { name: "tool ×9", version: "" });
+    record(&mut odd, NOW + 1, Entry::McpClient { name: "tool ×9", version: "" });
+    assert_eq!(details(&odd), ["tool ×9 connected ×2"]);
+}
+
+/// Fix V4: however many clients connect, they never push an agent's work (working, following, the
+/// reveal) out of the history: connection lines are kept to the newest 200, and past 1,000 events
+/// the oldest of the least important kind go first (connections, then the rest, the work last).
+#[test]
+fn connection_lines_never_push_out_an_agents_work() {
+    let mut st = crate::settings::Settings::default();
+    record(&mut st, NOW, Entry::Working { change: Change::Begin, cause: Cause::FirstRequest, client: Some("claude-ai"), session: None, run: true });
+    record(&mut st, NOW + 1, Entry::FollowPaused(Pause::PersonEdit));
+    record(&mut st, NOW + 2, Entry::Reveal { entered: 0, skipped: &[(Skip::OffScreenOff, 7)] });
+    record(&mut st, NOW + 3, Entry::FollowOffAtStart);
+    // 5,000 different clients over six days (none counted on another's line).
+    for i in 0..5000u64 {
+        let name = format!("codex-{i}");
+        record(&mut st, NOW + 10 + i * 100, Entry::McpClient { name: &name, version: "1" });
+    }
+    let kinds = |st: &crate::settings::Settings, k: &str| st.diagnostics.iter().filter(|e| e.kind == k).count();
+    assert_eq!(kinds(&st, "mcpClient"), super::MAX_CONNECT_EVENTS, "the newest 200 connections");
+    assert_eq!(st.diagnostics.last().map(|e| e.detail.as_str()), Some("codex-4999 1 connected"));
+    assert_eq!((kinds(&st, "working"), kinds(&st, "follow"), kinds(&st, "reveal")), (1, 2, 1), "the work is all still there");
+    // Past 1,000 events: errors (the middle rank) go before the work, connections before both.
+    let at = NOW + 600_000;
+    for i in 0..1200u64 {
+        record(&mut st, at + i, Entry::Error { command: "node.set", error: &EngineError::NoDocument });
+    }
+    assert_eq!(st.diagnostics.len(), MAX_EVENTS);
+    assert_eq!((kinds(&st, "working"), kinds(&st, "follow"), kinds(&st, "reveal")), (1, 2, 1), "the work outlasts the errors");
+    assert_eq!(kinds(&st, "mcpClient"), 0, "connections went first");
+    // The retention still applies to everything: a week on, the old work is gone too.
+    record(&mut st, NOW + 8 * 86_400, Entry::FollowOffAtStart);
+    assert_eq!(kinds(&st, "working"), 0);
+}

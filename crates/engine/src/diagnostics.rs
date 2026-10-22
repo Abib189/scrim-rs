@@ -6,7 +6,8 @@
 //! - a file reverted to its saved copy (no name or path);
 //! - the fonts a file falls back from (family names only);
 //! - the MCP server starting (its port) or failing to;
-//! - an MCP client connecting (its name and version as it gave them);
+//! - an MCP client connecting (its name and version as it gave them), the same one again within a
+//!   minute counted on its line (Fix V4);
 //! - a command failing (its id, when it is a registered command, and the error's category; never
 //!   the message, which can quote the document);
 //! - an agent refused when it asks to change Follow agents: the route and its session (Fix V2);
@@ -395,21 +396,73 @@ impl Entry<'_> {
     }
 }
 
+/// The same client connecting again within this many seconds of the line's first is counted on
+/// that line ("… connected ×3"), not given another (Fix V4).
+pub const CONNECT_WINDOW_SECS: u64 = 60;
+/// The most "connected" lines kept, the newest: they never push out what matters (Fix V4).
+pub const MAX_CONNECT_EVENTS: usize = 200;
+
 /// Note `entry` at `now` (seconds since 1970), then drop what the retention no longer keeps.
 pub fn record(settings: &mut Settings, now: u64, entry: Entry) {
     if matches!(entry, Entry::Error { error: EngineError::Waiting, .. }) {
         return;
     }
-    settings.diagnostics.push(Event { at: now, kind: entry.kind().into(), detail: entry.detail() });
+    let (kind, detail) = (entry.kind(), entry.detail());
+    // A client connecting again and again (Fix V4): one line, counted, while nothing else happened.
+    match settings.diagnostics.last_mut() {
+        Some(last)
+            if kind == "mcpClient"
+                && last.kind == kind
+                && now.saturating_sub(last.at) <= CONNECT_WINDOW_SECS
+                && counted(&last.detail).0 == detail =>
+        {
+            last.detail = format!("{detail} ×{}", counted(&last.detail).1 + 1);
+        }
+        _ => settings.diagnostics.push(Event { at: now, kind: kind.into(), detail }),
+    }
     prune(settings, now);
 }
 
-/// Drop events older than the retention allows, and the oldest past [`MAX_EVENTS`].
+/// A "connected" line without its count, and the count (1 without one).
+fn counted(detail: &str) -> (&str, u32) {
+    detail
+        .rsplit_once(" ×")
+        .and_then(|(line, n)| Some((line, n.parse().ok()?)))
+        .filter(|(line, _)| line.ends_with(" connected"))
+        .unwrap_or((detail, 1))
+}
+
+/// Which events go first when there are too many: clients connecting and the server starting, then
+/// the rest, and an agent's work (working, following, the reveal) last (Fix V4).
+fn rank(kind: &str) -> u8 {
+    match kind {
+        "mcpClient" | "mcpServer" => 0,
+        "working" | "follow" | "reveal" => 2,
+        _ => 1,
+    }
+}
+
+/// Drop the oldest `n` events `pick` chooses.
+fn drop_oldest(events: &mut Vec<Event>, mut n: usize, pick: impl Fn(&Event) -> bool) {
+    events.retain(|e| {
+        let gone = n > 0 && pick(e);
+        n -= usize::from(gone);
+        !gone
+    });
+}
+
+/// Drop events older than the retention allows; then the oldest "connected" lines past
+/// [`MAX_CONNECT_EVENTS`]; then, past [`MAX_EVENTS`], the oldest of the least important kind first
+/// ([`rank`]), so connection lines never push out an agent's work.
 pub fn prune(settings: &mut Settings, now: u64) {
     let keep = u64::from(settings.diagnostics_days) * 86_400;
     settings.diagnostics.retain(|e| settings.diagnostics_days > 0 && now.saturating_sub(e.at) <= keep);
-    let excess = settings.diagnostics.len().saturating_sub(MAX_EVENTS);
-    settings.diagnostics.drain(..excess);
+    let connects = settings.diagnostics.iter().filter(|e| e.kind == "mcpClient").count();
+    drop_oldest(&mut settings.diagnostics, connects.saturating_sub(MAX_CONNECT_EVENTS), |e| e.kind == "mcpClient");
+    for r in 0..=2 {
+        let excess = settings.diagnostics.len().saturating_sub(MAX_EVENTS);
+        drop_oldest(&mut settings.diagnostics, excess, |e| rank(&e.kind) == r);
+    }
 }
 
 /// `secs` since 1970 as `2026-10-20 14:03:09 UTC`.
