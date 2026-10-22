@@ -20,9 +20,10 @@ pub const TOOLS_FILE: &str = "mcp-tools.json";
 /// The most bytes either file is read up to.
 const MAX: u64 = 4 << 20;
 
-/// The settings folder (`design.scrim.app` under the platform's application-settings folder).
+/// The settings folder (`design.scrim.app` under the platform's application-settings folder, or
+/// the one `SCRIM_SETTINGS_DIR` names).
 pub fn settings_dir() -> Option<PathBuf> {
-    figcraft_engine::settings::config_base_dir().map(|b| b.join(figcraft_engine::settings::APP_DIR))
+    figcraft_engine::settings::settings_dir().0
 }
 
 /// `bytes` to `dir/name`, atomically: a temporary file in the same folder renamed over it.

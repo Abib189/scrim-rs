@@ -269,8 +269,8 @@ fn mcp(attach: Option<&str>, roots: Option<figcraft_engine::file_access::Roots>)
         None => {
             // Settings ▸ Tool access applies here too: the app's saved settings say which tools are off.
             let mut session = figcraft_engine::Session::new();
-            if let Some(dir) = figcraft_engine::settings::config_base_dir() {
-                session.prefs.settings.mcp = figcraft_engine::settings::saved_mcp(&dir.join(figcraft_engine::settings::APP_DIR));
+            if let Some(dir) = figcraft_engine::settings::settings_dir().0 {
+                session.prefs.settings.mcp = figcraft_engine::settings::saved_mcp(&dir);
             }
             Box::new(figcraft_mcp::Headless::with_session(session))
         }

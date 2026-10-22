@@ -263,3 +263,10 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
   - an agent's `pref.agentGrace` through the window is refused.
   - `diagnostics_tests.rs` covers the event's words and the scan for secrets.
 
+## Fix Q3: live checks run on scratch settings
+
+- **`SCRIM_SETTINGS_DIR`** (`settings::SETTINGS_DIR_VAR`) names the settings folder. It covers the app's preferences and recovery copies, the CLI's headless MCP and the bridge's endpoint note, and the FigCraft copy is skipped.
+- **The control method `app.settings-dir`** answers `{dir, override}`.
+- **Scrim's rules 9** (CLAUDE.md, AGENTS.md): every live run uses a scratch settings folder and `HOME`. `cargo xtask live-scripts` fails a script that changes a setting without naming the override.
+- **The scripts already in `docs/`** (`ie.py`, `l2.py`, `bridge.py`, `n3.py`) now refuse to run unless the app says `override: true`. `p3.py` starts the app and the bridge with it.
+

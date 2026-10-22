@@ -126,11 +126,17 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
    - Never commit or push on a red CI run, with no exception for docs-only commits. If a flake fails it, rerun until it is green first.
    - Read the CI result in a separate step from the commit, never chained with it.
    - Label any timing measured under load or swap as INVALID.
+9. **Live checks never touch the person's own settings** (Fix Q3).
+   - Every live verification run starts the app (and any bridge) with `SCRIM_SETTINGS_DIR` set to a scratch settings folder, and `HOME` set to a scratch folder.
+   - A script that changes a setting (a `pref.*` command, or writing `state.json`) names `SCRIM_SETTINGS_DIR`: it sets it for the app it starts, or checks it first (the control method `app.settings-dir` answers `override: true`) and refuses otherwise.
+   - `cargo xtask live-scripts` (part of `ci`) enforces this for every `*.py` and `*.sh` under `scripts/` and `docs/`.
+   - The person's real settings folder may be read, never written, and only when a task asks.
 
 ## Running and looking at the app
 - `cargo run -p figcraft -- --control <port> [file.figcraft|file.svg|image]`. Pick a free port
   (`python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])'`);
   sibling apps use the control channel too.
+- For a live check, start it with `SCRIM_SETTINGS_DIR=<scratch folder> HOME=<scratch folder>` (Scrim's rules 9).
 - Drive it with JSON lines, e.g.
   `{"id":1,"method":"engine.execute","params":{"command":"shape.rectangle","params":{"x":10,"y":10,"width":100,"height":50}}}`
   then `{"id":2,"method":"ui.screenshot","params":{"path":"/tmp/shot.png"}}`. Methods are documented

@@ -198,8 +198,9 @@ fn main() -> eframe::Result {
         }
     }
     let opened: Vec<u64> = session.docs.iter().map(|d| d.uid).collect();
-    // FigCraft's settings come over once, as a copy (`migrate`).
-    if let Some(base) = services::base_dir() {
+    // FigCraft's settings come over once, as a copy (`migrate`); not into a scratch settings
+    // folder (`SCRIM_SETTINGS_DIR`, Fix Q3).
+    if let (Some(base), false) = (services::base_dir(), figcraft_engine::settings::settings_dir().1) {
         match migrate::migrate(&base) {
             migrate::Migration::Failed(e) => log::warn!("couldn't copy FigCraft's settings: {e}"),
             m => log::info!("settings: {m:?}"),

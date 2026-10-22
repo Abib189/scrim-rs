@@ -787,6 +787,12 @@ fn handle_method(app: &mut FigApp, ctx: &Context, method: &str, p: &Value) -> Re
             }
             app.session.execute("file.export", &params).map_err(|e| e.to_string())
         }
+        // Where this app keeps its settings, and whether `SCRIM_SETTINGS_DIR` put them there (Fix
+        // Q3): live scripts refuse to change settings in the person's own folder.
+        "app.settings-dir" => {
+            let (dir, overridden) = figcraft_engine::settings::settings_dir();
+            Ok(json!({"dir": dir.map(|d| d.to_string_lossy().into_owned()), "override": overridden}))
+        }
         "app.quit" => {
             app.ui.quit = true;
             ctx.send_viewport_cmd_to(egui::ViewportId::ROOT, egui::ViewportCommand::Close);

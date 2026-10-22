@@ -341,6 +341,10 @@ closing while others are open takes over one of them, and closing the last windo
 
 The MCP tools turned off in Settings ▸ Tool access: `{disabledTools: [name]}`. `scrim mcp --attach` asks before every `tools/list` and `tools/call`, leaving them out and refusing them.
 
+### `app.settings-dir {}`
+
+`{dir, override}`: the folder this app keeps its settings in, and whether `SCRIM_SETTINGS_DIR` put it there (Fix Q3). Live scripts check `override` before they change any setting, so they never touch the person's own settings.
+
 ### `app.quit {}`
 
 Close the app (every window, without asking about unsaved changes).

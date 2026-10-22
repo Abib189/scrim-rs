@@ -17,6 +17,10 @@ from d3 import App
 port, out, speed, camera = int(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
 seq = sys.argv[5] if len(sys.argv) > 5 else 'brief'
 a = App(port)
+# Fix Q3: never against the person's own settings. The app must run with SCRIM_SETTINGS_DIR set to
+# a scratch folder (and a scratch HOME).
+if not a.call('app.settings-dir', {}).get('result', {}).get('override'):
+    raise SystemExit('start the app with SCRIM_SETTINGS_DIR set to a scratch settings folder')
 
 
 class Mcp:

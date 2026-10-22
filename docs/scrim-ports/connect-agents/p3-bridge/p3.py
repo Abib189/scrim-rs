@@ -29,7 +29,8 @@ def event(what, **kw):
 
 
 def launch():
-    env = dict(os.environ, HOME=home)
+    # Fix Q3: a scratch HOME and a scratch settings folder (SCRIM_SETTINGS_DIR), never the person's.
+    env = dict(os.environ, HOME=home, SCRIM_SETTINGS_DIR=d)
     env.pop('ELECTRON_RUN_AS_NODE', None)
     p = subprocess.Popen([exe, '--control', '7979'], env=env, stdout=open(f'{out}/app.log', 'a'), stderr=subprocess.STDOUT, cwd=home)
     for _ in range(80):
@@ -63,7 +64,7 @@ def shot(a, name):
 
 
 # 1. Settings ▸ MCP on 7690, the app once, its Claude Desktop entry.
-d = os.path.join(home, 'Library', 'Application Support', 'design.scrim.app')
+d = os.path.join(home, 'scrim-settings')
 os.makedirs(d, exist_ok=True)
 state = os.path.join(d, 'state.json')
 if not os.path.exists(state):
@@ -87,7 +88,7 @@ if block:
 
 # 2. The entry, as Claude Desktop starts it: its command, its args, stdio.
 e = log['entry']
-env = dict(os.environ, HOME=home, **e.get('env', {}))
+env = dict(os.environ, HOME=home, SCRIM_SETTINGS_DIR=d, **e.get('env', {}))
 bridge = subprocess.Popen([e['command'], *e['args']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 answers, cv = {}, threading.Condition()
 

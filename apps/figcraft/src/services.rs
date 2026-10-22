@@ -24,10 +24,13 @@ pub struct Desktop {
     pub mcp: Option<crate::mcp_endpoint::McpHandle>,
 }
 
-/// Where the settings live: `Scrim` under [`base_dir`] (FigCraft's are copied there once,
-/// `migrate`).
+/// Where the settings live: `design.scrim.app` under [`base_dir`] (FigCraft's are copied there
+/// once, `migrate`), or the folder `SCRIM_SETTINGS_DIR` names (Fix Q3: live checks).
 pub fn config_dir() -> Option<PathBuf> {
-    base_dir().map(|b| b.join(crate::migrate::NEW))
+    match figcraft_engine::settings::settings_dir() {
+        (Some(dir), true) => Some(dir),
+        _ => base_dir().map(|b| b.join(crate::migrate::NEW)),
+    }
 }
 
 /// The platform's directory for application settings.

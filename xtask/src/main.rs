@@ -21,6 +21,7 @@ mod brand;
 mod fidelity;
 mod icon;
 mod layers;
+mod live_scripts;
 mod size;
 
 use std::process::{Command, ExitCode};
@@ -48,6 +49,7 @@ fn main() -> ExitCode {
         "brand" => brand::check(&root()),
         "fidelity" => fidelity::run(&root(), &args[1..]),
         "size" => size::check(&root()),
+        "live-scripts" => live_scripts::check(&root()),
         "parity" => parity(),
         "version" => version(args.get(1).map(String::as_str), args.get(2).map(String::as_str)),
         "icon" => icon::generate(&root()),
@@ -55,7 +57,9 @@ fn main() -> ExitCode {
         "plugins" => plugins(),
         "bench" => bench(args.get(1).map_or("1000,10000,50000", String::as_str)),
         _ => {
-            eprintln!("tasks: ci, layers, assets, brand, size, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]");
+            eprintln!(
+                "tasks: ci, layers, assets, brand, size, live-scripts, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES]"
+            );
             task == "help"
         }
     };
@@ -70,6 +74,7 @@ fn ci() -> bool {
         && assets()
         && brand::check(&root())
         && size::check(&root())
+        && live_scripts::check(&root())
         && wasm()
 }
 

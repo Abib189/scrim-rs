@@ -52,6 +52,27 @@ impl Default for McpSettings {
 /// The settings folder's name under the platform's application-settings folder (the app id).
 pub const APP_DIR: &str = "design.scrim.app";
 
+/// The environment variable that puts the settings folder elsewhere (Fix Q3). Live checks and
+/// scripts start the app (and the bridge) with it pointing at a scratch folder, so they never read
+/// or write the person's own settings.
+pub const SETTINGS_DIR_VAR: &str = "SCRIM_SETTINGS_DIR";
+
+/// The settings folder ([`SETTINGS_DIR_VAR`] when set, else [`APP_DIR`] under the platform's folder
+/// for application settings), and whether it was set.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn settings_dir() -> (Option<std::path::PathBuf>, bool) {
+    match std::env::var_os(SETTINGS_DIR_VAR).filter(|v| !v.is_empty()) {
+        Some(d) => (Some(std::path::PathBuf::from(d)), true),
+        None => (config_base_dir().map(|b| b.join(APP_DIR)), false),
+    }
+}
+
+/// In the browser there's no settings folder.
+#[cfg(target_arch = "wasm32")]
+pub fn settings_dir() -> (Option<std::path::PathBuf>, bool) {
+    (None, false)
+}
+
 /// The platform's folder for application settings (Application Support, AppData, ~/.config).
 #[cfg(not(target_arch = "wasm32"))]
 pub fn config_base_dir() -> Option<std::path::PathBuf> {

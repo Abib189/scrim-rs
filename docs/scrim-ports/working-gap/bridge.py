@@ -25,6 +25,10 @@ real = '--real' in sys.argv
 artboards = '--artboards' in sys.argv
 os.makedirs(out, exist_ok=True)
 a = App(port)
+# Fix Q3: never against the person's own settings. The app must run with SCRIM_SETTINGS_DIR set to
+# a scratch folder (and a scratch HOME).
+if not a.call('app.settings-dir', {}).get('result', {}).get('override'):
+    raise SystemExit('start the app with SCRIM_SETTINGS_DIR set to a scratch settings folder')
 T0 = time.monotonic()
 log = {'artboards': artboards, 'url': url, 'finish': finish, 'grace': grace, 'agent': agent_calls, 'tall': tall, 'real': real, 'events': [], 'captures': [], 'samples': [], 'stderr': []}
 
