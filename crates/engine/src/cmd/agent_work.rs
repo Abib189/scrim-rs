@@ -36,13 +36,29 @@ fn finish(s: &mut Session, p: &Value) -> Result<Value> {
     Ok(json!({"finished": true, "client": client, "ids": ids}))
 }
 
+/// The grace a test may set through the hook (never offered, never saved).
+pub const TEST_GRACE_SECS: u32 = 5;
+
+/// `pref.agentGrace`: the person's choice, and it is marked as chosen so a migration keeps it.
+/// Agents are refused (their choice would outlive their session, and a 5 s an agent set is what
+/// cut the dots between a real agent's steps, Fix Q). With the test hook on, 5 s is taken for this
+/// session only.
 fn grace(s: &mut Session, p: &Value) -> Result<Value> {
-    let secs = p.get("seconds").and_then(Value::as_u64).ok_or_else(|| bad("pref.agentGrace", "`seconds` is required: 5, 15, 30 or 60"))?;
+    let secs = p.get("seconds").and_then(Value::as_u64).ok_or_else(|| bad("pref.agentGrace", "`seconds` is required: 15, 30, 60 or 120"))?;
+    if s.agents.test_hooks && secs == u64::from(TEST_GRACE_SECS) {
+        s.agents.grace_for_tests = Some(TEST_GRACE_SECS);
+        return Ok(json!({"seconds": secs, "test": true}));
+    }
+    if matches!(s.agents.author, crate::agents::Author::Agent(_)) && !s.agents.test_hooks {
+        return Err(bad("pref.agentGrace", "only the person sets how long the working indicator stays, in Settings ▸ General"));
+    }
     let secs = u32::try_from(secs)
         .ok()
         .filter(|s| AGENT_GRACE_SECS.contains(s))
-        .ok_or_else(|| bad("pref.agentGrace", format!("`seconds` is 5, 15, 30 or 60, not {secs}")))?;
+        .ok_or_else(|| bad("pref.agentGrace", format!("`seconds` is 15, 30, 60 or 120, not {secs}")))?;
     s.prefs.settings.agent_grace_secs = secs;
+    s.prefs.settings.agent_grace_chosen = true;
+    s.agents.grace_for_tests = None;
     Ok(json!({"seconds": secs}))
 }
 
@@ -58,7 +74,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "pref.agentGrace",
             "Keep the working indicator after the last agent request",
-            "{seconds: 5|15|30|60} → {seconds}  (how long an agent still counts as working after its last request, unless it calls finish_working. Saved in Settings)",
+            "{seconds: 15|30|60|120} → {seconds}  (how long an agent still counts as working after its last request, unless it calls finish_working. Saved in Settings; the person's alone: agents are refused)",
             false,
             grace
         ),

@@ -205,7 +205,7 @@ fn with_animations_off_the_row_is_still_and_with_motion_it_moves() {
 #[test]
 fn it_fades_out_once_the_grace_period_passes_and_the_dots_switch_is_its_own() {
     let (mut u, _) = calm();
-    u.app.session.prefs.settings.agent_grace_secs = 5;
+    u.app.session.agents.grace_for_tests = Some(5);
     poster(&mut u, 300.0);
     frames(&mut u, 10);
     assert!(u.app.ui.agent_view.indicator.artboard().is_some());

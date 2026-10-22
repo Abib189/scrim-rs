@@ -183,3 +183,38 @@ fn each_reveal_speed_shows_its_timing_and_saves_the_same_value() {
         assert_eq!(h.app.session.prefs.settings.reveal_speed, saved, "{label}");
     }
 }
+
+/// Fix Q1: the grace's picker offers 15, 30 (default), 60 and 120 s, never 5 s; the person's pick
+/// is saved and marked as chosen.
+#[test]
+fn the_grace_picker_offers_15_30_60_and_120_s_and_no_5_s() {
+    let (mut h, _) = Harness::new();
+    h.app.run("settings.open", json!({}));
+    h.app.handle_ui_requests();
+    let mut shapes = h.frames(3);
+    let labels = ["15 s", "30 s (default)", "60 s", "120 s"];
+    let label = "Keep the working indicator after the last agent request";
+    for _ in 0..20 {
+        if labels.iter().all(|l| has_text(&shapes, l)) && has_text(&shapes, label) {
+            break;
+        }
+        let at = text_center(&shapes, "Settings") + egui::vec2(0.0, 250.0);
+        h.frame(vec![Event::PointerMoved(at)]);
+        h.frame(vec![Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Point,
+            delta: egui::vec2(0.0, -120.0),
+            phase: egui::TouchPhase::Move,
+            modifiers: egui::Modifiers::NONE,
+        }]);
+        shapes = h.frames(2);
+    }
+    for l in labels {
+        assert!(has_text(&shapes, l), "{l} offered");
+    }
+    assert!(has_text(&shapes, label));
+    assert!(!has_text(&shapes, "5 s"), "no 5 s");
+    assert!(!h.app.session.prefs.settings.agent_grace_chosen);
+    h.click(text_center(&shapes, "60 s"));
+    h.frames(2);
+    assert_eq!((h.app.session.prefs.settings.agent_grace_secs, h.app.session.prefs.settings.agent_grace_chosen), (60, true));
+}

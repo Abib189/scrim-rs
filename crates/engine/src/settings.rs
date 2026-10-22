@@ -95,7 +95,9 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 4: `reveal_agent_work` and `working_indicator` (Stage I2), on by default.
 /// - 5: `agent_grace_secs` (Stage I.1), 15 s by default.
 /// - 6: `reveal_speed` (Stage I.1), normal by default.
-pub const SETTINGS_VERSION: u32 = 6;
+/// - 7: the grace's default moved from 15 s to 30 s and its choices to 15, 30, 60 and 120 s (Fix Q).
+///   A saved 5 or 15 that the person didn't choose (`agent_grace_chosen`) moves to 30.
+pub const SETTINGS_VERSION: u32 = 7;
 
 /// How fast an agent's new layers enter (`pref.revealSpeed`), slowest first.
 pub const REVEAL_SPEEDS: [&str; 3] = ["slow", "normal", "fast"];
@@ -106,8 +108,9 @@ fn normal() -> String {
 
 /// How long the working indicator stays after an agent's last request (`pref.agentGrace`): the
 /// choices Settings offers, never under 5 s.
-pub const AGENT_GRACE_SECS: [u32; 4] = [5, 15, 30, 60];
-pub const DEFAULT_AGENT_GRACE_SECS: u32 = 15;
+pub const AGENT_GRACE_SECS: [u32; 4] = [15, 30, 60, 120];
+/// Real agents pause 5–15 s between calls while they write the next batch (Fix Q).
+pub const DEFAULT_AGENT_GRACE_SECS: u32 = 30;
 
 fn grace() -> u32 {
     DEFAULT_AGENT_GRACE_SECS
@@ -157,6 +160,10 @@ pub struct Settings {
     /// `finish_working` or its session ends (`pref.agentGrace`; one of [`AGENT_GRACE_SECS`]).
     #[serde(default = "grace")]
     pub agent_grace_secs: u32,
+    /// The person chose `agent_grace_secs` (Settings ▸ General, or `pref.agentGrace` from the
+    /// window): a migration leaves it as it is (Fix Q). Agents can't set it.
+    #[serde(default)]
+    pub agent_grace_chosen: bool,
     /// How fast an agent's new layers enter: `slow`, `normal` or `fast` (`pref.revealSpeed`; fast
     /// is Stage I2's timing).
     #[serde(default = "normal")]
@@ -187,6 +194,7 @@ impl Default for Settings {
             reveal_agent_work: true,
             working_indicator: true,
             agent_grace_secs: grace(),
+            agent_grace_chosen: false,
             reveal_speed: normal(),
             toolbar: Vec::new(),
             fonts_muted: Vec::new(),
@@ -204,6 +212,11 @@ impl Settings {
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
             self.mcp.port = DEFAULT_MCP_PORT;
         }
+        // Version 7 moved the grace's default to 30 s: a 5 or 15 nobody chose (the old default, or
+        // a value an agent or a script set) moves with it; a chosen one stays.
+        if self.settings_version < 7 && !self.agent_grace_chosen && matches!(self.agent_grace_secs, 5 | 15) {
+            self.agent_grace_secs = DEFAULT_AGENT_GRACE_SECS;
+        }
         self.settings_version = SETTINGS_VERSION;
         if !matches!(self.motion.as_str(), "system" | "on" | "off") {
             self.motion = system();
@@ -220,7 +233,7 @@ impl Settings {
             self.reveal_speed = normal();
         }
         if !AGENT_GRACE_SECS.contains(&self.agent_grace_secs) {
-            // Never under 5 s; another value goes to the nearest choice.
+            // Another value (a chosen 5 s, no longer offered, among them) goes to the nearest choice.
             let g = self.agent_grace_secs;
             self.agent_grace_secs = AGENT_GRACE_SECS.iter().copied().min_by_key(|c| c.abs_diff(g)).unwrap_or(DEFAULT_AGENT_GRACE_SECS);
         }

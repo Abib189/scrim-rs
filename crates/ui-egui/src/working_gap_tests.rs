@@ -64,7 +64,7 @@ fn every_transition_is_kept_with_its_cause_and_the_client() {
     rect(&mut u, Some("cccccccc-3333"), Some("codex-mcp-client"), 80);
     send(&mut u, Some("bbbbbbbb-2222"), c, "engine.execute", json!({"command": "agent.finish-working"}));
     frames(&mut u, 30);
-    u.app.session.prefs.settings.agent_grace_secs = 5;
+    u.app.session.agents.grace_for_tests = Some(5);
     frames(&mut u, 6 * 60);
     // An --attach connection closing is a disconnect.
     rect(&mut u, Some("attach-7"), c, 120);

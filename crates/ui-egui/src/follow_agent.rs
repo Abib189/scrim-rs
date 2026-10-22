@@ -86,6 +86,8 @@ pub struct State {
     pub budget: Budget,
     /// A pause's end: the chip's and the paused row's fade out (Fix N).
     pub end: follow_end::State,
+    /// Settings ▸ General scrolls to the grace once (Fix Q2's hint).
+    pub focus_grace: bool,
 }
 
 /// A frame's time budget (60 Hz) and the canvas render's (two frames): over either for three
@@ -294,7 +296,7 @@ pub fn after_canvas(app: &mut FigApp, ui: &mut Ui) {
 
 /// The grace period (Settings ▸ General), in seconds.
 pub fn grace(app: &FigApp) -> f64 {
-    f64::from(app.session.prefs.settings.agent_grace_secs)
+    f64::from(app.session.agent_grace())
 }
 
 /// The time of the frame being drawn (requests answered between frames use it too).

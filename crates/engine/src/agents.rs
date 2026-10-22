@@ -166,6 +166,11 @@ pub struct Agents {
     /// The window paused following agents (the person moved the camera or edited); set by the
     /// window, read by `camera.follow-agents`. Never saved.
     pub follow_paused: bool,
+    /// Tests only ([`crate::Session::enable_test_hooks`]): `pref.agentGrace` then takes 5 s too,
+    /// kept here for this session and never saved (Fix Q).
+    pub test_hooks: bool,
+    /// The grace a test set through the hook, in place of the setting. Never saved.
+    pub grace_for_tests: Option<u32>,
     logs: HashMap<u64, VecDeque<Change>>,
 }
 
@@ -207,6 +212,19 @@ fn name(doc: &Document, id: NodeId) -> String {
 }
 
 impl Session {
+    /// Tests only (Fix Q): `pref.agentGrace` takes 5 s too, for this session, never saved. No
+    /// command or app path calls it.
+    #[doc(hidden)]
+    pub fn enable_test_hooks(&mut self) {
+        self.agents.test_hooks = true;
+    }
+
+    /// How long an agent counts as working after its last request, in seconds: the setting, or a
+    /// test's (through the hook).
+    pub fn agent_grace(&self) -> u32 {
+        self.agents.grace_for_tests.unwrap_or(self.prefs.settings.agent_grace_secs)
+    }
+
     /// Run the next commands as `author` (the route's caller), returning who it was before.
     pub fn set_author(&mut self, author: Author) -> Author {
         std::mem::replace(&mut self.agents.author, author)

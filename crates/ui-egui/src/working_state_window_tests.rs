@@ -91,7 +91,7 @@ fn six_steps_2_5_s_apart_keep_the_dots_in_every_frame_then_finish_fades_them_in_
 #[test]
 fn read_only_calls_keep_it_alive_past_the_grace_period() {
     let mut u = calm();
-    u.app.session.prefs.settings.agent_grace_secs = 5;
+    u.app.session.agents.grace_for_tests = Some(5);
     let (s, c) = (Some("s1"), Some("codex-mcp-client"));
     step(&mut u, s, c, 0, 8);
     frames(&mut u, 12);
@@ -110,7 +110,7 @@ fn read_only_calls_keep_it_alive_past_the_grace_period() {
 fn without_a_finish_it_ends_at_the_grace_period_exactly() {
     for grace in [5u32, 15] {
         let mut u = calm();
-        u.app.session.prefs.settings.agent_grace_secs = grace;
+        u.app.session.agents.grace_for_tests = Some(grace);
         step(&mut u, Some("s1"), None, 0, 6);
         let last = u.time;
         // Just before the grace period ends: on. Then the frame after its end: ended, fading.

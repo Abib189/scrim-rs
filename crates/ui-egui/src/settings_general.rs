@@ -70,20 +70,32 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         tr("New layers fade in as an agent adds them, and dots above the artboard show it is working. Animations Off shows them still."),
         t.text_secondary,
     );
+    // The grace (Fix Q): 15, 30 (the default), 60 or 120 s. The person's choice is kept through
+    // migrations; Fix Q2's hint scrolls here.
+    let grace_row = ui.label(tr("Keep the working indicator after the last agent request")).rect;
     ui.horizontal(|ui| {
-        ui.label(tr("Keep the working indicator for"));
-        let labels: Vec<String> = figcraft_engine::settings::AGENT_GRACE_SECS.iter().map(|s| trf("{seconds} s", &[("seconds", s)])).collect();
+        use figcraft_engine::settings::{AGENT_GRACE_SECS, DEFAULT_AGENT_GRACE_SECS};
+        let labels: Vec<String> =
+            AGENT_GRACE_SECS
+                .iter()
+                .map(|s| {
+                    if *s == DEFAULT_AGENT_GRACE_SECS {
+                        trf("{seconds} s (default)", &[("seconds", s)])
+                    } else {
+                        trf("{seconds} s", &[("seconds", s)])
+                    }
+                })
+                .collect();
         let labels: Vec<&str> = labels.iter().map(String::as_str).collect();
-        let current = figcraft_engine::settings::AGENT_GRACE_SECS.iter().position(|s| *s == prefs.settings.agent_grace_secs).unwrap_or(1);
+        let current = AGENT_GRACE_SECS.iter().position(|s| *s == prefs.settings.agent_grace_secs).unwrap_or(1);
         if let Some(i) = widgets::segmented_text(ui, &labels, current) {
-            app.run("pref.agentGrace", json!({"seconds": figcraft_engine::settings::AGENT_GRACE_SECS[i]}));
+            app.run("pref.agentGrace", json!({"seconds": AGENT_GRACE_SECS[i]}));
         }
     });
-    widgets::label(
-        ui,
-        tr("after the last agent request. An agent that says it has finished, or disconnects, stops showing as working at once."),
-        t.text_secondary,
-    );
+    if std::mem::take(&mut app.ui.agent_view.focus_grace) {
+        ui.scroll_to_rect(grace_row, Some(egui::Align::Center));
+    }
+    widgets::label(ui, tr("An agent that says it has finished, or disconnects, stops showing as working at once."), t.text_secondary);
 
     heading(ui, tr("Shared rooms"));
     ui.horizontal(|ui| {

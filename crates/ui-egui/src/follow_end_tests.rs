@@ -86,7 +86,7 @@ fn finish_working_fades_the_chip_out_clears_the_pause_and_the_next_build_is_foll
 #[test]
 fn the_grace_period_and_a_disconnect_end_it_too() {
     let mut u = calm();
-    u.app.session.prefs.settings.agent_grace_secs = 5;
+    u.app.session.agents.grace_for_tests = Some(5);
     paused_build(&mut u, "s1");
     frames(&mut u, 5 * 60 + 20);
     assert_eq!(state(&u), "following");

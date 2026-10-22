@@ -226,3 +226,25 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 - **The test:** `settings_tests.rs` › `each_reveal_speed_shows_its_timing_and_saves_the_same_value`.
 - **The release build's window:** `docs/scrim-ports/working-gap/m3-reveal-speed-labels.png`.
 
+## Fix Q1: the grace is 30 s by default, and the person's alone (22 Oct 2026)
+
+**The report:** a real session (Claude Desktop through `mcp-remote`) had the dots cut at every gap between batches.
+- **Settings ▸ Diagnostics** showed `begin` and `end` alternating, each end "grace period expired", most exactly 5 s after the begin.
+- **The agent's pauses** were 5–15 s: it writes the next batch meanwhile.
+
+**Q0, what the real settings held** (`~/Library/Application Support/design.scrim.app/state.json`, read only):
+- **`agent_grace_secs: 5`,** written when the window last saved its preferences (21 Oct, 20:04 BST). Nothing recorded who chose it: there was no marker.
+- **Not this repository's live scripts.** `ie.py`, `l2.py`, `bridge.py` and `n3.py` set preferences through the control channel (7979), on apps they started with a scratch `HOME`. The person's window runs without a control port; it was checked: it listens only on its MCP port, with the real `HOME`.
+- **So it was set in that window:** by the person in Settings, or by an agent. `pref.agentGrace` was a Write command an agent could run over MCP, and a real Codex session was connected that evening. Which one can't be told.
+
+**What changed:**
+- **The choices** are 15, 30, 60 and 120 s, and **30 s is the default** (`AGENT_GRACE_SECS`, `DEFAULT_AGENT_GRACE_SECS`). Settings shows "15 s, 30 s (default), 60 s, 120 s" under "Keep the working indicator after the last agent request". There is no 5 s.
+- **`agent_grace_chosen`**, saved with the setting, is set only when the person picks a value: Settings, or `pref.agentGrace` run by the person (the palette).
+- **Agents are refused:** `pref.agentGrace` from an agent's route says "only the person sets how long the working indicator stays, in Settings ▸ General". Before, it was a Write command any agent with write tools could run, and its value was saved.
+- **`settings_version` 7:**
+  - a saved 5 or 15 without the marker becomes 30;
+  - with the marker it stays;
+  - a chosen 5, no longer offered, becomes the nearest choice, 15.
+  - Every file saved before Fix Q has no marker, so all of them move to 30, including the person's 5.
+- **5 s for tests only:** `Session::enable_test_hooks()` (no command or app path calls it) lets `pref.agentGrace` take 5 s into `agents.grace_for_tests`. That is session state, never saved. The window reads `Session::agent_grace()`, the override if there is one, else the setting.
+

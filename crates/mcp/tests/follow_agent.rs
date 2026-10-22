@@ -21,8 +21,10 @@ fn the_switches_answer_their_state_over_mcp_and_leave_the_document_alone() {
     assert_eq!(c.run("pref.revealAgentWork", json!({})), json!({"on": true}));
     assert_eq!(c.run("pref.workingIndicator", json!({"on": false})), json!({"on": false}));
     assert_eq!(c.run("pref.workingIndicator", json!({"on": true})), json!({"on": true}));
-    // Stage I.1: the grace period and the reveal's speed.
-    assert_eq!(c.run("pref.agentGrace", json!({"seconds": 30})), json!({"seconds": 30}));
+    // Stage I.1: the reveal's speed. The grace period is the person's alone (Fix Q): refused.
+    let r = c.call("run_command", json!({"command": "pref.agentGrace", "params": {"seconds": 30}}));
+    assert_eq!(r["isError"], true, "{r}");
+    assert!(r.to_string().contains("only the person sets how long the working indicator stays"), "{r}");
     assert_eq!(c.run("pref.revealSpeed", json!({"speed": "slow"})), json!({"speed": "slow"}));
     assert_eq!(c.run("pref.revealSpeed", json!({"speed": "fast"})), json!({"speed": "fast"}));
     // `finish_working` (the tool, and its command) changes nothing either.
