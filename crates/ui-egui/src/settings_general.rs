@@ -70,7 +70,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         tr("New layers fade in as an agent adds them, and dots above the artboard show it is working. Animations Off shows them still."),
         t.text_secondary,
     );
-    // The grace (Fix Q): 15, 30 (the default), 60 or 120 s. The person's choice is kept through
+    // The grace (Fix Q, T1): 15, 30, 60 (the default) or 120 s. The person's choice is kept through
     // migrations; Fix Q2's hint scrolls here.
     let grace_row = ui.label(tr("Keep the working indicator after the last agent request")).rect;
     ui.horizontal(|ui| {
@@ -87,7 +87,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
                 })
                 .collect();
         let labels: Vec<&str> = labels.iter().map(String::as_str).collect();
-        let current = AGENT_GRACE_SECS.iter().position(|s| *s == prefs.settings.agent_grace_secs).unwrap_or(1);
+        let current = AGENT_GRACE_SECS.iter().position(|s| *s == prefs.settings.agent_grace_secs).unwrap_or(2);
         if let Some(i) = widgets::segmented_text(ui, &labels, current) {
             app.run("pref.agentGrace", json!({"seconds": AGENT_GRACE_SECS[i]}));
         }

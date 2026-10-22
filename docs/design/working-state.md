@@ -304,3 +304,26 @@ The record, captures, logs and scripts are in `docs/scrim-ports/working-state/RE
 - **Mutations:** without the request path's settle, three fail; without the hidden clock, the grace test fails.
 
 **Not verified live:** a real Claude Desktop session with the window hidden. Activity Monitor's App Nap column can't be read from a script; the activity the app holds isn't one `pmset` lists.
+
+
+## Fix T1: the grace is 60 s by default (22 Oct 2026)
+
+**The evidence:** in a real Claude Desktop session through `scrim mcp-bridge`, an agent paused 36 s between two batches of 18 layers. At the 30 s default the working state ended and began again: the dots dropped for about 6 s, and Diagnostics logged "grace too short: … came back after 36 s (the setting is 30 s)". Fix Q2's self-diagnosis worked; the default didn't cover real use.
+
+**What changed:**
+- **The default is 60 s** (`DEFAULT_AGENT_GRACE_SECS`). The choices stay 15, 30, 60 and 120 s, and Settings shows "15 s, 30 s, 60 s (default), 120 s".
+- **The migration** (`settings_version` 8): any saved grace the person didn't choose (no `agent_grace_chosen`) becomes 60. A chosen one stays, 30 included.
+- **Agents still can't change it:** `pref.agentGrace` is the person's alone.
+- **The hint's wording names no number,** so it is unchanged.
+
+**Tests:**
+- `agent_work_tests.rs`:
+  - the default is 60;
+  - unmarked 15, 30 and 60 become 60, and a chosen 30 stays 30;
+  - agents are refused.
+- `grace_hint_tests.rs`:
+  - at the default, gaps of 20, 36 and 50 s keep the dots on in every frame;
+  - at a chosen 30 s only the 36 s gap breaks them. "grace too short: … came back after 36 s (the setting is 30 s)" is logged, and the hint shows once.
+- `settings_tests.rs`: the picker's labels.
+
+**Decision (overrule it):** the brief says a saved value with no marker becomes 60. That includes an unmarked 15 or 120, which only an older default, a script or an agent from before Fix Q1 could have left. The person's own picks have been marked since Fix Q1.

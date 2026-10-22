@@ -118,7 +118,9 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 6: `reveal_speed` (Stage I.1), normal by default.
 /// - 7: the grace's default moved from 15 s to 30 s and its choices to 15, 30, 60 and 120 s (Fix Q).
 ///   A saved 5 or 15 that the person didn't choose (`agent_grace_chosen`) moves to 30.
-pub const SETTINGS_VERSION: u32 = 7;
+/// - 8: the grace's default moved from 30 s to 60 s (Fix T1): real agents pause 36 s between steps.
+///   Any saved grace the person didn't choose moves to 60; a chosen one stays.
+pub const SETTINGS_VERSION: u32 = 8;
 
 /// How fast an agent's new layers enter (`pref.revealSpeed`), slowest first.
 pub const REVEAL_SPEEDS: [&str; 3] = ["slow", "normal", "fast"];
@@ -130,8 +132,9 @@ fn normal() -> String {
 /// How long the working indicator stays after an agent's last request (`pref.agentGrace`): the
 /// choices Settings offers, never under 5 s.
 pub const AGENT_GRACE_SECS: [u32; 4] = [15, 30, 60, 120];
-/// Real agents pause 5–15 s between calls while they write the next batch (Fix Q).
-pub const DEFAULT_AGENT_GRACE_SECS: u32 = 30;
+/// Real agents pause 5–15 s between calls while they write the next batch, and over 30 s at times
+/// (Fix Q, then Fix T1: a Claude Desktop session paused 36 s between two batches).
+pub const DEFAULT_AGENT_GRACE_SECS: u32 = 60;
 
 fn grace() -> u32 {
     DEFAULT_AGENT_GRACE_SECS
@@ -258,9 +261,9 @@ impl Settings {
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
             self.mcp.port = DEFAULT_MCP_PORT;
         }
-        // Version 7 moved the grace's default to 30 s: a 5 or 15 nobody chose (the old default, or
-        // a value an agent or a script set) moves with it; a chosen one stays.
-        if self.settings_version < 7 && !self.agent_grace_chosen && matches!(self.agent_grace_secs, 5 | 15) {
+        // Versions 7 and 8 moved the grace's default (to 30 s, then 60 s): a grace nobody chose (an
+        // old default, or a value an agent or a script set) moves with it; a chosen one stays.
+        if self.settings_version < 8 && !self.agent_grace_chosen {
             self.agent_grace_secs = DEFAULT_AGENT_GRACE_SECS;
         }
         self.settings_version = SETTINGS_VERSION;
