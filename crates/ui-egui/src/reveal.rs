@@ -13,6 +13,10 @@
 //! - **Where it plays:** for layers in view when they arrive, or on their way into view (the camera
 //!   follows the agent). Layers created off screen are drawn final at once: nothing is ever left
 //!   hidden or half-faded.
+//! - **It waits for following's flight** (Fix T3): entrances queued while following's own flight is
+//!   more than [`HOLD_PX`] from where it goes are held (drawn not yet entered) until it is within
+//!   that, or [`HOLD_CAP`] at the latest, so they play on screen. A wait the cap ended is kept in
+//!   Settings ▸ Diagnostics ([`Entry::RevealWaited`]). Paused, off or hidden: as before.
 //! - **Skipped:** the person's edits; undo and redo; opening a file; Settings ▸ "Reveal agent work"
 //!   off; Animations Off or reduced motion; edits that landed while the window was hidden (answered
 //!   by `control::drain_hidden`; an idle window draws no frames either, so a gap can't tell).
@@ -38,6 +42,11 @@ use figcraft_engine::settings::diagnostics::{Entry, Skip};
 
 use super::Landed;
 use crate::FigApp;
+
+/// Entrances wait while following's flight is farther than this (screen pixels) from its target…
+pub const HOLD_PX: f64 = 40.0;
+/// … for this long at most (seconds).
+pub const HOLD_CAP: f64 = 0.7;
 
 /// How long a layer's entrance takes (seconds), at [`FAST`].
 pub const ENTER: f64 = 0.22;
@@ -103,6 +112,8 @@ struct Item {
     /// How long it takes (an entrance keeps the speed it was queued at).
     dur: f64,
     kind: Kind,
+    /// Waiting for following's flight (Fix T3): drawn not yet entered, its start not yet set.
+    held: bool,
 }
 
 /// Deleted layers fading out: drawn from the document before the delete while the session's is
@@ -129,6 +140,8 @@ pub struct State {
     fresh: bool,
     /// How many of the agents' new layers entered, and why the others didn't (Fix L2).
     diag: Diagnostics,
+    /// Since when entrances have waited for following's flight (Fix T3).
+    wait: Option<f64>,
 }
 
 /// One agent edit's new layers: how many entered, entered with their group (over
@@ -205,6 +218,11 @@ impl State {
         !self.items.is_empty() || self.fade.is_some()
     }
 
+    /// How many entrances wait for following's flight now (Fix T3).
+    pub fn held(&self) -> usize {
+        self.items.iter().filter(|i| i.held).count()
+    }
+
     /// The layers queued or entering now, in order (for tests and `ui.inspect`).
     pub fn entering(&self) -> impl Iterator<Item = (NodeId, f64)> + '_ {
         self.items.iter().filter(|i| i.kind == Kind::Enter).map(|i| (i.id, i.start))
@@ -237,6 +255,7 @@ impl State {
         self.items.clear();
         self.fade = None;
         self.frame_doc = None;
+        self.wait = None;
     }
 }
 
@@ -279,6 +298,13 @@ fn meets(a: figcraft_doc::geom::Rect, b: figcraft_doc::geom::Rect) -> bool {
     a.x0 <= b.x1 && a.x1 >= b.x0 && a.y0 <= b.y1 && a.y1 >= b.y0
 }
 
+/// How far (screen pixels) the camera still has to go on the flight under way, if one is.
+fn flight_left(app: &FigApp) -> Option<f64> {
+    let to = app.ui.camera.target()?;
+    let v = &app.session.ds().ok()?.view;
+    Some(((to[0] - v.cx).powi(2) + (to[1] - v.cy).powi(2)).sqrt() * v.zoom)
+}
+
 /// The page rectangle in view.
 fn view_rect(app: &FigApp) -> Option<(NodeId, figcraft_doc::geom::Rect)> {
     let ds = app.session.ds().ok()?;
@@ -306,6 +332,8 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
     };
     let before = app.ui.agent_view.before.clone();
     let landed_hidden = app.ui.agent_view.landed_hidden;
+    // Following's own flight still on its way (Fix T3): new entrances wait for it.
+    let far = following && app.ui.agent_view.follow.flying && flight_left(app).is_some_and(|px| px > HOLD_PX);
     let st = &mut app.ui.agent_view.reveal;
     let fresh = std::mem::take(&mut st.fresh);
     if gap > GAP && st.active() {
@@ -368,9 +396,12 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
         let first = if st.items.iter().any(|i| i.kind == Kind::Enter) { st.last_start + speed.stagger } else { now };
         for (id, start) in schedule(&new, now, first, speed) {
             st.items.retain(|i| i.id != id);
-            st.items.push(Item { id, start, dur: speed.enter, kind: Kind::Enter });
+            st.items.push(Item { id, start, dur: speed.enter, kind: Kind::Enter, held: far });
             st.last_start = start;
             st.fresh = true;
+            if far && st.wait.is_none() {
+                st.wait = Some(now);
+            }
         }
         let Some(before) = before.as_ref() else { continue };
         // Moves: only the position changed.
@@ -384,7 +415,7 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
                 moved.transform = b.transform;
                 if moved == *b {
                     st.items.retain(|i| i.id != id);
-                    st.items.push(Item { id, start: now, dur: TWEEN, kind: Kind::Move(a.transform.translation()) });
+                    st.items.push(Item { id, start: now, dur: TWEEN, kind: Kind::Move(a.transform.translation()), held: false });
                 }
             }
         }
@@ -400,12 +431,34 @@ pub fn tick(app: &mut FigApp, ctx: &Context, now: f64, gap: f64, landed: &[Lande
             st.fade = Some(Fade { before: before.clone(), after: doc.clone(), ids: roots, start: now });
         }
     }
+    // The wait ends once the flight is within HOLD_PX (or over), or at the cap: the held entrances
+    // start now, their stagger kept.
+    let mut waited = None;
+    if let Some(since) = st.wait
+        && (!far || now - since >= HOLD_CAP)
+    {
+        let delta = now - since;
+        let mut n = 0;
+        for i in st.items.iter_mut().filter(|i| i.held) {
+            i.start += delta;
+            i.held = false;
+            n += 1;
+        }
+        st.last_start += delta;
+        st.wait = None;
+        if far && n > 0 {
+            waited = Some((n, (delta * 1000.0).round() as u64));
+        }
+    }
     // The diagnostics event (Fix L2): at most one per LOG_EVERY, only when something was skipped.
     if let Some((entered, skipped)) = st.diag.due(now) {
         crate::settings_privacy::record(app, Entry::Reveal { entered, skipped: &skipped });
     }
+    if let Some((layers, ms)) = waited {
+        crate::settings_privacy::record(app, Entry::RevealWaited { layers, ms });
+    }
     let st = &mut app.ui.agent_view.reveal;
-    st.items.retain(|i| now < i.start + i.dur && doc.contains(i.id));
+    st.items.retain(|i| (i.held || now < i.start + i.dur) && doc.contains(i.id));
     if st.fade.as_ref().is_some_and(|f| now >= f.start + TWEEN || !Arc::ptr_eq(&f.after, &doc)) {
         st.fade = None;
     }
@@ -427,7 +480,7 @@ fn render_doc(st: &State, doc: &Arc<Document>, now: f64) -> Arc<Document> {
         let Some(n) = d.node_mut(it.id) else { continue };
         match it.kind {
             Kind::Enter => {
-                let e = ease_out_cubic((now - it.start) / it.dur);
+                let e = if it.held { 0.0 } else { ease_out_cubic((now - it.start) / it.dur) };
                 n.opacity *= e as f32;
                 let s = START_SCALE + (1.0 - START_SCALE) * e;
                 let c = Vec2::new(n.width / 2.0, n.height / 2.0);
@@ -465,3 +518,7 @@ mod tests;
 #[cfg(test)]
 #[path = "reveal_skip_tests.rs"]
 mod skip_tests;
+
+#[cfg(test)]
+#[path = "reveal_wait_tests.rs"]
+mod wait_tests;

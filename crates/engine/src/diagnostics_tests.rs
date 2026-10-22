@@ -209,3 +209,14 @@ fn a_pause_for_a_camera_move_names_where_the_move_was_made() {
         ]
     );
 }
+
+#[test]
+fn a_reveal_that_waited_out_the_cap_says_how_long_and_how_many() {
+    let mut s = Session::new();
+    record(&mut s.prefs.settings, NOW, Entry::RevealWaited { layers: 18, ms: 700 });
+    let e = s.prefs.settings.diagnostics.last().unwrap();
+    assert_eq!(
+        (e.kind.as_str(), e.detail.as_str()),
+        ("reveal", "agent layers: 18 waited 700 ms for the camera, then entered while it was still on its way")
+    );
+}

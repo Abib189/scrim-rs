@@ -388,6 +388,8 @@ pub fn inspect(app: &FigApp) -> serde_json::Value {
         "pausedBy": v.follow.paused_by.map(Pause::text),
         "chip": follow_end::inspect(app),
         "revealing": v.reveal.entering().count(),
+        // Entrances waiting for following's flight to arrive (Fix T3).
+        "revealHeld": v.reveal.held(),
         "reveals": v.reveal.diagnostics(),
         "indicator": v.indicator.drawn.get().map(|(r, cols)| json!({"columns": cols, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]})),
         "outline": v.indicator.outlined.get().is_some(),

@@ -393,3 +393,24 @@ Live in the release build: the captures, numbers and method are in `docs/scrim-p
   - `follow_agent_tests.rs` › `work_in_view_is_centred_and_work_already_at_the_centre_doesnt_move_the_camera` replaces the least-move test;
   - the person's-edit test compares with the view after the agent's centring;
   - `reveal_tests.rs` waits out the longer flight. The reveal and the dots now overlap for only part of the reveal, which T3 addresses.
+
+
+## Fix T3: the reveal waits for following's flight (22 Oct 2026)
+
+**The evidence:** after a file open, the first batch was drawn "final at once (off screen, follow paused)". With T2's longer flight (up to 600 ms), a following camera also arrived after most of a far batch's entrances had played.
+
+**What changed** (`reveal.rs`):
+- **Following and not paused:** entrances queued while following's own flight is more than 40 screen px from its target (`HOLD_PX`) are held. They draw at their entrance's start (opacity 0) and aren't timed yet.
+- **The release:** when the flight is within 40 px or over, or after 700 ms at the latest (`HOLD_CAP`), the held entrances start, their stagger kept. A wait that ended at the cap is kept in Settings ▸ Diagnostics: "agent layers: {n} waited {ms} ms for the camera, then entered while it was still on its way" (`Entry::RevealWaited`). Nothing is logged otherwise.
+- **Unchanged:** paused, off or hidden, layers off screen are drawn final at once, as before. The reveal stays render-only: the document, screenshots and exports have the final state at once.
+- `ui.inspect` › `agent.revealHeld` counts the entrances waiting.
+
+**Tests:**
+- `reveal_wait_tests.rs` (3):
+  - the far jump's batch waits while the camera is more than 40 px away, then begins as it arrives; all 13 count as entered;
+  - paused or off, a far batch is drawn final at once;
+  - the wait ends at 700 ms while a slow flight is still on its way, with its diagnostics line.
+- `diagnostics_tests.rs`: the line's words.
+- `reveal_tests.rs` › `the_reveal_and_the_working_indicator_run_in_the_same_frames`: once entering, the reveal and the dots share at least 90% of the frames (50 of 50 now; 22 of 50 with T2 alone).
+- **Mutation check:** with the hold off, the three tests about the new behaviour fail. The paused/off test guards what T3 must not change, so it passes either way.
+- **Retimed:** the reveal tests that time a far batch now count from the release (`until_released`). The long-landing test puts its layer at the canvas's centre, where following doesn't fly.

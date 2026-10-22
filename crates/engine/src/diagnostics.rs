@@ -63,6 +63,9 @@ pub enum Entry<'a> {
     /// Agents' new layers since the last such event: how many entered, and how many were drawn
     /// final at once, by reason.
     Reveal { entered: usize, skipped: &'a [(Skip, usize)] },
+    /// Agents' new layers waited for following's flight to arrive, and entered at the cap
+    /// (`ms`) while it was still on its way (Fix T3).
+    RevealWaited { layers: usize, ms: u64 },
     /// The working state changed for a client (`client`: its name as announced; `session`: its
     /// session id, of which 8 characters are kept). `run`: whether the dots are shown after it.
     Working { change: Change, cause: Cause, client: Option<&'a str>, session: Option<&'a str>, run: bool },
@@ -238,7 +241,7 @@ impl Entry<'_> {
             Entry::McpClient { .. } => "mcpClient",
             Entry::Error { .. } => "error",
             Entry::FollowPaused(_) | Entry::FollowCleared(_) => "follow",
-            Entry::Reveal { .. } => "reveal",
+            Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
             Entry::ChatRun { .. } => "chat",
         }
@@ -272,6 +275,9 @@ impl Entry<'_> {
                 let n: usize = skipped.iter().map(|s| s.1).sum();
                 let why: Vec<String> = skipped.iter().map(|(s, k)| format!("{}: {k}", s.text())).collect();
                 format!("agent layers: {entered} entered, {n} drawn final at once ({})", why.join("; "))
+            }
+            Entry::RevealWaited { layers, ms } => {
+                format!("agent layers: {layers} waited {ms} ms for the camera, then entered while it was still on its way")
             }
             Entry::ChatRun { agent, ended } => {
                 // A headless profile's name; anything else reads "an agent".

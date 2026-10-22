@@ -59,6 +59,17 @@ fn poster_batch(u: &mut Ui) -> Vec<NodeId> {
     ids
 }
 
+/// Frames until no entrance waits for following's flight (Fix T3; 1 s at most).
+fn until_released(u: &mut Ui) {
+    for _ in 0..60 {
+        if u.app.ui.agent_view.reveal.held() == 0 {
+            return;
+        }
+        u.frame(vec![]);
+    }
+    panic!("the entrances still wait after 1 s");
+}
+
 fn doc_text(d: &Document) -> String {
     serde_json::to_string(d).unwrap()
 }
@@ -117,8 +128,9 @@ fn a_16_layer_batch_enters_in_order_and_the_document_never_sees_it() {
     let queued: Vec<(NodeId, f64)> = u.app.ui.agent_view.reveal.entering().collect();
     assert_eq!(queued.iter().map(|(i, _)| *i).collect::<Vec<_>>(), ids, "every layer, in creation order");
     assert!(queued.windows(2).all(|w| (w[1].1 - w[0].1 - STAGGER).abs() < 1e-9), "40 ms apart");
-    // Mid-reveal: the canvas draws a copy with the later layers still invisible; the session's
-    // document is the final one, unchanged.
+    // Mid-reveal (once the camera has arrived, Fix T3): the canvas draws a copy with the later
+    // layers still invisible; the session's document is the final one, unchanged.
+    until_released(&mut u);
     frames(&mut u, 3);
     let drawn = canvas_doc(&u.app).expect("the canvas draws the reveal");
     assert!(!Arc::ptr_eq(&drawn, &u.app.session.ds().unwrap().doc));
@@ -265,8 +277,10 @@ fn a_move_tweens_a_delete_fades_and_dropped_frames_finish_it() {
 #[test]
 fn a_long_landing_frame_delays_the_reveal_and_dropped_frames_finish_it() {
     let (mut u, home) = calm();
-    let r = id(&agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home})));
+    // At the canvas's centre: following doesn't fly, so nothing waits for it (Fix T3).
+    let r = id(&agent(&mut u, "shape.rectangle", json!({"x": 90, "y": 90, "width": 20, "height": 20, "parent": home})));
     u.frame(vec![]);
+    assert_eq!(u.app.ui.agent_view.reveal.held(), 0);
     let ctx = u.ctx.clone();
     let now = ctx.input(|i| i.time);
     let start = u.app.ui.agent_view.reveal.entering().find(|(i, _)| *i == r).unwrap().1;
@@ -307,14 +321,15 @@ fn the_reveal_and_the_working_indicator_run_in_the_same_frames() {
     let (mut both, mut revealing) = (0, 0);
     for _ in 0..90 {
         u.frame(vec![]);
-        revealing += usize::from(u.app.ui.agent_view.reveal.active());
-        if u.app.ui.agent_view.reveal.active() && u.app.ui.agent_view.indicator.drawn.get().is_some() {
+        // Entering on screen: not waiting for the camera (Fix T3).
+        let entering = u.app.ui.agent_view.reveal.active() && u.app.ui.agent_view.reveal.held() == 0;
+        revealing += usize::from(entering);
+        if entering && u.app.ui.agent_view.indicator.drawn.get().is_some() {
             both += 1;
         }
     }
-    // Fix T2's longer flight (600 ms for this far jump) runs the entrances while the camera is still
-    // on its way, so they overlap the dots for only part of the reveal; T3 makes the reveal wait.
-    assert!(both >= 10, "both active together for part of the reveal: {both} of {revealing} frames");
+    // The entrances wait for following's flight (Fix T3), so they play under the dots.
+    assert!(revealing > 0 && both * 10 >= revealing * 9, "both active together for nearly all of the reveal: {both} of {revealing} frames");
 }
 
 #[test]
@@ -408,7 +423,8 @@ fn a_36_layer_batch_at_normal_takes_over_2_s_and_at_most_4_s() {
     assert_eq!(q.len(), ids.len());
     let total = q.last().unwrap().1 + super::NORMAL.enter - q[0].1;
     assert!(total > 2.0 && total <= 4.0 + 1e-9, "{total} s");
-    // Halfway, it is still revealing; after 4 s, done.
+    // Halfway, it is still revealing; after 4 s, done (counted once the camera has arrived).
+    until_released(&mut u);
     frames(&mut u, 120);
     assert!(canvas_doc(&u.app).is_some(), "still revealing at 2 s");
     frames(&mut u, 130);
