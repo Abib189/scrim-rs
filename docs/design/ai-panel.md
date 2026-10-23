@@ -51,7 +51,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - an image chip (`chat.attach-image`), only for an agent whose CLI takes one: a round 32 px icon chip, a picture;
     - **the icon chips:** `t.selected_row`, `t.pressed` hovered, the focus ring; the icon in `t.icon`, stroke 1.5 (`ai_icons.rs`). Their accessible names and tooltips are unchanged: "Add the selection to the prompt" and "Attach an image".
     - Send at the far right: a 36 px `t.accent_fill` circle with an arrow in `t.accent_on`, which is Stop (a 16 × 16 square, radius 3) while a run goes.
-  - **Narrow:** the agent's name shortens with "…" (decision 14); the icon chips stay 32 px.
+  - **Narrow:** the agent's name shortens with "…" (decision 14); the icon chips stay 32 px. Below 280 px the agent chip drops its chevron and pads 8. If its name still can't show six characters and "…", the image chip goes into the agent menu as "Attach image…", the same command (Fix AA3, decision 29).
   - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run. Why Send can't go is its tooltip.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
@@ -146,6 +146,8 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **A step is known by its place and label, not its document:** ⌘⇧Z rebuilds a step around the document of the moment, so the step's document isn't the one Undo run left.
     - **The note** follows: "Undo is one step" only on a Done card with Undo run live, "Redo is one step" while Redo run is live, nothing otherwise, and nothing while the run works. That last part changes Fix X4, which showed the note mid-run.
     - **Undo run is off once something changed since the run** (tooltip "Something changed since the run: Undo run is no longer one step"), where Z7 kept it live and refused it. So the refusal line now shows for refusals the card can't foresee, such as Select layers after the person deleted every layer the run made.
+29. **The agent chip keeps a readable name at 240 px** (Fix AA3). Below 280 px it has no chevron and 8 px padding (`chips::ChipFit`); the menu still opens on a click. If the name still can't show six characters and "…" (or all of it, when it is shorter), the image chip moves into the agent menu as "Attach image…" (`chat.attach-image`, as the chip). Selection keeps its chip. At 240 px that means Codex reads whole and Claude Code reads "Claude C…".
+    - **Spanish isn't drawn in the tests:** the UI's language is process-wide and the suite runs in parallel. The row's visible words are the agent's name and icons, so a language can't widen it. What Spanish changes, the controls' names, is checked in the catalog.
 
 ## Tests
 
@@ -208,6 +210,11 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - `ai_panel_theme_tests.rs` (Z6): the chips' icon reads at 3:1 on the chip and on its hovered fill, in both themes with every accent.
 - `ai_fonts_tests.rs` (AA1): every SemiBold role uses the SemiBold family, led by Inter SemiBold, and every Regular role uses Inter Regular; italic is the italic file; the harness's font set is the app's; SemiBold lays out about 3% wider than Regular at 100 px (it was equal); no word the panel draws falls back past Inter. Three of the four fail on the old fonts, the fourth since it also checks the faces.
 - `chat_run_tests.rs` › `the_state_follows_undo_and_redo_through_the_history` and `ai_panel_z_tests.rs` › `the_card_follows_cmd_z_and_cmd_shift_z` (AA2, both themes): Undo run, ⌘Z (Done, Undo run live, "Undo is one step"), ⌘⇧Z (Undone, Redo run live, "Redo is one step"), Redo run and Undo run again, then ⌘Z and an edit (both off, no note); a selection doesn't count. Fix Z kept the card Undone after ⌘Z.
+- `ai_panel_z_tests.rs` (AA3):
+  - `the_agent_chip_shows_a_readable_name_at_every_width`: at 240, 260, 280 and 336 px, both themes, Claude Code and Codex. The name reads, with no chevron below 280 px; the image is in the menu only when it must be; each control is named, at least 24 px, 8 apart and inside the composer; Send is clear; nothing scrolls sideways.
+  - `attach_image_is_in_the_agent_menu_when_the_chip_has_no_room`: the menu item opens the chip's dialog and attaches the image.
+  - `the_rows_controls_have_their_spanish_names`.
+  These fail on the old row, where the chip was only "…".
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

@@ -17,15 +17,48 @@ const CHEVRON_GAP: f32 = 12.0;
 /// Send and Stop: a 36 px circle.
 pub const SEND: f32 = 36.0;
 
-/// The width a chip with `label` (and a chevron) wants.
-pub fn chip_width(ui: &Ui, label: &str, chevron: bool) -> f32 {
-    let w = ui.painter().layout_no_wrap(label.to_string(), regular(13.0), egui::Color32::PLACEHOLDER).size().x;
-    CHIP_PAD * 2.0 + w + if chevron { CHEVRON_GAP + CHEVRON_W } else { 0.0 }
+/// A pill chip's padding either side and whether it has a chevron: 12 and a chevron, or below
+/// [`NARROW_BELOW`] 8 and none, so the agent's name keeps its room (Fix AA3).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ChipFit {
+    pub pad: f32,
+    pub chevron: bool,
+}
+
+/// The panel width under which the agent chip is narrow (Fix AA3).
+pub const NARROW_BELOW: f32 = 280.0;
+
+impl ChipFit {
+    pub fn for_panel(width: f32, menu: bool) -> Self {
+        if width < NARROW_BELOW { Self { pad: 8.0, chevron: false } } else { Self { pad: CHIP_PAD, chevron: menu } }
+    }
+
+    /// The room a chip `width` wide leaves its label.
+    pub fn room(self, width: f32) -> f32 {
+        (width - self.pad * 2.0 - if self.chevron { CHEVRON_GAP + CHEVRON_W } else { 0.0 }).max(8.0)
+    }
+
+    /// The width a chip with `label` wants.
+    pub fn width(self, ui: &Ui, label: &str) -> f32 {
+        label_width(ui, label) + self.pad * 2.0 + if self.chevron { CHEVRON_GAP + CHEVRON_W } else { 0.0 }
+    }
+}
+
+/// `label`'s width in the chips' font.
+pub fn label_width(ui: &Ui, label: &str) -> f32 {
+    ui.painter().layout_no_wrap(label.to_string(), regular(13.0), egui::Color32::PLACEHOLDER).size().x
+}
+
+/// The least room a name needs to read (Fix AA3): all of it, or its first six characters and "…".
+pub fn readable_width(ui: &Ui, label: &str) -> f32 {
+    let short: String = label.chars().take(6).collect();
+    if short.chars().count() == label.chars().count() { label_width(ui, label) } else { label_width(ui, &format!("{}…", short.trim_end())) }
 }
 
 /// A pill chip `width` wide (its label shortened with "…" when it doesn't fit): `label` in
-/// `color`, a chevron when it opens a menu. `name` is what screen readers say and the tooltip.
-pub fn chip(ui: &mut Ui, roles: &Roles, label: &str, color: egui::Color32, chevron: bool, width: f32, name: &str) -> Response {
+/// `color`, a chevron when `fit` has one. `name` is what screen readers say and the tooltip.
+/// Returns the label as shown.
+pub fn chip(ui: &mut Ui, roles: &Roles, label: &str, color: egui::Color32, fit: ChipFit, width: f32, name: &str) -> (Response, String) {
     let t = Tokens::get(ui.ctx());
     let (r, resp) = ui.allocate_exact_size(vec2(width, CHIP_H), Sense::click());
     let resp = resp.on_hover_text(name);
@@ -33,17 +66,16 @@ pub fn chip(ui: &mut Ui, roles: &Roles, label: &str, color: egui::Color32, chevr
     if resp.has_focus() {
         ui.painter().rect_stroke(r, CornerRadius::same((CHIP_H / 2.0) as u8), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
     }
-    let room = (width - CHIP_PAD * 2.0 - if chevron { CHEVRON_GAP + CHEVRON_W } else { 0.0 }).max(8.0);
-    let mut job = egui::text::LayoutJob::single_section(label.to_string(), egui::TextFormat { font_id: regular(13.0), color, ..Default::default() });
-    job.wrap = egui::text::TextWrapping { max_width: room, max_rows: 1, break_anywhere: true, overflow_character: Some('…') };
-    let galley = ui.painter().layout_job(job);
-    let text_x = r.min.x + CHIP_PAD;
+    let shown = crate::panel_view::ai_tab::run_card::elide(ui.painter(), label, regular(13.0), fit.room(width));
+    let galley = ui.painter().layout_no_wrap(shown.clone(), regular(13.0), color);
+    let chevron = fit.chevron;
+    let text_x = r.min.x + fit.pad;
     ui.painter().galley(pos2(text_x, r.center().y - galley.size().y / 2.0), galley.clone(), color);
     if chevron {
         let cx = text_x + galley.size().x + CHEVRON_GAP + CHEVRON_W / 2.0;
         crate::panel_view::ai_tab::icons::chevron(ui.painter(), pos2(cx, r.center().y), CHEVRON_W, 4.0, 1.5, roles.chevron);
     }
-    resp
+    (resp, shown)
 }
 
 /// A round 32 px chip with `icon` alone (Fix Z6: Selection and the image, at every width, so the

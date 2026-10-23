@@ -157,7 +157,10 @@ fn selection_and_image_are_round_icon_chips_at_every_width() {
                 let agent = find("Agent: ").expect("the agent chip");
                 assert!(agent.x1 <= sel[0] - 7.5, "{at}: after the agent chip, 8 apart: {agent:?} {sel:?}");
                 let mut last = sel[2];
-                if image {
+                // Since Fix AA3 a narrow row keeps the agent's name and puts the image in its menu.
+                if image && c["imageInMenu"] == true {
+                    assert!(c["imageChip"].is_null() && find("Attach an image").is_none(), "{at}: the image is in the agent menu");
+                } else if image {
                     let img = rect(&c["imageChip"]["rect"]);
                     assert!((img[2] - img[0] - 32.0).abs() < 0.5 && (img[3] - img[1] - 32.0).abs() < 0.5, "{at}: Image 32 × 32: {img:?}");
                     assert!((img[0] - sel[2] - 8.0).abs() < 0.6, "{at}: 8 after Selection");
@@ -350,4 +353,107 @@ fn the_card_follows_cmd_z_and_cmd_shift_z() {
         assert!(!b[1].1 && b[1].0 == "Undo run", "{dark}: Undo run off: {b:?}");
         assert_eq!(b[1].2, "Something changed since the run: Undo run is no longer one step");
     }
+}
+
+/// Fix AA3: the window with Claude Code or Codex (whose CLI takes an image) chosen, at `w` px.
+fn composer(dark: bool, w: f32, codex: bool) -> Ui {
+    agents(dark, w, codex)
+}
+
+/// Fix AA3: at 240, 260, 280 and 336 px, light and dark, Claude Code and Codex:
+/// the agent chip always shows a readable name (all of it, or six characters and "…"), below 280 px
+/// without its chevron; when that needs the image chip's room, the image is "Attach image…" in the
+/// agent menu; the row never overflows; every control keeps its name and at least a 24 px target.
+#[test]
+fn the_agent_chip_shows_a_readable_name_at_every_width() {
+    for dark in [false, true] {
+        for w in [240.0, 260.0, 280.0, 336.0] {
+            for codex in [false, true] {
+                {
+                    let at = format!("{dark} {w} codex={codex}");
+                    let mut u = composer(dark, w, codex);
+                    let c = panel(&u)["composer"].clone();
+                    let name = if codex { "Codex" } else { "Claude Code" };
+                    let chip = &c["agentChip"];
+                    let shown = chip["shown"].as_str().unwrap_or_else(|| panic!("{at}: {c}"));
+                    let readable =
+                        shown == name || (shown.ends_with('…') && shown.chars().count() >= 7 && name.starts_with(shown.trim_end_matches('…')));
+                    assert!(readable, "{at}: the agent's name reads: {shown:?}");
+                    assert_eq!(chip["chevron"], w >= 280.0, "{at}: the chevron only from 280 px");
+                    let in_menu = c["imageInMenu"].as_bool().unwrap();
+                    assert_eq!(c["imageChip"].is_object(), codex && !in_menu, "{at}");
+                    assert!(!in_menu || codex, "{at}");
+                    let nodes = tree(&mut u);
+                    let ai = crate::i18n::tr("AI").to_string();
+                    let pane = nodes
+                        .iter()
+                        .find(|n| n.role() == Role::Pane && n.label() == Some(ai.as_str()))
+                        .and_then(|n| n.bounds())
+                        .expect("the AI pane");
+                    let composer = rect(&c["composerRect"]);
+                    let mut names: Vec<String> = vec![crate::i18n::trf("Agent: {agent}", &[("agent", &name)])];
+                    names.push(crate::i18n::tr("Add the selection to the prompt").to_string());
+                    if codex && !in_menu {
+                        names.push(crate::i18n::tr("Attach an image").to_string());
+                    }
+                    let mut last = f64::MIN;
+                    for n in &names {
+                        let b = nodes
+                            .iter()
+                            .find(|x| x.label() == Some(n.as_str()))
+                            .and_then(|x| x.bounds())
+                            .unwrap_or_else(|| panic!("{at}: {n} named"));
+                        assert!(b.x1 - b.x0 >= 24.0 && b.y1 - b.y0 >= 24.0, "{at}: {n} has a 24 px target: {b:?}");
+                        assert!(b.x0 >= last + 7.5, "{at}: {n} after the one before, 8 apart");
+                        assert!(b.x0 >= composer[0] && b.x1 <= composer[2], "{at}: {n} inside the composer");
+                        last = b.x1;
+                    }
+                    let send = nodes
+                        .iter()
+                        .find(|x| x.label().is_some_and(|l| l.starts_with(crate::i18n::tr("Send"))))
+                        .and_then(|x| x.bounds())
+                        .expect("Send");
+                    assert!(send.x0 >= last + 7.5 && send.x1 <= composer[2] && send.x1 <= pane.x1, "{at}: Send clear and inside");
+                    let p = panel(&u);
+                    assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "{at}: no sideways scroll");
+                }
+            }
+        }
+    }
+}
+
+/// Fix AA3, Spanish: the row's visible words are the agent's name and icons, so a longer language
+/// can't push it over; what Spanish changes is what the controls are called, and each has its
+/// Spanish name. (The UI's language is process-wide, so tests don't switch it while others run.)
+#[test]
+fn the_rows_controls_have_their_spanish_names() {
+    for key in ["Agent: {agent}", "Add the selection to the prompt", "Attach an image", "Attach image…", "Agent settings…", "Send", "Stop"] {
+        let es = crate::i18n::own_entry("es", key).unwrap_or_else(|| panic!("{key} in Spanish"));
+        assert!(!es.is_empty() && es != key, "{key}: {es}");
+    }
+}
+
+/// Fix AA3: at 240 px with Codex, "Attach image…" in the agent menu does what the image chip does:
+/// asks for an image and attaches it.
+#[test]
+fn attach_image_is_in_the_agent_menu_when_the_chip_has_no_room() {
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
+    let mut u = composer(false, 240.0, true);
+    let script = std::sync::Arc::new(std::sync::Mutex::new(Script {
+        claude: Some(CLAUDE.into()),
+        codex: Some("/opt/agents/bin/codex".into()),
+        pick: Some("/tmp/ref.png".into()),
+        ..Default::default()
+    }));
+    u.app.services = Box::new(Platform(script.clone()));
+    u.frame(vec![]);
+    assert_eq!(panel(&u)["composer"]["imageInMenu"], true);
+    assert!(panel(&u)["composer"]["imageChip"].is_null(), "no chip");
+    crate::layers_header::tests::click_named(&mut u, "Agent: Codex");
+    crate::layers_header::tests::click_named(&mut u, "Attach image…");
+    for _ in 0..3 {
+        u.frame(vec![]);
+    }
+    assert_eq!(script.lock().unwrap().picked, ["Attach an image"], "the chip's dialog");
+    assert_eq!(u.app.ui.agent_view.chat.image.as_deref(), Some("/tmp/ref.png"), "attached");
 }

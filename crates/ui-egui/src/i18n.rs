@@ -111,6 +111,16 @@ pub fn tr(key: &str) -> &str {
     try_tr(key).unwrap_or(key)
 }
 
+/// `key` in the language with `code`, if its own catalog has it (tests: the language the UI shows
+/// is process-wide, so a test can't switch it while others run).
+#[cfg(test)]
+pub(crate) fn own_entry(code: &str, key: &str) -> Option<&'static str> {
+    let l = LANGS.iter().find(|l| l.code == code)?;
+    match find(l.ui, key)? {
+        Text::Plain(s) | Text::Plural { other: s, .. } => Some(s),
+    }
+}
+
 /// [`tr`] for text that comes from data and may have no catalog entry (an importer's notes, say):
 /// `None` when the catalog doesn't have it.
 pub fn try_tr(key: &str) -> Option<&str> {

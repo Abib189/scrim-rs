@@ -142,16 +142,24 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
             // What fits before Send: the chips' labels shorten with "…" before anything clips.
             let room = (ui.available_width() - chips::SEND - 8.0).max(0.0);
             let agent_label = current.as_ref().map_or_else(String::new, |(p, _)| p.name.clone());
-            let want_agent = if found.is_empty() { 0.0 } else { chips::chip_width(ui, &agent_label, true) };
             // Selection and the image are round icon chips at every width (Fix Z6); the agent's
-            // name has the rest, shortened with "…" when it must be.
-            let others = chips::CHIP_H + if takes_image { 8.0 + chips::CHIP_H } else { 0.0 };
-            let agent_w = (room - others - 8.0).clamp(44.0, want_agent.max(44.0));
+            // name has the rest, shortened with "…" when it must be. Below 280 px the agent chip
+            // drops its chevron and pads 8; if its name still can't show six characters and "…",
+            // the image goes into the agent menu as "Attach image…" (Fix AA3).
+            let fit = chips::ChipFit::for_panel(app.ui.right_width, true);
+            let want_agent = if found.is_empty() { 0.0 } else { fit.width(ui, &agent_label) };
+            let agent_w = |others: f32| (room - others - 8.0).clamp(44.0, want_agent.max(44.0));
+            let with_image = agent_w(chips::CHIP_H * 2.0 + 8.0);
+            let image_in_menu = takes_image && !found.is_empty() && fit.room(with_image) < chips::readable_width(ui, &agent_label);
+            let image_chip = takes_image && !image_in_menu;
+            let agent_w = if image_chip { with_image } else { agent_w(chips::CHIP_H) };
+            seen["imageInMenu"] = json!(image_in_menu);
             // The agent: the installed agents with a headless profile, then Agent settings… (the
             // gear's place before Fix X3).
             if !found.is_empty() {
                 let path = current.as_ref().map_or_else(String::new, |(_, path)| path.clone());
-                let resp = chips::chip(ui, &roles, &agent_label, roles.text, true, agent_w, &trf("Agent: {agent}", &[("agent", &agent_label)]));
+                let (resp, shown) = chips::chip(ui, &roles, &agent_label, roles.text, fit, agent_w, &trf("Agent: {agent}", &[("agent", &agent_label)]));
+                seen["agentChip"] = json!({"shown": shown, "chevron": fit.chevron, "pad": fit.pad, "rect": [resp.rect.min.x, resp.rect.min.y, resp.rect.max.x, resp.rect.max.y]});
                 let resp = resp.on_hover_text(&path);
                 crate::a11y::menu_button(
                     &resp,
@@ -163,6 +171,12 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
                         let Some(p) = headless::profile(id) else { continue };
                         if ui.button(&p.name).on_hover_text(path).clicked() {
                             app.run("chat.agent", json!({"agent": id}));
+                        }
+                    }
+                    if image_in_menu {
+                        ui.separator();
+                        if ui.button(tr("Attach image…")).clicked() && !read_only {
+                            app.run("chat.attach-image", json!({}));
                         }
                     }
                     ui.separator();
@@ -180,7 +194,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
             if sel.clicked() && has_selection && !read_only {
                 app.run("chat.add-selection", json!({}));
             }
-            if takes_image {
+            if image_chip {
                 let img = chips::icon_chip(ui, &roles, AiIcon::Image, tr("Attach an image"));
                 crate::a11y::button(&img, tr("Attach an image"));
                 seen["imageChip"] = chip_json(img.rect, "image", tr("Attach an image"));

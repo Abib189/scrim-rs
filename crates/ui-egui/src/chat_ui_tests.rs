@@ -34,6 +34,9 @@ pub(crate) struct Script {
     /// The conversations as the app kept them (Fix T4), and how many times.
     pub(crate) conversations: Option<String>,
     pub(crate) saves: usize,
+    /// What the open dialog answers (Fix AA3), and the titles it was asked with.
+    pub(crate) pick: Option<String>,
+    pub(crate) picked: Vec<String>,
 }
 
 pub(crate) type Shared = Arc<Mutex<Script>>;
@@ -78,6 +81,13 @@ impl Services for Platform {
         e.vars.insert("SECRET_OF_THE_APP".into(), "never passed on".into());
         Some(e)
     }
+    fn pick_open(&mut self, title: &str, _exts: &[&str]) -> crate::DialogFuture {
+        let mut s = self.0.lock().unwrap();
+        s.picked.push(title.to_string());
+        let path = s.pick.clone().map(std::path::PathBuf::from);
+        Box::pin(std::future::ready(path))
+    }
+
     fn open_url(&mut self, url: &str) {
         self.0.lock().unwrap().opened.push(url.to_string());
     }

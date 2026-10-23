@@ -19,4 +19,7 @@
 
 **What still looks off:**
 - **Inline code at 240 px dark:** `#FF6A00` sits on `t.field`, which is close to the dark panel, so its box is faint.
-- **The agent chip at 240 px with Codex** is only "…": fixed in AA3 (see its captures below).
+
+**Fix AA3, the agent chip at 240 px** (the captures were made again with it):
+- **`aa-*-240-3-composer`:** Codex is shown whole, without a chevron, with 8 px padding, and the image is in the agent menu ("Attach image…"). Before AA3 the chip was only "…".
+- **`aa-*-240-1-done`:** with Claude Code (no image) the chip reads "Claude C…".

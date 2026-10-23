@@ -283,6 +283,8 @@ fn the_image_button_shows_only_for_an_agent_whose_cli_takes_one() {
     let script: Shared =
         Arc::new(Mutex::new(Script { claude: Some(CLAUDE.into()), codex: Some("/opt/agents/bin/codex".into()), ..Default::default() }));
     u.app.services = Box::new(Platform(script.clone()));
+    // Wide enough for the image chip (below that it is in the agent menu, Fix AA3).
+    u.app.ui.right_width = 336.0;
     u.app.run("panel.tab.ai", json!({}));
     u.frame(vec![]);
     let names = |u: &mut Ui| tree(u).into_iter().filter_map(|n| n.label().map(str::to_string)).collect::<Vec<_>>();
