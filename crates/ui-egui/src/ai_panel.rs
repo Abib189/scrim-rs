@@ -410,6 +410,9 @@ pub fn inspect(app: &FigApp) -> Value {
 }
 
 #[cfg(test)]
+#[path = "ai_idle_tests.rs"]
+mod idle_tests;
+#[cfg(test)]
 #[path = "ai_panel_tests.rs"]
 mod tests;
 #[cfg(test)]
