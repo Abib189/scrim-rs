@@ -69,6 +69,71 @@ These are classified Write, and refused for agents on every route anyway (MCP, t
 
 `pref.agentGrace` is refused for agents too (Fix Q1). So is `camera.follow-agents` (Fix V2): only the person turns following on or off, and Settings ▸ Diagnostics notes an agent's attempt (`docs/design/follow-setting.md`).
 
+## Commands that write a saved setting (Fix W2)
+
+Every command that writes a saved setting or a persistent preference, with what it writes and whether an agent could change it before Fix W3. How the list was made, and the writes that aren't settings, are in `settings-access.md`.
+
+| Command | Saved setting it writes | Can an agent change it today (before Fix W3)? |
+|---|---|---|
+| `camera.follow-agents` | `follow_agents`, `follow_chosen` | no: refused on every route (Fix V2) |
+| `pref.accent` | `accent` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.agentGrace` | `agent_grace_secs`, `agent_grace_chosen` | no: refused on every route (Fix Q1) |
+| `pref.autoSave` | `auto_save` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.chatTimeLimit` | `chat_time_limit_mins` | no: refused on every route (R5) |
+| `pref.describeChange` | `describe_change` | no: refused on every route (R5) |
+| `pref.highlightHover` | `highlight_on_hover` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.keepTool` | `keep_tool` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.language` | `language` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.motion` | `motion`, `reduce_motion` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.nudge` | `nudge_small`, `nudge_big` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.numberKeysOpacity` | `number_keys_opacity` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.preserveUnsaved` | `preserve_unsaved` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.publishServer` | `publish_server` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.reduceMotion` | `reduce_motion`, `motion` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.renameDuplicates` | `rename_duplicates` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.revealAgentWork` | `reveal_agent_work` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.revealSpeed` | `reveal_speed` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.showDimensions` | `show_dimensions` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.theme` | `theme` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.userName` | `user_name` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `pref.workingIndicator` | `working_indicator` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.themeDark` | `theme` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.themeLight` | `theme` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.themeSystem` | `theme` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.pixelGrid` | `view` (kept for new files) | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.layoutGrids` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.rulers` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.slices` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.comments` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.multiplayerCursors` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.outlinesHiddenLayers` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.outlinesObjectBounds` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.maskOutlines` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.frameOutlines` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.snapGeometry` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.snapObjects` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `view.snapPixel` | `view` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `toolbar.toggle` | `toolbar` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `toolbar.move` | `toolbar` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `toolbar.group` | `toolbar` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `toolbar.ungroup` | `toolbar` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `toolbar.reset` | `toolbar` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `mcp.set-port` | `mcp.port`, `mcp.port_chosen` | no: refused on every route (C1) |
+| `mcp.toggle-auth` | `mcp.require_auth`, `mcp.token` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `mcp.set-root-dir` | `mcp.root_dir` | no: refused on every route (C1) |
+| `mcp.set-tool` | `mcp.disabled_tools` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins; turning a tool on is refused (C1.3) |
+| `mcp.set-tool-group` | `mcp.disabled_tools` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins; turning tools on is refused |
+| `mcp.restore-tools` | `mcp.disabled_tools` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins; refused when it would turn tools on |
+| `diagnostics.retention` | `diagnostics_days` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `diagnostics.clear` | `diagnostics` (the saved log) | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `fonts.muteMissing` | `fonts_muted` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `chat.allow-agent` | `chat_allowed` | no: refused on every route (R5) |
+| `chat.forget-agents` | `chat_allowed` | no: refused on every route (R5) |
+| `collab.registerLinks` | `invite_links` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `plugin.import` | `plugins` (installs a plugin) | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `plugin.remove` | `plugins`, `plugin_settings` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+| `plugin.directory.install` | `plugins` (installs a plugin) | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
+
 ## Read (58)
 
 - **agent:** `agent.finish-working` (Finish working; Stage I.1: it changes nothing but what the window shows, so it runs with only read-only tools on)

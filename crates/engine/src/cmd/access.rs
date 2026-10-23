@@ -481,5 +481,8 @@ pub fn check(id: &str, disabled: &[String]) -> Result<(), String> {
 }
 
 #[cfg(test)]
+#[path = "settings_probe_tests.rs"]
+mod probe;
+#[cfg(test)]
 #[path = "access_tests.rs"]
 mod tests;
