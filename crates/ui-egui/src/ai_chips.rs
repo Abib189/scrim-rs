@@ -1,9 +1,10 @@
-//! The composer's controls (Fix X3, `docs/design/ai-panel.md`): pill chips (the agent, the
-//! selection, an image) and the round Send / Stop button. Their colours are the panel's roles
+//! The composer's controls (Fix X3, `docs/design/ai-panel.md`): the agent's pill chip, the round
+//! icon chips for the selection and an image (Fix Z6), and the round Send / Stop button. Their colours are the panel's roles
 //! (`ai_panel_theme.rs`); their keys and accessible names are the composer's, unchanged.
 
 use egui::{CornerRadius, Rect, Response, Sense, Stroke, Ui, pos2, vec2};
 
+use crate::panel_view::ai_tab::icons::{self, AiIcon};
 use crate::panel_view::ai_tab::panel_theme::Roles;
 use crate::theme::{Tokens, regular};
 
@@ -45,17 +46,18 @@ pub fn chip(ui: &mut Ui, roles: &Roles, label: &str, color: egui::Color32, chevr
     resp
 }
 
-/// A round 32 px chip with `icon` alone: Selection and the image when the row is too narrow for
-/// their words (the agent's name keeps the room). `name` is what screen readers say and the tooltip.
-pub fn icon_chip(ui: &mut Ui, roles: &Roles, icon: crate::icons::Icon, color: egui::Color32, name: &str) -> Response {
+/// A round 32 px chip with `icon` alone (Fix Z6: Selection and the image, at every width, so the
+/// agent's name keeps the room): `t.selected_row`, `t.pressed` hovered, the focus ring. `name` is
+/// what screen readers say and the tooltip.
+pub fn icon_chip(ui: &mut Ui, roles: &Roles, icon: AiIcon, name: &str) -> Response {
     let t = Tokens::get(ui.ctx());
     let (r, resp) = ui.allocate_exact_size(vec2(CHIP_H, CHIP_H), Sense::click());
     let resp = resp.on_hover_text(name);
-    ui.painter().circle_filled(r.center(), CHIP_H / 2.0, roles.chip_fill);
+    ui.painter().circle_filled(r.center(), CHIP_H / 2.0, if resp.hovered() { roles.chip_hover } else { roles.chip_fill });
     if resp.has_focus() {
         ui.painter().circle_stroke(r.center(), CHIP_H / 2.0 - 1.0, Stroke::new(2.0, t.focus));
     }
-    crate::icons::paint(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), icon, color);
+    icons::paint(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), icon, roles.chip_icon);
     resp
 }
 

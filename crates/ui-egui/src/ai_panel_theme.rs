@@ -50,6 +50,9 @@ pub struct Roles {
     pub failure: Color32,
     /// A reply's code: the inline span's fill and the block's box (Fix Z2).
     pub code: Color32,
+    /// The Selection and Image chips' icons, and their fill hovered (Fix Z6).
+    pub chip_icon: Color32,
+    pub chip_hover: Color32,
 }
 
 /// The roles for theme `t` (its accent included).
@@ -88,6 +91,8 @@ pub fn roles(t: &Tokens) -> Roles {
         paused_dot: t.warning,
         failure: t.danger,
         code: t.field,
+        chip_icon: t.icon,
+        chip_hover: t.pressed,
     }
 }
 

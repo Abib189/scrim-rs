@@ -106,3 +106,86 @@ fn the_transcript_fades_at_the_bottom_only_with_more_below() {
         assert_eq!(p["theme"]["fade"], crate::theme::accent::rgb_text(t.panel), "{dark}: into the panel's own colour");
     }
 }
+
+/// The window with Claude Code and Codex installed, Codex chosen when `image` (its CLI takes one).
+fn agents(dark: bool, w: f32, image: bool) -> Ui {
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
+    let mut s = figcraft_engine::Session::new();
+    let f = s.execute("frame.create", &serde_json::json!({"x": 0, "y": 0, "width": 200, "height": 200, "name": "Poster"})).unwrap();
+    s.execute("select.set", &serde_json::json!({"ids": [f["id"]]})).unwrap();
+    s.agents.mcp.port = Some(7690);
+    let mut u = Ui::new(s);
+    let script = std::sync::Arc::new(std::sync::Mutex::new(Script {
+        claude: Some(CLAUDE.into()),
+        codex: Some("/opt/agents/bin/codex".into()),
+        ..Default::default()
+    }));
+    u.app.services = Box::new(Platform(script));
+    u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+    u.app.ui.right_width = w;
+    u.app.run("panel.tab.ai", serde_json::json!({}));
+    u.frame(vec![]);
+    if image {
+        u.app.run("chat.agent", serde_json::json!({"agent": "codex"}));
+    }
+    u.frame(vec![]);
+    u.frame(vec![]);
+    u
+}
+
+/// Z6: Selection and the image are round 32 × 32 icon chips at every width (240, 280, 336 and
+/// 400 px, light and dark, the image chip there or not), 8 apart, after the agent chip and clear of
+/// Send, with their accessible names and tooltips; no "Selection" word is drawn. It fails with the
+/// text chips (wider than 32 from about 300 px).
+#[test]
+fn selection_and_image_are_round_icon_chips_at_every_width() {
+    for dark in [false, true] {
+        for w in [240.0, 280.0, 336.0, 400.0] {
+            for image in [false, true] {
+                let mut u = agents(dark, w, image);
+                let c = panel(&u)["composer"].clone();
+                let at = format!("{dark} {w} {image}");
+                assert_eq!(c["imageButton"], image, "{at}");
+                let sel = rect(&c["selectionChip"]["rect"]);
+                assert!((sel[2] - sel[0] - 32.0).abs() < 0.5 && (sel[3] - sel[1] - 32.0).abs() < 0.5, "{at}: Selection 32 × 32: {sel:?}");
+                assert_eq!(c["selectionChip"]["icon"], "selection");
+                let nodes = tree(&mut u);
+                let find = |name: &str| nodes.iter().find(|n| n.label().is_some_and(|l| l.starts_with(name))).and_then(|n| n.bounds());
+                let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+                let b = find("Add the selection to the prompt").expect("Selection's name");
+                assert!((b.x0 - sel[0]).abs() < 0.5 && (b.x1 - sel[2]).abs() < 0.5, "{at}: named where it's drawn");
+                let agent = find("Agent: ").expect("the agent chip");
+                assert!(agent.x1 <= sel[0] - 7.5, "{at}: after the agent chip, 8 apart: {agent:?} {sel:?}");
+                let mut last = sel[2];
+                if image {
+                    let img = rect(&c["imageChip"]["rect"]);
+                    assert!((img[2] - img[0] - 32.0).abs() < 0.5 && (img[3] - img[1] - 32.0).abs() < 0.5, "{at}: Image 32 × 32: {img:?}");
+                    assert!((img[0] - sel[2] - 8.0).abs() < 0.6, "{at}: 8 after Selection");
+                    assert!(find("Attach an image").is_some(), "{at}: the image's name");
+                    last = img[2];
+                } else {
+                    assert!(c["imageChip"].is_null() && find("Attach an image").is_none(), "{at}: no image chip");
+                }
+                let send = find("Send").expect("Send");
+                assert!(last <= send.x0 - 7.5 && send.x1 <= pane.x1 + 0.5, "{at}: clear of Send and inside the panel");
+                assert!(!nodes.iter().any(|n| n.label() == Some("Selection") || n.value() == Some("Selection")), "{at}: no Selection word");
+            }
+        }
+    }
+}
+
+/// Z6: hovered, a chip's tooltip is its name, as before.
+#[test]
+fn the_icon_chips_keep_their_tooltips() {
+    let mut u = agents(false, 336.0, true);
+    for name in ["Add the selection to the prompt", "Attach an image"] {
+        u.frame(vec![egui::Event::PointerMoved(egui::pos2(5.0, 5.0))]);
+        let b = tree(&mut u).iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).expect(name);
+        u.frame(vec![egui::Event::PointerMoved(egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32))]);
+        for _ in 0..60 {
+            u.frame(vec![]);
+        }
+        let named = tree(&mut u).iter().filter(|n| n.label() == Some(name) || n.value() == Some(name)).count();
+        assert!(named >= 2, "{name}: the chip and its tooltip ({named})");
+    }
+}

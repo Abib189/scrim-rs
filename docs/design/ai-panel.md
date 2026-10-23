@@ -44,17 +44,18 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - **The field:** Inter 14, "Describe a change…".
   - **A 32 px row under the field,** 8 apart:
     - the agent chip (a pill with its name and an 8 × 4 chevron, which opens the agent menu: the agents, then "Agent settings…");
-    - the Selection chip (`chat.add-selection`);
-    - an image chip (`chat.attach-image`), only for an agent whose CLI takes one;
+    - the Selection chip (`chat.add-selection`): a round 32 px icon chip (Fix Z6), a 14 × 14 rounded dashed square with a pointer arrow in it;
+    - an image chip (`chat.attach-image`), only for an agent whose CLI takes one: a round 32 px icon chip, a picture;
+    - **the icon chips:** `t.selected_row`, `t.pressed` hovered, the focus ring; the icon in `t.icon`, stroke 1.5 (`ai_icons.rs`). Their accessible names and tooltips are unchanged: "Add the selection to the prompt" and "Attach an image".
     - Send at the far right: a 36 px `t.accent_fill` circle with an arrow in `t.accent_on`, which is Stop (a 16 × 16 square, radius 3) while a run goes.
-  - **Narrow:** below about 300 px, Selection and the image become round 32 px icon chips, and the agent's name shortens with "…" (decision 14).
+  - **Narrow:** the agent's name shortens with "…" (decision 14); the icon chips stay 32 px.
   - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run. Why Send can't go is its tooltip.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
 **`ui.inspect` › `agent.aiPanel`** reports what was drawn:
 - **the header:** the title as drawn (`titleShown`), its tooltip, its rectangle and the chevron's (Fix Z3); the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
 - **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2), the bottom fade's rectangle while it shows (Fix Z4) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
-- **the composer:** its controls, rectangle, status line, hint line, missing-CLI line and status;
+- **the composer:** its controls (since Fix Z6, `selectionChip` and `imageChip`, each with its icon, name and rectangle; `compactChips` is gone), rectangle, status line, hint line, missing-CLI line and status;
 - **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
 
 ## Where everything else went
@@ -98,7 +99,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 11. **The new icons** are drawn in `ai_icons.rs` (the crosshair and, since Fix X2, the chevrons), because `icons.rs` is over the size limit. Since Fix X3, Send's arrow and Stop's square are drawn with the button in `ai_chips.rs`, and the gear is gone (decision 14).
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
 13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
-14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Below about 300 px the Selection and image chips become round icon chips, so the agent's name keeps room.
+14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Since Fix Z6 the Selection and image chips are round icon chips at every width, so the agent's name keeps its room (before, they showed their words from about 300 px).
 15. **The card's rows say what the run did, by name** (Fix Z1, `chat_run::rows`, replacing Fix X4's command labels). Each command or batch of the run gives rows from the layers it touched, as the change log captured them then (`agents_touched.rs`: created, edited, moved, deleted, with the layer's name at that moment):
     - **Created:** "Created {name}" for each frame, section, group or layer right on a page it made, with " ({n} layers)" for the layers it made inside. Its other creations are "Created {name}" for one, else "Created {n} layers".
     - **Edited:** "Edited {name}" for one layer, else "Edited {n} layers". A single move into another parent is "Moved {name} into {parent}".
@@ -182,3 +183,5 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - `ai_reply_tests.rs` (Z2): a reply's blocks in `ui.inspect` with no marker left as text, while your message and a note keep theirs; at 240, 320 and 400 px in both themes, with Spanish text, an 80-character word and a long line of code, every block stays 16 inside the panel and nothing scrolls sideways. It fails with the reply drawn as one plain label, and the width check fails when a code block isn't wrapped.
 - `ai_panel_z_tests.rs` › `a_long_title_is_cut_with_an_ellipsis_and_the_chevron_follows_it` (Z3): a 48-character title at 240, 320 and 400 px in both themes is cut with "…" (a prefix of the title), the chevron 6 after the text and clear of Follow, the buttons 8 apart and 16 from the right, the accessible name and the hovered tooltip the whole title. It fails with the old header (the title clipped without "…", the tooltip "Conversations").
 - `ai_panel_z_tests.rs` › `the_transcript_fades_at_the_bottom_only_with_more_below` (Z4): light and dark, no fade for a short transcript nor at the bottom of a 60-line one; scrolled up with the wheel, a 12 px fade inside the panel, into the panel's own colour (`theme.fade`).
+- `ai_panel_z_tests.rs` › `selection_and_image_are_round_icon_chips_at_every_width` (Z6): at 240, 280, 336 and 400 px, light and dark, with the image chip and without, Selection (and the image) are 32 × 32, named where they're drawn, 8 apart after the agent chip, clear of Send and inside the panel, and no "Selection" word is drawn. It fails with the text chips. `the_icon_chips_keep_their_tooltips`: hovered, each shows its name.
+- `ai_panel_theme_tests.rs` (Z6): the chips' icon reads at 3:1 on the chip and on its hovered fill, in both themes with every accent.

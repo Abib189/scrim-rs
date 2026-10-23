@@ -17,6 +17,7 @@ use serde_json::json;
 use super::{chips, elapsed, installed, picked, send_blocked};
 use crate::FigApp;
 use crate::i18n::{tr, trf};
+use crate::panel_view::ai_tab::icons::AiIcon;
 use crate::theme::{Tokens, regular};
 
 /// The composer's least height (Fix X3); it grows with the text.
@@ -142,17 +143,10 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
             let room = (ui.available_width() - chips::SEND - 8.0).max(0.0);
             let agent_label = current.as_ref().map_or_else(String::new, |(p, _)| p.name.clone());
             let want_agent = if found.is_empty() { 0.0 } else { chips::chip_width(ui, &agent_label, true) };
-            let want_sel = chips::chip_width(ui, tr("Selection"), false);
-            let want_img = if takes_image { chips::chip_width(ui, tr("Image"), false) } else { 0.0 };
-            // Selection and the image show their words while the agent's name still has 88 (its
-            // chip shortens it first); narrower, they become round icon chips.
-            let agent_min = if found.is_empty() { 0.0 } else { 88.0_f32.min(want_agent) };
-            let words = want_sel + want_img + if takes_image { 8.0 } else { 0.0 };
-            let compact = agent_min + 8.0 + words > room;
-            let others = if compact { chips::CHIP_H * if takes_image { 2.0 } else { 1.0 } + if takes_image { 8.0 } else { 0.0 } } else { words };
+            // Selection and the image are round icon chips at every width (Fix Z6); the agent's
+            // name has the rest, shortened with "…" when it must be.
+            let others = chips::CHIP_H + if takes_image { 8.0 + chips::CHIP_H } else { 0.0 };
             let agent_w = (room - others - 8.0).clamp(44.0, want_agent.max(44.0));
-            let (sel_w, img_w) = (want_sel, want_img);
-            seen["compactChips"] = json!(compact);
             // The agent: the installed agents with a headless profile, then Agent settings… (the
             // gear's place before Fix X3).
             if !found.is_empty() {
@@ -179,22 +173,17 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
                 seen["agent"] = json!(agent_label);
                 seen["agentMenu"] = json!(tr("Agent settings…"));
             }
-            let sel = if compact {
-                chips::icon_chip(ui, &roles, crate::icons::Icon::Move, roles.text_secondary, tr("Add the selection to the prompt"))
-            } else {
-                chips::chip(ui, &roles, tr("Selection"), roles.text_secondary, false, sel_w, tr("Add the selection to the prompt"))
-            };
+            let sel = chips::icon_chip(ui, &roles, AiIcon::Selection, tr("Add the selection to the prompt"));
             crate::a11y::button(&sel, tr("Add the selection to the prompt"));
+            let chip_json = |r: egui::Rect, icon: &str, name: &str| json!({"icon": icon, "name": name, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]});
+            seen["selectionChip"] = chip_json(sel.rect, "selection", tr("Add the selection to the prompt"));
             if sel.clicked() && has_selection && !read_only {
                 app.run("chat.add-selection", json!({}));
             }
             if takes_image {
-                let img = if compact {
-                    chips::icon_chip(ui, &roles, crate::icons::Icon::Image, roles.text, tr("Attach an image"))
-                } else {
-                    chips::chip(ui, &roles, tr("Image"), roles.text, false, img_w, tr("Attach an image"))
-                };
+                let img = chips::icon_chip(ui, &roles, AiIcon::Image, tr("Attach an image"));
                 crate::a11y::button(&img, tr("Attach an image"));
+                seen["imageChip"] = chip_json(img.rect, "image", tr("Attach an image"));
                 if img.clicked() && !read_only {
                     app.run("chat.attach-image", json!({}));
                 }
@@ -230,6 +219,8 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         "chips": hexes(roles.chip_fill),
         "chipText": hexes(roles.text),
         "chipSecondary": hexes(roles.text_secondary),
+        "chipIcon": hexes(roles.chip_icon),
+        "chipHover": hexes(roles.chip_hover),
         "placeholder": hexes(roles.placeholder),
         "statusDot": seen["statusDot"].clone(),
     });

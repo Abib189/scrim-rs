@@ -163,6 +163,9 @@ fn every_role_reads_in_both_themes_with_every_accent() {
             say("composer edge on its fill", at("composerEdge"), at("composerFill"), 3.0);
             let pending = super::roles(&t).pending_ring;
             say("pending ring on the card", pending, at("card"), 3.0);
+            // The Selection and Image chips' icons, at rest and hovered (Fix Z6).
+            say("chip icon on a chip", at("chipIcon"), at("chips"), 3.0);
+            say("chip icon on a hovered chip", at("chipIcon"), at("chipHover"), 3.0);
         }
     }
 }

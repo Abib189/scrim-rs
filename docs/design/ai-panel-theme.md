@@ -18,7 +18,8 @@
 | Placeholder | `t.text_tertiary` |
 | Accent-coloured words (a link) | `t.accent_text` |
 | Composer | fill `t.field`; edge `theme::field_stroke(t, hovered, focused)` (rest `t.field_edge`, focused `t.accent`) |
-| Chips (agent, selection, image) | fill `t.selected_row` |
+| Chips (agent, selection, image) | fill `t.selected_row`; the Selection and Image chips `t.pressed` hovered (Fix Z6) |
+| The Selection and Image chips' icons (Fix Z6) | `t.icon` (3:1 on the chip, at rest and hovered) |
 | Chevrons | `t.icon` |
 | Your message's bubble | fill `t.selected_row` |
 | Working banner | fill `t.field` |
