@@ -214,7 +214,9 @@ fn a_lock_freed_a_moment_later_is_not_a_run_that_is_still_going() {
     // Hold the crashed run's folder lock on a second descriptor, the way a child forked before its
     // exec holds it, and free it shortly after.
     let lock = std::fs::File::options().write(true).create(true).truncate(false).open(root.join("crashed").join("lock")).unwrap();
-    lock.try_lock().unwrap();
+    // Waited for, not tried: another test's child, forked while the crashed run's descriptor was
+    // open, can hold it for a moment too (the very window this test is about).
+    lock.lock().unwrap();
     let freed = std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(10));
         drop(lock);
