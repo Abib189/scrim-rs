@@ -546,3 +546,45 @@ fn run_captures(dir: &std::path::Path, prefix: &str) {
         }
     }
 }
+
+/// Fix AA4: the transcript's bottom fade, with a long transcript scrolled to its top, light and
+/// dark, at 336 and 240 px (`docs/scrim-ports/ai-panel/aa/aa4-…`).
+#[test]
+#[ignore = "writes screenshots when SCRIM_AI_AA_DIR is set"]
+fn ai_panel_fade_captures() {
+    use crate::follow_agent::chat_ui::Line;
+    let Some(dir) = std::env::var_os("SCRIM_AI_AA_DIR").map(std::path::PathBuf::from) else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    for dark in [false, true] {
+        for width in [336.0, 240.0] {
+            let mut o = ridgeline(dark, width);
+            run(&mut o, "panel.tab.ai", json!({}));
+            let mut lines = vec![Line::You("Make the poster series bolder and tighten every footer".into())];
+            for k in 0..24 {
+                lines.push(Line::Reply {
+                    agent: "Claude Code".into(),
+                    text: format!("Step {k}: **tightened** the footer on poster {k}, moved the date up 8 px and set the *credits* in 11 pt."),
+                });
+            }
+            o.app.ui.agent_view.chat.lines = lines;
+            o.settle();
+            // Scrolled to the top: the wheel over the transcript.
+            let at = egui::pos2(1440.0 - width / 2.0, 400.0);
+            o.frame(vec![Event::PointerMoved(at)]);
+            for _ in 0..40 {
+                o.frame(vec![Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: vec2(0.0, 400.0),
+                    phase: egui::TouchPhase::Move,
+                    modifiers: Default::default(),
+                }]);
+            }
+            o.frame(vec![Event::PointerGone]);
+            o.settle();
+            let theme = if dark { "dark" } else { "light" };
+            let fade = crate::follow_agent::inspect(&o.app)["aiPanel"]["fade"].clone();
+            assert!(fade.is_object(), "{theme} {width}: scrolled to the top, the fade shows");
+            save(&o, &dir, &format!("aa4-{theme}-{}-top", width as u32));
+        }
+    }
+}

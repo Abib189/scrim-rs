@@ -28,7 +28,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - The block is centred between the header's rule and the status line, 12 above the middle. No suggestion rows.
   - **A conversation:**
     - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
-    - **The bottom fade** (Fix Z4): a 12 px fade from transparent into `t.panel` at the transcript's bottom edge, only while there is more below (scrolled up); none at the bottom or when it all fits.
+    - **The bottom fade** (Fix Z4): a 12 px fade from transparent into `t.panel` at the transcript's bottom edge, only while there is more below (scrolled up); none at the bottom or when it all fits. Captured scrolled to the top in Fix AA4 (`docs/scrim-ports/ai-panel/aa/aa4-…`): it reads; unchanged.
     - **The agent's replies and notes:** text, 16 from each side. A reply is drawn from its Markdown (Fix Z2, decision 24); notes, failures and your own message stay plain text.
     - **The run's card, after the message that started it** (`ai_run_card.rs`):
       - **The box:** the width less 32, radius 12, 16 inside, `t.field` with a 1 px `t.border_strong` edge.

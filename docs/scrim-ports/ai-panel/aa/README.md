@@ -23,3 +23,8 @@
 **Fix AA3, the agent chip at 240 px** (the captures were made again with it):
 - **`aa-*-240-3-composer`:** Codex is shown whole, without a chevron, with 8 px padding, and the image is in the agent menu ("Attach image…"). Before AA3 the chip was only "…".
 - **`aa-*-240-1-done`:** with Claude Code (no image) the chip reads "Claude C…".
+
+**Fix AA4, the bottom fade** (`aa4-{theme}-{width}-top.png`): a 24-reply transcript scrolled to its top with the wheel, light and dark, 336 and 240 px. `offscreen_tests.rs` › `ai_panel_fade_captures` also checks that `ui.inspect` reports the fade.
+- **It reads.** The line at the transcript's bottom edge ("the date up 8 px…") fades into the panel, and the half-line under it reads as more to come. That is in both themes, on `t.panel` with no band or edge.
+- **Up close it is short:** 12 px is less than a 18 px line, and the edge cuts through a line. Zoomed in, the faded remnant can look like ghost text rather than a gradient. At normal size it reads as "more below", so nothing was changed. A taller fade (about one line, 18 px) would be the change if it should read more strongly.
+- **Also visible here:** "Claude Code isn't installed. Agent settings", the missing-CLI line (Fix Y1). The captures' harness has no agent installed in this case.
