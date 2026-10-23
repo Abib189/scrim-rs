@@ -627,9 +627,20 @@ fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
     let card = &p["card"];
     assert!(card["heading"].as_str().unwrap().starts_with("Run · "), "{card}");
     assert_eq!(card["note"], "Undo is one step");
+    let rows: Vec<(String, String)> = card["rows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| (r["label"].as_str().unwrap().to_string(), r["state"].as_str().unwrap().to_string()))
+        .collect();
+    // What the run did, by name (Fix Z1): the frame, the three rectangles in it, the text.
     assert_eq!(
-        card["rows"],
-        json!([{"label": "Create frame", "state": "done"}, {"label": "Rectangle ×3", "state": "done"}, {"label": "Text", "state": "active"}])
+        rows,
+        [
+            ("Created Poster — Welle".to_string(), "done".to_string()),
+            ("Created 3 layers".into(), "done".into()),
+            ("Created Welle".into(), "active".into())
+        ]
     );
     assert_eq!((card["progress"].clone(), card["undoEnabled"].clone()), (json!(true), json!(false)));
     // Undo run is held while it runs (the engine refuses it too).
@@ -823,5 +834,26 @@ fn the_card_buttons_stack_below_300_px_and_keep_their_labels_padded() {
                 assert!(l[0] >= r[0] + 12.0 - 0.5 && l[2] <= r[2] - 12.0 + 0.5, "{dark} {w}: the label {l:?} keeps 12 px inside {r:?}");
             }
         }
+    }
+}
+
+/// Fix Z1: a long layer name is cut with "…" inside its row, at 240 and 336 px.
+#[test]
+fn a_long_name_is_cut_with_an_ellipsis_inside_its_row() {
+    use crate::follow_agent::chat_ui::tests::send_allowed;
+    use crate::follow_agent::tests::agent;
+    let name = "Poster — Welle, twenty bars forming a sine wave with five peaks in orange";
+    for w in [240.0, 336.0] {
+        let (mut u, _) = window();
+        u.app.ui.right_width = w;
+        send_allowed(&mut u, "Build it");
+        u.frame(vec![]);
+        agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200, "name": name}));
+        u.frame(vec![]);
+        let row = panel(&u)["card"]["rows"][0].clone();
+        assert_eq!(row["label"], format!("Created {name}"));
+        let shown = row["shown"].as_str().unwrap();
+        assert!(shown.ends_with('…') && shown.len() < row["label"].as_str().unwrap().len(), "{w}: {shown}");
+        assert!(shown.starts_with("Created Poster"), "{w}: {shown}");
     }
 }

@@ -34,23 +34,104 @@ pub struct RunRecord {
     pub agent: String,
 }
 
-/// The run's agent edits, oldest first, as (label, how many in a row).
+/// The run's rows, oldest first, as (what happened, how many times in a row) (Fix Z1): each
+/// command or batch of the run says what it did to the layers it touched, by name ("Created
+/// Poster (30 layers)", "Edited 4 layers", "Deleted Bar 3"); a batch the agent labelled with a
+/// sentence says that instead. Rows that say the same, one after another, are merged.
 pub fn rows(s: &Session) -> Vec<(String, usize)> {
     let Some(r) = &s.agents.chat_run else { return Vec::new() };
     let mut out: Vec<(String, usize)> = Vec::new();
-    for c in run_edits(s, r) {
-        match out.last_mut() {
-            Some((label, n)) if *label == c.label => *n += 1,
-            _ => out.push((c.label.clone(), 1)),
+    // A batch's steps are covered by the batch, logged after them as a whole.
+    for c in run_units(s, r) {
+        for row in unit_rows(c) {
+            match out.last_mut() {
+                Some((text, n)) if *text == row => *n += 1,
+                _ => out.push((row, 1)),
+            }
         }
     }
     out
+}
+
+/// A label the agent wrote itself: a sentence (it has a space), not one of the registry's labels.
+fn agent_sentence(label: &str) -> Option<String> {
+    let l = label.trim();
+    (l.contains(' ') && !super::all_commands().iter().any(|c| c.label == l)).then(|| l.to_string())
+}
+
+/// What one command or batch did, as rows: created, edited, deleted.
+fn unit_rows(c: &crate::agents::Change) -> Vec<String> {
+    use crate::agents::touched::Touch;
+    if let Some(l) = c.batch_label.as_deref().and_then(agent_sentence) {
+        return vec![l];
+    }
+    let mut rows = Vec::new();
+    let t = &c.touched;
+    // Created: each container or layer right on a page by its name, with the layers made inside
+    // it; the others counted together.
+    let created: Vec<_> = t.iter().filter(|x| x.touch == Touch::Created).collect();
+    let made = |id| created.iter().any(|x| x.id == id);
+    let inside = |top: figcraft_doc::NodeId| {
+        created
+            .iter()
+            .filter(|x| {
+                let mut p = x.parent;
+                while let Some(id) = p {
+                    if id == top {
+                        return true;
+                    }
+                    p = created.iter().find(|y| y.id == id).and_then(|y| y.parent);
+                }
+                false
+            })
+            .count()
+    };
+    let mut others = (0usize, String::new());
+    for x in created.iter().filter(|x| !x.parent.is_some_and(made)) {
+        let n = inside(x.id);
+        if x.container || x.top {
+            rows.push(if n > 0 { format!("Created {} ({n} layers)", x.name) } else { format!("Created {}", x.name) });
+        } else {
+            others = (others.0 + 1 + n, x.name.clone());
+        }
+    }
+    match others.0 {
+        0 => {}
+        1 => rows.push(format!("Created {}", others.1)),
+        n => rows.push(format!("Created {n} layers")),
+    }
+    // Edited or moved: one by name, more counted.
+    let edited: Vec<_> = t.iter().filter(|x| matches!(x.touch, Touch::Edited | Touch::Moved { .. })).collect();
+    match edited.as_slice() {
+        [] => {}
+        [x] => rows.push(match &x.touch {
+            Touch::Moved { into } if !into.is_empty() => format!("Moved {} into {into}", x.name),
+            _ => format!("Edited {}", x.name),
+        }),
+        many => rows.push(format!("Edited {} layers", many.len())),
+    }
+    // Deleted: the layers removed themselves (not their contents), one or two by name.
+    let deleted: Vec<_> = t.iter().filter(|x| x.touch == Touch::Deleted).collect();
+    let gone = |id| deleted.iter().any(|x| x.id == id);
+    let roots: Vec<_> = deleted.iter().filter(|x| !x.parent.is_some_and(gone)).collect();
+    match roots.as_slice() {
+        [] => {}
+        [a] => rows.push(format!("Deleted {}", a.name)),
+        [a, b] => rows.push(format!("Deleted {} and {}", a.name, b.name)),
+        many => rows.push(format!("Deleted {} layers", many.len())),
+    }
+    rows
 }
 
 fn run_edits<'a>(s: &'a Session, r: &'a RunRecord) -> impl Iterator<Item = &'a crate::agents::Change> {
     s.agents
         .edits_after(r.uid, r.start_rev)
         .filter(move |c| c.author.is_agent() && c.command != "command.batch" && r.end_rev.is_none_or(|e| c.revision <= e))
+}
+
+/// The run's commands and batches, each once: a batch's steps are left out, the batch kept.
+fn run_units<'a>(s: &'a Session, r: &'a RunRecord) -> impl Iterator<Item = &'a crate::agents::Change> {
+    s.agents.edits_after(r.uid, r.start_rev).filter(move |c| c.author.is_agent() && !c.in_batch && r.end_rev.is_none_or(|e| c.revision <= e))
 }
 
 fn record(s: &Session, id: &str) -> Result<RunRecord> {

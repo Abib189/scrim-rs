@@ -98,7 +98,14 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
 13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
 14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Below about 300 px the Selection and image chips become round icon chips, so the agent's name keeps room.
-15. **The card's rows are the run's edits from the engine's change log** (Fix X4, `chat_run::rows`), by the label each command carried. A batch's own wrapper is left out (its steps are logged one by one), and neighbours with the same label are merged with a count ("Rectangle ×20"). Labels are the registry's, so no prompt, path or key reaches them. The run's old "work" lines aren't repeated under its card.
+15. **The card's rows say what the run did, by name** (Fix Z1, `chat_run::rows`, replacing Fix X4's command labels). Each command or batch of the run gives rows from the layers it touched, as the change log captured them then (`agents_touched.rs`: created, edited, moved, deleted, with the layer's name at that moment):
+    - **Created:** "Created {name}" for each frame, section, group or layer right on a page it made, with " ({n} layers)" for the layers it made inside. Its other creations are "Created {name}" for one, else "Created {n} layers".
+    - **Edited:** "Edited {name}" for one layer, else "Edited {n} layers". A single move into another parent is "Moved {name} into {parent}".
+    - **Deleted:** "Deleted {name}", or "Deleted {a} and {b}", else "Deleted {n} layers". The name is kept from before the deletion, so the row reads the same after the layer is gone.
+    - **A batch the agent labelled with a sentence** (it has a space and isn't one of the registry's labels) shows that label.
+    - **Rows that say the same, one after another,** are merged with a count; the newest 5 show, with "{n} earlier" above. Long rows are cut with "…".
+    - **Names are the person's own content** and are shown. No prompt, path or key reaches a row.
+    - A batch's own steps aren't rows: the batch's are, as one.
 16. **No pending rows and no percentage:** the agent has no plan to measure, so the card never shows work it doesn't know about. While it works, the newest row is the active one and the bar is indeterminate.
 17. **"Undo is one step" is true:** the history keeps whole documents, so `chat.undo-run` puts back the document as it was when the run began, as one undo step (and one Undo brings the run back). It is refused:
     - while the run goes ("Stop the run first", U3's words), so the button is held then;

@@ -340,7 +340,7 @@ pub fn specs() -> Vec<CommandSpec> {
                 }
                 _ => return Err(bad("command.batch", "`commands` must be an array")),
             };
-            Ok(Value::Array(s.batch(&label, &cmds)?))
+            Ok(Value::Array(s.logged_batch(&label, string(p, "label"), &cmds)?))
         }),
         spec!("edit.repeat", "Repeat last command", "{}", true, |s, _| {
             let Some((id, p)) = s.last_command.clone().filter(|(id, _)| id != "edit.repeat") else {

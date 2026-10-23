@@ -111,6 +111,26 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
     }
 }
 
+/// `text` as it fits in `max` points of `font`: whole, or cut with "…".
+pub fn elide(p: &egui::Painter, text: &str, font: egui::FontId, max: f32) -> String {
+    let width = |t: &str| p.layout_no_wrap(t.to_string(), font.clone(), egui::Color32::PLACEHOLDER).size().x;
+    if width(text) <= max {
+        return text.to_string();
+    }
+    let chars: Vec<char> = text.chars().collect();
+    let (mut lo, mut hi) = (0usize, chars.len());
+    while lo < hi {
+        let mid = (lo + hi).div_ceil(2);
+        let cut = chars[..mid].iter().collect::<String>().trim_end().to_string() + "…";
+        if width(&cut) <= max {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    chars[..lo].iter().collect::<String>().trim_end().to_string() + "…"
+}
+
 /// Your message: right-aligned, radius 14, 14 × 11 inside, at most the width less 56, 16 from the
 /// right, 18 above what follows.
 fn bubble(ui: &mut Ui, ro: &Roles, text: &str) {
@@ -207,14 +227,10 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         }
         let text = if *n > 1 { format!("{label} ×{n}") } else { label.clone() };
         let font = if active { semibold(13.0) } else { regular(13.0) };
-        p.with_clip_rect(Rect::from_min_max(pos2(x + 26.0, y), pos2(x + inner, y + ROW))).text(
-            pos2(x + 26.0, c.y),
-            Align2::LEFT_CENTER,
-            &text,
-            font,
-            ro.text,
-        );
-        listed.push(json!({"label": text, "state": if active { "active" } else { "done" }}));
+        // Shortened with "…" to the row's width (Fix Z1: names can be long).
+        let shown = elide(&p, &text, font.clone(), inner - 26.0);
+        p.text(pos2(x + 26.0, c.y), Align2::LEFT_CENTER, &shown, font, ro.text);
+        listed.push(json!({"label": text, "shown": shown, "state": if active { "active" } else { "done" }}));
         y += ROW;
     }
     if working {

@@ -142,7 +142,16 @@ pub struct Change {
     pub label: String,
     /// The layers the edit added, changed or removed.
     pub ids: Vec<NodeId>,
+    /// What it did to each, with their names then (Fix Z1).
+    pub touched: Vec<touched::Touched>,
+    /// It ran as a step of a batch (the batch is logged too, as a whole).
+    pub in_batch: bool,
+    /// The batch's own label, as its caller gave it (`command.batch {label}`).
+    pub batch_label: Option<String>,
 }
+
+#[path = "agents_touched.rs"]
+pub mod touched;
 
 /// How many edits each document's log keeps.
 const LOG_LIMIT: usize = 2000;
@@ -180,6 +189,10 @@ pub struct Agents {
     pub from_settings: bool,
     /// The settings before the person's setting command now running ([`crate::settings::changes`]).
     pub settings_before: Option<(&'static str, std::collections::BTreeMap<String, serde_json::Value>)>,
+    /// Batches running now (Fix Z1): their steps are logged as steps of a batch.
+    pub batch_depth: u32,
+    /// The label the batch just run was given, for its log entry.
+    pub batch_label: Option<String>,
     /// The AI panel's last composer run, as the window recorded it (Fix X4): its card's rows and
     /// `chat.select-run-layers` / `chat.undo-run` read it. Never saved.
     pub chat_run: Option<crate::cmd::chat_run::RunRecord>,
@@ -347,13 +360,17 @@ impl Session {
         if Arc::ptr_eq(&ds.doc, bdoc) {
             return;
         }
+        let ids = changed_ids(bdoc, &ds.doc);
         let change = Change {
             revision: ds.revision,
             author: self.agents.author.clone(),
             client: self.agents.client.clone().filter(|_| self.agents.author.is_agent()),
             command: command.to_string(),
             label: label.to_string(),
-            ids: changed_ids(bdoc, &ds.doc),
+            touched: touched::touched(bdoc, &ds.doc, &ids),
+            ids,
+            in_batch: self.agents.batch_depth > 0,
+            batch_label: if command == "command.batch" { self.agents.batch_label.take() } else { None },
         };
         let log = self.agents.logs.entry(uid).or_default();
         log.push_back(change);
