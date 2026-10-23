@@ -60,6 +60,8 @@ pub struct Seen {
     pub banner: Option<Value>,
     pub bubbles: usize,
     pub card: Option<Value>,
+    /// The transcript's bottom fade while there is more below: its rectangle (Fix Z4).
+    pub fade: Option<Value>,
     /// Each reply's blocks as drawn: kind, text as shown, rectangle (Fix Z2).
     pub replies: Vec<Value>,
     /// The colour drawn for each role this frame (Fix X5, `ui.inspect` › `agent.aiPanel.theme`).
@@ -396,6 +398,7 @@ pub fn inspect(app: &FigApp) -> Value {
         "banner": s.banner,
         "bubbles": s.bubbles,
         "card": s.card,
+        "fade": s.fade,
         "replies": s.replies,
         "readOnly": s.read_only_note,
         "lines": s.lines,

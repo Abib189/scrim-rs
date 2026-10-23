@@ -28,6 +28,8 @@ const LABEL_PAD: f32 = 12.0;
 pub const BANNER_H: f32 = 36.0;
 const ROWS: usize = 5;
 const ROW: f32 = 36.0;
+/// The transcript's fade at its bottom (Fix Z4).
+const FADE: f32 = 12.0;
 
 /// "0:42" (the banner).
 fn clock(secs: f64) -> String {
@@ -83,7 +85,7 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
     let ro = roles(&t);
     let run = app.ui.agent_view.chat.last_run.clone().filter(|r| r.conv == app.ui.agent_view.chat.store.current && r.line < lines.len());
     let mut actions = Vec::new();
-    egui::ScrollArea::vertical().id_salt("ai_transcript").max_height(h).stick_to_bottom(true).auto_shrink([false, true]).show(ui, |ui| {
+    let out = egui::ScrollArea::vertical().id_salt("ai_transcript").max_height(h).stick_to_bottom(true).auto_shrink([false, true]).show(ui, |ui| {
         ui.add_space(24.0);
         for (i, l) in lines.iter().enumerate() {
             // The card shows the run's edits: its work lines aren't repeated.
@@ -106,9 +108,29 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
             }
         }
     });
+    // A 12 px fade into the panel at the bottom, only while there is more below (Fix Z4).
+    let below = out.content_size.y - (out.state.offset.y + out.inner_rect.height());
+    if below > 0.5 {
+        let r = Rect::from_min_max(pos2(out.inner_rect.min.x, out.inner_rect.max.y - FADE), out.inner_rect.max);
+        fade(ui.painter(), r, ro.panel);
+        seen.theme.insert("fade", ro.panel);
+        seen.fade = Some(json!({"rect": [r.min.x, r.min.y, r.max.x, r.max.y], "below": below}));
+    }
     for (cmd, params) in actions {
         app.run(cmd, params);
     }
+}
+
+/// The transcript's fade: `to` at the bottom of `r`, from transparent at its top.
+fn fade(p: &egui::Painter, r: Rect, to: egui::Color32) {
+    let clear = to.gamma_multiply(0.0);
+    let mut m = egui::Mesh::default();
+    for (at, c) in [(r.left_top(), clear), (r.right_top(), clear), (r.left_bottom(), to), (r.right_bottom(), to)] {
+        m.colored_vertex(at, c);
+    }
+    m.add_triangle(0, 1, 2);
+    m.add_triangle(1, 3, 2);
+    p.add(egui::Shape::mesh(m));
 }
 
 /// `text` as it fits in `max` points of `font`: whole, or cut with "…".

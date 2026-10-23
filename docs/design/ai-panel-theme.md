@@ -31,6 +31,7 @@
 | A pending step's ring | `t.field_edge` (no pending steps are drawn: Fix X4) |
 | The progress track | `t.border_strong` |
 | A run's failure line | `t.danger` |
+| The transcript's bottom fade (Fix Z4) | `t.panel`, from transparent |
 | A reply's inline code and code box (Fix Z2) | fill `t.field`; the text `t.text` |
 | The status dot while following is off | `t.text_secondary` |
 

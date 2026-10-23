@@ -62,3 +62,47 @@ fn a_long_title_is_cut_with_an_ellipsis_and_the_chevron_follows_it() {
         }
     }
 }
+
+/// A transcript of `n` notes.
+fn notes(u: &mut Ui, n: usize) {
+    u.app.ui.agent_view.chat.lines = (0..n).map(|i| crate::follow_agent::chat_ui::Line::Note(format!("Note {i}"))).collect();
+    u.frame(vec![]);
+    u.frame(vec![]);
+}
+
+/// Z4: a 12 px fade from transparent into the panel at the transcript's bottom, only while there is
+/// more below: none for a short transcript, none at the bottom of a long one, there once scrolled
+/// up. Light and dark.
+#[test]
+fn the_transcript_fades_at_the_bottom_only_with_more_below() {
+    for dark in [false, true] {
+        let mut u = themed(dark, 336.0);
+        notes(&mut u, 2);
+        assert!(panel(&u)["fade"].is_null(), "{dark}: a short transcript has no fade");
+        notes(&mut u, 60);
+        assert!(panel(&u)["fade"].is_null(), "{dark}: at the bottom, nothing below");
+        let nodes = tree(&mut u);
+        let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+        let at = egui::pos2(((pane.x0 + pane.x1) / 2.0) as f32, 300.0);
+        u.frame(vec![egui::Event::PointerMoved(at)]);
+        for _ in 0..10 {
+            u.frame(vec![egui::Event::MouseWheel {
+                unit: egui::MouseWheelUnit::Point,
+                delta: egui::vec2(0.0, 200.0),
+                phase: egui::TouchPhase::Move,
+                modifiers: egui::Modifiers::NONE,
+            }]);
+        }
+        for _ in 0..30 {
+            u.frame(vec![]);
+        }
+        let p = panel(&u);
+        let f = &p["fade"];
+        assert!(f.is_object(), "{dark}: scrolled up, a fade: {p}");
+        let r = rect(&f["rect"]);
+        assert!((r[3] - r[1] - 12.0).abs() < 0.01, "{dark}: 12 high: {r:?}");
+        assert!(r[0] >= pane.x0 - 0.5 && r[2] <= pane.x1 + 0.5, "{dark}: inside the panel");
+        let t = crate::theme::Tokens::get(&u.ctx);
+        assert_eq!(p["theme"]["fade"], crate::theme::accent::rgb_text(t.panel), "{dark}: into the panel's own colour");
+    }
+}

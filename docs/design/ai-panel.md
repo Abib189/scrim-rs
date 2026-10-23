@@ -28,6 +28,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - The block is centred between the header's rule and the status line, 12 above the middle. No suggestion rows.
   - **A conversation:**
     - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
+    - **The bottom fade** (Fix Z4): a 12 px fade from transparent into `t.panel` at the transcript's bottom edge, only while there is more below (scrolled up); none at the bottom or when it all fits.
     - **The agent's replies and notes:** text, 16 from each side. A reply is drawn from its Markdown (Fix Z2, decision 24); notes, failures and your own message stay plain text.
     - **The run's card, after the message that started it** (`ai_run_card.rs`):
       - **The box:** the width less 32, radius 12, 16 inside, `t.field` with a 1 px `t.border_strong` edge.
@@ -52,7 +53,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 
 **`ui.inspect` › `agent.aiPanel`** reports what was drawn:
 - **the header:** the title as drawn (`titleShown`), its tooltip, its rectangle and the chevron's (Fix Z3); the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
-- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
+- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2), the bottom fade's rectangle while it shows (Fix Z4) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
 - **the composer:** its controls, rectangle, status line, hint line, missing-CLI line and status;
 - **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
 
@@ -180,3 +181,4 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - `ai_markdown_tests.rs` (Z2): asterisks and bullets, an unmatched `**` (and raw HTML) left as written, code fences (closed and not), bold inside a bullet with a heading and a link, empty input and very long lines.
 - `ai_reply_tests.rs` (Z2): a reply's blocks in `ui.inspect` with no marker left as text, while your message and a note keep theirs; at 240, 320 and 400 px in both themes, with Spanish text, an 80-character word and a long line of code, every block stays 16 inside the panel and nothing scrolls sideways. It fails with the reply drawn as one plain label, and the width check fails when a code block isn't wrapped.
 - `ai_panel_z_tests.rs` › `a_long_title_is_cut_with_an_ellipsis_and_the_chevron_follows_it` (Z3): a 48-character title at 240, 320 and 400 px in both themes is cut with "…" (a prefix of the title), the chevron 6 after the text and clear of Follow, the buttons 8 apart and 16 from the right, the accessible name and the hovered tooltip the whole title. It fails with the old header (the title clipped without "…", the tooltip "Conversations").
+- `ai_panel_z_tests.rs` › `the_transcript_fades_at_the_bottom_only_with_more_below` (Z4): light and dark, no fade for a short transcript nor at the bottom of a 60-line one; scrolled up with the wheel, a 12 px fade inside the panel, into the panel's own colour (`theme.fade`).
