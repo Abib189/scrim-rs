@@ -538,3 +538,33 @@ fn a_setting_changed_in_settings_is_noted_as_the_persons_settings() {
     u.app.run("pref.workingIndicator", json!({"on": true}));
     assert_eq!(last(&u), "setting working_indicator: false → true (made by the person's command)");
 }
+
+/// Fix X2: the header is 48 high with 28 px buttons 8 apart, 16 from the right edge and centred; the
+/// empty state says what to do and what happens; the status line says whether following is on.
+#[test]
+fn the_header_empty_state_and_status_line_follow_the_design() {
+    let (mut u, _) = window();
+    u.frame(vec![]);
+    let p = panel(&u);
+    let h = &p["header"];
+    let rect = |v: &Value| v.as_array().unwrap().iter().map(|x| x.as_f64().unwrap() as f32).collect::<Vec<_>>();
+    let (head, follow, plus) = (rect(&p["headerRect"]), rect(&h["followRect"]), rect(&p["newChatRect"]));
+    assert!((head[3] - head[1] - 48.0).abs() < 0.5, "48 high: {head:?}");
+    for b in [&follow, &plus] {
+        assert!((b[2] - b[0] - 28.0).abs() < 0.5 && (b[3] - b[1] - 28.0).abs() < 0.5, "28 × 28: {b:?}");
+        assert!(((b[1] + b[3]) / 2.0 - (head[1] + head[3]) / 2.0).abs() < 0.5, "centred: {b:?}");
+    }
+    assert!((plus[0] - follow[2] - 8.0).abs() < 0.5, "8 apart");
+    assert!((head[2] - plus[2] - 16.0).abs() < 0.5, "16 from the right edge");
+    assert_eq!(p["emptyState"], "Describe what you want to create or change.");
+    assert_eq!(p["emptyLine"], "Your agent edits the canvas while you watch.");
+    assert_eq!(p["composer"]["following"], "Following is on");
+    u.app.run("camera.follow-agents", json!({"on": false, "origin": "button"}));
+    u.frame(vec![]);
+    assert_eq!(panel(&u)["composer"]["following"], "Following is off");
+    // The heading and the line are there for screen readers too.
+    let nodes = tree(&mut u);
+    for text in ["Describe what you want to create or change.", "Your agent edits the canvas while you watch."] {
+        assert!(nodes.iter().any(|n| n.label() == Some(text) || n.value() == Some(text)), "{text}");
+    }
+}

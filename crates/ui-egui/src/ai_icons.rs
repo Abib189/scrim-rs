@@ -12,6 +12,13 @@ pub enum AiIcon {
     Send,
 }
 
+/// A chevron pointing down, `w` × `h` points, centred on `c`, its stroke `width` (Fix X2: the title's
+/// 9 × 5 at 1.5; the agent chip's 8 × 4).
+pub fn chevron(painter: &Painter, c: egui::Pos2, w: f32, h: f32, width: f32, color: Color32) {
+    let (x, y) = (w / 2.0, h / 2.0);
+    painter.add(Shape::line(vec![c + vec2(-x, -y), c + vec2(0.0, y), c + vec2(x, -y)], Stroke::new(width, color)));
+}
+
 pub fn paint(painter: &Painter, rect: Rect, icon: AiIcon, color: Color32) {
     let s = rect.width().min(rect.height()) / 16.0;
     let c = rect.center();

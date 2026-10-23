@@ -22,10 +22,14 @@ use crate::theme::{Tokens, regular, semibold};
 use crate::widgets::{self, PAD};
 use crate::{FigApp, a11y};
 
-/// The header's height.
-pub const HEADER_H: f32 = 40.0;
-/// An icon button's size.
-pub const BUTTON: f32 = 26.0;
+/// The header's height (Fix X2).
+pub const HEADER_H: f32 = 48.0;
+/// An icon button's size: the header's Follow and New chat (Fix X2), and the composer's.
+pub const BUTTON: f32 = 28.0;
+/// An icon button's corner radius.
+const BUTTON_RADIUS: u8 = 8;
+/// Between the header's two buttons.
+const BUTTON_GAP: f32 = 8.0;
 
 /// What the panel drew last frame (for `ui.inspect` and tests).
 #[derive(Clone, Debug, Default)]
@@ -38,6 +42,9 @@ pub struct Seen {
     /// Where the Follow agents button was drawn; the setting off (the crosshair dimmed) and its
     /// tooltip (Fix V3).
     pub follow_rect: Option<Rect>,
+    /// The header's rectangle and New chat's (Fix X2).
+    pub header_rect: Option<Rect>,
+    pub new_chat_rect: Option<Rect>,
     pub follow_off: bool,
     pub follow_tip: String,
     pub read_only_note: bool,
@@ -86,9 +93,9 @@ pub(crate) fn icon_button_tip(
         (false, true) => t.selected_row,
         (false, false) => roles.button_fill,
     };
-    ui.painter().rect_filled(r, CornerRadius::same(5), fill);
+    ui.painter().rect_filled(r, CornerRadius::same(BUTTON_RADIUS), fill);
     if resp.has_focus() {
-        ui.painter().rect_stroke(r, CornerRadius::same(5), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
+        ui.painter().rect_stroke(r, CornerRadius::same(BUTTON_RADIUS), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
     }
     let color = if on == Some(true) { roles.follow_on_icon } else { roles.follow_off_icon };
     draw(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), color);
@@ -138,6 +145,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
 
 fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     let (row, _) = ui.allocate_exact_size(vec2(w, HEADER_H), Sense::hover());
+    seen.header_rect = Some(row);
     let title = store::title(app);
     seen.title = title.clone();
     let state = figcraft_engine::cmd::camera::follow_state(&app.session);
@@ -152,7 +160,7 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     };
     // The buttons at the right: New chat, then Follow agents.
     let plus = Rect::from_min_size(pos2(row.max.x - PAD - BUTTON, row.center().y - BUTTON / 2.0), vec2(BUTTON, BUTTON));
-    let follow = plus.translate(vec2(-BUTTON - 4.0, 0.0));
+    let follow = plus.translate(vec2(-BUTTON - BUTTON_GAP, 0.0));
     let mut b = ui.new_child(egui::UiBuilder::new().max_rect(follow));
     let label = if paused { tr("Follow agents as they work: paused, press to resume") } else { tr("Follow agents as they work") };
     // Off is plain to see (Fix V3): the crosshair dimmed, and the tooltip says so.
@@ -178,6 +186,7 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     // New chat: not while a composer run goes, whose lines belong to the conversation shown (Fix U3).
     let mut b = ui.new_child(egui::UiBuilder::new().max_rect(plus));
     seen.new_chat_enabled = app.ui.agent_view.chat.running.is_none();
+    seen.new_chat_rect = Some(plus);
     let plus_icon = |p: &egui::Painter, r: Rect, c: egui::Color32| crate::icons::paint(p, r, Icon::Plus, c);
     if !seen.new_chat_enabled {
         // The engine's refusal says the same (`chat::STOP_FIRST`).
@@ -189,18 +198,24 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
             app.run("chat.new", json!({}));
         }
     }
-    // The title and its chevron: the conversations.
-    let title_r = Rect::from_min_max(pos2(row.min.x + PAD - 6.0, row.min.y + 7.0), pos2(follow.min.x - 6.0, row.max.y - 7.0));
+    // The title (SemiBold 14, 16 from the left) and its 9 × 5 chevron 6 after it: the conversations.
+    let roles = super::panel_theme::roles(t);
+    let galley = ui.painter().layout_no_wrap(title.clone(), semibold(14.0), roles.text);
+    let room = (follow.min.x - 12.0 - (row.min.x + PAD) - 6.0 - 9.0).max(24.0);
+    let text_w = galley.size().x.min(room);
+    let title_r = Rect::from_min_max(
+        pos2(row.min.x + PAD - 6.0, row.center().y - 14.0),
+        pos2(row.min.x + PAD + text_w + 6.0 + 9.0 + 6.0, row.center().y + 14.0),
+    );
     let tresp = ui.interact(title_r, Id::new("ai_panel_title"), Sense::click()).on_hover_text(tr("Conversations"));
     let open = app.ui.agent_view.chat.store.open;
     a11y::menu_button(&tresp, &trf("Conversation: {title}", &[("title", &title)]), open);
     if tresp.hovered() || open {
-        ui.painter().rect_filled(title_r, CornerRadius::same(5), t.hover);
+        ui.painter().rect_filled(title_r, CornerRadius::same(6), t.hover);
     }
-    let chevron = Rect::from_center_size(pos2(title_r.max.x - 12.0, title_r.center().y), vec2(10.0, 10.0));
-    let text_r = Rect::from_min_max(pos2(title_r.min.x + 6.0, title_r.min.y), pos2(chevron.min.x - 4.0, title_r.max.y));
-    ui.painter().with_clip_rect(text_r).text(pos2(text_r.min.x, text_r.center().y), Align2::LEFT_CENTER, &title, semibold(12.0), t.text);
-    crate::icons::paint(ui.painter(), chevron, Icon::Chevron, t.icon_secondary);
+    let text_r = Rect::from_min_size(pos2(row.min.x + PAD, row.center().y - galley.size().y / 2.0), vec2(text_w, galley.size().y));
+    ui.painter().with_clip_rect(text_r.expand2(vec2(0.0, 2.0))).galley(text_r.min, galley, roles.text);
+    icons::chevron(ui.painter(), pos2(text_r.max.x + 6.0 + 4.5, row.center().y), 9.0, 5.0, 1.5, roles.chevron);
     if tresp.clicked() {
         app.ui.agent_view.chat.store.open = !open;
     }
@@ -287,16 +302,33 @@ fn popover(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) -> Value {
     r.inner
 }
 
+/// No messages yet (Fix X2): a 64 px disc with the accent's 32 px core, the heading 24 below it, the
+/// line 10 below that; the block centred between the header's rule and the status line, 12 above
+/// the true centre.
 fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect) {
-    let h = (below.height() - 40.0).max(120.0);
-    let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
-    let c = pos2(r.center().x, r.center().y - 30.0);
-    ui.painter().circle_filled(c, 20.0, super::panel_theme::roles(t).empty_disc);
-    crate::icons::paint(ui.painter(), Rect::from_center_size(c, vec2(18.0, 18.0)), Icon::Comment, t.icon);
-    let text_r = Rect::from_min_max(pos2(r.min.x + PAD, c.y + 30.0), pos2(r.max.x - PAD, r.max.y));
-    ui.scope_builder(egui::UiBuilder::new().max_rect(text_r).layout(egui::Layout::top_down(egui::Align::Center)), |ui| {
-        ui.add(egui::Label::new(RichText::new(tr("Describe what you want to create or change.")).font(regular(12.0)).color(t.text)).wrap());
-    });
+    let roles = super::panel_theme::roles(t);
+    let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), below.height().max(160.0)), Sense::hover());
+    let wrap = (r.width() - 48.0).max(80.0);
+    let centred = |text: &str, font: egui::FontId, color: egui::Color32, line: Option<f32>| {
+        let mut job = egui::text::LayoutJob::single_section(
+            text.to_string(),
+            egui::TextFormat { font_id: font, color, line_height: line, ..Default::default() },
+        );
+        job.wrap.max_width = wrap;
+        job.halign = egui::Align::Center;
+        ui.painter().layout_job(job)
+    };
+    let heading = centred(tr("Describe what you want to create or change."), semibold(20.0), roles.text, None);
+    let body = centred(tr("Your agent edits the canvas while you watch."), regular(13.0), roles.text_secondary, Some(13.0 * 1.4));
+    let block = 64.0 + 24.0 + heading.size().y + 10.0 + body.size().y;
+    let top = r.center().y - 12.0 - block / 2.0;
+    let c = pos2(r.center().x, top + 32.0);
+    ui.painter().circle_filled(c, 32.0, roles.empty_disc);
+    ui.painter().circle_filled(c, 16.0, roles.mark);
+    let heading_r = Rect::from_center_size(pos2(r.center().x, top + 64.0 + 24.0 + heading.size().y / 2.0), heading.size());
+    let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 10.0 + body.size().y / 2.0), body.size());
+    ui.put(heading_r, egui::Label::new(heading));
+    ui.put(body_r, egui::Label::new(body));
 }
 
 fn transcript(ui: &mut Ui, t: &Tokens, lines: &[Line], h: f32) {
@@ -341,8 +373,11 @@ pub fn inspect(app: &FigApp) -> Value {
             "newChatTooltip": if s.new_chat_enabled { tr("New chat") } else { tr("Stop the run first") },
             "newChatColor": format!("{:?}", s.new_chat_color),
         },
+        "headerRect": s.header_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
+        "newChatRect": s.new_chat_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
         "popover": s.popover,
         "emptyState": s.empty_state.then(|| tr("Describe what you want to create or change.")),
+        "emptyLine": s.empty_state.then(|| tr("Your agent edits the canvas while you watch.")),
         "readOnly": s.read_only_note,
         "lines": s.lines,
         "composer": s.composer,

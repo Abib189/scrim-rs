@@ -69,6 +69,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         });
         ui.add_space(4.0);
     }
+    status_line(app, ui, &t, &mut seen);
     let read_only = super::store::read_only(app);
     seen["readOnly"] = json!(read_only);
     // The field.
@@ -200,4 +201,20 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         app.run("chat.cancel", json!({}));
     }
     app.ui.agent_view.chat.seen.composer = seen;
+}
+
+/// The status line (Fix X2), always shown 10 above the composer: a 6 px dot 20 from the panel's left
+/// edge and Inter 12 at 32. "Following is on" with the success dot (paused included: the header's
+/// button shows a pause), or "Following is off" with a secondary dot.
+fn status_line(app: &FigApp, ui: &mut Ui, t: &Tokens, seen: &mut serde_json::Value) {
+    let roles = crate::panel_view::ai_tab::panel_theme::roles(t);
+    let on = app.session.prefs.settings.follow_agents;
+    let (text, dot) = if on { (tr("Following is on"), roles.success) } else { (tr("Following is off"), roles.status_off_dot) };
+    let (row, resp) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 14.0), egui::Sense::hover());
+    let left = row.min.x - crate::widgets::PAD;
+    ui.painter().circle_filled(egui::pos2(left + 23.0, row.center().y), 3.0, dot);
+    ui.painter().text(egui::pos2(left + 32.0, row.center().y), egui::Align2::LEFT_CENTER, text, regular(12.0), roles.text_secondary);
+    crate::a11y::status(&resp, text, "");
+    seen["following"] = json!(text);
+    ui.add_space(10.0);
 }
