@@ -57,6 +57,9 @@ pub struct CommandSpec {
     pub params: &'static str,
     /// Whether the command edits the document (an undo step).
     pub history: bool,
+    /// Whether the command writes a saved setting (Fix W3): agents are refused it on every route,
+    /// unless it is on [`access::AGENT_SETTINGS`]. Set by the registry from [`access::SETTINGS`].
+    pub setting: bool,
     pub run: RunFn,
 }
 
@@ -73,7 +76,7 @@ impl CommandSpec {
 #[macro_export]
 macro_rules! spec {
     ($id:expr, $label:expr, $params:expr, $hist:expr, $run:expr) => {
-        $crate::cmd::CommandSpec { id: $id, label: $label, params: $params, history: $hist, run: $run }
+        $crate::cmd::CommandSpec { id: $id, label: $label, params: $params, history: $hist, setting: false, run: $run }
     };
 }
 
@@ -145,6 +148,9 @@ fn registry() -> &'static Registry {
         list.extend(crate::online::specs());
         list.extend(crate::invite_links::specs());
         list.extend(crate::templates::specs());
+        for s in &mut list {
+            s.setting = access::SETTINGS.contains(&s.id);
+        }
         let mut index = HashMap::new();
         for (i, s) in list.iter().enumerate() {
             if index.insert(s.id, i).is_some() {

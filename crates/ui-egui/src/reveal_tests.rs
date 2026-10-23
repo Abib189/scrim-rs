@@ -207,7 +207,8 @@ fn the_persons_edits_undo_redo_a_file_open_animations_off_and_the_switch_skip_it
     u.frame(vec![]);
     assert!(canvas_doc(&u.app).is_none(), "Animations Off");
     let (mut u, home) = calm();
-    let r = agent(&mut u, "pref.revealAgentWork", json!({"on": false}));
+    // The person's switch (an agent is refused it: Fix W3).
+    let r = u.app.run("pref.revealAgentWork", json!({"on": false})).unwrap();
     assert_eq!(r["on"], false);
     agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 20, "height": 20, "parent": home}));
     u.frame(vec![]);

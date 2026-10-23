@@ -41,7 +41,8 @@ const MAX_FAMILIES: usize = 30;
 pub struct Event {
     /// Seconds since 1970 (UTC).
     pub at: u64,
-    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient`, `error`, `follow`, `reveal`, `working` or `chat`.
+    /// `reload`, `fontFallback`, `mcpServer`, `mcpClient`, `error`, `follow`, `reveal`, `working`,
+    /// `chat` or `setting`.
     pub kind: String,
     pub detail: String,
 }
@@ -64,6 +65,9 @@ pub enum Entry<'a> {
     FollowSetting { from: bool, to: bool, origin: FollowOrigin },
     /// The app started with Follow agents off (Fix V3).
     FollowOffAtStart,
+    /// An agent asked for a command that writes a saved setting and was refused (Fix W3): the
+    /// command (a registered id), the route and the session. Nothing the agent sent.
+    SettingRefused { command: &'a str, route: &'a str, session: Option<&'a str> },
     /// An agent asked to turn Follow agents on or off and was refused (Fix V2): the setting (`on`,
     /// unchanged), the route it came by and its session. Nothing the agent sent.
     FollowRefused { on: bool, route: &'a str, session: Option<&'a str> },
@@ -322,6 +326,7 @@ impl Entry<'_> {
             | Entry::FollowRefused { .. }
             | Entry::FollowSetting { .. }
             | Entry::FollowOffAtStart => "follow",
+            Entry::SettingRefused { .. } => "setting",
             Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
             Entry::ChatRun { .. } => "chat",
@@ -355,6 +360,11 @@ impl Entry<'_> {
                 format!("follow setting: {} → {} (made by {})", on_off(*from), on_off(*to), origin.text())
             }
             Entry::FollowOffAtStart => "following is OFF".into(),
+            Entry::SettingRefused { command, route, session } => {
+                // Only a registered command's id: anything else could be text an agent sent.
+                let id = if crate::find_command(command).is_some() { *command } else { "a command" };
+                format!("setting {id}: unchanged (refused: an agent asked, {})", by(route, *session))
+            }
             Entry::FollowRefused { on, route, session } => {
                 format!("follow setting: stays {} (refused: an agent asked, {})", on_off(*on), by(route, *session))
             }

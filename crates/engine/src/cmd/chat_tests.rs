@@ -26,7 +26,13 @@ fn every_chat_command_is_refused_for_agents_on_every_route() {
             s.set_author(Author::agent(route));
             let before = (s.prefs.settings.describe_change, s.prefs.settings.chat_time_limit_mins, s.prefs.settings.chat_allowed.len());
             let err = s.execute(cmd, &params(cmd)).unwrap_err().to_string();
-            assert!(err.contains("Describe a change is the person's: agents can't start, stop or set up agent runs"), "{route} {cmd}: {err}");
+            // A command that writes a setting meets Fix W3's refusal first; the others their own.
+            let want = if crate::find_command(cmd).is_some_and(|c| c.setting) {
+                "only the person changes Scrim's saved settings"
+            } else {
+                "Describe a change is the person's: agents can't start, stop or set up agent runs"
+            };
+            assert!(err.contains(want), "{route} {cmd}: {err}");
             assert!(s.ui_requests.iter().all(|r| !r.kind.starts_with("chat.")), "{route} {cmd}: the window isn't asked");
             let after = (s.prefs.settings.describe_change, s.prefs.settings.chat_time_limit_mins, s.prefs.settings.chat_allowed.len());
             assert_eq!(before, after, "{route} {cmd}: no setting changed");

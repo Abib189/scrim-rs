@@ -1,7 +1,7 @@
-//! Stage I3: revealing agents' work and the working indicator are reachable from MCP like every
-//! command (`run_command`), each answering its state; turning them off and on never touches the
-//! document (they are the window's view, saved in Settings, not in the file). Following agents is
-//! the person's alone since Fix V2: an agent is refused.
+//! Stage I3, then Fixes V2 and W3: following agents, revealing their work, its speed, the working
+//! indicator and the grace are saved settings, the person's alone: an agent asking over MCP
+//! (`run_command` or `batch`) is refused. `finish_working` and focusing layers still work, they are
+//! listed for agents to find, and none of it touches the document.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 mod common;
@@ -23,17 +23,21 @@ fn the_switches_answer_their_state_over_mcp_and_leave_the_document_alone() {
     }
     let r = c.call("batch", json!({"commands": [{"command": "camera.follow-agents", "params": {}}]}));
     assert!(r.to_string().contains("only the person turns following on or off"), "{r}");
-    // The reveal and the working indicator.
-    assert_eq!(c.run("pref.revealAgentWork", json!({"on": false})), json!({"on": false}));
-    assert_eq!(c.run("pref.revealAgentWork", json!({})), json!({"on": true}));
-    assert_eq!(c.run("pref.workingIndicator", json!({"on": false})), json!({"on": false}));
-    assert_eq!(c.run("pref.workingIndicator", json!({"on": true})), json!({"on": true}));
-    // Stage I.1: the reveal's speed. The grace period is the person's alone (Fix Q): refused.
-    let r = c.call("run_command", json!({"command": "pref.agentGrace", "params": {"seconds": 30}}));
-    assert_eq!(r["isError"], true, "{r}");
-    assert!(r.to_string().contains("only the person sets how long the working indicator stays"), "{r}");
-    assert_eq!(c.run("pref.revealSpeed", json!({"speed": "slow"})), json!({"speed": "slow"}));
-    assert_eq!(c.run("pref.revealSpeed", json!({"speed": "fast"})), json!({"speed": "fast"}));
+    // The reveal, its speed, the working indicator and the grace are saved settings: the person's
+    // alone since Fix W3 (the grace since Fix Q), refused through `run_command` and `batch`.
+    for (cmd, params) in [
+        ("pref.revealAgentWork", json!({"on": false})),
+        ("pref.revealAgentWork", json!({})),
+        ("pref.workingIndicator", json!({"on": false})),
+        ("pref.revealSpeed", json!({"speed": "slow"})),
+        ("pref.agentGrace", json!({"seconds": 30})),
+    ] {
+        let r = c.call("run_command", json!({"command": cmd, "params": params}));
+        assert_eq!(r["isError"], true, "{cmd}: {r}");
+        assert!(r.to_string().contains("only the person changes Scrim's saved settings"), "{cmd}: {r}");
+    }
+    let r = c.call("batch", json!({"commands": [{"command": "pref.revealSpeed", "params": {"speed": "fast"}}]}));
+    assert!(r.to_string().contains("only the person changes Scrim's saved settings"), "{r}");
     // `finish_working` (the tool, and its command) changes nothing either.
     assert_eq!(c.ok("finish_working", json!({}))["finished"], true);
     assert_eq!(c.run("agent.finish-working", json!({}))["finished"], true);

@@ -46,7 +46,8 @@ fn a_turned_off_group_refuses_its_commands() {
 
 #[test]
 fn an_unclassified_command_is_refused() {
-    let spec = CommandSpec { id: "plugin.unheard-of", label: "x", params: "", history: false, run: |_, _| Ok(serde_json::Value::Null) };
+    let spec =
+        CommandSpec { id: "plugin.unheard-of", label: "x", params: "", history: false, setting: false, run: |_, _| Ok(serde_json::Value::Null) };
     let e = check_spec(&spec, &[]).unwrap_err();
     assert!(e.contains("isn't classified"), "{e}");
 }

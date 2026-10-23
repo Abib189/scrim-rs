@@ -844,7 +844,7 @@ impl Session {
     /// Run a command by id. Mutations become one undo step; a failure or panic leaves the document
     /// as it was.
     pub fn execute(&mut self, id: &str, params: &Value) -> Result<Value> {
-        let spec = find_command(id).ok_or_else(|| EngineError::UnknownCommand(id.to_string()))?;
+        let spec = find_command(id).ok_or_else(|| EngineError::UnknownCommand(id.to_string())).and_then(|c| cmd::access::gate(self, c, params))?;
         // Revert replaces the document's uid: refuse before ending previews or syncing branches.
         if id == "file.revert" && self.live().doc_uid.is_some() {
             return Err(EngineError::Disabled(id.into(), "leave the live session before reverting to the saved file".into()));

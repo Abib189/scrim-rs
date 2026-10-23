@@ -213,7 +213,8 @@ fn it_fades_out_once_the_grace_period_passes_and_the_dots_switch_is_its_own() {
     assert!(u.app.ui.agent_view.indicator.artboard().is_none(), "gone after the grace period");
     assert!(u.app.ui.agent_view.indicator.drawn.get().is_none());
     // "Show working indicator" off: no dots, the outline stays.
-    let r = agent(&mut u, "pref.workingIndicator", json!({"on": false}));
+    // The person's switch (an agent is refused it: Fix W3).
+    let r = u.app.run("pref.workingIndicator", json!({"on": false})).unwrap();
     assert_eq!(r["on"], false);
     poster(&mut u, 900.0);
     u.app.run("select.none", json!({}));

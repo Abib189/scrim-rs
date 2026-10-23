@@ -57,11 +57,15 @@ fn the_ai_tabs_commands_are_reachable_over_mcp() {
 }
 
 #[test]
-fn the_appearance_commands_are_reachable_over_mcp() {
+fn the_appearance_can_be_read_over_mcp_but_only_the_person_changes_it() {
     let mut c = Client::new();
-    let r = c.run("pref.accent", json!({"preset": "violet"}));
-    assert_eq!((&r["accent"], &r["preset"], &r["default"]), (&json!("#8e7bff"), &json!("violet"), &json!("#ff5a1f")));
-    assert_eq!(c.run("pref.theme", json!({"theme": "dark"}))["theme"], "dark");
-    assert!(c.err("run_command", json!({"command": "pref.accent", "params": {"value": "#777777"}})).contains("too grey"));
-    assert_eq!(c.run("pref.appearance", json!({}))["accent"], "#8e7bff");
+    // Reading: an agent may.
+    let r = c.run("pref.appearance", json!({}));
+    assert_eq!((&r["accent"], &r["default"]), (&json!("#ff5a1f"), &json!("#ff5a1f")));
+    // Changing the accent or the theme writes a saved setting: refused (Fix W3), and nothing changed.
+    for (cmd, params) in [("pref.accent", json!({"preset": "violet"})), ("pref.theme", json!({"theme": "dark"})), ("view.themeDark", json!({}))] {
+        let e = c.err("run_command", json!({"command": cmd, "params": params}));
+        assert!(e.contains("only the person changes Scrim's saved settings"), "{cmd}: {e}");
+    }
+    assert_eq!(c.run("pref.appearance", json!({}))["accent"], "#ff5a1f");
 }

@@ -17,6 +17,105 @@
 use super::CommandSpec;
 use super::mcp_tools::TOOLS;
 
+/// Commands that write a saved setting (Fix W2's audit, `docs/design/settings-access.md`): the
+/// registry marks them ([`CommandSpec::setting`]) and [`gate`] refuses them to agents on every
+/// route. A test runs every command and fails when one changes a saved setting without being here.
+pub const SETTINGS: &[&str] = &[
+    "camera.follow-agents",
+    "pref.accent",
+    "pref.agentGrace",
+    "pref.autoSave",
+    "pref.chatTimeLimit",
+    "pref.describeChange",
+    "pref.highlightHover",
+    "pref.keepTool",
+    "pref.language",
+    "pref.motion",
+    "pref.nudge",
+    "pref.numberKeysOpacity",
+    "pref.preserveUnsaved",
+    "pref.publishServer",
+    "pref.reduceMotion",
+    "pref.renameDuplicates",
+    "pref.revealAgentWork",
+    "pref.revealSpeed",
+    "pref.showDimensions",
+    "pref.theme",
+    "pref.userName",
+    "pref.workingIndicator",
+    "view.themeDark",
+    "view.themeLight",
+    "view.themeSystem",
+    "view.pixelGrid",
+    "view.layoutGrids",
+    "view.rulers",
+    "view.slices",
+    "view.comments",
+    "view.multiplayerCursors",
+    "view.outlinesHiddenLayers",
+    "view.outlinesObjectBounds",
+    "view.maskOutlines",
+    "view.frameOutlines",
+    "view.snapGeometry",
+    "view.snapObjects",
+    "view.snapPixel",
+    "toolbar.toggle",
+    "toolbar.move",
+    "toolbar.group",
+    "toolbar.ungroup",
+    "toolbar.reset",
+    "mcp.set-port",
+    "mcp.toggle-auth",
+    "mcp.set-root-dir",
+    "mcp.set-tool",
+    "mcp.set-tool-group",
+    "mcp.restore-tools",
+    "diagnostics.retention",
+    "diagnostics.clear",
+    "fonts.muteMissing",
+    "chat.allow-agent",
+    "chat.forget-agents",
+    "collab.registerLinks",
+    "plugin.import",
+    "plugin.remove",
+    "plugin.directory.install",
+];
+
+/// The agent-callable exceptions, each with its reason (Fix W3). Keep it short: anything added needs
+/// its one line here, and a test checks each entry is real.
+pub const AGENT_SETTINGS: &[(&str, &str)] = &[
+    ("agent.finish-working", "it changes no setting: it tells the window the agent is done"),
+    ("mcp.set-tool", "only to turn a tool off (`on: false`): it can only take an agent's own access away, never give it"),
+    ("pref.agentGrace", "only with the test hooks on (`Session::enable_test_hooks`, tests and live checks): a grace for that session, never saved"),
+];
+
+/// Why an agent can't run a setting command (Fix W3).
+pub const SETTINGS_PERSON_ONLY: &str = "only the person changes Scrim's saved settings: in Settings, or by running the command themselves";
+
+/// Whether an agent may run `id` with `p` though it writes a setting ([`AGENT_SETTINGS`]).
+pub fn agent_may(s: &crate::Session, id: &str, p: &serde_json::Value) -> bool {
+    match id {
+        "agent.finish-working" => true,
+        "mcp.set-tool" => p.get("on").and_then(serde_json::Value::as_bool) == Some(false),
+        "pref.agentGrace" => s.agents.test_hooks,
+        _ => false,
+    }
+}
+
+/// Before any command runs (`Session::execute`): an agent asking for a setting command it may not
+/// run is refused, on every route, and Settings ▸ Diagnostics notes it with the route and the session,
+/// nothing the agent sent. Following keeps its own refusal and line (Fix V2), in its command.
+pub fn gate(s: &mut crate::Session, spec: &'static CommandSpec, p: &serde_json::Value) -> crate::Result<&'static CommandSpec> {
+    let crate::agents::Author::Agent(route) = &s.agents.author else { return Ok(spec) };
+    if !spec.setting || agent_may(s, spec.id, p) || spec.id == "camera.follow-agents" {
+        return Ok(spec);
+    }
+    let (route, session) = (route.clone(), s.agents.session.clone());
+    let entry = crate::settings::diagnostics::Entry::SettingRefused { command: spec.id, route: &route, session: session.as_deref() };
+    crate::settings::diagnostics::record(&mut s.prefs.settings, crate::settings::diagnostics::now(), entry);
+    Err(crate::bad(spec.id, SETTINGS_PERSON_ONLY))
+}
+
 /// What a command does to the world.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Access {
@@ -481,8 +580,8 @@ pub fn check(id: &str, disabled: &[String]) -> Result<(), String> {
 }
 
 #[cfg(test)]
-#[path = "settings_probe_tests.rs"]
-mod probe;
+#[path = "settings_access_tests.rs"]
+mod settings_access;
 #[cfg(test)]
 #[path = "access_tests.rs"]
 mod tests;

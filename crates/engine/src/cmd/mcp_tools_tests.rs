@@ -52,12 +52,12 @@ fn an_agent_can_narrow_its_access_but_never_widen_it() {
         ("mcp.set-root-dir", json!({"path": "/"})),
     ] {
         let e = s.execute(cmd, &p).unwrap_err().to_string();
-        assert!(e.contains("an agent can't"), "{cmd}: {e}");
+        assert!(e.contains("only the person changes Scrim's saved settings"), "{cmd}: {e}");
     }
     assert_eq!(s.prefs.settings.mcp.disabled_tools, ["open_file", "save_file"]);
     assert!(s.prefs.settings.mcp.require_auth && s.prefs.settings.mcp.root_dir.is_none());
-    // Turning on a tool that is already on widens nothing.
-    s.execute("mcp.set-tool", &json!({"tool": "export", "on": true})).unwrap();
+    // Fix W3: an agent never turns a tool on, even one already on.
+    assert!(s.execute("mcp.set-tool", &json!({"tool": "export", "on": true})).is_err());
     // The person can.
     s.set_author(Author::Person);
     s.execute("mcp.restore-tools", &json!({})).unwrap();

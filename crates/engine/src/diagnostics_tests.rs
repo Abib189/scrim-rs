@@ -102,9 +102,13 @@ fn the_commands_list_copy_save_and_clear_and_only_the_person_clears() {
     assert_eq!(std::fs::read_to_string(&path).unwrap().lines().count(), 2);
     let _ = std::fs::remove_file(&path);
     s.set_author(Author::agent("mcp"));
-    assert!(s.execute("diagnostics.clear", &json!({})).unwrap_err().to_string().contains("an agent can't"));
+    assert!(s.execute("diagnostics.clear", &json!({})).unwrap_err().to_string().contains("only the person changes Scrim's saved settings"));
     s.set_author(Author::Person);
-    assert_eq!(s.execute("diagnostics.clear", &json!({})).unwrap()["cleared"], 2);
+    // The agent's attempt was noted (Fix W3): a third line, cleared with the rest.
+    assert!(
+        s.prefs.settings.diagnostics.last().is_some_and(|e| e.detail.starts_with("setting diagnostics.clear: unchanged (refused: an agent asked"))
+    );
+    assert_eq!(s.execute("diagnostics.clear", &json!({})).unwrap()["cleared"], 3);
 }
 
 /// The brief: "No prompts, document content or tokens in events". Drive every kind of event with

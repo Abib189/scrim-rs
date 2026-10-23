@@ -117,7 +117,7 @@ fn the_old_default_port_moves_to_7680_unless_it_was_chosen() {
     assert_eq!(s.ui_requests[0].kind, RESTART_REQUEST);
     assert!(s.execute("mcp.set-port", &json!({"port": 80})).is_err());
     s.set_author(crate::agents::Author::agent("mcp"));
-    assert!(s.execute("mcp.set-port", &json!({"port": 7700})).unwrap_err().to_string().contains("an agent can't"));
+    assert!(s.execute("mcp.set-port", &json!({"port": 7700})).unwrap_err().to_string().contains("only the person changes Scrim's saved settings"));
 }
 
 #[test]

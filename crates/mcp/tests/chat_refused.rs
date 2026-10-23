@@ -25,7 +25,10 @@ fn an_agent_over_mcp_is_refused_every_chat_command() {
     let mut c = Client::new();
     for cmd in PERSON_ONLY {
         let e = c.err("run_command", json!({"command": cmd, "params": params(cmd)}));
-        assert!(e.contains(WORDS), "{cmd}: {e}");
+        // A command that writes a setting meets Fix W3's refusal first; the others their own.
+        let want =
+            if figcraft_engine::find_command(cmd).is_some_and(|s| s.setting) { "only the person changes Scrim's saved settings" } else { WORDS };
+        assert!(e.contains(want), "{cmd}: {e}");
     }
 }
 

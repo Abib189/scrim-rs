@@ -90,7 +90,7 @@ fn agents_cant_set_the_grace_and_the_test_hook_is_never_saved() {
     let mut s = Session::new();
     s.set_author(crate::agents::Author::agent("mcp (http)"));
     let e = s.execute("pref.agentGrace", &json!({"seconds": 60})).unwrap_err().to_string();
-    assert!(e.contains("only the person"), "{e}");
+    assert!(e.contains("only the person changes Scrim's saved settings"), "{e}");
     assert_eq!((s.prefs.settings.agent_grace_secs, s.prefs.settings.agent_grace_chosen), (60, false));
     // Tests: 5 s through the hook, for the session only.
     s.enable_test_hooks();

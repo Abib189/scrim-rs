@@ -5,7 +5,7 @@
 ## How the list was made
 
 - **Read from the code:** every place the engine writes `Session::prefs` (`grep` over `crates/engine/src`), each mapped to the command that runs it.
-- **Checked by running every command:** a probe (`crates/engine/src/cmd/settings_probe_tests.rs` during the audit; W3 keeps it as a test) ran all registered commands, except the file and import ones that need real paths. It used about 45 kinds of parameters, as the person and then as an agent, and compared the saved preferences before and after. It found every command in the first table that a generic parameter can reach. The toolbar's move and group, the invite links and the plugin installs need parameters it doesn't guess, so they come from the code.
+- **Checked by running every command:** a probe (`crates/engine/src/cmd/settings_access_tests.rs` › `probe`, run by hand; W3's `every_command_that_writes_a_setting_is_marked` runs the same sweep in CI) ran all registered commands, except the file and import ones that need real paths. It used about 45 kinds of parameters, as the person and then as an agent, and compared the saved preferences before and after. It found every command in the first table that a generic parameter can reach. The toolbar's move and group, the invite links and the plugin installs need parameters it doesn't guess, so they come from the code.
 - **"An agent" means every route:** MCP's `run_command` and `batch`, the CLI, the control channel and plugins all run as an agent (`Author::Agent`). MCP also holds the commands to Settings ▸ Tool access, which allows writes by default.
 - **Counts:** 58 commands write a setting; 50 of them could be changed by an agent before Fix W3.
 
@@ -92,3 +92,41 @@ These change the saved preferences file too, but they are the window's memory or
 ## What isn't in scope
 
 - **Commands that write outside the settings file** are another kind of change: `mcp.connect-claude-code`, `mcp.reregister`, `mcp.remove-old-entry` and the client connectors write other apps' configuration files, and `mcp.restart-server` restarts the endpoint. Their access is `command-access.md`'s.
+
+## Fix W3: default-deny for settings
+
+**The rule:** "writes a saved setting" is a property of the command in the registry (`CommandSpec::setting`, set from `access::SETTINGS`, the first table above).
+- **Before any command runs** (`Session::execute`), `access::gate` refuses an agent a marked command on every route: MCP's `run_command` and `batch`, the CLI, the control channel, plugins. It doesn't matter what the agent sends.
+- **The refusal:** "only the person changes Scrim's saved settings: in Settings, or by running the command themselves".
+- **Settings ▸ Diagnostics notes it** (kind `setting`): "setting pref.theme: unchanged (refused: an agent asked, over MCP, session 3f1520b6…)". It says the registered command's id, the route in fixed words and the session's first 8 letters and digits. Nothing the agent sent goes in: no parameter, value or client name.
+- **Following keeps Fix V2's own refusal and line** ("follow setting: stays ON (refused: …)"), in its command.
+
+**The allowlist** (`access::AGENT_SETTINGS`), each entry with its reason in the registry:
+
+| Command | When an agent may run it | Why |
+|---|---|---|
+| `agent.finish-working` | always | it changes no setting: it tells the window the agent is done |
+| `mcp.set-tool` | only with `on: false` | it can only take an agent's own access away, never give it |
+| `pref.agentGrace` | only with the test hooks on (`Session::enable_test_hooks`) | tests and live checks set a grace for that session; it is never saved |
+
+**It can't regress:** `settings_access_tests.rs` › `every_command_that_writes_a_setting_is_marked` runs every registered command as the person with about 30 kinds of parameters, and fails for any command that changed a saved setting without being in `access::SETTINGS`. Leaving `view.rulers` out of the list fails it, naming the command and the setting.
+
+**Tests:**
+- `settings_access_tests.rs`:
+  - `every_command_that_writes_a_setting_is_marked`, which also checks that the list holds only registered, marked commands and that the allowlist is short, real and reasoned;
+  - `every_setting_command_is_refused_to_an_agent_on_every_route_and_noted`: 57 commands × 5 routes × 3 parameter sets refused, the settings unchanged, the line noted with nothing the agent sent, and `command.batch` too;
+  - `the_allowlist_lets_an_agent_finish_and_turn_a_tool_off_and_nothing_more`.
+- `chat_route_tests.rs` › `the_control_channel_and_the_mcp_route_are_refused_every_setting_command`: the window's real routes.
+- `crates/mcp/tests/follow_agent.rs` and `panel.rs`: over MCP, the reveal, its speed, the dots, the grace, the theme and the accent are refused, and reading the appearance still works.
+- **Tests that changed with the rule:**
+  - the grace, chat, port, MCP tool and diagnostics tests now expect the shared refusal;
+  - two UI tests flip the reveal and the dots as the person;
+  - an agent can no longer turn on a tool that is already on.
+
+**Decisions (overrule any):**
+1. **The property is filled from one list** (`access::SETTINGS`) by the registry, not written into each of the 58 specs. The list sits next to Tool access's own classification, and the sweep test keeps it complete.
+2. **There is no runtime backstop** that would catch an unmarked command writing a setting while an agent runs it. The post-command hook can't restore preferences, and nested batches make its snapshot unreliable. The sweep test is the guard instead. Its limit: a writer only reachable with parameters it doesn't guess (the toolbar's move and group, invite links, plugin installs) must be listed by hand, as these are.
+3. **One refusal for every setting command:** the chat, grace and port commands' own words no longer show to agents, because the gate runs first. Their own guards stay as a second check.
+4. **`mcp.set-tool-group` and `mcp.restore-tools` are refused to agents outright,** turning off included. The allowlist names `mcp.set-tool` only, as the brief asks.
+5. **The kept View toggles (rulers, grids, snapping, outlines…) count as settings:** they write the default for new files. On the open file they could be left to agents in a later change, if wanted.
+6. **The test hook for the grace is on the allowlist:** without it the live checks can't shorten the grace. It is never saved.
