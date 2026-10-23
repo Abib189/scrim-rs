@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 
 use super::markdown::{Block, Span, parse};
 use super::panel_theme::Roles;
-use crate::theme::{regular, semibold};
+use crate::theme::{italic, regular, semibold};
 
 const SIZE: f32 = 13.0;
 const LINE: f32 = SIZE * 1.4;
@@ -42,7 +42,8 @@ fn job(spans: &[Span], base: FontId, ro: &Roles, width: f32) -> LayoutJob {
         let (text, f) = match s {
             Span::Text(t) => (t, plain),
             Span::Bold(t) => (t, TextFormat { font_id: semibold(SIZE), ..plain }),
-            Span::Italic(t) => (t, TextFormat { italics: true, ..plain }),
+            // The real Inter Italic face (Fix AA1), not a slanted regular.
+            Span::Italic(t) => (t, TextFormat { font_id: italic(SIZE), ..plain }),
             Span::Code(t) => (t, TextFormat { font_id: mono(), background: ro.code, ..plain }),
             Span::Link(t) => (t, TextFormat { color: ro.link, ..plain }),
         };
@@ -53,9 +54,10 @@ fn job(spans: &[Span], base: FontId, ro: &Roles, width: f32) -> LayoutJob {
 
 /// Draws `text` across the width available; returns each block's kind, text as shown and rectangle
 /// (for `ui.inspect`).
-pub fn draw(ui: &mut Ui, text: &str, ro: &Roles) -> Vec<Value> {
+pub fn draw(ui: &mut Ui, text: &str, ro: &Roles, fonts: &mut std::collections::BTreeMap<&'static str, FontId>) -> Vec<Value> {
     let mut out = Vec::new();
     for (i, b) in parse(text).iter().enumerate() {
+        note_fonts(b, fonts);
         if i > 0 {
             ui.add_space(GAP);
         }
@@ -73,6 +75,31 @@ pub fn draw(ui: &mut Ui, text: &str, ro: &Roles) -> Vec<Value> {
         out.push(json!({"kind": b.kind(), "text": b.text(), "rect": [r.min.x, r.min.y, r.max.x, r.max.y]}));
     }
     out
+}
+
+/// The fonts block `b` draws with, by role (Fix AA1).
+fn note_fonts(b: &Block, fonts: &mut std::collections::BTreeMap<&'static str, FontId>) {
+    let spans = match b {
+        Block::Code(_) => {
+            fonts.insert("replyCode", mono());
+            return;
+        }
+        Block::Heading(s) => {
+            fonts.insert("replyHeading", semibold(SIZE));
+            s
+        }
+        Block::Paragraph(s) | Block::Bullet(s) | Block::Numbered(_, s) => s,
+    };
+    for s in spans {
+        let (role, f) = match s {
+            Span::Bold(_) => ("replyBold", semibold(SIZE)),
+            Span::Italic(_) => ("replyItalic", italic(SIZE)),
+            Span::Code(_) => ("replyCode", mono()),
+            Span::Text(_) | Span::Link(_) if !matches!(b, Block::Heading(_)) => ("reply", regular(SIZE)),
+            Span::Text(_) | Span::Link(_) => continue,
+        };
+        fonts.insert(role, f);
+    }
 }
 
 /// A number's width and the room after it.

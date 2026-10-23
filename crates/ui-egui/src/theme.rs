@@ -271,7 +271,7 @@ pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
             (TextStyle::Small, FontId::new(11.0, FontFamily::Proportional)),
             (TextStyle::Body, FontId::new(12.0, FontFamily::Proportional)),
             (TextStyle::Button, FontId::new(12.0, FontFamily::Proportional)),
-            (TextStyle::Heading, FontId::new(13.0, FontFamily::Name("semibold".into()))),
+            (TextStyle::Heading, FontId::new(13.0, FontFamily::Name(SEMIBOLD.into()))),
             (TextStyle::Monospace, FontId::new(12.0, FontFamily::Monospace)),
         ]
         .into();
@@ -371,32 +371,37 @@ pub fn on_dark<R>(ui: &mut egui::Ui, f: impl FnOnce(&mut egui::Ui) -> R) -> R {
     r
 }
 
-/// UI fonts: Inter (from the craft-fonts build input) when present, else egui's defaults; with
+/// UI fonts: Inter Regular, SemiBold and Italic ([`inter_faces`]: the craft-fonts build input's, else
+/// the app's bundled variable Inter at those weights, Fix AA1), egui's defaults only where neither
+/// exists (the browser); with
 /// `system`, also system faces for scripts those lack (Hebrew, joined Arabic) so names in them show,
 /// and faces for the CJK scripts in `cjk` ([`crate::cjk`]).
 pub fn install_fonts(ctx: &Context, system: bool, cjk: u8) {
     let mut fonts = FontDefinitions::default();
-    let find = |family: &str, style: &str| figcraft_text::CRAFT_FONTS.iter().find(|f| f.family == family && f.style == style).map(|f| f.bytes);
-    let regular = find("Inter", "Regular");
-    let semibold = find("Inter", "SemiBold").or_else(|| find("Inter", "Bold"));
-    if let Some(r) = regular {
-        fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(r)));
-        if let Some(list) = fonts.families.get_mut(&FontFamily::Proportional) {
-            list.insert(0, "inter".into());
+    for (key, data, family) in inter_faces() {
+        fonts.font_data.insert(key.into(), Arc::new(data));
+        let rest = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
+        match family {
+            None => {
+                if let Some(list) = fonts.families.get_mut(&FontFamily::Proportional) {
+                    list.insert(0, key.into());
+                }
+            }
+            // A named weight or style: its own face first, then the regular list as the fallback
+            // for what it lacks.
+            Some(name) => {
+                let mut list = vec![key.to_string()];
+                list.extend(rest.into_iter().filter(|k| k != key));
+                fonts.families.insert(FontFamily::Name(name.into()), list);
+            }
         }
     }
-    let sb_name = if let Some(sb) = semibold {
-        fonts.font_data.insert("inter-semibold".into(), Arc::new(FontData::from_static(sb)));
-        "inter-semibold"
-    } else {
-        "inter"
-    };
-    let mut semi: Vec<String> = Vec::new();
-    if fonts.font_data.contains_key(sb_name) {
-        semi.push(sb_name.into());
+    for name in [SEMIBOLD, ITALIC] {
+        if !fonts.families.contains_key(&FontFamily::Name(name.into())) {
+            let rest = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
+            fonts.families.insert(FontFamily::Name(name.into()), rest);
+        }
     }
-    semi.extend(fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default());
-    fonts.families.insert(FontFamily::Name("semibold".into()), semi);
     // CJK and other scripts from craft-fonts as fallbacks (Noto Sans CJK only with FIGCRAFT_EMBED_CJK).
     const BUILT_IN: [&str; 4] = ["Inter", "BIZ UDPGothic", "Noto Sans CJK SC", "Noto Sans Arabic"];
     let lang = crate::i18n::current().map_or("en", |l| l.code);
@@ -426,7 +431,7 @@ pub fn install_fonts(ctx: &Context, system: bool, cjk: u8) {
     extra.extend(craft(true));
     for (key, data) in extra {
         fonts.font_data.insert(key.clone(), Arc::new(data));
-        for fam in [FontFamily::Proportional, FontFamily::Name("semibold".into())] {
+        for fam in [FontFamily::Proportional, FontFamily::Name(SEMIBOLD.into()), FontFamily::Name(ITALIC.into())] {
             if let Some(list) = fonts.families.get_mut(&fam) {
                 list.push(key.clone());
             }
@@ -481,7 +486,43 @@ pub fn font_data(face: &figcraft_text::Face) -> FontData {
 }
 
 pub fn semibold(size: f32) -> FontId {
-    FontId::new(size, FontFamily::Name("semibold".into()))
+    FontId::new(size, FontFamily::Name(SEMIBOLD.into()))
+}
+
+/// Inter Italic (Fix AA1): the agent's *italic* in the AI panel.
+pub fn italic(size: f32) -> FontId {
+    FontId::new(size, FontFamily::Name(ITALIC.into()))
+}
+
+/// The UI's named font families (Fix AA1), besides egui's Proportional (Inter Regular).
+pub const SEMIBOLD: &str = "semibold";
+pub const ITALIC: &str = "italic";
+/// The font keys of the UI's Inter faces: Regular, SemiBold and Italic.
+pub const INTER_KEYS: [&str; 3] = ["inter", "inter-semibold", "inter-italic"];
+
+/// The UI's Inter faces (Fix AA1), as (font key, data, the named family it leads; `None` for
+/// Proportional): from the craft-fonts build input when it has them, else the variable fonts the
+/// app bundles (`assets/fonts/inter/`) at the weight each needs, so SemiBold is real, not the
+/// regular face under another name. egui can't make a weight or a slant up.
+pub fn inter_faces() -> Vec<(&'static str, FontData, Option<&'static str>)> {
+    let craft = |style: &str| figcraft_text::CRAFT_FONTS.iter().find(|f| f.family == "Inter" && f.style == style).map(|f| f.bytes);
+    let bundled = |style: &str| figcraft_text::bundled::BUNDLED_FONTS.iter().find(|f| f.family == "Inter" && f.style == style).map(|f| f.bytes);
+    // `wght`, as the four bytes of its tag (a number: no tag to parse).
+    let weight = |bytes: &'static [u8], wght: f32| {
+        let mut d = FontData::from_static(bytes);
+        d.tweak.coords = egui::epaint::text::VariationCoords::new([(u32::from_be_bytes(*b"wght"), wght)]);
+        d
+    };
+    let regular = craft("Regular").map(FontData::from_static).or_else(|| bundled("Regular").map(|b| weight(b, 400.0)));
+    let semibold = craft("SemiBold").or_else(|| craft("Bold")).map(FontData::from_static).or_else(|| bundled("Regular").map(|b| weight(b, 600.0)));
+    let italic = craft("Italic").map(FontData::from_static).or_else(|| bundled("Italic").map(|b| weight(b, 400.0)));
+    let mut out = Vec::new();
+    for (key, data, family) in [(INTER_KEYS[0], regular, None), (INTER_KEYS[1], semibold, Some(SEMIBOLD)), (INTER_KEYS[2], italic, Some(ITALIC))] {
+        if let Some(d) = data {
+            out.push((key, d, family));
+        }
+    }
+    out
 }
 
 pub fn regular(size: f32) -> FontId {

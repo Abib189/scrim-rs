@@ -26,5 +26,5 @@ Names: `x-{theme}-{accent}-{width}-{state}.png`.
   - Since Fix Y2 the card's buttons stack at 240 px, each the full width, so "Select layers" has room. The 240 px mid-run captures were made again for it.
   - Your message wraps to four lines.
 - **Not like the design:**
-  - **The font:** the harness draws with egui's default font, not Inter. The real app has Inter (`assets/fonts/`), so its weights and widths differ from these.
+  - **The font:** the harness draws with egui's default font, not Inter. *(Corrected by Fix AA1: the real app did too. Its UI took Inter only from the craft-fonts build input, which these builds don't have, so SemiBold was the regular face. Since AA1 both use the bundled Inter; see `../aa/`.)*
   - **Undo run while the run goes:** these captures show it held (dimmed), as Fix X4 decided. The design's mock shows it ready.

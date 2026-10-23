@@ -480,15 +480,32 @@ fn ai_panel_x_captures() {
 #[test]
 #[ignore = "writes screenshots when SCRIM_AI_Z_DIR is set"]
 fn ai_panel_z_captures() {
+    if let Some(dir) = std::env::var_os("SCRIM_AI_Z_DIR").map(std::path::PathBuf::from) {
+        run_captures(&dir, "z");
+    }
+}
+
+/// Fix AA1: the same captures with the app's real fonts (Inter Regular, SemiBold and Italic), the
+/// harness installing them as the app does (`docs/scrim-ports/ai-panel/aa/`).
+#[test]
+#[ignore = "writes screenshots when SCRIM_AI_AA_DIR is set"]
+fn ai_panel_aa_captures() {
+    if let Some(dir) = std::env::var_os("SCRIM_AI_AA_DIR").map(std::path::PathBuf::from) {
+        run_captures(&dir, "aa");
+    }
+}
+
+/// The AI panel after a run, its card undone, and the composer with Codex chosen, light and dark,
+/// at 336 and 240 px, named `{prefix}-{theme}-{width}-{state}.png`.
+fn run_captures(dir: &std::path::Path, prefix: &str) {
     use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script, feed, line_ev};
     use crate::services::{AgentEnd, AgentRunEvent};
-    let Some(dir) = std::env::var_os("SCRIM_AI_Z_DIR").map(std::path::PathBuf::from) else { return };
-    let _ = std::fs::create_dir_all(&dir);
+    let _ = std::fs::create_dir_all(dir);
     let reply = "Done. **Poster — Welle** is on the canvas:\n\n- 20 bars in a sine wave, *five* peaks in `#FF6A00`\n- the title in Inter Bold, 96 pt\n\n1. Check the footer's spacing\n2. Try a darker ground\n\n```\nbars: 20, peaks: 5\n```";
     for dark in [false, true] {
         for width in [336.0, 240.0] {
             let theme = if dark { "dark" } else { "light" };
-            let name = |what: &str| format!("z-{theme}-{}-{what}", width as u32);
+            let name = |what: &str| format!("{prefix}-{theme}-{}-{what}", width as u32);
             let script = std::sync::Arc::new(std::sync::Mutex::new(Script {
                 claude: Some(CLAUDE.into()),
                 codex: Some("/opt/agents/bin/codex".into()),
@@ -519,13 +536,13 @@ fn ai_panel_z_captures() {
             feed(&script, vec![line_ev(&result), AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }]);
             o.settle();
             o.settle();
-            save(&o, &dir, &name("1-done"));
+            save(&o, dir, &name("1-done"));
             run(&mut o, "chat.undo-run", json!({}));
             o.settle();
-            save(&o, &dir, &name("2-undone"));
+            save(&o, dir, &name("2-undone"));
             run(&mut o, "chat.agent", json!({"agent": "codex"}));
             o.settle();
-            save(&o, &dir, &name("3-composer"));
+            save(&o, dir, &name("3-composer"));
         }
     }
 }

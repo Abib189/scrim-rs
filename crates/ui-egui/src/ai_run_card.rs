@@ -67,6 +67,7 @@ pub fn banner(app: &FigApp, ui: &mut Ui, seen: &mut Seen) {
     }
     let text = if r.stopping { tr("Stopping…").to_string() } else { trf("{agent} is working", &[("agent", &r.agent.name)]) };
     ui.painter().text(pos2(row.min.x + 52.0, row.center().y), Align2::LEFT_CENTER, &text, regular(12.0), ro.text);
+    seen.fonts.insert("banner", regular(12.0));
     let time = clock(r.elapsed(now));
     ui.painter().text(pos2(row.max.x - 16.0, row.center().y), Align2::RIGHT_CENTER, &time, regular(12.0), ro.text_secondary);
     crate::a11y::status(&resp, &text, &time);
@@ -96,6 +97,7 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
                 Line::You(s) => {
                     bubble(ui, &ro, s);
                     seen.bubbles += 1;
+                    seen.fonts.insert("bubble", regular(13.0));
                     seen.theme.insert("bubble", ro.bubble);
                 }
                 Line::Reply { agent, text } => said(ui, Some(agent), text, ro.text, &ro, seen),
@@ -201,10 +203,13 @@ fn said(ui: &mut Ui, who: Option<&str>, text: &str, color: egui::Color32, ro: &R
             ui.set_width(ui.available_width() - 16.0);
             if let Some(who) = who {
                 ui.label(RichText::new(who).font(semibold(12.0)).color(ro.text_secondary));
-                seen.replies.push(json!({"agent": who, "blocks": crate::panel_view::ai_tab::reply::draw(ui, text, ro)}));
+                seen.fonts.insert("agentName", semibold(12.0));
+                let blocks = crate::panel_view::ai_tab::reply::draw(ui, text, ro, &mut seen.fonts);
+                seen.replies.push(json!({"agent": who, "blocks": blocks}));
                 seen.theme.insert("code", ro.code);
             } else {
                 ui.label(RichText::new(text).font(regular(13.0)).color(color));
+                seen.fonts.insert("note", regular(13.0));
             }
         });
     });
@@ -267,6 +272,9 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let mut y = r.min.y + 16.0 + 9.0;
     let p = ui.painter().clone();
     p.text(pos2(x, y), Align2::LEFT_CENTER, &heading, semibold(13.0), ro.text);
+    seen.fonts.insert("cardHeading", semibold(13.0));
+    seen.fonts.insert("cardNote", regular(12.0));
+    seen.fonts.insert("cardButton", regular(13.0));
     p.text(pos2(x + inner, y), Align2::RIGHT_CENTER, note, regular(12.0), ro.text_secondary);
     y += 9.0 + 12.0;
     if earlier > 0 {
@@ -293,6 +301,7 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         }
         let text = if *n > 1 { format!("{label} ×{n}") } else { label.clone() };
         let font = if active { semibold(13.0) } else { regular(13.0) };
+        seen.fonts.insert(if active { "activeRow" } else { "row" }, font.clone());
         // Shortened with "…" to the row's width (Fix Z1: names can be long).
         let shown = elide(&p, &text, font.clone(), inner - 26.0);
         p.text(pos2(x + 26.0, c.y), Align2::LEFT_CENTER, &shown, font, if undone { ro.text_secondary } else { ro.text });

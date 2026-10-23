@@ -211,6 +211,10 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     crate::a11y::text(&field, tr("Describe a change"), &app.ui.agent_view.chat.draft.clone());
     // What the composer drew in (Fix X5).
     let hexes = |c: egui::Color32| json!(crate::theme::accent::rgb_text(c));
+    // The composer's text roles' fonts (Fix AA1).
+    let font = |f: egui::FontId| crate::panel_view::ai_tab::panel::font_json(&f);
+    seen["fonts"] =
+        json!({"field": font(regular(14.0)), "placeholder": font(regular(14.0)), "chip": font(regular(13.0)), "status": font(regular(12.0))});
     seen["theme"] = json!({
         "sendFill": hexes(roles.send_fill),
         "sendGlyph": hexes(roles.send_glyph),

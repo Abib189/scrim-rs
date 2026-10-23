@@ -64,6 +64,8 @@ pub struct Seen {
     pub fade: Option<Value>,
     /// Each reply's blocks as drawn: kind, text as shown, rectangle (Fix Z2).
     pub replies: Vec<Value>,
+    /// The font drawn for each text role this frame (Fix AA1, `ui.inspect` › `agent.aiPanel.fonts`).
+    pub fonts: std::collections::BTreeMap<&'static str, egui::FontId>,
     /// The colour drawn for each role this frame (Fix X5, `ui.inspect` › `agent.aiPanel.theme`).
     pub theme: std::collections::BTreeMap<&'static str, egui::Color32>,
     pub composer: Value,
@@ -224,6 +226,7 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     let room = (follow.min.x - 12.0 - (row.min.x + PAD) - 6.0 - 9.0).max(24.0);
     let shown = super::run_card::elide(ui.painter(), &title, semibold(14.0), room);
     let galley = ui.painter().layout_no_wrap(shown.clone(), semibold(14.0), roles.text);
+    seen.fonts.insert("title", semibold(14.0));
     let text_w = galley.size().x.min(room);
     let title_r = Rect::from_min_max(
         pos2(row.min.x + PAD - 6.0, row.center().y - 14.0),
@@ -345,6 +348,8 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, seen: &mut Seen) {
     };
     let heading = centred(tr("Describe what you want to create or change."), semibold(20.0), roles.text, None);
     let body = centred(tr("Your agent edits the canvas while you watch."), regular(13.0), roles.text_secondary, Some(13.0 * 1.4));
+    seen.fonts.insert("emptyHeading", semibold(20.0));
+    seen.fonts.insert("emptyLine", regular(13.0));
     let block = 64.0 + 24.0 + heading.size().y + 10.0 + body.size().y;
     let top = r.center().y - 12.0 - block / 2.0;
     let c = pos2(r.center().x, top + 32.0);
@@ -360,6 +365,25 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, seen: &mut Seen) {
 
 /// The colour drawn for each role last frame, `#rrggbb` as seen (Fix X5): the panel's, and the
 /// composer's (drawn in its own pass).
+/// A font as `ui.inspect` reports it: its family's name and its size.
+pub fn font_json(f: &egui::FontId) -> Value {
+    let family = match &f.family {
+        egui::FontFamily::Proportional => "proportional".to_string(),
+        egui::FontFamily::Monospace => "monospace".to_string(),
+        egui::FontFamily::Name(n) => n.to_string(),
+    };
+    json!({"family": family, "size": f.size})
+}
+
+/// Each text role's font (Fix AA1), the composer's included.
+fn fonts(s: &Seen) -> Value {
+    let mut out: serde_json::Map<String, Value> = s.fonts.iter().map(|(k, f)| ((*k).to_string(), font_json(f))).collect();
+    if let Some(Value::Object(c)) = s.composer.get("fonts") {
+        out.extend(c.clone());
+    }
+    Value::Object(out)
+}
+
 fn theme(s: &Seen) -> Value {
     let mut out: serde_json::Map<String, Value> =
         s.theme.iter().map(|(k, c)| ((*k).to_string(), json!(crate::theme::accent::rgb_text(*c)))).collect();
@@ -404,11 +428,15 @@ pub fn inspect(app: &FigApp) -> Value {
         "lines": s.lines,
         "composer": s.composer,
         "theme": theme(s),
+        "fonts": fonts(s),
         "width": s.width,
         "widest": s.widest,
     })
 }
 
+#[cfg(test)]
+#[path = "ai_fonts_tests.rs"]
+mod fonts_tests;
 #[cfg(test)]
 #[path = "ai_idle_tests.rs"]
 mod idle_tests;
