@@ -59,13 +59,16 @@ fn entries_say_only_their_allow_listed_facts() {
 #[test]
 fn retention_drops_old_events_and_zero_keeps_none() {
     let mut s = Session::new();
+    // The real clock: changing the retention is itself noted (Fix W4), at the time it happens.
+    let now = super::now();
     assert_eq!(s.prefs.settings.diagnostics_days, 7, "a week by default");
-    record(&mut s.prefs.settings, NOW - 8 * 86_400, Entry::Reload);
-    record(&mut s.prefs.settings, NOW - 86_400, Entry::McpFailed);
-    record(&mut s.prefs.settings, NOW, Entry::Reload);
+    record(&mut s.prefs.settings, now - 8 * 86_400, Entry::Reload);
+    record(&mut s.prefs.settings, now - 86_000, Entry::McpFailed);
+    record(&mut s.prefs.settings, now, Entry::Reload);
     assert_eq!(s.prefs.settings.diagnostics.len(), 2, "eight days old: gone");
-    s.execute("diagnostics.retention", &json!({"days": 1, "now": NOW})).unwrap();
-    assert_eq!(s.prefs.settings.diagnostics.len(), 2, "one day old is still kept");
+    s.execute("diagnostics.retention", &json!({"days": 1, "now": now})).unwrap();
+    assert_eq!(s.prefs.settings.diagnostics.len(), 3, "one day old is still kept, and the change is noted");
+    assert_eq!(s.prefs.settings.diagnostics[2].detail, "setting diagnostics_days: 7 → 1 (made by the person's command)");
     s.execute("diagnostics.retention", &json!({"days": 0})).unwrap();
     assert!(s.prefs.settings.diagnostics.is_empty());
     record(&mut s.prefs.settings, NOW, Entry::Reload);

@@ -65,6 +65,9 @@ pub enum Entry<'a> {
     FollowSetting { from: bool, to: bool, origin: FollowOrigin },
     /// The app started with Follow agents off (Fix V3).
     FollowOffAtStart,
+    /// A saved setting changed (Fix W4): its name, the change as said ("system → dark", or
+    /// "changed"), and who made it. Never an agent's (refused).
+    SettingChanged { name: &'a str, change: &'a str, origin: super::changes::Origin },
     /// An agent asked for a command that writes a saved setting and was refused (Fix W3): the
     /// command (a registered id), the route and the session. Nothing the agent sent.
     SettingRefused { command: &'a str, route: &'a str, session: Option<&'a str> },
@@ -326,7 +329,7 @@ impl Entry<'_> {
             | Entry::FollowRefused { .. }
             | Entry::FollowSetting { .. }
             | Entry::FollowOffAtStart => "follow",
-            Entry::SettingRefused { .. } => "setting",
+            Entry::SettingRefused { .. } | Entry::SettingChanged { .. } => "setting",
             Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
             Entry::ChatRun { .. } => "chat",
@@ -360,6 +363,9 @@ impl Entry<'_> {
                 format!("follow setting: {} → {} (made by {})", on_off(*from), on_off(*to), origin.text())
             }
             Entry::FollowOffAtStart => "following is OFF".into(),
+            Entry::SettingChanged { name, change, origin } => {
+                format!("setting {}: {} (made by {})", clean(name, 60), clean(change, 80), origin.text())
+            }
             Entry::SettingRefused { command, route, session } => {
                 // Only a registered command's id: anything else could be text an agent sent.
                 let id = if crate::find_command(command).is_some() { *command } else { "a command" };

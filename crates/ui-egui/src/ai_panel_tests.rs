@@ -497,3 +497,43 @@ fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin
     u.frame(vec![]);
     assert_eq!(panel(&u)["header"]["followDimmed"], false);
 }
+
+/// Fix W4: a setting changed in Settings is noted as the person's Settings; the same command from
+/// elsewhere (the palette, a menu) as the person's command.
+#[test]
+fn a_setting_changed_in_settings_is_noted_as_the_persons_settings() {
+    const NAME: &str = "Show working indicator";
+    let last = |u: &Ui| u.app.session.prefs.settings.diagnostics.last().map(|e| e.detail.clone()).unwrap_or_default();
+    let (mut u, _) = window();
+    u.app.run("settings.open", json!({"section": "agents"}));
+    u.app.handle_ui_requests();
+    u.frame(vec![]);
+    let find = |u: &mut Ui| {
+        let nodes = tree(u);
+        nodes.iter().filter(|n| n.role() == Role::CheckBox && n.label() == Some(NAME)).find_map(|n| {
+            let b = n.bounds()?;
+            let p = egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32);
+            (200.0..600.0).contains(&p.y).then_some(p)
+        })
+    };
+    for _ in 0..40 {
+        if find(&mut u).is_some() {
+            break;
+        }
+        u.frame(vec![egui::Event::PointerMoved(egui::pos2(800.0, 450.0))]);
+        u.frame(vec![egui::Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Point,
+            delta: egui::vec2(0.0, -120.0),
+            phase: egui::TouchPhase::Move,
+            modifiers: egui::Modifiers::NONE,
+        }]);
+    }
+    // Let the scroll settle, then read where the toggle is.
+    crate::follow_agent::tests::frames(&mut u, 30);
+    let at = find(&mut u);
+    crate::follow_agent::tests::click(&mut u, at.expect("the toggle in view"));
+    assert_eq!(last(&u), "setting working_indicator: true → false (made by the person's Settings)");
+    assert!(!u.app.session.agents.from_settings, "only while Settings draws");
+    u.app.run("pref.workingIndicator", json!({"on": true}));
+    assert_eq!(last(&u), "setting working_indicator: false → true (made by the person's command)");
+}

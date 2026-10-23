@@ -6,6 +6,8 @@
 use serde::{Deserialize, Serialize};
 
 // (Here, not in `lib.rs`: that file is at its size cap.)
+#[path = "settings_changes.rs"]
+pub mod changes;
 #[path = "diagnostics.rs"]
 pub mod diagnostics;
 
@@ -283,6 +285,8 @@ pub(crate) fn note_follow_migration(s: &mut Settings, before: bool) {
 impl Settings {
     /// These settings with anything out of range put back in range.
     pub fn sanitized(mut self) -> Self {
+        // What the file said, so each migration's change can be noted (Fix W4).
+        let said = serde_json::to_value(&self).map(|v| changes::settings(&v)).unwrap_or_default();
         // Version 2 moved the default port. A port nobody chose that the first default (or its
         // fallback) kept moves with it; a chosen one stays.
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
@@ -338,6 +342,9 @@ impl Settings {
         self.fonts_muted.dedup();
         let excess = self.fonts_muted.len().saturating_sub(MAX_MUTED_FONT_FILES);
         self.fonts_muted.drain(..excess);
+        // Each value a migration (or a value put back in range) changed, noted as such (Fix W4).
+        let now = serde_json::to_value(&self).map(|v| changes::settings(&v)).unwrap_or_default();
+        changes::note(&mut self, &said, &now, changes::Origin::Migration);
         self
     }
 }

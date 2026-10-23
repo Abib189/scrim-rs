@@ -174,6 +174,12 @@ pub struct Agents {
     /// This Scrim was started by an agent run (`SCRIM_CHAT_CHILD` in its environment): it can't start
     /// one (`chat.send`, R5).
     pub chat_child: bool,
+    /// The window is drawing Settings, so a setting the person changes now is made "by the
+    /// person's Settings" (Fix W4). Set and cleared by the window only; an agent is refused every
+    /// setting command whatever it says.
+    pub from_settings: bool,
+    /// The settings before the person's setting command now running ([`crate::settings::changes`]).
+    pub settings_before: Option<(&'static str, std::collections::BTreeMap<String, serde_json::Value>)>,
     /// The AI panel's composer has an agent run under way (the window keeps this up to date): a
     /// new chat waits until it ends (`chat.new`, Fix U3).
     pub chat_running: bool,
@@ -320,6 +326,8 @@ impl Session {
 
     /// Log a successful edit of document `uid` (it was `before`) by the current author.
     pub(crate) fn note_change(&mut self, spec: &CommandSpec, before: Option<(Arc<Document>, u64)>) {
+        // A setting the person changed: noted with where they changed it (Fix W4).
+        crate::settings::changes::after(self, spec.id);
         let Some((bdoc, uid)) = before else { return };
         self.note_edit(uid, &bdoc, spec.id, spec.label);
     }

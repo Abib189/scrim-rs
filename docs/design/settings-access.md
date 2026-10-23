@@ -130,3 +130,39 @@ These change the saved preferences file too, but they are the window's memory or
 4. **`mcp.set-tool-group` and `mcp.restore-tools` are refused to agents outright,** turning off included. The allowlist names `mcp.set-tool` only, as the brief asks.
 5. **The kept View toggles (rulers, grids, snapping, outlines…) count as settings:** they write the default for new files. On the open file they could be left to agents in a later change, if wanted.
 6. **The test hook for the grace is on the allowlist:** without it the live checks can't shorten the grace. It is never saved.
+
+## Fix W4: every setting change is noted with who made it
+
+`crates/engine/src/settings_changes.rs` (`settings::changes`). Each saved setting a command or a migration changes gets one line in Settings ▸ Diagnostics (kind `setting`):
+
+| Line | Made by |
+|---|---|
+| "setting reveal_speed: normal → slow (made by the person's Settings)" | a control in Settings: the window marks the time it draws Settings (`agents.from_settings`) |
+| "setting theme: system → dark (made by the person's command)" | the command another way: a menu, the Actions palette, a shortcut |
+| "setting agent_grace_secs: 30 → 60 (made by a settings migration)" | `Settings::sanitized` as the app starts, a value put back in range included |
+| "setting pref.theme: unchanged (refused: an agent asked, over MCP, session …)" | an agent (Fix W3) |
+
+- **How:** `access::gate` takes the settings before the person's setting command, and `note_change` (after it succeeded) notes each one that differs. `sanitized` compares the file as read with the result.
+- **Values:**
+  - a short plain value is shown ("system → dark", "7 → 1", "none → true");
+  - who the person is (`user_name`), where they publish (`publish_server`), a token, a path, and a list (fonts, plugins, the toolbar, agents allowed to run) read "changed".
+- **Not said here:** following (its own lines, Fix V3) and the markers that a value was chosen (`*_chosen`), which go with their value.
+- **Nothing is collapsed:** these are rare.
+- **An agent can't pose as the person:** it is refused before anything runs, whatever it sends (an `origin`, a flag) and even while the window draws Settings. Only the window sets `from_settings`, and only around drawing the Settings pane.
+
+**Tests:**
+- `settings_changes_tests.rs` › `each_origin_of_a_setting_change_is_noted`:
+  - the person's command;
+  - the person's Settings, for a preference and a View toggle;
+  - a name and a token never shown;
+  - no line when nothing changed;
+  - a migration;
+  - following's own line, not doubled.
+- `settings_changes_tests.rs` › `an_agent_cant_pose_as_the_person`: an agent sending `origin` or `from_settings`, while the window draws Settings, is refused, and nothing is noted as the person's.
+- `ai_panel_tests.rs` › `a_setting_changed_in_settings_is_noted_as_the_persons_settings`: a real click on Settings ▸ Agents' "Show working indicator", then the command. It fails without the window's flag.
+- **Updated:** `diagnostics_tests.rs` › `retention_drops_old_events_and_zero_keeps_none` uses the real clock, because changing the retention is now itself noted.
+
+**Decisions (overrule any):**
+1. **The setting's name is its key in the settings file** (`reveal_speed`, `mcp.port`, `view.rulers`), not its label in Settings. The key doesn't change with the language.
+2. **The chosen markers aren't said:** "setting agent_grace_chosen: false → true" would double every grace line.
+3. **A value put back in range at startup is noted as a settings migration:** the person didn't make it, and the line says so.

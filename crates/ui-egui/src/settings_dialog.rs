@@ -111,6 +111,8 @@ fn rail_ui(app: &mut FigApp, ui: &mut Ui, t: &Tokens, rail: Rect) {
 }
 
 fn section(app: &mut FigApp, ui: &mut Ui) {
+    // A setting changed here is noted as made by the person's Settings (Fix W4).
+    app.session.agents.from_settings = true;
     // (Each section is its own module; C3 adds them one commit at a time.)
     match app.ui.settings_section {
         "toolbar" => crate::settings_toolbar::show(app, ui),
@@ -121,6 +123,7 @@ fn section(app: &mut FigApp, ui: &mut Ui) {
         "diagnostics" => crate::settings_privacy::show(app, ui),
         _ => crate::settings_general::show(app, ui),
     }
+    app.session.agents.from_settings = false;
 }
 
 /// A section's heading.

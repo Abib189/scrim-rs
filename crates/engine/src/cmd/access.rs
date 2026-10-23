@@ -106,7 +106,13 @@ pub fn agent_may(s: &crate::Session, id: &str, p: &serde_json::Value) -> bool {
 /// run is refused, on every route, and Settings ▸ Diagnostics notes it with the route and the session,
 /// nothing the agent sent. Following keeps its own refusal and line (Fix V2), in its command.
 pub fn gate(s: &mut crate::Session, spec: &'static CommandSpec, p: &serde_json::Value) -> crate::Result<&'static CommandSpec> {
-    let crate::agents::Author::Agent(route) = &s.agents.author else { return Ok(spec) };
+    let crate::agents::Author::Agent(route) = &s.agents.author else {
+        // The person: what the settings are now, so the change can be noted (Fix W4).
+        if spec.setting {
+            crate::settings::changes::before(s, spec.id);
+        }
+        return Ok(spec);
+    };
     if !spec.setting || agent_may(s, spec.id, p) || spec.id == "camera.follow-agents" {
         return Ok(spec);
     }
