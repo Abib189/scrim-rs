@@ -472,3 +472,60 @@ fn ai_panel_x_captures() {
         }
     }
 }
+
+/// Fix Z: the AI panel after a run, light and dark, at 336 and 240 px: a 48-character title cut
+/// with "…", the card's rows by name, the agent's Markdown reply, and the round Selection chip
+/// (`1-done`); the card after Undo run (`2-undone`); the composer with Codex chosen, so the image
+/// chip shows too (`3-composer`). Offscreen (`docs/scrim-ports/ai-panel/z/`).
+#[test]
+#[ignore = "writes screenshots when SCRIM_AI_Z_DIR is set"]
+fn ai_panel_z_captures() {
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script, feed, line_ev};
+    use crate::services::{AgentEnd, AgentRunEvent};
+    let Some(dir) = std::env::var_os("SCRIM_AI_Z_DIR").map(std::path::PathBuf::from) else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    let reply = "Done. **Poster — Welle** is on the canvas:\n\n- 20 bars in a sine wave, *five* peaks in `#FF6A00`\n- the title in Inter Bold, 96 pt\n\n1. Check the footer's spacing\n2. Try a darker ground\n\n```\nbars: 20, peaks: 5\n```";
+    for dark in [false, true] {
+        for width in [336.0, 240.0] {
+            let theme = if dark { "dark" } else { "light" };
+            let name = |what: &str| format!("z-{theme}-{}-{what}", width as u32);
+            let script = std::sync::Arc::new(std::sync::Mutex::new(Script {
+                claude: Some(CLAUDE.into()),
+                codex: Some("/opt/agents/bin/codex".into()),
+                ..Default::default()
+            }));
+            let mut o = ridgeline(dark, width);
+            o.app.services = Box::new(Platform(script.clone()));
+            o.app.session.agents.mcp.port = Some(7690);
+            run(&mut o, "panel.tab.ai", json!({}));
+            run(&mut o, "chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
+            o.app.ui.agent_view.chat.confirm = None;
+            let prompt = "Build a Swiss poster series for the Welle music festival in Hamburg, twenty bars in a sine wave";
+            run(&mut o, "chat.send", json!({"prompt": prompt, "agent": "claude-code"}));
+            let ctx = o.ctx.clone();
+            let mut agent = |cmd: &str, p: serde_json::Value| {
+                crate::control::handle_route(&mut o.app, &ctx, "mcp (http)", "engine.execute", &json!({"command": cmd, "params": p}))
+                    .unwrap_or_default()
+            };
+            let f = agent("frame.create", json!({"x": 3000, "y": 0, "width": 640, "height": 480, "name": "Poster — Welle"}));
+            let bars: Vec<serde_json::Value> = (0..20)
+                .map(|k| json!({"command": "shape.rectangle", "params": {"x": 20 + k * 30, "y": 200, "width": 20, "height": 60 + (k % 5) * 30, "parent": f["id"]}}))
+                .collect();
+            agent("command.batch", json!({"label": "Lay out twenty bars in a sine wave", "commands": bars}));
+            let t = agent("text.create", json!({"text": "Welle", "x": 20, "y": 20, "parent": f["id"]}));
+            agent("text.create", json!({"text": "Five peaks", "x": 20, "y": 440, "parent": f["id"]}));
+            agent("node.set", json!({"id": t["id"], "props": {"name": "Title"}}));
+            let result = json!({"type": "result", "subtype": "success", "is_error": false, "result": reply}).to_string();
+            feed(&script, vec![line_ev(&result), AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }]);
+            o.settle();
+            o.settle();
+            save(&o, &dir, &name("1-done"));
+            run(&mut o, "chat.undo-run", json!({}));
+            o.settle();
+            save(&o, &dir, &name("2-undone"));
+            run(&mut o, "chat.agent", json!({"agent": "codex"}));
+            o.settle();
+            save(&o, &dir, &name("3-composer"));
+        }
+    }
+}
