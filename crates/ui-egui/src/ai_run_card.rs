@@ -20,6 +20,10 @@ use crate::panel_view::ai_tab::panel::Seen;
 use crate::panel_view::ai_tab::panel_theme::{Roles, roles};
 use crate::theme::{Tokens, regular, semibold};
 
+/// Below this panel width the card's buttons stack (Fix Y2), and the least room either side of a
+/// button's label.
+const STACK_BELOW: f32 = 300.0;
+const LABEL_PAD: f32 = 12.0;
 /// The banner's height, and the card's rows: how many, and how far apart.
 pub const BANNER_H: f32 = 36.0;
 const ROWS: usize = 5;
@@ -155,13 +159,23 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let all = figcraft_engine::cmd::chat_run::rows(&app.session);
     let earlier = all.len().saturating_sub(ROWS);
     let shown: Vec<(String, usize)> = all.into_iter().skip(earlier).collect();
-    let width = ui.available_width() - 32.0;
+    let panel_w = ui.available_width();
+    let width = panel_w - 32.0;
     let inner = width - 32.0;
     let rows_h = shown.len() as f32 * ROW + if earlier > 0 { 24.0 } else { 0.0 };
     // The bar (4 above it, 4 high, 12 below), then 4 more: the buttons 16 below the bar or the rows.
     let bar_h = if working { 4.0 + 4.0 + 12.0 } else { 0.0 };
     // 16 inside, the heading (18), 12, the rows, the bar, 4, the buttons (34), 16 inside.
-    let height = 16.0 + 18.0 + 12.0 + rows_h + bar_h + 4.0 + 34.0 + 16.0;
+    // The buttons side by side, or stacked (Fix Y2): stacked below a 300 px panel, or wherever a
+    // label wouldn't keep 12 px either side in half the width (a longer language, say).
+    let side = (inner - 8.0) / 2.0;
+    let measure = ui.painter().clone();
+    let label_w = |l: &str| measure.layout_no_wrap(l.to_string(), regular(13.0), ro.text).size().x;
+    let widest = label_w(tr("Select layers")).max(label_w(tr("Undo run")));
+    // (The panel's own width: inside the transcript a scroll bar's room is taken off.)
+    let stacked = app.ui.right_width < STACK_BELOW || widest + 2.0 * LABEL_PAD > side;
+    let buttons_h = if stacked { 34.0 + 8.0 + 34.0 } else { 34.0 };
+    let height = 16.0 + 18.0 + 12.0 + rows_h + bar_h + 4.0 + buttons_h + 16.0;
     let (row, _) = ui.allocate_exact_size(vec2(ui.available_width(), height), Sense::hover());
     let r = Rect::from_min_size(pos2(row.min.x + 16.0, row.min.y), vec2(width, height));
     ui.painter().rect_filled(r, CornerRadius::same(12), ro.card);
@@ -218,10 +232,17 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         y += 4.0 + 12.0;
     }
     y += 4.0;
-    // The two buttons, equal, 34 high, 8 apart.
-    let bw = (inner - 8.0) / 2.0;
-    let select = Rect::from_min_size(pos2(x, y), vec2(bw, 34.0));
-    let undo = select.translate(vec2(bw + 8.0, 0.0));
+    // The two buttons, 34 high, 8 apart: equal, side by side, or each the full width, stacked.
+    let (select, undo) = if stacked {
+        let select = Rect::from_min_size(pos2(x, y), vec2(inner, 34.0));
+        (select, select.translate(vec2(0.0, 34.0 + 8.0)))
+    } else {
+        let select = Rect::from_min_size(pos2(x, y), vec2(side, 34.0));
+        (select, select.translate(vec2(side + 8.0, 0.0)))
+    };
+    let label_rect = |r: Rect, l: &str| Rect::from_center_size(r.center(), vec2(label_w(l), 13.0));
+    let rect = |r: Rect| json!([r.min.x, r.min.y, r.max.x, r.max.y]);
+    let (sel_label, undo_label) = (label_rect(select, tr("Select layers")), label_rect(undo, tr("Undo run")));
     let mut asked = None;
     if card_button(ui, ro, select, tr("Select layers"), None).clicked() {
         asked = Some(("chat.select-run-layers", json!({})));
@@ -240,6 +261,9 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         "progress": working,
         "buttons": [tr("Select layers"), tr("Undo run")],
         "undoEnabled": !working,
+        "stacked": stacked,
+        "buttonRects": [rect(select), rect(undo)],
+        "labelRects": [rect(sel_label), rect(undo_label)],
         "rect": [r.min.x, r.min.y, r.max.x, r.max.y],
     }));
     if working {

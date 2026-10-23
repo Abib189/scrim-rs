@@ -35,6 +35,8 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
       - **The rows:** 36 apart, the run's agent edits from the change log (decision 15), the newest 5, with "{n} earlier" above when there are more. A done row is a `t.success` circle with a check that reads on it; while the run works, the newest is active (a 2 px accent ring and dot, its label SemiBold). No pending rows (decision 16).
       - **The bar:** while it works, a 4 px indeterminate bar (a 30 % accent segment moving along the `t.border_strong` track; still with reduced motion), gone when the run ends. No percentage (decision 16).
       - **Two buttons:** 34 high, radius 10, 8 apart, 16 below the bar or the rows. Select layers runs `chat.select-run-layers`; Undo run runs `chat.undo-run`, held while the run goes (decision 17).
+        - **From a 300 px panel** they sit side by side, equal.
+        - **Below 300 px** they stack, each the full width (Fix Y2). They also stack wherever a label wouldn't keep 12 px from its button's edges in half the width, as a longer language's might.
 - **The status line**, always 10 above the composer: a 6 px dot at 20 and Inter 12 at 32. "Following is on" with a `t.success` dot, or "Following is off" with a secondary one. The grace hint's line and the missing-CLI line stay above it.
 - **The composer**, pinned to the bottom, 16 from the panel's left, right and bottom, with no rule above it (`ai_composer.rs`, `ai_chips.rs`):
   - **The box:** radius 16, `t.field`, its edge `theme::field_stroke`; 16 left and right and 14 top and bottom inside; at least 88 high, growing with the text.

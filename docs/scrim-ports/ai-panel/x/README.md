@@ -23,7 +23,7 @@ Names: `x-{theme}-{accent}-{width}-{state}.png`.
   - With `#FFE066` on light, the marks and Send's fill are darkened to an olive. Every role keeps its contrast (Fix X5's test), but this is the one look that may not be what a person picking a pale yellow expects.
 - **At 240 px** nothing is clipped.
   - The agent chip reads "Clau…", and Selection becomes a round icon chip (Fix X3).
-  - "Select layers" is tight in its button but whole.
+  - Since Fix Y2 the card's buttons stack at 240 px, each the full width, so "Select layers" has room. The 240 px mid-run captures were made again for it.
   - Your message wraps to four lines.
 - **Not like the design:**
   - **The font:** the harness draws with egui's default font, not Inter. The real app has Inter (`assets/fonts/`), so its weights and widths differ from these.

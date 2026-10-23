@@ -779,3 +779,49 @@ fn the_lines_never_clip_at_240_320_and_400() {
         }
     }
 }
+
+/// Fix Y2: the run card's buttons are side by side and equal from a 300 px panel, and stacked, each
+/// the full width, below it; 34 high, 8 apart, never overlapping or clipped, and each label keeps
+/// at least 12 px from its button's edges.
+#[test]
+fn the_card_buttons_stack_below_300_px_and_keep_their_labels_padded() {
+    use crate::follow_agent::chat_ui::tests::send_allowed;
+    use crate::follow_agent::tests::agent;
+    for dark in [false, true] {
+        for w in [240.0, 280.0, 300.0, 336.0] {
+            let (mut u, _) = window();
+            u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+            u.app.ui.right_width = w;
+            send_allowed(&mut u, "Build a poster");
+            u.frame(vec![]);
+            agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200}));
+            u.frame(vec![]);
+            let card = panel(&u)["card"].clone();
+            let rects = |k: &str| -> Vec<Vec<f64>> {
+                card[k].as_array().unwrap().iter().map(|r| r.as_array().unwrap().iter().map(|x| x.as_f64().unwrap()).collect()).collect()
+            };
+            let (buttons, labels, c) =
+                (rects("buttonRects"), rects("labelRects"), card["rect"].as_array().unwrap().iter().map(|x| x.as_f64().unwrap()).collect::<Vec<_>>());
+            let stacked = card["stacked"].as_bool().unwrap();
+            assert_eq!(stacked, w < 300.0, "{dark} {w}: stacked below 300 px only");
+            let (a, b) = (&buttons[0], &buttons[1]);
+            for r in [a, b] {
+                assert!((r[3] - r[1] - 34.0).abs() < 0.5, "{dark} {w}: 34 high {r:?}");
+                assert!(r[0] >= c[0] + 15.5 && r[2] <= c[2] - 15.5, "{dark} {w}: inside the card's padding {r:?} in {c:?}");
+            }
+            if stacked {
+                assert!((a[2] - a[0] - (b[2] - b[0])).abs() < 0.5 && (b[1] - a[3] - 8.0).abs() < 0.5, "{dark} {w}: full width, 8 apart");
+                assert!((a[2] - a[0] - (c[2] - c[0] - 32.0)).abs() < 0.5, "{dark} {w}: each the full width");
+            } else {
+                assert!(
+                    (a[2] - a[0] - (b[2] - b[0])).abs() < 0.5 && (b[0] - a[2] - 8.0).abs() < 0.5 && (a[1] - b[1]).abs() < 0.5,
+                    "{dark} {w}: equal, side by side, 8 apart"
+                );
+            }
+            assert!(a[3] <= b[1] || a[2] <= b[0], "{dark} {w}: no overlap");
+            for (r, l) in buttons.iter().zip(&labels) {
+                assert!(l[0] >= r[0] + 12.0 - 0.5 && l[2] <= r[2] - 12.0 + 0.5, "{dark} {w}: the label {l:?} keeps 12 px inside {r:?}");
+            }
+        }
+    }
+}
