@@ -231,3 +231,41 @@ fn every_change_of_following_is_noted_with_its_origin() {
     assert!(s.execute("camera.follow-agents", &json!({"on": false, "origin": "button"})).is_err());
     assert_eq!(last(&s), line("follow setting: stays ON (refused: an agent asked, over MCP)"), "an agent can't pass for the button");
 }
+
+/// Fix W1: following is on wherever Scrim can start, from one constant: a new session (the web
+/// build's, and the desktop app's before its settings load), the settings' default (a fresh
+/// folder), and a settings file without the key. No reset path exists that could start elsewhere
+/// (`toolbar.reset` resets the toolbar only).
+#[test]
+fn following_is_on_by_default_wherever_scrim_starts() {
+    let s = Session::new();
+    assert_eq!(s.prefs.settings.follow_agents, crate::settings::DEFAULT_FOLLOW_AGENTS, "the one constant");
+    assert_eq!(super::follow_state(&s), "following", "a new session: the web build's start");
+    assert!(crate::settings::Settings::default().follow_agents, "a fresh settings folder: on");
+    let read: crate::settings::Settings = serde_json::from_value(json!({})).unwrap();
+    assert!(read.follow_agents && !read.follow_chosen, "a file without the keys");
+    let prefs: crate::Prefs = serde_json::from_value(json!({})).unwrap();
+    assert!(prefs.settings.follow_agents);
+}
+
+/// Fix W1: the marker that the person chose following is written by the person's own change only:
+/// never by a resume that changes nothing, an agent (refused), or a default.
+#[test]
+fn only_the_persons_change_marks_following_as_chosen() {
+    let mut s = Session::new();
+    assert!(!s.prefs.settings.follow_chosen, "not by the default");
+    s.agents.follow_paused = true;
+    s.execute("camera.follow-agents", &json!({"on": true, "origin": "resume"})).unwrap();
+    assert!(!s.prefs.settings.follow_chosen, "a resume that changes nothing isn't a choice");
+    s.set_author(crate::agents::Author::agent("mcp (http)"));
+    assert!(s.execute("camera.follow-agents", &json!({"on": false})).is_err());
+    assert!(!s.prefs.settings.follow_chosen, "never by an agent");
+    s.set_author(crate::agents::Author::Person);
+    s.execute("camera.follow-agents", &json!({"on": false, "origin": "button"})).unwrap();
+    assert!(s.prefs.settings.follow_chosen, "the person's button");
+    // And a migration never writes it, nor touches a chosen value.
+    let chosen = crate::settings::Settings { follow_agents: false, follow_chosen: true, settings_version: 8, ..Default::default() }.sanitized();
+    assert!(!chosen.follow_agents && chosen.follow_chosen);
+    let repaired = crate::settings::Settings { follow_agents: false, settings_version: 8, ..Default::default() }.sanitized();
+    assert!(repaired.follow_agents && !repaired.follow_chosen, "repaired, unmarked");
+}

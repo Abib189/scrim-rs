@@ -105,23 +105,94 @@ fn round_trip(name: &str, file: &str) -> (&'static str, &'static str, Value) {
 fn a_file_from_the_build_before_fix_t_with_follow_on_stays_on() {
     let (first, again, kept) = round_trip("before-fix-t", BEFORE_FIX_T);
     assert_eq!((first, again), ("following", "following"));
-    assert_eq!((kept["follow_agents"].clone(), kept["settings_version"].clone()), (json!(true), json!(8)), "migrated, still on");
+    assert_eq!((kept["follow_agents"].clone(), kept["settings_version"].clone()), (json!(true), json!(9)), "migrated, still on");
     let (first, again, kept) = round_trip("fix-t", FIX_T);
     assert_eq!((first, again, kept["follow_agents"].clone()), ("following", "following", json!(true)), "a Fix T file too");
 }
 
 #[test]
-fn every_supported_settings_version_keeps_follow_as_it_was() {
+fn every_supported_settings_version_keeps_follow_unless_off_was_never_chosen() {
     for v in 0..=8 {
         for on in [true, false] {
             if v < 3 && !on {
                 continue; // no key to say off before version 3
             }
             let (first, again, kept) = round_trip(&format!("v{v}-{on}"), &at_version(v, on).to_string());
-            let want = if on { "following" } else { "off" };
-            assert_eq!((first, again, kept["follow_agents"].clone()), (want, want, json!(on)), "version {v}, follow {on}");
+            // Fix W1: off that nobody marked as chosen (no file before version 9 has the marker)
+            // comes back on, once.
+            assert_eq!((first, again, kept["follow_agents"].clone()), ("following", "following", json!(true)), "version {v}, follow {on}");
+            assert_eq!(kept["follow_chosen"], false, "version {v}: a migration never writes the marker");
+            let repaired = repairs(&kept);
+            assert_eq!(repaired, usize::from(!on), "version {v}, follow {on}: noted once when it was off");
         }
     }
+}
+
+/// How many times Settings ▸ Diagnostics says version 9 turned following back on.
+fn repairs(prefs: &Value) -> usize {
+    prefs["diagnostics"].as_array().map_or(0, |d| d.iter().filter(|e| e["detail"] == REPAIRED).count())
+}
+
+const REPAIRED: &str = "follow setting: OFF → ON (made by a settings migration: saved off was never chosen)";
+
+/// `file` with following `on` and the person's marker set.
+fn chosen(mut file: Value, on: bool) -> Value {
+    file["prefs"]["follow_agents"] = json!(on);
+    file["prefs"]["follow_chosen"] = json!(true);
+    file
+}
+
+/// Fix W1, on the real files from before Fix V (a Fix T build's, version 8) and before Fix T
+/// (version 7): saved off with no marker is turned on once and noted; with the marker it stays
+/// off; on stays on; and the repair never runs again.
+#[test]
+fn a_saved_off_nobody_chose_is_turned_on_once_and_a_chosen_one_is_kept() {
+    for (name, file) in [("v8", FIX_T), ("v7", BEFORE_FIX_T)] {
+        let mut off: Value = serde_json::from_str(file).unwrap();
+        off["prefs"]["follow_agents"] = json!(false);
+        let (first, again, kept) = round_trip(&format!("{name}-off"), &off.to_string());
+        assert_eq!((first, again), ("following", "following"), "{name}: off, never chosen, comes back on");
+        assert_eq!((repairs(&kept), kept["follow_chosen"].clone(), kept["settings_version"].clone()), (1, json!(false), json!(9)), "{name}");
+        // Started again from what was saved: nothing more happens.
+        let (_, _, twice) = round_trip(&format!("{name}-again"), &json!({"prefs": kept}).to_string());
+        assert_eq!(repairs(&twice), 1, "{name}: the repair never runs twice");
+        for on in [false, true] {
+            let (first, again, kept) = round_trip(&format!("{name}-chosen-{on}"), &chosen(serde_json::from_str(file).unwrap(), on).to_string());
+            let want = if on { "following" } else { "off" };
+            assert_eq!((first, again, repairs(&kept)), (want, want, 0), "{name}: chosen {on} stays");
+        }
+        let (first, _, kept) = round_trip(&format!("{name}-on"), file);
+        assert_eq!((first, repairs(&kept)), ("following", 0), "{name}: on stays on, nothing noted");
+    }
+    // A version 9 file with following off and no marker is never repaired: the migration ran once.
+    let mut later: Value = serde_json::from_str(FIX_T).unwrap();
+    later["prefs"]["settings_version"] = json!(9);
+    later["prefs"]["follow_agents"] = json!(false);
+    let (first, _, kept) = round_trip("v9-off", &later.to_string());
+    assert_eq!((first, repairs(&kept)), ("off", 0));
+}
+
+/// Fix W1: after the repair, the person turning following off with the header's button writes the
+/// marker, and a restart keeps it off: the repair doesn't undo the person's choice.
+#[test]
+fn the_persons_off_after_the_repair_is_kept_across_restarts() {
+    let dir = root("repair-then-off");
+    let mut off: Value = serde_json::from_str(FIX_T).unwrap();
+    off["prefs"]["follow_agents"] = json!(false);
+    std::fs::write(dir.join("state.json"), off.to_string()).unwrap();
+    let mut fig = start(&dir);
+    assert_eq!(follow_state(&fig.session), "following", "repaired");
+    assert!(!fig.session.prefs.settings.follow_chosen);
+    fig.run("camera.follow-agents", json!({"on": false, "origin": "button"})).unwrap();
+    assert!(fig.session.prefs.settings.follow_chosen, "the person's choice is marked");
+    crate::services::shutdown(&mut fig, Some(&dir), None);
+    for _ in 0..2 {
+        let mut fig = start(&dir);
+        assert_eq!(follow_state(&fig.session), "off", "kept off");
+        crate::services::shutdown(&mut fig, Some(&dir), None);
+    }
+    assert_eq!(repairs(&saved(&dir)), 1, "repaired once, before the person's choice");
+    let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]
@@ -174,13 +245,14 @@ fn a_migration_changes_nothing_but_its_own_keys() {
 #[test]
 fn starting_with_following_off_says_so_in_diagnostics() {
     let lines = |file: &Value| {
-        let dir = root(&format!("start-{}", file["prefs"]["follow_agents"]));
+        let dir = root(&format!("start-{}-{}", file["prefs"]["follow_agents"], file["prefs"]["follow_chosen"]));
         std::fs::write(dir.join("state.json"), file.to_string()).unwrap();
         let fig = start(&dir);
         let follow: Vec<String> = fig.session.prefs.settings.diagnostics.iter().filter(|e| e.kind == "follow").map(|e| e.detail.clone()).collect();
         let _ = std::fs::remove_dir_all(&dir);
         follow
     };
-    assert_eq!(lines(&at_version(7, false)), ["following is OFF"]);
+    // Off as the person chose it (an off nobody chose is turned on: Fix W1).
+    assert_eq!(lines(&chosen(at_version(7, false), false)), ["following is OFF"]);
     assert!(lines(&at_version(7, true)).is_empty());
 }

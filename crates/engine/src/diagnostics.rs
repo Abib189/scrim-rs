@@ -238,6 +238,8 @@ pub enum FollowOrigin {
     Command,
     /// A settings migration as the app starts.
     Migration,
+    /// Version 9's repair (Fix W1): following saved off that the person never chose.
+    NeverChosen,
 }
 
 impl FollowOrigin {
@@ -259,6 +261,7 @@ impl FollowOrigin {
             FollowOrigin::Resume => "the person's resume",
             FollowOrigin::Command => "the person's command",
             FollowOrigin::Migration => "a settings migration",
+            FollowOrigin::NeverChosen => "a settings migration: saved off was never chosen",
         }
     }
 }

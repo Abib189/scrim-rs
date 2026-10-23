@@ -160,3 +160,40 @@ Fix V3 logs both from now on, with the origin.
 - **The dots:** on in 36 of 36 captures while the agent worked.
 - **Diagnostics:** "follow setting: stays ON (refused: an agent asked, over MCP, session …)".
 - **The screen was locked:** the figures are the app's own state; nothing was looked at on a real window.
+
+## Fix W1: on by default, and an off nobody chose is repaired once (23 Oct 2026)
+
+**Why:** Fix V stopped agents changing following, but a value an agent had already saved off stayed off. The person never chose it, and wants following on by default.
+
+**Where the default lives (one place):** `settings.rs` › `DEFAULT_FOLLOW_AGENTS` (true). Every start reads it:
+- `Settings::default()`: a fresh settings folder;
+- the field's serde default (`follow_default`): a file without the key;
+- `Session::new()`: the web build, which keeps no settings, and the desktop app before its settings load.
+
+There is no "reset to defaults" for Settings; `toolbar.reset` resets the toolbar only.
+
+**The marker:** `follow_chosen`, in the grace marker's style (`agent_grace_chosen`).
+- **Written only by the person's own change** of following, in `camera.follow-agents`: the AI panel's button, Settings ▸ Agents, the resume, or the command run by them.
+- **Never written by** an agent (refused since V2), a migration, a default, or a resume that changes nothing.
+
+**The repair** (`settings_version` 9, `Settings::sanitized`), as the app starts:
+- **Off with no marker:** following is turned on once. Settings ▸ Diagnostics notes "follow setting: OFF → ON (made by a settings migration: saved off was never chosen)".
+- **Marked:** the value is never touched, on or off.
+- **Runs once:** only for a file below version 9, so it can't undo a later off. The person's own off sets the marker in any case.
+
+**Tests:**
+
+| Test | Fails without W1 |
+|---|---|
+| `follow_setting_tests.rs` › `a_saved_off_nobody_chose_is_turned_on_once_and_a_chosen_one_is_kept`: the real version 8 (Fix T, before Fix V) and version 7 files, off and unmarked, come back on with one line; started again, still one line; marked off and on stay; on stays with no line; a version 9 off file isn't touched | yes (repair disabled: fails) |
+| `follow_setting_tests.rs` › `every_supported_settings_version_keeps_follow_unless_off_was_never_chosen`: versions 0 to 8, on and off; never the marker | yes |
+| `follow_setting_tests.rs` › `the_persons_off_after_the_repair_is_kept_across_restarts`: repaired; the person's button turns it off and writes the marker; two restarts keep it off; one repair line | yes |
+| `camera_tests.rs` › `only_the_persons_change_marks_following_as_chosen`: not the default, a resume that changes nothing, or an agent; the person's button does; a migration never writes it | yes (no marker) |
+| `camera_tests.rs` › `following_is_on_by_default_wherever_scrim_starts`: a new session (the web build), the default, a file without the key | passes before too: the default was already on |
+| `follow_setting_tests.rs` › `a_fresh_settings_folder_follows_agents` | passes before too |
+
+**Decisions (overrule any):**
+1. **This overturns Fix V2's decision "No marker for following".** V2 reasoned that no migration touched following, so a marker was only needed if one ever had to move an unchosen value. W1 is that migration: an off saved by an agent before V2 is indistinguishable from the person's off without a marker. Files before version 9 have no marker, so the repair treats every saved off as unchosen. A person who really had chosen off before V2 will find it on once, with the line saying why, and their next off is kept for good.
+2. **A change, not a click, writes the marker.** A resume while following is on changes nothing, so it isn't a choice. The command run by the person with the value it already has isn't marked either.
+3. **The line uses "→"** like the other follow lines (V3), not the brief's "->".
+4. **No new "reset to defaults" path:** none existed, and adding one wasn't asked for.

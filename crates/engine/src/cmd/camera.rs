@@ -146,6 +146,8 @@ fn follow_agents(s: &mut Session, p: &Value) -> Result<Value> {
     s.agents.follow_paused = false;
     // Every change of the setting is noted with who made it (Fix V3); a resume alone isn't one.
     if was != on {
+        // The person's own choice (Fix W1): a migration leaves it as it is from now on.
+        s.prefs.settings.follow_chosen = true;
         let origin = diagnostics::FollowOrigin::from_param(p.get("origin").and_then(Value::as_str));
         diagnostics::record(&mut s.prefs.settings, diagnostics::now(), diagnostics::Entry::FollowSetting { from: was, to: on, origin });
     }

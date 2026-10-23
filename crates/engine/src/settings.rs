@@ -121,7 +121,18 @@ pub fn saved_mcp(dir: &std::path::Path) -> McpSettings {
 /// - 8: the grace's default moved from 30 s to 60 s (Fix T1): real agents pause 36 s between steps.
 ///   A saved grace below 60 s that the person didn't choose moves to 60 (Fix U1: never lowered, so an
 ///   unmarked 120 stays); a chosen one always stays.
-pub const SETTINGS_VERSION: u32 = 8;
+/// - 9: `follow_chosen` (Fix W1). Following saved off that the person never chose (until Fix V2 any
+///   agent could turn it off) is turned on, once, and noted in Settings ▸ Diagnostics. A chosen
+///   value, on or off, stays.
+pub const SETTINGS_VERSION: u32 = 9;
+
+/// Following agents, until the person chooses otherwise (Fix W1): the one place its default lives,
+/// for a fresh settings folder, a file without the key, and the web build (`Session::new`).
+pub const DEFAULT_FOLLOW_AGENTS: bool = true;
+
+fn follow_default() -> bool {
+    DEFAULT_FOLLOW_AGENTS
+}
 
 /// How fast an agent's new layers enter (`pref.revealSpeed`), slowest first.
 pub const REVEAL_SPEEDS: [&str; 3] = ["slow", "normal", "fast"];
@@ -182,10 +193,15 @@ pub struct Settings {
     /// already stay until their files are saved.
     #[serde(default = "yes")]
     pub preserve_unsaved: bool,
-    /// The camera follows agents' edits (`camera.follow-agents`; on by default). Pausing it is the
-    /// window's own state and isn't saved.
-    #[serde(default = "yes")]
+    /// The camera follows agents' edits (`camera.follow-agents`; [`DEFAULT_FOLLOW_AGENTS`]). Pausing
+    /// it is the window's own state and isn't saved. Only the person changes it (Fix V2).
+    #[serde(default = "follow_default")]
     pub follow_agents: bool,
+    /// The person chose `follow_agents` themselves (Fix W1): written only by the person's own change
+    /// (the AI panel's button, Settings ▸ Agents, the resume, or the command run by them), never by
+    /// an agent, a migration or a default. A migration leaves a chosen value as it is.
+    #[serde(default)]
+    pub follow_chosen: bool,
     /// Layers an agent creates arrive with a short entrance on the canvas (`pref.revealAgentWork`).
     #[serde(default = "yes")]
     pub reveal_agent_work: bool,
@@ -237,7 +253,8 @@ impl Default for Settings {
             mcp: McpSettings::default(),
             motion: system(),
             preserve_unsaved: true,
-            follow_agents: true,
+            follow_agents: DEFAULT_FOLLOW_AGENTS,
+            follow_chosen: false,
             reveal_agent_work: true,
             working_indicator: true,
             agent_grace_secs: grace(),
@@ -270,6 +287,12 @@ impl Settings {
         // fallback) kept moves with it; a chosen one stays.
         if self.settings_version < 2 && !self.mcp.port_chosen && OLD_DEFAULT_PORTS.contains(&self.mcp.port) {
             self.mcp.port = DEFAULT_MCP_PORT;
+        }
+        // Version 9 (Fix W1): following saved off that the person never chose goes back on, once.
+        if self.settings_version < 9 && !self.follow_chosen && !self.follow_agents {
+            self.follow_agents = true;
+            let entry = diagnostics::Entry::FollowSetting { from: false, to: true, origin: diagnostics::FollowOrigin::NeverChosen };
+            diagnostics::record(&mut self, diagnostics::now(), entry);
         }
         let follow = self.follow_agents;
         // Versions 7 and 8 moved the grace's default (to 30 s, then 60 s): a shorter grace nobody
