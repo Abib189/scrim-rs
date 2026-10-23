@@ -75,3 +75,113 @@ fn readable_on_picks_white_or_ink_at_4_5() {
     assert_eq!(readable_on(egui::Color32::BLACK), egui::Color32::WHITE);
     assert_eq!(readable_on(egui::Color32::WHITE), INK);
 }
+
+/// The panel drawn in theme `dark` with accent `accent` (`#rrggbb`), idle and then mid-run with
+/// the card's done and active rows: the colour drawn for each role (`ui.inspect` › `aiPanel.theme`),
+/// and the theme's tokens.
+pub(crate) fn drawn(dark: bool, accent: &str) -> (std::collections::BTreeMap<String, egui::Color32>, crate::theme::Tokens) {
+    use crate::follow_agent::chat_ui::tests::{send_allowed, window};
+    use crate::follow_agent::tests::agent;
+    use serde_json::json;
+    let (mut u, _) = window();
+    u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+    u.app.session.prefs.accent = accent.into();
+    u.frame(vec![]);
+    u.frame(vec![]);
+    let mut seen = std::collections::BTreeMap::new();
+    let mut read = |u: &crate::layers_drag_tests::Ui| {
+        let theme = crate::follow_agent::inspect(&u.app)["aiPanel"]["theme"].clone();
+        for (k, v) in theme.as_object().cloned().unwrap_or_default() {
+            if let Some(c) = v.as_str().and_then(crate::theme::accent::parse_hex) {
+                seen.insert(k, c);
+            }
+        }
+    };
+    read(&u);
+    send_allowed(&mut u, "Build a poster called Welle");
+    u.frame(vec![]);
+    let f = agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200}));
+    agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 30, "height": 30, "parent": f["id"]}));
+    agent(&mut u, "text.create", json!({"text": "Welle", "parent": f["id"]}));
+    u.frame(vec![]);
+    u.frame(vec![]);
+    read(&u);
+    (seen, crate::theme::Tokens::get(&u.ctx))
+}
+
+/// Every accent the tests try: the presets, a very pale one and a very dark one.
+pub(crate) fn accents() -> Vec<String> {
+    let mut v: Vec<String> = figcraft_engine::cmd::appearance::PRESETS.iter().map(|(_, c)| figcraft_engine::cmd::appearance::hex(*c)).collect();
+    v.extend(["#ffe066".to_string(), "#1f3bff".to_string()]);
+    v
+}
+
+/// Fix X5: in both themes and with every accent, what the panel draws reads: accent marks at 4.5:1
+/// on the panel and the field; the glyph on Send/Stop at 4.5:1; the done check at 4.5:1 on its
+/// circle; the Follow icon at 4.5:1 on its tint over the panel; text at 4.5:1 on its surfaces; the
+/// composer's edge and the pending ring at 3:1.
+#[test]
+fn every_role_reads_in_both_themes_with_every_accent() {
+    use crate::theme::accent::{contrast, over};
+    for dark in [false, true] {
+        for a in accents() {
+            let (d, t) = drawn(dark, &a);
+            let at = |k: &str| *d.get(k).unwrap_or_else(|| panic!("{k} not drawn ({dark} {a}): {d:?}"));
+            let say = |what: &str, fg: egui::Color32, bg: egui::Color32, min: f64| {
+                let c = contrast(fg, bg);
+                assert!(c >= min, "{} {a}: {what} {fg:?} on {bg:?} is {c:.2}:1, under {min}", if dark { "dark" } else { "light" });
+            };
+            // (a) The accent's marks.
+            for k in ["workingDots", "activeRing", "progressFill", "emptyCore"] {
+                say(k, at(k), t.panel, 4.5);
+                say(k, at(k), t.field, 4.5);
+            }
+            // (b) Send / Stop.
+            say("send glyph", at("sendGlyph"), at("sendFill"), 4.5);
+            // (c) The done check.
+            say("done check", at("doneCheck"), at("doneCircle"), 4.5);
+            // (d) Follow, on: its icon on its tint over the panel.
+            say("follow icon", at("followIcon"), over(t.accent_tint, t.panel), 4.5);
+            // (e) Text on its surfaces.
+            for (what, fg, bg) in [
+                ("text on the panel", t.text, t.panel),
+                ("text on the bubble", at("chipText"), at("bubble")),
+                ("text on the card", t.text, at("card")),
+                ("text on the banner", t.text, at("banner")),
+                ("text on a chip", at("chipText"), at("chips")),
+                ("secondary on the panel", t.text_secondary, t.panel),
+                ("secondary on the card", t.text_secondary, at("card")),
+                ("secondary on a chip", at("chipSecondary"), at("chips")),
+                ("placeholder on the composer", at("placeholder"), at("composerFill")),
+            ] {
+                say(what, fg, bg, 4.5);
+            }
+            // (f) Edges.
+            say("composer edge on the panel", at("composerEdge"), t.panel, 3.0);
+            say("composer edge on its fill", at("composerEdge"), at("composerFill"), 3.0);
+            let pending = super::roles(&t).pending_ring;
+            say("pending ring on the card", pending, at("card"), 3.0);
+        }
+    }
+}
+
+/// Fix X5: the accent changes the accent's roles and none of the others.
+#[test]
+fn the_accent_changes_only_the_accent_roles() {
+    use crate::theme::Tokens;
+    for (base, other) in [(Tokens::light(), "#4a86ff"), (Tokens::dark(), "#ffe066"), (Tokens::dark(), "#1f3bff")] {
+        let a = super::roles(&base);
+        let b = super::roles(&base.with_accent(crate::theme::accent::parse_hex(other).unwrap()));
+        assert_ne!(a.mark, b.mark, "{other}: the marks follow the accent");
+        assert_ne!(a.send_fill, b.send_fill);
+        // Every role but the accent's stays as it was.
+        let neutral = |r: &super::Roles| {
+            let mut r = *r;
+            for c in [&mut r.follow_on_fill, &mut r.follow_on_icon, &mut r.link, &mut r.send_fill, &mut r.send_glyph, &mut r.mark] {
+                *c = egui::Color32::TRANSPARENT;
+            }
+            r
+        };
+        assert_eq!(neutral(&a), neutral(&b), "{other}: only the accent roles change");
+    }
+}

@@ -141,7 +141,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     seen.lines = lines.len();
     if lines.is_empty() {
         seen.empty_state = true;
-        empty_state(ui, &t, below);
+        empty_state(ui, &t, below, &mut seen);
     } else {
         super::run_card::transcript(app, ui, &lines, below.height().max(120.0), &mut seen);
     }
@@ -151,6 +151,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
 }
 
 fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
+    let roles = super::panel_theme::roles(t);
     let (row, _) = ui.allocate_exact_size(vec2(w, HEADER_H), Sense::hover());
     seen.header_rect = Some(row);
     let title = store::title(app);
@@ -179,6 +180,10 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     let fresp =
         icon_button_tip(&mut b, "follow", label, tip, Some(state == "following" && !paused), |p, r, c| icons::paint(p, r, AiIcon::Crosshair, c));
     seen.follow_rect = Some(fresp.rect);
+    // What Follow was drawn in (Fix X5): the icon, and its fill as seen over the panel.
+    let on = state == "following" && !paused;
+    seen.theme.insert("followIcon", if on { roles.follow_on_icon } else { roles.follow_off_icon });
+    seen.theme.insert("followFill", if on { crate::theme::accent::over(roles.follow_on_fill, roles.panel) } else { roles.button_fill });
     let fresp = match crate::follow_agent::status(app) {
         Some(s) => fresp.on_hover_text(s),
         None => fresp,
@@ -206,7 +211,6 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
         }
     }
     // The title (SemiBold 14, 16 from the left) and its 9 × 5 chevron 6 after it: the conversations.
-    let roles = super::panel_theme::roles(t);
     let galley = ui.painter().layout_no_wrap(title.clone(), semibold(14.0), roles.text);
     let room = (follow.min.x - 12.0 - (row.min.x + PAD) - 6.0 - 9.0).max(24.0);
     let text_w = galley.size().x.min(room);
@@ -312,7 +316,7 @@ fn popover(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) -> Value {
 /// No messages yet (Fix X2): a 64 px disc with the accent's 32 px core, the heading 24 below it, the
 /// line 10 below that; the block centred between the header's rule and the status line, 12 above
 /// the true centre.
-fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect) {
+fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, seen: &mut Seen) {
     let roles = super::panel_theme::roles(t);
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), below.height().max(160.0)), Sense::hover());
     let wrap = (r.width() - 48.0).max(80.0);
@@ -332,10 +336,23 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect) {
     let c = pos2(r.center().x, top + 32.0);
     ui.painter().circle_filled(c, 32.0, roles.empty_disc);
     ui.painter().circle_filled(c, 16.0, roles.mark);
+    seen.theme.insert("emptyDisc", roles.empty_disc);
+    seen.theme.insert("emptyCore", roles.mark);
     let heading_r = Rect::from_center_size(pos2(r.center().x, top + 64.0 + 24.0 + heading.size().y / 2.0), heading.size());
     let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 10.0 + body.size().y / 2.0), body.size());
     ui.put(heading_r, egui::Label::new(heading));
     ui.put(body_r, egui::Label::new(body));
+}
+
+/// The colour drawn for each role last frame, `#rrggbb` as seen (Fix X5): the panel's, and the
+/// composer's (drawn in its own pass).
+fn theme(s: &Seen) -> Value {
+    let mut out: serde_json::Map<String, Value> =
+        s.theme.iter().map(|(k, c)| ((*k).to_string(), json!(crate::theme::accent::rgb_text(*c)))).collect();
+    if let Some(Value::Object(c)) = s.composer.get("theme") {
+        out.extend(c.clone());
+    }
+    Value::Object(out)
 }
 
 /// For `ui.inspect` › `agent.aiPanel`: what the panel drew last frame.
@@ -366,6 +383,7 @@ pub fn inspect(app: &FigApp) -> Value {
         "readOnly": s.read_only_note,
         "lines": s.lines,
         "composer": s.composer,
+        "theme": theme(s),
         "width": s.width,
         "widest": s.widest,
     })

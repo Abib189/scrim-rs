@@ -650,3 +650,37 @@ fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
     click_named(&mut u, "Undo run");
     assert_eq!(*u.app.session.doc().unwrap(), before, "the document as it was before the run");
 }
+
+/// Fix X5: at 240, 320 and 400 px, light and dark, with the banner, a three-line message and the
+/// run's card all showing, nothing scrolls sideways or reaches past the panel.
+#[test]
+fn mid_run_nothing_is_clipped_or_scrolls_sideways_at_240_320_and_400() {
+    use crate::follow_agent::chat_ui::tests::send_allowed;
+    use crate::follow_agent::tests::agent;
+    for dark in [false, true] {
+        for w in [240.0, 320.0, 400.0] {
+            let (mut u, _) = window();
+            u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+            u.app.ui.right_width = w;
+            send_allowed(&mut u, "Build a poster called Welle: twenty bars forming a sine wave, five peaks in orange, with a title and a footer.");
+            u.frame(vec![]);
+            let f = agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200}));
+            for k in 0..3 {
+                agent(&mut u, "shape.rectangle", json!({"x": 10 + k * 40, "y": 10, "width": 30, "height": 30, "parent": f["id"]}));
+                agent(&mut u, "text.create", json!({"text": "Welle", "parent": f["id"]}));
+            }
+            u.frame(vec![]);
+            let p = panel(&u);
+            assert!(p["banner"].is_object() && p["card"].is_object() && p["bubbles"] == 1, "{dark} {w}: {p}");
+            assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "no sideways scroll ({dark} {w})");
+            let nodes = tree(&mut u);
+            let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+            let card = p["card"]["rect"].as_array().unwrap().iter().map(|x| x.as_f64().unwrap()).collect::<Vec<_>>();
+            assert!(card[0] >= pane.x0 + 15.5 && card[2] <= pane.x1 - 15.5, "{dark} {w}: the card 16 inside: {card:?} in {pane:?}");
+            for name in ["Select layers", "Undo run", "Stop", "Follow agents as they work", "New chat"] {
+                let b = nodes.iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name} ({dark} {w})"));
+                assert!(b.x0 >= pane.x0 - 0.5 && b.x1 <= pane.x1 + 0.5, "{dark} {w}: {name} inside the panel: {b:?} in {pane:?}");
+            }
+        }
+    }
+}

@@ -203,6 +203,19 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     });
     let field = r.inner;
     crate::a11y::text(&field, tr("Describe a change"), &app.ui.agent_view.chat.draft.clone());
+    // What the composer drew in (Fix X5).
+    let hexes = |c: egui::Color32| json!(crate::theme::accent::rgb_text(c));
+    seen["theme"] = json!({
+        "sendFill": hexes(roles.send_fill),
+        "sendGlyph": hexes(roles.send_glyph),
+        "composerFill": hexes(roles.composer_fill),
+        "composerEdge": hexes(edge.color),
+        "chips": hexes(roles.chip_fill),
+        "chipText": hexes(roles.text),
+        "chipSecondary": hexes(roles.text_secondary),
+        "placeholder": hexes(roles.placeholder),
+        "statusDot": seen["statusDot"].clone(),
+    });
     seen["composerRect"] = json!([r.response.rect.min.x, r.response.rect.min.y, r.response.rect.max.x, r.response.rect.max.y]);
     // Why Send can't go, or how long the run has taken.
     let status = match &app.ui.agent_view.chat.running {
@@ -246,5 +259,6 @@ fn status_line(app: &FigApp, ui: &mut Ui, t: &Tokens, seen: &mut serde_json::Val
     ui.painter().text(egui::pos2(left + 32.0, row.center().y), egui::Align2::LEFT_CENTER, text, regular(12.0), roles.text_secondary);
     crate::a11y::status(&resp, text, "");
     seen["following"] = json!(text);
+    seen["statusDot"] = json!(crate::theme::accent::rgb_text(dot));
     ui.add_space(10.0);
 }

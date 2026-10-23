@@ -6,7 +6,7 @@
 use egui::Color32;
 
 use crate::theme::Tokens;
-use crate::theme::accent::{INK, contrast};
+use crate::theme::accent::{INK, contrast, from_hsl, over, to_hsl};
 
 /// The colour of each part of the panel, from `t`.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -57,7 +57,8 @@ pub fn roles(t: &Tokens) -> Roles {
         header_rule: t.border,
         button_fill: t.pressed,
         follow_on_fill: t.accent_tint,
-        follow_on_icon: t.accent,
+        // The accent, on its own tint: moved until it reads there (Fix X5).
+        follow_on_icon: readable_mark(t.accent, over(t.accent_tint, t.panel), t.dark),
         follow_off_icon: t.icon,
         new_chat_icon: t.icon,
         new_chat_disabled: t.disabled,
@@ -85,6 +86,22 @@ pub fn roles(t: &Tokens) -> Roles {
         paused_dot: t.warning,
         failure: t.danger,
     }
+}
+
+/// `mark` where it reads at 4.5:1 on `bg`; otherwise its lightness moved (lighter on a dark theme,
+/// darker on a light one), the hue kept, until it does. The accent's mark is derived for the plain
+/// surfaces (`accent::derive`); on its own tint (Follow on) it can fall just short.
+pub fn readable_mark(mark: Color32, bg: Color32, dark: bool) -> Color32 {
+    if contrast(mark, bg) >= 4.5 {
+        return mark;
+    }
+    let (h, s, l) = to_hsl(mark);
+    let dir = if dark { 1.0 } else { -1.0 };
+    (1..=200).map(|n| from_hsl(h, s, l + dir * 0.005 * f64::from(n))).find(|c| contrast(*c, bg) >= 4.5).unwrap_or(if dark {
+        Color32::WHITE
+    } else {
+        INK
+    })
 }
 
 /// White or the near-black ink, whichever reads at 4.5:1 on `fill` (the better of the two when
