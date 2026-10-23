@@ -7,6 +7,8 @@ pub(crate) const FILES: &[(&str, &str)] = &[
     ("ai_composer.rs", include_str!("ai_composer.rs")),
     ("ai_chips.rs", include_str!("ai_chips.rs")),
     ("ai_run_card.rs", include_str!("ai_run_card.rs")),
+    ("ai_reply.rs", include_str!("ai_reply.rs")),
+    ("ai_markdown.rs", include_str!("ai_markdown.rs")),
     ("ai_icons.rs", include_str!("ai_icons.rs")),
     ("ai_panel_theme.rs", include_str!("ai_panel_theme.rs")),
     ("chat_ui.rs", include_str!("chat_ui.rs")),

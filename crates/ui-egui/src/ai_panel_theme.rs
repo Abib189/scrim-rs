@@ -48,6 +48,8 @@ pub struct Roles {
     pub paused_dot: Color32,
     /// A run's failure line in the transcript.
     pub failure: Color32,
+    /// A reply's code: the inline span's fill and the block's box (Fix Z2).
+    pub code: Color32,
 }
 
 /// The roles for theme `t` (its accent included).
@@ -85,6 +87,7 @@ pub fn roles(t: &Tokens) -> Roles {
         status_off_dot: t.text_secondary,
         paused_dot: t.warning,
         failure: t.danger,
+        code: t.field,
     }
 }
 

@@ -28,7 +28,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - The block is centred between the header's rule and the status line, 12 above the middle. No suggestion rows.
   - **A conversation:**
     - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
-    - **The agent's replies and notes:** text, 16 from each side.
+    - **The agent's replies and notes:** text, 16 from each side. A reply is drawn from its Markdown (Fix Z2, decision 24); notes, failures and your own message stay plain text.
     - **The run's card, after the message that started it** (`ai_run_card.rs`):
       - **The box:** the width less 32, radius 12, 16 inside, `t.field` with a 1 px `t.border_strong` edge.
       - **The heading:** "Run · 42 s" (then "Done · …" or "Stopped · …") in SemiBold 13, and at its right "Undo is one step".
@@ -52,7 +52,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 
 **`ui.inspect` › `agent.aiPanel`** reports what was drawn:
 - **the header:** the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
-- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
+- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
 - **the composer:** its controls, rectangle, status line, hint line, missing-CLI line and status;
 - **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
 
@@ -118,6 +118,10 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 21. **The grace hint's words are secondary text,** no longer `t.warning`: the role table has no warning colour. The paused dot on Follow keeps `t.warning`.
 22. **Nothing is written under the composer any more:** the run's progress is the banner, and why Send can't go, when it is only waiting for words or a choice, is its tooltip. What the person must do (install the agent, sign in) is the visible line above the status line (decision 5, Fix Y1).
 23. **The card's time** reads "42 s" under a minute and "1:05" from a minute; the banner always m:ss, as in the design.
+24. **An agent's reply is a small, safe Markdown subset** (Fix Z2; the parser `ai_markdown.rs`, the drawing `ai_reply.rs`):
+    - **What it draws:** **bold**, *italic* (or _italic_), `inline code` (monospace on `t.field`), "- " and "* " bullets and "1." numbered lists with a hanging indent, paragraphs (lines in one paragraph join with a space; a blank line starts the next), `#` to `######` headings as SemiBold at the body's size (13 px, no bigger type in a narrow panel), links as their text in `t.accent_text`, and fenced code in a `t.field` box, monospace and wrapped.
+    - **What it never does:** a link opens nothing and its address isn't shown; raw HTML is text; a marker without its pair (`2 ** 3`) stays as written; nothing scrolls sideways (a long word or line of code is broken to fit).
+    - **Only the agent's replies:** your own message, notes and failures are plain text, so what you typed is shown as you typed it.
 
 ## Tests
 
@@ -169,3 +173,8 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - Undo run held during the run, restoring the document exactly as one step, refused after the person's edit, noted without the prompt;
   - Select layers.
 - **Captures:** `docs/scrim-ports/ai-panel/x/`, offscreen, both themes, three accents, 336 and 240 px, idle and mid-run.
+
+## Fix Z: tests
+
+- `ai_markdown_tests.rs` (Z2): asterisks and bullets, an unmatched `**` (and raw HTML) left as written, code fences (closed and not), bold inside a bullet with a heading and a link, empty input and very long lines.
+- `ai_reply_tests.rs` (Z2): a reply's blocks in `ui.inspect` with no marker left as text, while your message and a note keep theirs; at 240, 320 and 400 px in both themes, with Spanish text, an 80-character word and a long line of code, every block stays 16 inside the panel and nothing scrolls sideways. It fails with the reply drawn as one plain label, and the width check fails when a code block isn't wrapped.

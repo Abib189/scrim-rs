@@ -19,10 +19,14 @@ use crate::{FigApp, a11y};
 
 #[path = "ai_icons.rs"]
 pub(crate) mod icons;
+#[path = "ai_markdown.rs"]
+pub(crate) mod markdown;
 #[path = "ai_panel.rs"]
 pub(crate) mod panel;
 #[path = "ai_panel_theme.rs"]
 pub(crate) mod panel_theme;
+#[path = "ai_reply.rs"]
+pub(crate) mod reply;
 #[path = "ai_run_card.rs"]
 pub(crate) mod run_card;
 

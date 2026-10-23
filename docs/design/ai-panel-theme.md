@@ -31,12 +31,13 @@
 | A pending step's ring | `t.field_edge` (no pending steps are drawn: Fix X4) |
 | The progress track | `t.border_strong` |
 | A run's failure line | `t.danger` |
+| A reply's inline code and code box (Fix Z2) | fill `t.field`; the text `t.text` |
 | The status dot while following is off | `t.text_secondary` |
 
 ## The guard
 
 `ai_panel_theme_tests.rs` › `no_ai_panel_file_writes_a_colour` reads the AI panel's sources and fails on a colour written in code: `Color32::from_rgb…`, `from_rgba_unmultiplied`, `from_rgba_premultiplied`, `from_gray`, a `hex(` call, or the fixed `ACCENT`, `BRAND`, `ACCENT_ON` and `BRAND_ON` constants. Comments don't count.
-- **Its files:** `ai_panel.rs`, `ai_composer.rs`, `ai_icons.rs`, `ai_panel_theme.rs`, `chat_ui.rs`, `chat_store.rs`, and the run's banner and card when Fix X adds them.
+- **Its files:** `ai_panel.rs`, `ai_composer.rs`, `ai_chips.rs`, `ai_icons.rs`, `ai_panel_theme.rs`, `ai_run_card.rs`, `ai_reply.rs` and `ai_markdown.rs` (Fix Z2), `chat_ui.rs` and `chat_store.rs`.
 - **It also checks itself:** each kind of written colour is found, and token names such as `t.accent_on` aren't mistaken for one.
 
 **Before Fix X1 the panel already wrote no colour** (the audit found none in those files), so the guard passed on the old code too. It is there so none comes in. Its self-check shows it would catch each kind.

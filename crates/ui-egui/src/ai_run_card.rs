@@ -96,9 +96,9 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
                     seen.bubbles += 1;
                     seen.theme.insert("bubble", ro.bubble);
                 }
-                Line::Reply { agent, text } => said(ui, Some(agent), text, ro.text, &ro),
-                Line::Work(s) | Line::Note(s) | Line::Cost(s) => said(ui, None, s, ro.text_secondary, &ro),
-                Line::Failure(s) => said(ui, None, s, ro.failure, &ro),
+                Line::Reply { agent, text } => said(ui, Some(agent), text, ro.text, &ro, seen),
+                Line::Work(s) | Line::Note(s) | Line::Cost(s) => said(ui, None, s, ro.text_secondary, &ro, seen),
+                Line::Failure(s) => said(ui, None, s, ro.failure, &ro, seen),
             }
             if let Some(r) = run.as_ref().filter(|r| r.line == i) {
                 actions.extend(card(app, ui, &ro, r, seen));
@@ -150,16 +150,19 @@ fn bubble(ui: &mut Ui, ro: &Roles, text: &str) {
     ui.add_space(18.0);
 }
 
-/// An agent's reply or a note: text 16 from each side.
-fn said(ui: &mut Ui, who: Option<&str>, text: &str, color: egui::Color32, ro: &Roles) {
+/// An agent's reply (its Markdown drawn, Fix Z2) or a note (plain): text 16 from each side.
+fn said(ui: &mut Ui, who: Option<&str>, text: &str, color: egui::Color32, ro: &Roles, seen: &mut Seen) {
     ui.horizontal(|ui| {
         ui.add_space(16.0);
         ui.vertical(|ui| {
             ui.set_width(ui.available_width() - 16.0);
             if let Some(who) = who {
                 ui.label(RichText::new(who).font(semibold(12.0)).color(ro.text_secondary));
+                seen.replies.push(json!({"agent": who, "blocks": crate::panel_view::ai_tab::reply::draw(ui, text, ro)}));
+                seen.theme.insert("code", ro.code);
+            } else {
+                ui.label(RichText::new(text).font(regular(13.0)).color(color));
             }
-            ui.label(RichText::new(text).font(regular(13.0)).color(color));
         });
     });
     ui.add_space(10.0);
