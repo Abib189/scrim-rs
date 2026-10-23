@@ -1647,8 +1647,6 @@ impl FigApp {
             },
             "frameMs": self.ui.frame_ms,
             "renderMs": self.ui.render_ms,
-            "framesDrawn": self.frame_stats.frames,
-            "repaintCauses": self.frame_stats.causes(),
             "canvas": {
                 "rect": [self.canvas.rect.min.x, self.canvas.rect.min.y, self.canvas.rect.max.x, self.canvas.rect.max.y],
                 "renderWork": self.canvas.render_work.map(|w| match w {
@@ -1676,6 +1674,7 @@ impl FigApp {
         state["layers"] = layers_restore::inspect(self);
         state["agent"] = follow_agent::inspect(self);
         state["missingFonts"] = json!(self.ui.missing_fonts.as_ref().map(missing_fonts::Shown::inspect));
+        self.frame_stats.inspect_into(&mut state);
         state
     }
 }

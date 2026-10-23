@@ -258,7 +258,9 @@ pub fn apply(ctx: &Context, t: Tokens) {
 pub fn apply_with(ctx: &Context, t: Tokens, reduce_motion: bool) {
     ctx.data_mut(|d| d.insert_temp(tokens_id(), t));
     crate::accent_ink::install(&t);
-    ctx.set_visuals(visuals(t));
+    let mut v = visuals(t);
+    caret::blink(ctx, &mut v, reduce_motion);
+    ctx.set_visuals(v);
     ctx.global_style_mut(|s| {
         // Scrim's rhythm: 24 px controls and a 4 px gap make 28 px rows (`ui/README.md` §6).
         s.spacing.item_spacing = egui::vec2(8.0, 4.0);
@@ -578,3 +580,6 @@ mod tests {
         });
     }
 }
+
+#[path = "caret.rs"]
+mod caret;
