@@ -166,3 +166,13 @@ These change the saved preferences file too, but they are the window's memory or
 1. **The setting's name is its key in the settings file** (`reveal_speed`, `mcp.port`, `view.rulers`), not its label in Settings. The key doesn't change with the language.
 2. **The chosen markers aren't said:** "setting agent_grace_chosen: false → true" would double every grace line.
 3. **A value put back in range at startup is noted as a settings migration:** the person didn't make it, and the line says so.
+
+## Fix W6: live
+
+`docs/scrim-ports/follow-setting/w6/`: two launches of this tree's debug build on scratch settings, starting from the real pre-Fix-V file with following saved off and no marker.
+- **Following:** on after the first launch, with the migration's line; nothing more on the second.
+- **The stub client named as Codex:** refused 8 of 8 setting changes, each noted, and every setting stayed as it was.
+- **The allowlist:** `finish_working` and turning a tool off worked; turning it on was refused.
+- **The build:** a batch of 40 layers 3,000 units away, centred to 0.00 px, 41 entered.
+- **The dots:** on in every capture from the first frame drawn until `finish_working` (30 of 31 counting one taken 0.03 s after the build began).
+- **The screen was unlocked.**

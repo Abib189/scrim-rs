@@ -1,0 +1,211 @@
+{
+ "screen_locked": false,
+ "start_file": {
+  "follow_agents": false,
+  "follow_chosen": "(absent)",
+  "settings_version": 8
+ },
+ "first_launch_follow": {
+  "follow": "following",
+  "followSetting": "ON"
+ },
+ "refusals": [
+  {
+   "command": "pref.revealAgentWork",
+   "params": {
+    "on": false
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.revealAgentWork`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "pref.revealSpeed",
+   "params": {
+    "speed": "slow"
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.revealSpeed`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "pref.workingIndicator",
+   "params": {
+    "on": false
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.workingIndicator`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "pref.theme",
+   "params": {
+    "theme": "dark"
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.theme`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "pref.accent",
+   "params": {
+    "preset": "violet"
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.accent`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "pref.motion",
+   "params": {
+    "motion": "off"
+   },
+   "refused": true,
+   "said": "invalid parameters for `pref.motion`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  },
+  {
+   "command": "camera.follow-agents",
+   "params": {},
+   "refused": true,
+   "said": "invalid parameters for `camera.follow-agents`: only the person turns following on or off: the Follow agents button in the AI panel, or Settings ▸ Agents"
+  },
+  {
+   "command": "camera.follow-agents",
+   "params": {
+    "on": false
+   },
+   "refused": true,
+   "said": "invalid parameters for `camera.follow-agents`: only the person turns following on or off: the Follow agents button in the AI panel, or Settings ▸ Agents"
+  }
+ ],
+ "follow_after_asks": {
+  "follow": "following"
+ },
+ "allowed": {
+  "finish_working": {
+   "ok": true,
+   "said": "{ \"client\": \"codex-mcp-client\", \"finished\": true, \"ids\": [] }"
+  },
+  "mcp.set-tool export off": {
+   "ok": true,
+   "said": "{ \"enabled\": 24, \"groups\": { \"read\": { \"enabled\": 10, \"total\": 11 }, \"write\": { "
+  },
+  "mcp.set-tool export on": {
+   "ok": false,
+   "said": "invalid parameters for `mcp.set-tool`: only the person changes Scrim's saved settings: in Settings, or by running the command themselves"
+  }
+ },
+ "saved_after_first": {
+  "follow_agents": true,
+  "follow_chosen": false,
+  "reveal_agent_work": true,
+  "reveal_speed": "normal",
+  "working_indicator": true,
+  "theme": "system",
+  "accent": "",
+  "motion": "system",
+  "reduce_motion": false,
+  "settings_version": 9,
+  "mcp": {
+   "disabled_tools": [
+    "export"
+   ],
+   "port": 7690,
+   "port_chosen": true,
+   "require_auth": false
+  }
+ },
+ "centre_px_from_canvas_centre": 0.0,
+ "zoom": [
+  1.0,
+  0.8596355827105082
+ ],
+ "captures_mid_flight": 5,
+ "reveal_since_open (the artboard and the 40)": {
+  "entered": 41,
+  "drawn_final": {}
+ },
+ "reveal_held_most": 41,
+ "dots_while_working": "30 of 31 captures",
+ "diagnostics_first": [
+  [
+   "follow",
+   "follow setting: OFF → ON (made by a settings migration: saved off was never chosen)"
+  ],
+  [
+   "mcpServer",
+   "started on 127.0.0.1:7690"
+  ],
+  [
+   "mcpClient",
+   "codex-mcp-client 0.163.0-alpha.11 connected"
+  ],
+  [
+   "setting",
+   "setting pref.revealAgentWork: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "working",
+   "begin: codex-mcp-client (session a65e3e74…), first request; the dots are on"
+  ],
+  [
+   "setting",
+   "setting pref.revealSpeed: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "setting",
+   "setting pref.workingIndicator: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "setting",
+   "setting pref.theme: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "setting",
+   "setting pref.accent: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "setting",
+   "setting pref.motion: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "follow",
+   "follow setting: stays ON (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "follow",
+   "follow setting: stays ON (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "working",
+   "end: codex-mcp-client (session a65e3e74…), finish_working; the dots fade out"
+  ],
+  [
+   "working",
+   "begin: codex-mcp-client (session a65e3e74…), first request; the dots are on"
+  ],
+  [
+   "setting",
+   "setting mcp.set-tool: unchanged (refused: an agent asked, over MCP, session a65e3e74…)"
+  ],
+  [
+   "working",
+   "end: codex-mcp-client (session a65e3e74…), finish_working; the dots fade out"
+  ]
+ ],
+ "second_launch_follow": "following",
+ "repair_lines_after_second": 1,
+ "new_lines_on_second_launch": [
+  [
+   "mcpServer",
+   "started on 127.0.0.1:7690"
+  ]
+ ],
+ "saved_after_second": {
+  "follow_agents": true,
+  "follow_chosen": false,
+  "reveal_agent_work": true,
+  "reveal_speed": "normal",
+  "working_indicator": true,
+  "theme": "system",
+  "accent": "",
+  "motion": "system",
+  "reduce_motion": false,
+  "settings_version": 9
+ }
+}
