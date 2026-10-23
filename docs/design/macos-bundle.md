@@ -8,8 +8,8 @@ It builds the release app for this Mac and writes `target/bundle/Scrim.app`:
 
 | Part | What |
 |---|---|
-| `Contents/MacOS/figcraft` | The windowed app (`cargo build --release -p figcraft`), built for the minimum macOS below. |
-| `Contents/Info.plist` | From the release template, `packaging/macos/Info.plist.in`, so the two never drift. Name Scrim, identifier `design.scrim.app`, `NSHighResolutionCapable`. The version is Cargo's `[workspace.package]` version (the short X.Y.Z, and the full one as `ScrimVersion`), plus the commit. The executable is `figcraft`. `LSMinimumSystemVersion` is the build's target: `MACOSX_DEPLOYMENT_TARGET`, else the compiler's default for this Mac (`rustc --print deployment-target`: 11.0 on Apple silicon). The same value is passed to the build. |
+| `Contents/MacOS/figcraft` | The windowed app (`cargo build --release -p figcraft`), built for the minimum macOS below, with `FIGCRAFT_BUILD_SHA` set to the commit (Fix Y3): `FIGCRAFT_BUILD_SHA` if it is set, else `git rev-parse HEAD`, as `packaging/env.sh` does for the release. Its `--version` says "Scrim <version> (<full sha>)"; after signing, the xtask runs it and refuses the bundle if the commit isn't there. |
+| `Contents/Info.plist` | From the release template, `packaging/macos/Info.plist.in`, so the two never drift. Name Scrim, identifier `design.scrim.app`, `NSHighResolutionCapable`. The version is Cargo's `[workspace.package]` version (the short X.Y.Z, and the full one as `ScrimVersion`), plus the commit (`ScrimBuildCommit`: the full sha since Fix Y3, the same one the binary prints, as the release's `package.sh` writes it). The executable is `figcraft`. `LSMinimumSystemVersion` is the build's target: `MACOSX_DEPLOYMENT_TARGET`, else the compiler's default for this Mac (`rustc --print deployment-target`: 11.0 on Apple silicon). The same value is passed to the build. |
 | `Contents/Resources/Scrim.icns` | Made with `iconutil` from the placeholder icon's PNGs. |
 | Signature | Ad hoc (`codesign --force --sign - --timestamp=none`): the executable, then the bundle, then `codesign --verify --strict`. |
 

@@ -1,7 +1,9 @@
 //! `cargo xtask bundle-macos` (R4, `docs/design/macos-bundle.md`): a double-clickable Scrim.app for
 //! this Mac, at `<target>/bundle/Scrim.app`.
 //! - **Contents/MacOS/figcraft:** the windowed app, a release build for this Mac. Connect Claude
-//!   Desktop writes this path for the bridge (`figcraft mcp-bridge`).
+//!   Desktop writes this path for the bridge (`figcraft mcp-bridge`). Built with
+//!   `FIGCRAFT_BUILD_SHA` set to the commit (Fix Y3), as `packaging/env.sh` does for the release:
+//!   its `--version` says "Scrim <version> (<sha>)", and the bundle isn't made if it doesn't.
 //! - **Contents/Info.plist:** the release template (`packaging/macos/Info.plist.in`): Scrim,
 //!   `design.scrim.app`, NSHighResolutionCapable, with the version from Cargo, the minimum macOS
 //!   the build targets, and this executable's name.
@@ -78,6 +80,17 @@ fn icon(root: &Path, work: &Path, resources: &Path) -> bool {
     run(Command::new("iconutil").arg("-c").arg("icns").arg("-o").arg(resources.join("Scrim.icns")).arg(&set))
 }
 
+/// The commit the bundle is built from: `FIGCRAFT_BUILD_SHA` when it's set (as `packaging/env.sh`
+/// leaves it), else `git rev-parse HEAD`; `None` when neither says.
+pub fn build_sha(from_env: Option<String>, from_git: impl FnOnce() -> Option<String>) -> Option<String> {
+    from_env.map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).or_else(|| from_git().map(|s| s.trim().to_string()).filter(|s| !s.is_empty()))
+}
+
+/// The binary's `--version` names the commit: "Scrim <version> (<sha>)".
+pub fn version_has_commit(output: &str, sha: &str) -> bool {
+    !sha.is_empty() && output.trim().starts_with("Scrim ") && output.contains(&format!("({sha})"))
+}
+
 pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
     if !cfg!(target_os = "macos") {
         eprintln!("bundle-macos: builds a macOS app, on macOS only");
@@ -87,8 +100,15 @@ pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
         eprintln!("bundle-macos: couldn't tell the minimum macOS (set MACOSX_DEPLOYMENT_TARGET)");
         return false;
     };
+    // The commit, in the binary and the Info.plist alike (Fix Y3).
+    let git =
+        || Command::new("git").args(["rev-parse", "HEAD"]).current_dir(root).output().ok().map(|o| String::from_utf8_lossy(&o.stdout).to_string());
+    let Some(sha) = build_sha(std::env::var("FIGCRAFT_BUILD_SHA").ok(), git) else {
+        eprintln!("bundle-macos: couldn't tell the commit (set FIGCRAFT_BUILD_SHA, or build in the git checkout)");
+        return false;
+    };
     // The binary and the Info.plist name the same minimum.
-    if !run(cargo.args(["build", "--release", "--locked", "-p", "figcraft"]).env("MACOSX_DEPLOYMENT_TARGET", &min)) {
+    if !run(cargo.args(["build", "--release", "--locked", "-p", "figcraft"]).env("MACOSX_DEPLOYMENT_TARGET", &min).env("FIGCRAFT_BUILD_SHA", &sha)) {
         return false;
     }
     let target = target_dir(root);
@@ -110,14 +130,6 @@ pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
         return false;
     };
     let version = crate::workspace_version();
-    let sha = Command::new("git")
-        .args(["rev-parse", "--short", "HEAD"])
-        .current_dir(root)
-        .output()
-        .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "unknown".into());
     let Some(plist) = info_plist(&template, &version, &sha, "figcraft", &min) else {
         eprintln!("bundle-macos: Info.plist.in no longer has the executable, minimum macOS or version this replaces");
         return false;
@@ -134,7 +146,13 @@ pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
     if !sign(&exe) || !sign(&app) || !run(Command::new("codesign").args(["--verify", "--strict", "--verbose=2"]).arg(&app)) {
         return false;
     }
-    eprintln!("bundle-macos: {} (Scrim {version}, macOS {min} or later, signed ad hoc)", app.display());
+    // The binary says which commit it is, or this isn't the bundle it should be.
+    let said = Command::new(&exe).arg("--version").output().ok().map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default();
+    if !version_has_commit(&said, &sha) {
+        eprintln!("bundle-macos: the bundle's figcraft --version doesn't name the commit {sha}: {:?}", said.trim());
+        return false;
+    }
+    eprintln!("bundle-macos: {} ({}, macOS {min} or later, signed ad hoc)", app.display(), said.trim());
     true
 }
 

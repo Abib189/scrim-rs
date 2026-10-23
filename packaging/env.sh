@@ -5,7 +5,8 @@
 #   ROOT                  workspace root
 #   VERSION               [workspace.package] version from Cargo.toml (override: FIGCRAFT_VERSION)
 #   DIST                  output directory for release artifacts (default: $ROOT/dist/release)
-#   FIGCRAFT_BUILD_SHA    git commit baked into the binaries (apps/figcraft/build.rs)
+#   FIGCRAFT_BUILD_SHA    git commit baked into the binaries (apps/figcraft/build.rs); `cargo xtask
+#                         bundle-macos` sets it the same way and checks the binary's --version (Fix Y3)
 #   FIGCRAFT_BUILD_DATE   UTC build date, YYYY-MM-DD
 #   CARGO_TARGET_DIR      cargo's target dir (default: $ROOT/target)
 # Sets (not exported):

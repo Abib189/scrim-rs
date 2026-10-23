@@ -1,4 +1,4 @@
-use super::info_plist;
+use super::{build_sha, info_plist, version_has_commit};
 
 fn template() -> String {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).parent().expect("the workspace");
@@ -51,4 +51,18 @@ fn the_written_plist_passes_plutil() {
 fn the_deployment_target_is_read_from_the_compiler() {
     let min = super::deployment_target().expect("rustc names one");
     assert!(min.split('.').all(|p| p.parse::<u32>().is_ok()), "{min}");
+}
+
+/// Fix Y3: the commit comes from `FIGCRAFT_BUILD_SHA` when set, else git; the bundle is refused
+/// when the binary's `--version` doesn't name it.
+#[test]
+fn the_commit_comes_from_the_environment_or_git_and_the_version_must_name_it() {
+    let sha = "d60f317aca72cdcc8e73f5738b42b3a4467bc884";
+    assert_eq!(build_sha(Some(format!("{sha}\n")), || None).as_deref(), Some(sha), "the release scripts' variable first");
+    assert_eq!(build_sha(Some("  ".into()), || Some(format!("{sha}\n"))).as_deref(), Some(sha), "empty: git");
+    assert_eq!(build_sha(None, || Some("".into())), None, "neither: no bundle");
+    assert!(version_has_commit(&format!("Scrim 0.7.0 ({sha})\n"), sha));
+    assert!(!version_has_commit("Scrim 0.7.0\n", sha), "no commit: refused");
+    assert!(!version_has_commit("Scrim 0.7.0 (0000000)\n", sha), "another commit: refused");
+    assert!(!version_has_commit(&format!("Scrim 0.7.0 ({sha})"), ""), "an empty commit is no commit");
 }
