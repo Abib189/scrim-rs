@@ -27,7 +27,7 @@
     - the selection (`chat.add-selection`);
     - an image (`chat.attach-image`), only for an agent whose CLI takes one;
     - the agent (`chat.agent`);
-    - the settings gear (Settings ▸ Agents);
+    - no settings gear since Fix X3: the agent chip's menu ends with "Agent settings…" (Settings ▸ Agents);
     - Send at the right, which is Stop while a run goes.
   - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
@@ -72,9 +72,10 @@
 8. **The AI panel's own actions are commands,** the person's alone, like R5's. The new commands are `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint` and `chat.grace-setting`. The last is "Open the setting", which was a direct call before. Typing in the search field is window state, not a command.
 9. **New chat waits for a run to end:** the run's lines belong to its conversation. Since Fix U3 the + button shows it is disabled and says "Stop the run first", and `chat.new` refuses with those words instead of doing nothing. The old Clear button is gone, and `chat.clear` now means a new chat, refused the same way. The conversation shown is kept.
 10. **Conversations of an unsaved document** are keyed by its window's document number. After a restart that document is a new one, and its old conversations show as another document's.
-11. **The three new icons** (crosshair, gear, Send's arrow) are drawn in `ai_icons.rs`: `icons.rs` is over the size limit.
+11. **The new icons** are drawn in `ai_icons.rs` (the crosshair and, since Fix X2, the chevrons), because `icons.rs` is over the size limit. Since Fix X3, Send's arrow and Stop's square are drawn with the button in `ai_chips.rs`, and the gear is gone (decision 14).
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
 13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
+14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Below about 300 px the Selection and image chips become round icon chips, so the agent's name keeps room.
 
 ## Tests
 

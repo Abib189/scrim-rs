@@ -309,7 +309,9 @@ The record is `docs/scrim-ports/chat/README.md`. In short:
 
 The AI tab is now a chat (`docs/design/ai-panel.md`): a header (the conversation, Follow agents, New chat), the transcript, and this composer pinned below.
 - **The field** reads "Describe a change…".
-- **The row under it:** the selection, an image (only for agents that take one: Codex's `--image`), the agent, the settings gear, and Send.
+- **The row under it** (Fix X3: inside the composer's box, 32 px high, 8 px apart): the agent chip, the Selection chip, an image chip (only for agents that take one: Codex's `--image`), and Send at the far right.
+  - **The settings gear is gone.** "Agent settings…" is the agent chip's menu's last item, after the agents, and opens Settings ▸ Agents.
+  - **Why Send can't go** is its tooltip; nothing is written under the composer.
 - **Unchanged** from R5 and S1: the run, its commands (the person's alone), the first-use dialog, no keys, `USER` and `LOGNAME`, the time cap, ⌘↩ and Esc.
 - **Two readings of this page change:**
   - **The transcript is kept** with its conversation, on this computer by document. Reading 8 had it go with the window.

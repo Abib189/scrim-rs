@@ -27,6 +27,8 @@ use crate::services::{AgentEnd, AgentRun, AgentRunEvent, AgentRunSpec};
 use crate::theme::{Tokens, regular};
 use crate::{FigApp, widgets};
 
+#[path = "ai_chips.rs"]
+pub(crate) mod chips;
 #[path = "ai_composer.rs"]
 pub mod composer;
 #[path = "chat_store.rs"]
@@ -465,8 +467,10 @@ pub fn panel(app: &mut FigApp, ui: &mut Ui) {
         return;
     }
     let t = Tokens::get(ui.ctx());
+    // 16 from the panel's left, right and bottom edges (Fix X3), and no rule above it.
     egui::Panel::bottom(Id::new("describe_change"))
-        .frame(egui::Frame::NONE.fill(t.panel).inner_margin(egui::Margin::symmetric(widgets::PAD as i8, 8)))
+        .show_separator_line(false)
+        .frame(egui::Frame::NONE.fill(t.panel).inner_margin(egui::Margin { left: 16, right: 16, top: 8, bottom: 16 }))
         .show(ui, |ui| composer::show(app, ui));
 }
 

@@ -14,14 +14,13 @@ use egui::{Id, RichText, Ui};
 use figcraft_engine::cmd::agent_clients::headless;
 use serde_json::json;
 
-use super::{elapsed, installed, picked, send_blocked};
+use super::{chips, elapsed, installed, picked, send_blocked};
 use crate::FigApp;
 use crate::i18n::{tr, trf};
-use crate::icons::Icon;
-use crate::panel_view::ai_tab::icons::{self as ai_icons, AiIcon};
-use crate::panel_view::ai_tab::panel::{BUTTON, icon_button};
 use crate::theme::{Tokens, regular};
-use crate::widgets;
+
+/// The composer's least height (Fix X3); it grows with the text.
+const MIN_H: f32 = 88.0;
 
 pub fn show(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
@@ -81,107 +80,138 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     } else {
         (false, ui.input(|i| i.key_pressed(egui::Key::Escape)))
     };
-    let hovered = ui.rect_contains_pointer(ui.available_rect_before_wrap().with_max_y(ui.cursor().min.y + 60.0));
-    let r = egui::Frame::NONE
-        .fill(t.field)
-        .corner_radius(6)
-        .inner_margin(egui::Margin::same(8))
-        .stroke(crate::theme::field_stroke(&t, hovered, focused))
-        .show(ui, |ui| {
-            ui.add_enabled(
-                !read_only,
-                egui::TextEdit::multiline(&mut app.ui.agent_view.chat.draft)
-                    .id(field_id)
-                    .frame(egui::Frame::NONE)
-                    .font(regular(12.0))
-                    .hint_text(tr("Describe a change…"))
-                    .desired_rows(2)
-                    .desired_width(f32::INFINITY),
-            )
-        });
-    let field = r.inner;
-    crate::a11y::text(&field, tr("Describe a change"), &app.ui.agent_view.chat.draft.clone());
-    // The image attached, with its remove button.
-    if let Some(path) = app.ui.agent_view.chat.image.clone() {
-        let name = std::path::Path::new(&path).file_name().map_or_else(|| path.clone(), |n| n.to_string_lossy().into_owned());
-        seen["image"] = json!(name);
-        ui.horizontal(|ui| {
-            ui.label(RichText::new(trf("Image: {name}", &[("name", &name)])).font(regular(10.5)).color(t.text_secondary));
-            let x = ui.small_button("×").on_hover_text(tr("Remove the image"));
-            crate::a11y::button(&x, tr("Remove the image"));
-            if x.clicked() {
-                app.run("chat.attach-image", json!({"path": ""}));
-            }
-        });
-    }
-    ui.add_space(6.0);
+    let roles = crate::panel_view::ai_tab::panel_theme::roles(&t);
     let blocked = send_blocked(app, now);
     let (mut send, mut stop) = (false, false);
     let has_selection = app.session.ds().is_ok_and(|d| !d.selection.is_empty());
     let takes_image = current.as_ref().is_some_and(|(p, _)| !p.image_args.is_empty());
     seen["selectionButton"] = json!(tr("Add the selection to the prompt"));
     seen["imageButton"] = json!(takes_image);
-    seen["settingsButton"] = json!(tr("Agent settings"));
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 4.0;
-        let sel = icon_button(ui, "selection", tr("Add the selection to the prompt"), None, |p, r, c| crate::icons::paint(p, r, Icon::Move, c));
-        if sel.clicked() && has_selection && !read_only {
-            app.run("chat.add-selection", json!({}));
-        }
-        if takes_image {
-            let img = icon_button(ui, "image", tr("Attach an image"), None, |p, r, c| crate::icons::paint(p, r, Icon::Image, c));
-            if img.clicked() && !read_only {
-                app.run("chat.attach-image", json!({}));
-            }
-        }
-        // The agent: the installed agents with a headless profile.
-        if !found.is_empty() {
-            let label = current.as_ref().map_or_else(String::new, |(p, _)| p.name.clone());
-            let path = current.as_ref().map_or_else(String::new, |(_, path)| path.clone());
-            let right = 2.0 * BUTTON + 8.0;
-            let w = (ui.available_width() - right).clamp(60.0, 150.0);
-            let resp = widgets::dropdown(ui, &label, w, None).on_hover_text(&path);
-            crate::a11y::menu_button(
-                &resp,
-                &trf("Agent: {agent}", &[("agent", &label)]),
-                egui::Popup::is_id_open(ui.ctx(), egui::Popup::default_response_id(&resp)),
-            );
-            crate::right::menu_popup(&resp).width(200.0).show(|ui| {
-                for (id, path) in &found {
-                    let Some(p) = headless::profile(id) else { continue };
-                    if ui.button(&p.name).on_hover_text(path).clicked() {
-                        app.run("chat.agent", json!({"agent": id}));
-                    }
+    // The box (Fix X3): radius 16, 16 and 14 inside, at least 88 high and growing with the text; the
+    // field above a 32 px row of the agent, the selection, an image and Send.
+    let hovered = ui.rect_contains_pointer(ui.available_rect_before_wrap().with_max_y(ui.cursor().min.y + 120.0));
+    let edge = crate::theme::field_stroke(&t, hovered, focused);
+    let r = egui::Frame::NONE.fill(roles.composer_fill).corner_radius(16).inner_margin(egui::Margin::symmetric(16, 14)).stroke(edge).show(ui, |ui| {
+        ui.set_min_height(MIN_H - 28.0);
+        ui.spacing_mut().item_spacing.y = 8.0;
+        let field = ui.add_enabled(
+            !read_only,
+            egui::TextEdit::multiline(&mut app.ui.agent_view.chat.draft)
+                .id(field_id)
+                .frame(egui::Frame::NONE)
+                .font(regular(14.0))
+                .text_color(roles.text)
+                .hint_text(RichText::new(tr("Describe a change…")).font(regular(14.0)).color(roles.placeholder))
+                .desired_rows(1)
+                .desired_width(f32::INFINITY),
+        );
+        // The image attached, with its remove button.
+        if let Some(path) = app.ui.agent_view.chat.image.clone() {
+            let name = std::path::Path::new(&path).file_name().map_or_else(|| path.clone(), |n| n.to_string_lossy().into_owned());
+            seen["image"] = json!(name);
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(trf("Image: {name}", &[("name", &name)])).font(regular(12.0)).color(roles.text_secondary));
+                let x = ui.small_button("×").on_hover_text(tr("Remove the image"));
+                crate::a11y::button(&x, tr("Remove the image"));
+                if x.clicked() {
+                    app.run("chat.attach-image", json!({"path": ""}));
                 }
             });
-            seen["agent"] = json!(label);
         }
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            ui.spacing_mut().item_spacing.x = 4.0;
-            if running {
-                let s = icon_button(ui, "stop", tr("Stop"), None, |p, r, c| crate::icons::paint(p, r, Icon::Close, c));
-                stop = s.clicked();
-                seen["send"] = json!(tr("Stop"));
+        ui.horizontal(|ui| {
+            ui.set_height(chips::CHIP_H);
+            ui.spacing_mut().item_spacing.x = 8.0;
+            // What fits before Send: the chips' labels shorten with "…" before anything clips.
+            let room = (ui.available_width() - chips::SEND - 8.0).max(0.0);
+            let agent_label = current.as_ref().map_or_else(String::new, |(p, _)| p.name.clone());
+            let want_agent = if found.is_empty() { 0.0 } else { chips::chip_width(ui, &agent_label, true) };
+            let want_sel = chips::chip_width(ui, tr("Selection"), false);
+            let want_img = if takes_image { chips::chip_width(ui, tr("Image"), false) } else { 0.0 };
+            // Selection and the image show their words while the agent's name still has 88 (its
+            // chip shortens it first); narrower, they become round icon chips.
+            let agent_min = if found.is_empty() { 0.0 } else { 88.0_f32.min(want_agent) };
+            let words = want_sel + want_img + if takes_image { 8.0 } else { 0.0 };
+            let compact = agent_min + 8.0 + words > room;
+            let others = if compact { chips::CHIP_H * if takes_image { 2.0 } else { 1.0 } + if takes_image { 8.0 } else { 0.0 } } else { words };
+            let agent_w = (room - others - 8.0).clamp(44.0, want_agent.max(44.0));
+            let (sel_w, img_w) = (want_sel, want_img);
+            seen["compactChips"] = json!(compact);
+            // The agent: the installed agents with a headless profile, then Agent settings… (the
+            // gear's place before Fix X3).
+            if !found.is_empty() {
+                let path = current.as_ref().map_or_else(String::new, |(_, path)| path.clone());
+                let resp = chips::chip(ui, &roles, &agent_label, roles.text, true, agent_w, &trf("Agent: {agent}", &[("agent", &agent_label)]));
+                let resp = resp.on_hover_text(&path);
+                crate::a11y::menu_button(
+                    &resp,
+                    &trf("Agent: {agent}", &[("agent", &agent_label)]),
+                    egui::Popup::is_id_open(ui.ctx(), egui::Popup::default_response_id(&resp)),
+                );
+                crate::right::menu_popup(&resp).width(200.0).show(|ui| {
+                    for (id, path) in &found {
+                        let Some(p) = headless::profile(id) else { continue };
+                        if ui.button(&p.name).on_hover_text(path).clicked() {
+                            app.run("chat.agent", json!({"agent": id}));
+                        }
+                    }
+                    ui.separator();
+                    if ui.button(tr("Agent settings…")).clicked() {
+                        app.run("settings.open", json!({"section": "agents"}));
+                    }
+                });
+                seen["agent"] = json!(agent_label);
+                seen["agentMenu"] = json!(tr("Agent settings…"));
+            }
+            let sel = if compact {
+                chips::icon_chip(ui, &roles, crate::icons::Icon::Move, roles.text_secondary, tr("Add the selection to the prompt"))
             } else {
-                let tip = format!("{}  {}", tr("Send"), if cfg!(target_os = "macos") { "⌘↩" } else { "Ctrl+Enter" });
-                let s = icon_button(ui, "send", &tip, None, |p, r, c| ai_icons::paint(p, r, AiIcon::Send, c));
-                send = s.clicked() && blocked.is_none();
-                seen["send"] = json!(tr("Send"));
+                chips::chip(ui, &roles, tr("Selection"), roles.text_secondary, false, sel_w, tr("Add the selection to the prompt"))
+            };
+            crate::a11y::button(&sel, tr("Add the selection to the prompt"));
+            if sel.clicked() && has_selection && !read_only {
+                app.run("chat.add-selection", json!({}));
             }
-            if icon_button(ui, "settings", tr("Agent settings"), None, |p, r, c| ai_icons::paint(p, r, AiIcon::Gear, c)).clicked() {
-                app.run("settings.open", json!({"section": "ai"}));
+            if takes_image {
+                let img = if compact {
+                    chips::icon_chip(ui, &roles, crate::icons::Icon::Image, roles.text, tr("Attach an image"))
+                } else {
+                    chips::chip(ui, &roles, tr("Image"), roles.text, false, img_w, tr("Attach an image"))
+                };
+                crate::a11y::button(&img, tr("Attach an image"));
+                if img.clicked() && !read_only {
+                    app.run("chat.attach-image", json!({}));
+                }
             }
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if running {
+                    stop = chips::send(ui, &roles, true, tr("Stop")).clicked();
+                    seen["send"] = json!(tr("Stop"));
+                } else {
+                    let tip = format!("{}  {}", tr("Send"), if cfg!(target_os = "macos") { "⌘↩" } else { "Ctrl+Enter" });
+                    let resp = chips::send(ui, &roles, false, &tip);
+                    // Why it can't go, in its tooltip (Fix X3: no line under the composer).
+                    let resp = match &blocked {
+                        Some(why) => resp.on_hover_text(why),
+                        None => resp,
+                    };
+                    send = resp.clicked() && blocked.is_none();
+                    seen["send"] = json!(tr("Send"));
+                }
+            });
         });
+        field
     });
+    let field = r.inner;
+    crate::a11y::text(&field, tr("Describe a change"), &app.ui.agent_view.chat.draft.clone());
+    seen["composerRect"] = json!([r.response.rect.min.x, r.response.rect.min.y, r.response.rect.max.x, r.response.rect.max.y]);
     // Why Send can't go, or how long the run has taken.
     let status = match &app.ui.agent_view.chat.running {
         Some(r) if r.stopping => tr("Stopping…").to_string(),
         Some(r) => trf("{agent} is working · {time}", &[("agent", &r.agent.name), ("time", &elapsed(now - r.started))]),
         None => blocked.clone().filter(|_| missing.is_none()).unwrap_or_default(),
     };
-    if !status.is_empty() {
-        ui.label(RichText::new(&status).font(regular(10.5)).color(t.text_secondary));
-    }
+    // Not drawn under the composer since Fix X3: the run shows in the working banner (Fix X4), and
+    // why Send can't go is its tooltip. Kept for `ui.inspect`.
     seen["status"] = json!(status);
     if cmd_enter && blocked.is_none() {
         send = true;

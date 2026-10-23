@@ -130,7 +130,8 @@ fn ui_inspect_has_the_header_popover_empty_state_and_composer() {
     let c = &p["composer"];
     assert_eq!(c["placeholder"], "Describe a change…");
     assert_eq!(c["selectionButton"], "Add the selection to the prompt");
-    assert_eq!(c["settingsButton"], "Agent settings");
+    // The gear moved into the agent chip's menu (Fix X3).
+    assert_eq!(c["agentMenu"], "Agent settings…");
     assert_eq!((c["agent"].clone(), c["send"].clone(), c["imageButton"].clone()), (json!("Claude Code"), json!("Send"), json!(false)));
     assert!(p["popover"].is_null(), "closed");
     // The chevron opens the popover.
@@ -142,7 +143,7 @@ fn ui_inspect_has_the_header_popover_empty_state_and_composer() {
     assert_eq!(pop["items"], json!([]));
     // Every icon button has its name (and so its tooltip).
     let names = tree(&mut u).into_iter().filter_map(|n| n.label().map(str::to_string)).collect::<Vec<_>>();
-    for b in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent settings"] {
+    for b in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent: Claude Code"] {
         assert!(names.iter().any(|n| n == b), "{b:?} in {names:?}");
     }
     assert!(names.iter().any(|n| n.starts_with("Send")), "Send");
@@ -331,7 +332,7 @@ fn at_its_minimum_width_nothing_is_clipped_or_scrolls_sideways() {
         u.frame(vec![]);
         let nodes = tree(&mut u);
         let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
-        for name in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent settings", "Search conversations"] {
+        for name in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent: Claude Code", "Search conversations"] {
             let b = nodes.iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name} at {w}"));
             assert!(b.x0 >= pane.x0 - 0.5 && b.x1 <= pane.x1 + 0.5, "{name} inside the {w} px panel: {b:?} in {pane:?}");
         }
@@ -567,4 +568,35 @@ fn the_header_empty_state_and_status_line_follow_the_design() {
     for text in ["Describe what you want to create or change.", "Your agent edits the canvas while you watch."] {
         assert!(nodes.iter().any(|n| n.label() == Some(text) || n.value() == Some(text)), "{text}");
     }
+}
+
+/// Fix X3: the composer is at least 88 high, 16 from the panel's left, right and bottom; its row
+/// holds the 32 px agent and Selection chips and the 36 px Send; the gear is gone, and the agent
+/// chip's menu ends with "Agent settings…", which opens Settings ▸ Agents.
+#[test]
+fn the_composer_follows_the_design_and_its_menu_opens_agent_settings() {
+    let (mut u, _) = window();
+    u.frame(vec![]);
+    let nodes = tree(&mut u);
+    let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+    let c = panel(&u)["composer"]["composerRect"].as_array().unwrap().iter().map(|x| x.as_f64().unwrap()).collect::<Vec<_>>();
+    assert!(c[3] - c[1] >= 88.0 - 0.5, "at least 88 high: {c:?}");
+    assert!((c[0] - pane.x0 - 16.0).abs() < 1.0 && (pane.x1 - c[2] - 16.0).abs() < 1.0, "16 from the sides: {c:?} in {pane:?}");
+    let bounds = |name: &str| {
+        nodes.iter().find(|n| n.label().is_some_and(|l| l.starts_with(name))).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name}"))
+    };
+    let (agent, sel, send) = (bounds("Agent: Claude Code"), bounds("Add the selection to the prompt"), bounds("Send"));
+    for b in [agent, sel] {
+        assert!((b.y1 - b.y0 - 32.0).abs() < 0.5, "a 32 px chip: {b:?}");
+    }
+    assert!((send.x1 - send.x0 - 36.0).abs() < 0.5 && (send.y1 - send.y0 - 36.0).abs() < 0.5, "a 36 px Send: {send:?}");
+    // (The box's rectangle includes its 1 px edge.)
+    assert!((c[2] - send.x1 - 16.0).abs() <= 1.5, "Send at the far right, inside the 16 px padding: {send:?} in {c:?}");
+    assert!(!nodes.iter().any(|n| n.label() == Some("Agent settings")), "no gear");
+    // The menu's last item opens Settings ▸ Agents.
+    click_named(&mut u, "Agent: Claude Code");
+    u.frame(vec![]);
+    click_named(&mut u, "Agent settings…");
+    u.app.handle_ui_requests();
+    assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai", "Settings ▸ Agents");
 }
