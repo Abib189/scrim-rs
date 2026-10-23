@@ -37,16 +37,83 @@ pub struct RunRecord {
     pub end_rev: Option<u64>,
     /// The agent's name (a headless profile's).
     pub agent: String,
-    /// Set by Undo run, cleared by Redo run (Fix Z7).
+    /// Set by the latest Undo run (Fix Z7); where the history stands against it says whether the
+    /// run is undone now (Fix AA2).
     pub undone: Option<Undone>,
 }
 
-/// A run that Undo run took back: the document as the run left it, and the change log's last
-/// revision before the undo (Redo run is one step while nothing but the undo came after it).
+/// The latest Undo run of the run: the document as the run left it, and the length of the undo
+/// history with the "Undo run" step on it (Fix AA2).
 #[derive(Clone, Debug)]
 pub struct Undone {
     pub end_doc: Arc<Document>,
-    pub rev: u64,
+    pub at: usize,
+}
+
+/// The run card's state (Fix AA2), from the history's position: the run undone, and whether Undo
+/// run and Redo run are one step now.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct RunState {
+    pub undone: bool,
+    pub undo_ok: bool,
+    pub redo_ok: bool,
+}
+
+/// The history steps' labels (the registry's).
+const UNDO_STEP: &str = "Undo run";
+const REDO_STEP: &str = "Redo run";
+
+/// Where the history stands against the latest Undo run.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Pos {
+    /// Right after it (or back there by ⌘⇧Z, or by ⌘Z of what came after).
+    Undone,
+    /// Right before it: ⌘Z took it back, or Redo run is the step after it.
+    Back,
+    /// Anywhere else: something else changed (`undone`: the Undo run is still in the history).
+    Other { undone: bool },
+}
+
+/// Compared on lengths and labels (no document is diffed): the step at `at - 1` is the Undo run,
+/// and nothing but Redo run (or nothing) lies past it. ⌘⇧Z rebuilds a step around the document of
+/// the moment, so a step is known by its place and label, not its document.
+fn position(s: &Session, r: &RunRecord, u: &Undone) -> Pos {
+    let Ok(ds) = s.ds() else { return Pos::Other { undone: false } };
+    if ds.uid != r.uid {
+        return Pos::Other { undone: false };
+    }
+    let (undo, redo) = (&ds.history.undo, &ds.history.redo);
+    let step = |e: Option<&crate::HistoryEntry>, label: &str| e.is_some_and(|e| e.label == label);
+    let ours = u.at.checked_sub(1).and_then(|i| undo.get(i)).is_some_and(|e| e.label == UNDO_STEP);
+    if undo.len() == u.at && ours {
+        Pos::Undone
+    } else if (undo.len() + 1 == u.at && step(redo.last(), UNDO_STEP)) || (undo.len() == u.at + 1 && ours && step(undo.last(), REDO_STEP)) {
+        Pos::Back
+    } else {
+        Pos::Other { undone: ours && !step(undo.get(u.at), REDO_STEP) }
+    }
+}
+
+/// Why Undo run can't go now, if it can't: the command's checks, which the card shows too.
+fn undo_refusal(s: &Session, r: &RunRecord) -> Option<&'static str> {
+    if s.agents.chat_running {
+        return Some(super::chat::STOP_FIRST);
+    }
+    let uid = s.ds().map_or(0, |d| d.uid);
+    if uid != r.uid {
+        return Some(OTHER_DOC);
+    }
+    if s.live_doc(uid) {
+        return Some(LIVE);
+    }
+    match r.undone.as_ref().map(|u| position(s, r, u)) {
+        Some(Pos::Undone) => Some(ALREADY),
+        Some(Pos::Back) => None,
+        Some(Pos::Other { .. }) => Some(CHANGED),
+        // Anything else since the run began (the person's edit, or an agent's after the run
+        // ended) would be undone with it.
+        None => s.agents.edits_after(uid, r.start_rev).any(|c| !c.author.is_agent() || r.end_rev.is_some_and(|e| c.revision > e)).then_some(CHANGED),
+    }
 }
 
 const NO_RUN: &str = "There is no run to act on yet: send a change first";
@@ -86,20 +153,17 @@ pub fn refusal(e: &EngineError) -> Option<&'static str> {
     REFUSALS.iter().find(|(w, _)| ours && w == why).map(|(_, short)| *short)
 }
 
-/// The card's state after Undo run (Fix Z7): whether the run is undone, and whether Redo run would
-/// put it back as one step now.
-pub fn undone(s: &Session) -> (bool, bool) {
-    let Some(r) = &s.agents.chat_run else { return (false, false) };
-    let Some(u) = &r.undone else { return (false, false) };
-    (true, redo_ok(s, r, u))
-}
-
-/// Nothing but the undo itself in the change log since it: any other edit of the document, ⌘Z
-/// and ⌘⇧Z included, is logged after it.
-fn redo_ok(s: &Session, r: &RunRecord, u: &Undone) -> bool {
-    let Ok(ds) = s.ds() else { return false };
-    let mut since = s.agents.edits_after(r.uid, u.rev);
-    ds.uid == r.uid && matches!((since.next(), since.next()), (Some(c), None) if c.command == "chat.undo-run")
+/// The run card's state now (Fix AA2): after Undo run, undone with Redo run one step; after ⌘Z of
+/// it (or Redo run), done with Undo run one step; after ⌘⇧Z, undone again; once anything else
+/// changed, neither button.
+pub fn state(s: &Session) -> RunState {
+    let Some(r) = &s.agents.chat_run else { return RunState::default() };
+    let pos = r.undone.as_ref().map(|u| position(s, r, u));
+    RunState {
+        undone: matches!(pos, Some(Pos::Undone | Pos::Other { undone: true })),
+        undo_ok: undo_refusal(s, r).is_none(),
+        redo_ok: !s.agents.chat_running && pos == Some(Pos::Undone),
+    }
 }
 
 /// The run's rows, oldest first, as (what happened, how many times in a row) (Fix Z1): each
@@ -213,7 +277,7 @@ fn select_layers(s: &mut Session, _: &Value) -> Result<Value> {
     if s.ds()?.uid != r.uid {
         return Err(refuse(id, OTHER_DOC));
     }
-    if r.undone.is_some() {
+    if state(s).undone {
         return Err(refuse(id, REMOVED_BY_UNDO));
     }
     let doc = s.doc()?;
@@ -239,35 +303,25 @@ fn undo(s: &mut Session, _: &Value) -> Result<Value> {
     super::chat::person_only(s, id)?;
     super::chat::not_running(s, id)?;
     let r = record(s, id)?;
-    let uid = s.ds()?.uid;
-    if uid != r.uid {
-        return Err(refuse(id, OTHER_DOC));
-    }
-    if s.live_doc(uid) {
-        return Err(refuse(id, LIVE));
-    }
-    // Already undone: said first (the undo is itself an edit since the run began, Fix Z7).
-    if r.undone.is_some() {
-        return Err(refuse(id, ALREADY));
-    }
-    // Anything else since the run began (the person's edit, or an agent's after the run ended)
-    // would be undone with it. The run's own Undo and Redo don't count.
-    let own = |c: &crate::agents::Change| matches!(c.command.as_str(), "chat.undo-run" | "chat.redo-run");
-    if s.agents.edits_after(uid, r.start_rev).any(|c| !own(c) && (!c.author.is_agent() || r.end_rev.is_some_and(|e| c.revision > e))) {
-        return Err(refuse(id, CHANGED));
+    // Undone already, something else changed, or (never undone) an edit since the run began: the
+    // history's position says which (Fix AA2).
+    if let Some(why) = undo_refusal(s, &r) {
+        return Err(refuse(id, why));
     }
     let ds = s.ds_mut()?;
     if Arc::ptr_eq(&ds.doc, &r.start_doc) || *ds.doc == *r.start_doc {
         return Err(refuse(id, ALREADY));
     }
     let edits = run_edits_count(s, &r);
-    let rev = s.agents.last_edit(uid).unwrap_or(r.start_rev);
     let ds = s.ds_mut()?;
+    // The "Undo run" step lands on the history after this returns (whole documents: the one before
+    // is `end_doc`), so the history is then this long.
+    let at = (ds.history.undo.len() + 1).min(ds.history.limit.max(1));
     let end_doc = std::mem::replace(&mut ds.doc, r.start_doc.clone());
     let doc = ds.doc.clone();
     ds.selection.retain(|n| doc.contains(*n));
     if let Some(rec) = s.agents.chat_run.as_mut() {
-        rec.undone = Some(Undone { end_doc, rev });
+        rec.undone = Some(Undone { end_doc, at });
     }
     let agent = r.agent.clone();
     diagnostics::record(&mut s.prefs.settings, diagnostics::now(), Entry::ChatUndone { agent: &agent, edits });
@@ -284,14 +338,14 @@ fn redo(s: &mut Session, _: &Value) -> Result<Value> {
         return Err(refuse(id, OTHER_DOC));
     }
     let Some(u) = r.undone.clone() else { return Err(refuse(id, NOT_UNDONE)) };
-    if !redo_ok(s, &r, &u) {
-        return Err(refuse(id, REDO_CHANGED));
+    match position(s, &r, &u) {
+        Pos::Undone => {}
+        Pos::Back => return Err(refuse(id, NOT_UNDONE)),
+        Pos::Other { .. } => return Err(refuse(id, REDO_CHANGED)),
     }
-    let ds = s.ds_mut()?;
-    ds.doc = u.end_doc;
-    if let Some(rec) = s.agents.chat_run.as_mut() {
-        rec.undone = None;
-    }
+    // A step of its own ("Redo run"); the record stays, so the history's position keeps telling
+    // the card where it stands.
+    s.ds_mut()?.doc = u.end_doc;
     Ok(json!({"redone": true}))
 }
 

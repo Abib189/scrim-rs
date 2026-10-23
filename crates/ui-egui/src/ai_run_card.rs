@@ -223,14 +223,24 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let secs = run.ended.map_or_else(|| now - run.started, |(s, _)| s);
     // After Undo run (Fix Z7): "Undone", the rows dimmed, Select layers off and Redo run in Undo
     // run's place, off when something changed since.
-    let (undone, redo_ok) = figcraft_engine::cmd::chat_run::undone(&app.session);
+    // From the history's position (Fix AA2): ⌘Z of Undo run brings the card back to Done, ⌘⇧Z to
+    // Undone, and any other change turns both buttons off.
+    let st = figcraft_engine::cmd::chat_run::state(&app.session);
+    let (undone, redo_ok, undo_ok) = (st.undone, st.redo_ok, st.undo_ok);
     let heading = match run.ended {
         None => trf("Run · {time}", &[("time", &span(secs))]),
         Some(_) if undone => trf("Undone · {time}", &[("time", &span(secs))]),
         Some((_, "stopped")) => trf("Stopped · {time}", &[("time", &span(secs))]),
         Some(_) => trf("Done · {time}", &[("time", &span(secs))]),
     };
-    let note = tr("Undo is one step");
+    // What is one step now: nothing while it works or when neither button can go.
+    let note = if undone && redo_ok {
+        tr("Redo is one step")
+    } else if !undone && !working && undo_ok {
+        tr("Undo is one step")
+    } else {
+        ""
+    };
     let all = figcraft_engine::cmd::chat_run::rows(&app.session);
     let earlier = all.len().saturating_sub(ROWS);
     let shown: Vec<(String, usize)> = all.into_iter().skip(earlier).collect();
@@ -351,7 +361,12 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let (second_cmd, why) = if undone {
         ("chat.redo-run", (!redo_ok).then(|| tr("Something changed since: Redo is no longer one step")))
     } else {
-        ("chat.undo-run", working.then(|| tr("Stop the run first")))
+        let why = if working {
+            Some(tr("Stop the run first"))
+        } else {
+            (!undo_ok).then(|| tr("Something changed since the run: Undo run is no longer one step"))
+        };
+        ("chat.undo-run", why)
     };
     if card_button(ui, ro, undo, second, why).clicked() {
         asked = Some((second_cmd, json!({})));
@@ -366,13 +381,13 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     seen.theme.insert("card", ro.card);
     seen.card = Some(json!({
         "heading": heading,
-        "note": note,
+        "note": (!note.is_empty()).then_some(note),
         "earlier": earlier,
         "rows": listed,
         "progress": working,
         "state": if working { "working" } else if undone { "undone" } else { run.ended.map_or("working", |(_, how)| if how == "stopped" { "stopped" } else { "done" }) },
         "buttons": [button(tr("Select layers"), sel_why), button(second, why)],
-        "undoEnabled": !working && !undone,
+        "undoEnabled": !working && !undone && undo_ok,
         "refused": refused,
         "stacked": stacked,
         "buttonRects": [rect(select), rect(undo)],

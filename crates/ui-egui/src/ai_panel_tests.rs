@@ -626,7 +626,7 @@ fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
     assert_eq!(p["bubbles"], 1);
     let card = &p["card"];
     assert!(card["heading"].as_str().unwrap().starts_with("Run · "), "{card}");
-    assert_eq!(card["note"], "Undo is one step");
+    assert!(card["note"].is_null(), "no note while it works (Fix AA2): {card}");
     let rows: Vec<(String, String)> = card["rows"]
         .as_array()
         .unwrap()
@@ -654,6 +654,7 @@ fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
     assert!(p["banner"].is_null(), "no banner once it ends");
     let card = &p["card"];
     assert_eq!(card["heading"], "Done · 42 s");
+    assert_eq!(card["note"], "Undo is one step");
     assert_eq!((card["progress"].clone(), card["undoEnabled"].clone()), (json!(false), json!(true)));
     assert!(card["rows"].as_array().unwrap().iter().all(|r| r["state"] == "done"), "no active row: {card}");
     click_named(&mut u, "Select layers");

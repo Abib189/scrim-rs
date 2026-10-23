@@ -189,6 +189,11 @@ fn select_run_layers_selects_what_the_run_touched_that_is_left() {
     assert_eq!(s.execute("chat.select-run-layers", &json!({})).unwrap()["selected"], 3);
 }
 
+/// A run card state: (undone, Undo run one step, Redo run one step).
+fn st(undone: bool, undo_ok: bool, redo_ok: bool) -> super::RunState {
+    super::RunState { undone, undo_ok, redo_ok }
+}
+
 /// Diagnostics' line for a refused run command, as the window notes it.
 fn noted(s: &mut Session, cmd: &str) -> String {
     let e = s.execute(cmd, &json!({})).unwrap_err();
@@ -205,10 +210,10 @@ fn after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters()
     let (mut s, ..) = ran();
     end(&mut s);
     s.execute("chat.undo-run", &json!({})).unwrap();
-    assert_eq!(super::undone(&s), (true, true), "undone, and Redo run is one step");
+    assert_eq!(super::state(&s), st(true, false, true), "undone, and Redo run is one step");
     // Selecting isn't a change to the document.
     s.execute("select.all", &json!({})).unwrap();
-    assert_eq!(super::undone(&s), (true, true), "still one step after a selection");
+    assert_eq!(super::state(&s), st(true, false, true), "still one step after a selection");
     let e = s.execute("chat.undo-run", &json!({})).unwrap_err();
     assert!(matches!(e, crate::EngineError::Disabled(..)), "{e:?}");
     assert!(e.to_string().contains("The run is already undone"), "{e}");
@@ -235,7 +240,7 @@ fn redo_run_restores_the_run_as_one_step_and_undo_run_works_again() {
     assert!(s.doc().unwrap().contains(f));
     assert_eq!(s.undo_depth().0, depth + 1, "one undo step");
     assert_eq!(s.undo_labels(1), ["Redo run"]);
-    assert_eq!(super::undone(&s), (false, false));
+    assert_eq!(super::state(&s), st(false, true, false), "done, Undo run one step again");
     assert_eq!(s.execute("chat.select-run-layers", &json!({})).unwrap()["selected"], 5);
     s.execute("chat.undo-run", &json!({})).unwrap();
     assert_eq!(*s.ds().unwrap().doc, *start);
@@ -252,16 +257,10 @@ fn redo_run_is_refused_once_something_changed_since_the_undo() {
     end(&mut s);
     s.execute("chat.undo-run", &json!({})).unwrap();
     s.execute("shape.ellipse", &json!({"x": 500, "y": 0, "width": 10, "height": 10})).unwrap();
-    assert_eq!(super::undone(&s), (true, false));
+    assert_eq!(super::state(&s), st(true, false, false), "undone, neither button");
     let e = s.execute("chat.redo-run", &json!({})).unwrap_err().to_string();
     assert!(e.contains("Something changed since: Redo is no longer one step"), "{e}");
     assert_eq!(noted(&mut s, "chat.redo-run"), "chat.redo-run: refused (changed since the undo)");
-    // ⌘Z counts as a change too: here it takes back Undo run itself, through the history.
-    let (mut s, ..) = ran();
-    end(&mut s);
-    s.execute("chat.undo-run", &json!({})).unwrap();
-    s.execute("edit.undo", &json!({})).unwrap();
-    assert_eq!(super::undone(&s), (true, false), "after ⌘Z, Redo run isn't one step");
 }
 
 /// Fix Z7: Redo run is the person's alone, like the others, and refused while a run goes.
@@ -276,4 +275,41 @@ fn redo_run_is_the_persons_alone() {
     s.set_author(Author::Person);
     s.agents.chat_running = true;
     assert_eq!(noted(&mut s, "chat.redo-run"), "chat.redo-run: refused (the run is going)");
+}
+
+/// Fix AA2: the card's state is the history's position. ⌘Z of Undo run brings the run back (Done,
+/// Undo run one step); ⌘⇧Z makes it Undone again (Redo run one step); an edit in between turns
+/// both off. Fix Z7 kept "undone" after ⌘Z, with Redo run off.
+#[test]
+fn the_state_follows_undo_and_redo_through_the_history() {
+    let (mut s, ..) = ran();
+    end(&mut s);
+    let after_run = s.ds().unwrap().doc.clone();
+    assert_eq!(super::state(&s), st(false, true, false), "done");
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    assert_eq!(super::state(&s), st(true, false, true), "undone");
+    s.execute("edit.undo", &json!({})).unwrap();
+    assert_eq!(*s.ds().unwrap().doc, *after_run, "⌘Z brings the run back");
+    assert_eq!(super::state(&s), st(false, true, false), "done again, Undo run one step");
+    s.execute("edit.redo", &json!({})).unwrap();
+    assert_eq!(super::state(&s), st(true, false, true), "⌘⇧Z: undone again");
+    // Undo run works from Done-after-⌘Z, and Redo run from Undone-after-⌘⇧Z.
+    s.execute("chat.redo-run", &json!({})).unwrap();
+    assert_eq!(*s.ds().unwrap().doc, *after_run);
+    assert_eq!(super::state(&s), st(false, true, false), "redone: done");
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    assert_eq!(super::state(&s), st(true, false, true));
+    // ⌘Z, then an edit: both off, and the card says Done (the run is there).
+    s.execute("edit.undo", &json!({})).unwrap();
+    s.execute("shape.ellipse", &json!({"x": 500, "y": 0, "width": 10, "height": 10})).unwrap();
+    assert_eq!(super::state(&s), st(false, false, false), "both off after an edit");
+    let e = s.execute("chat.undo-run", &json!({})).unwrap_err().to_string();
+    assert!(e.contains("The document changed after the run began"), "{e}");
+    // A selection isn't a change: the state stays.
+    let (mut s, ..) = ran();
+    end(&mut s);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    s.execute("edit.undo", &json!({})).unwrap();
+    s.execute("select.all", &json!({})).unwrap();
+    assert_eq!(super::state(&s), st(false, true, false));
 }

@@ -278,21 +278,27 @@ fn redo_run_is_off_once_something_changed_since() {
 
 /// Z7: a refused press shows its words on one line under the buttons (secondary, 12 px, wrapped
 /// inside the card), not a toast; Diagnostics says "refused" with the reason; the next action
-/// clears the line.
+/// clears the line. (Since Fix AA2 Undo run is off once something changed, so the refusal here is
+/// Select layers after the person deleted every layer the run made.)
 #[test]
 fn a_refused_press_says_why_under_the_buttons_until_the_next_action() {
     for w in [240.0, 336.0] {
         let (mut u, _) = ended_run(w);
-        u.app.run("shape.ellipse", serde_json::json!({"x": 900, "y": 0, "width": 10, "height": 10}));
+        // The person deletes the run's frame (its text goes with it).
+        let ids: Vec<serde_json::Value> =
+            u.app.session.doc().unwrap().find_by_name("Poster — Welle", None).into_iter().map(|n| serde_json::json!(n.0)).collect();
+        assert_eq!(ids.len(), 1, "{w}");
+        u.app.run("select.set", serde_json::json!({"ids": ids}));
+        u.app.run("edit.delete", serde_json::json!({}));
         u.app.ui.last_error = None;
         u.frame(vec![]);
-        crate::layers_header::tests::click_named(&mut u, "Undo run");
+        crate::layers_header::tests::click_named(&mut u, "Select layers");
         let p = panel(&u);
         let words = p["card"]["refused"].as_str().unwrap_or_else(|| panic!("{w}: a line: {p}"));
-        assert!(words.starts_with("The document changed after the run began"), "{w}: {words}");
+        assert_eq!(words, "None of the layers the run touched are left", "{w}");
         assert!(u.app.ui.last_error.is_none(), "{w}: no toast");
         let last = u.app.session.prefs.settings.diagnostics.last().unwrap().detail.clone();
-        assert_eq!(last, "chat.undo-run: refused (changed since the run)", "{w}");
+        assert_eq!(last, "chat.select-run-layers: refused (no layers left)", "{w}");
         assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "{w}: wrapped, no sideways scroll");
         let nodes = tree(&mut u);
         let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
@@ -302,5 +308,46 @@ fn a_refused_press_says_why_under_the_buttons_until_the_next_action() {
         u.app.run("select.all", serde_json::json!({}));
         u.frame(vec![]);
         assert!(panel(&u)["card"]["refused"].is_null(), "{w}: gone on the next action");
+    }
+}
+
+fn card_view(u: &Ui) -> (String, Value, Vec<(String, bool, String)>) {
+    let c = panel(u)["card"].clone();
+    (c["heading"].as_str().unwrap_or_default().to_string(), c["note"].clone(), buttons(u))
+}
+
+/// Fix AA2, both themes: Undo run, then ⌘Z: the card is Done again with Undo run live and "Undo
+/// is one step"; ⌘⇧Z: Undone with Redo run live and "Redo is one step"; ⌘Z and an edit: both off
+/// and no note. Fix Z kept the card Undone after ⌘Z, with Redo run off.
+#[test]
+fn the_card_follows_cmd_z_and_cmd_shift_z() {
+    for dark in [false, true] {
+        let (mut u, _) = ended_run(336.0);
+        u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+        u.frame(vec![]);
+        crate::layers_header::tests::click_named(&mut u, "Undo run");
+        let (h, note, b) = card_view(&u);
+        assert_eq!((h.as_str(), note.as_str()), ("Undone · 42 s", Some("Redo is one step")), "{dark}");
+        assert_eq!((b[1].0.as_str(), b[1].1), ("Redo run", true), "{dark}");
+        u.app.run("edit.undo", serde_json::json!({}));
+        u.frame(vec![]);
+        let (h, note, b) = card_view(&u);
+        assert_eq!((h.as_str(), note.as_str()), ("Done · 42 s", Some("Undo is one step")), "{dark}: ⌘Z brings it back");
+        assert_eq!(b, [("Select layers".to_string(), true, "Select layers".to_string()), ("Undo run".into(), true, "Undo run".into())], "{dark}");
+        assert!(panel(&u)["card"]["rows"].as_array().unwrap().iter().all(|r| r["state"] == "done"), "{dark}");
+        u.app.run("edit.redo", serde_json::json!({}));
+        u.frame(vec![]);
+        let (h, note, b) = card_view(&u);
+        assert_eq!((h.as_str(), note.as_str()), ("Undone · 42 s", Some("Redo is one step")), "{dark}: ⌘⇧Z");
+        assert_eq!((b[1].0.as_str(), b[1].1), ("Redo run", true), "{dark}");
+        // ⌘Z, then an edit in between: both off, no note.
+        u.app.run("edit.undo", serde_json::json!({}));
+        u.app.run("shape.ellipse", serde_json::json!({"x": 900, "y": 0, "width": 10, "height": 10}));
+        u.frame(vec![]);
+        let (h, note, b) = card_view(&u);
+        assert_eq!(h, "Done · 42 s", "{dark}");
+        assert!(note.is_null(), "{dark}: no note when neither can go");
+        assert!(!b[1].1 && b[1].0 == "Undo run", "{dark}: Undo run off: {b:?}");
+        assert_eq!(b[1].2, "Something changed since the run: Undo run is no longer one step");
     }
 }
