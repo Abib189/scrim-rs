@@ -7,7 +7,7 @@
 Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 211, 257, 321 and 351 of the design file the person gave. The panel is flexible, 240 to 480 px wide; the design's 336 px is an example. Every colour is a role from the theme (`ai_panel_theme.rs`, `ai-panel-theme.md`), so the person's accent applies.
 
 - **The header** (`ai_panel.rs`), 48 high, its rule `t.border`:
-  - **The title:** the conversation's title (a new chat reads "New chat") in SemiBold 14, 16 from the left, with a 9 × 5 chevron 6 after it, which opens the conversations' popover.
+  - **The title:** the conversation's title (a new chat reads "New chat") in SemiBold 14, 16 from the left, with a 9 × 5 chevron 6 after it, which opens the conversations' popover. A title too long for the room is cut with "…" and the chevron follows what shows (Fix Z3); the whole title is the tooltip and in the accessible name ("Conversation: {title}").
   - **Two buttons,** 28 × 28, radius 8, 8 apart, 16 from the right, on `t.pressed`:
     - **Follow agents** (the crosshair, `camera.follow-agents`): on is the accent on its tint; off is `t.icon`; paused while an agent works shows the amber dot (Fix N). The tooltip has following's status.
     - **New chat** (+, `chat.new`): disabled while a run goes (Fix U3).
@@ -51,7 +51,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
 **`ui.inspect` › `agent.aiPanel`** reports what was drawn:
-- **the header:** the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
+- **the header:** the title as drawn (`titleShown`), its tooltip, its rectangle and the chevron's (Fix Z3); the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
 - **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
 - **the composer:** its controls, rectangle, status line, hint line, missing-CLI line and status;
 - **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
@@ -122,6 +122,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **What it draws:** **bold**, *italic* (or _italic_), `inline code` (monospace on `t.field`), "- " and "* " bullets and "1." numbered lists with a hanging indent, paragraphs (lines in one paragraph join with a space; a blank line starts the next), `#` to `######` headings as SemiBold at the body's size (13 px, no bigger type in a narrow panel), links as their text in `t.accent_text`, and fenced code in a `t.field` box, monospace and wrapped.
     - **What it never does:** a link opens nothing and its address isn't shown; raw HTML is text; a marker without its pair (`2 ** 3`) stays as written; nothing scrolls sideways (a long word or line of code is broken to fit).
     - **Only the agent's replies:** your own message, notes and failures are plain text, so what you typed is shown as you typed it.
+25. **The title's accessible name keeps its "Conversation: " prefix** (Fix Z3): the brief asks for the whole title as the accessible name; a screen reader also needs to know the button opens the conversations, so the name is "Conversation: {whole title}". The tooltip is the whole title alone (it was "Conversations").
 
 ## Tests
 
@@ -178,3 +179,4 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 
 - `ai_markdown_tests.rs` (Z2): asterisks and bullets, an unmatched `**` (and raw HTML) left as written, code fences (closed and not), bold inside a bullet with a heading and a link, empty input and very long lines.
 - `ai_reply_tests.rs` (Z2): a reply's blocks in `ui.inspect` with no marker left as text, while your message and a note keep theirs; at 240, 320 and 400 px in both themes, with Spanish text, an 80-character word and a long line of code, every block stays 16 inside the panel and nothing scrolls sideways. It fails with the reply drawn as one plain label, and the width check fails when a code block isn't wrapped.
+- `ai_panel_z_tests.rs` › `a_long_title_is_cut_with_an_ellipsis_and_the_chevron_follows_it` (Z3): a 48-character title at 240, 320 and 400 px in both themes is cut with "…" (a prefix of the title), the chevron 6 after the text and clear of Follow, the buttons 8 apart and 16 from the right, the accessible name and the hovered tooltip the whole title. It fails with the old header (the title clipped without "…", the tooltip "Conversations").

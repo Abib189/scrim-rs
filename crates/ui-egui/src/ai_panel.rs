@@ -35,6 +35,10 @@ const BUTTON_GAP: f32 = 8.0;
 #[derive(Clone, Debug, Default)]
 pub struct Seen {
     pub title: String,
+    /// The title as drawn (cut with "…" when it doesn't fit), its rectangle and the chevron's (Fix Z3).
+    pub title_shown: String,
+    pub title_rect: Option<Rect>,
+    pub chevron_rect: Option<Rect>,
     /// following | paused | off
     pub follow: String,
     pub popover: Option<Value>,
@@ -213,22 +217,28 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
         }
     }
     // The title (SemiBold 14, 16 from the left) and its 9 × 5 chevron 6 after it: the conversations.
-    let galley = ui.painter().layout_no_wrap(title.clone(), semibold(14.0), roles.text);
+    // A title too long for the room is cut with "…" (Fix Z3), the chevron right after what shows;
+    // the whole title is the tooltip and the accessible name.
     let room = (follow.min.x - 12.0 - (row.min.x + PAD) - 6.0 - 9.0).max(24.0);
+    let shown = super::run_card::elide(ui.painter(), &title, semibold(14.0), room);
+    let galley = ui.painter().layout_no_wrap(shown.clone(), semibold(14.0), roles.text);
     let text_w = galley.size().x.min(room);
     let title_r = Rect::from_min_max(
         pos2(row.min.x + PAD - 6.0, row.center().y - 14.0),
         pos2(row.min.x + PAD + text_w + 6.0 + 9.0 + 6.0, row.center().y + 14.0),
     );
-    let tresp = ui.interact(title_r, Id::new("ai_panel_title"), Sense::click()).on_hover_text(tr("Conversations"));
+    let tresp = ui.interact(title_r, Id::new("ai_panel_title"), Sense::click()).on_hover_text(&title);
     let open = app.ui.agent_view.chat.store.open;
     a11y::menu_button(&tresp, &trf("Conversation: {title}", &[("title", &title)]), open);
     if tresp.hovered() || open {
         ui.painter().rect_filled(title_r, CornerRadius::same(6), t.hover);
     }
     let text_r = Rect::from_min_size(pos2(row.min.x + PAD, row.center().y - galley.size().y / 2.0), vec2(text_w, galley.size().y));
-    ui.painter().with_clip_rect(text_r.expand2(vec2(0.0, 2.0))).galley(text_r.min, galley, roles.text);
-    icons::chevron(ui.painter(), pos2(text_r.max.x + 6.0 + 4.5, row.center().y), 9.0, 5.0, 1.5, roles.chevron);
+    ui.painter().galley(text_r.min, galley, roles.text);
+    let chevron = Rect::from_center_size(pos2(text_r.max.x + 6.0 + 4.5, row.center().y), vec2(9.0, 5.0));
+    icons::chevron(ui.painter(), chevron.center(), 9.0, 5.0, 1.5, roles.chevron);
+    seen.title_shown = shown;
+    (seen.title_rect, seen.chevron_rect) = (Some(text_r), Some(chevron));
     if tresp.clicked() {
         app.ui.agent_view.chat.store.open = !open;
     }
@@ -363,6 +373,10 @@ pub fn inspect(app: &FigApp) -> Value {
     json!({
         "header": {
             "title": s.title,
+            "titleShown": s.title_shown,
+            "titleTooltip": s.title,
+            "titleRect": s.title_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
+            "chevronRect": s.chevron_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
             "chevron": true,
             "follow": s.follow,
             "followLabel": tr("Follow agents as they work"),
@@ -395,3 +409,6 @@ pub fn inspect(app: &FigApp) -> Value {
 #[cfg(test)]
 #[path = "ai_panel_tests.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "ai_panel_z_tests.rs"]
+mod z_tests;
