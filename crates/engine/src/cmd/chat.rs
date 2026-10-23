@@ -67,7 +67,8 @@ pub const STOP_FIRST: &str = "Stop the run first";
 /// Refused while the composer's run goes.
 pub(crate) fn not_running(s: &Session, id: &str) -> Result<()> {
     if s.agents.chat_running {
-        return Err(bad(id, STOP_FIRST));
+        // A state, not a malformed call: "not available now" (Fix Z7).
+        return Err(crate::EngineError::Disabled(id.into(), STOP_FIRST.into()));
     }
     Ok(())
 }

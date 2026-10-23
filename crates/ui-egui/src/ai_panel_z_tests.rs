@@ -189,3 +189,118 @@ fn the_icon_chips_keep_their_tooltips() {
         assert!(named >= 2, "{name}: the chip and its tooltip ({named})");
     }
 }
+
+/// A run that made a frame and a text, ended; the window and the document before it.
+fn ended_run(w: f32) -> (Ui, figcraft_doc::Document) {
+    use crate::follow_agent::chat_ui::tests::feed;
+    use crate::follow_agent::tests::agent;
+    use crate::services::{AgentEnd, AgentRunEvent};
+    let (mut u, script) = window();
+    u.app.ui.right_width = w;
+    let before = u.app.session.doc().unwrap().clone();
+    send_allowed(&mut u, "Build a poster called Welle");
+    u.frame(vec![]);
+    let f = agent(&mut u, "frame.create", serde_json::json!({"x": 400, "y": 0, "width": 300, "height": 200, "name": "Poster — Welle"}));
+    agent(&mut u, "text.create", serde_json::json!({"text": "Welle", "x": 10, "y": 120, "parent": f["id"]}));
+    feed(&script, vec![AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }]);
+    u.frame(vec![]);
+    u.frame(vec![]);
+    (u, before)
+}
+
+fn buttons(u: &Ui) -> Vec<(String, bool, String)> {
+    panel(u)["card"]["buttons"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|b| (b["label"].as_str().unwrap().into(), b["enabled"].as_bool().unwrap(), b["tooltip"].as_str().unwrap().into()))
+        .collect()
+}
+
+/// Z7: after Undo run the card says "Undone · 42 s", its rows dimmed; Select layers is off ("Those
+/// layers were removed by Undo"), not focusable, in the `disabled` token; Undo run is Redo run,
+/// which puts the run back as one step. Pressing the off button does nothing and logs nothing.
+#[test]
+fn after_undo_run_the_card_is_undone_and_redo_run_puts_it_back() {
+    for dark in [false, true] {
+        let (mut u, before) = ended_run(336.0);
+        u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+        u.frame(vec![]);
+        let after_run = u.app.session.doc().unwrap().clone();
+        crate::layers_header::tests::click_named(&mut u, "Undo run");
+        assert_eq!(*u.app.session.doc().unwrap(), before, "{dark}: undone");
+        let card = panel(&u)["card"].clone();
+        assert_eq!((card["state"].clone(), card["heading"].clone()), (serde_json::json!("undone"), serde_json::json!("Undone · 42 s")), "{dark}");
+        assert!(card["rows"].as_array().unwrap().iter().all(|r| r["state"] == "undone"), "{dark}: rows dimmed: {card}");
+        assert_eq!(
+            buttons(&u),
+            [("Select layers".to_string(), false, "Those layers were removed by Undo".to_string()), ("Redo run".into(), true, "Redo run".into())],
+            "{dark}"
+        );
+        let t = crate::theme::Tokens::get(&u.ctx);
+        assert_eq!(panel(&u)["theme"]["cardDisabled"], crate::theme::accent::rgb_text(t.disabled), "{dark}: the disabled token");
+        let nodes = tree(&mut u);
+        let sel = nodes.iter().find(|n| n.label() == Some("Select layers")).expect("Select layers");
+        assert!(sel.is_disabled(), "{dark}: Select layers is off for screen readers");
+        assert!(!sel.supports_action(egui::accesskit::Action::Focus), "{dark}: and not focusable");
+        let notes = u.app.session.prefs.settings.diagnostics.len();
+        crate::layers_header::tests::click_named(&mut u, "Select layers");
+        assert!(u.app.session.selection().is_empty() || u.app.session.selection().iter().all(|n| before.contains(*n)), "{dark}: nothing selected");
+        assert_eq!(u.app.session.prefs.settings.diagnostics.len(), notes, "{dark}: an off button runs nothing");
+        // Redo run: the run back, as one step; the card is Done again.
+        crate::layers_header::tests::click_named(&mut u, "Redo run");
+        assert_eq!(*u.app.session.doc().unwrap(), after_run, "{dark}: redone");
+        assert_eq!(panel(&u)["card"]["state"], "done", "{dark}");
+        assert_eq!(buttons(&u)[1], ("Undo run".to_string(), true, "Undo run".to_string()));
+        u.app.run("edit.undo", serde_json::json!({}));
+        assert_eq!(*u.app.session.doc().unwrap(), before, "{dark}: ⌘Z takes the redo back");
+    }
+}
+
+/// Z7: once something changed after Undo run, Redo run is off and says why, in its tooltip.
+#[test]
+fn redo_run_is_off_once_something_changed_since() {
+    let (mut u, _) = ended_run(336.0);
+    crate::layers_header::tests::click_named(&mut u, "Undo run");
+    u.app.run("shape.ellipse", serde_json::json!({"x": 900, "y": 0, "width": 10, "height": 10}));
+    u.frame(vec![]);
+    assert_eq!(buttons(&u)[1], ("Redo run".to_string(), false, "Something changed since: Redo is no longer one step".to_string()));
+    let nodes = tree(&mut u);
+    let b = nodes.iter().find(|n| n.label() == Some("Redo run")).and_then(|n| n.bounds()).expect("Redo run");
+    u.frame(vec![egui::Event::PointerMoved(egui::pos2(5.0, 5.0))]);
+    u.frame(vec![egui::Event::PointerMoved(egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32))]);
+    for _ in 0..60 {
+        u.frame(vec![]);
+    }
+    let tip = "Something changed since: Redo is no longer one step";
+    assert!(tree(&mut u).iter().any(|n| n.value() == Some(tip) || n.label() == Some(tip)), "the tooltip says why");
+}
+
+/// Z7: a refused press shows its words on one line under the buttons (secondary, 12 px, wrapped
+/// inside the card), not a toast; Diagnostics says "refused" with the reason; the next action
+/// clears the line.
+#[test]
+fn a_refused_press_says_why_under_the_buttons_until_the_next_action() {
+    for w in [240.0, 336.0] {
+        let (mut u, _) = ended_run(w);
+        u.app.run("shape.ellipse", serde_json::json!({"x": 900, "y": 0, "width": 10, "height": 10}));
+        u.app.ui.last_error = None;
+        u.frame(vec![]);
+        crate::layers_header::tests::click_named(&mut u, "Undo run");
+        let p = panel(&u);
+        let words = p["card"]["refused"].as_str().unwrap_or_else(|| panic!("{w}: a line: {p}"));
+        assert!(words.starts_with("The document changed after the run began"), "{w}: {words}");
+        assert!(u.app.ui.last_error.is_none(), "{w}: no toast");
+        let last = u.app.session.prefs.settings.diagnostics.last().unwrap().detail.clone();
+        assert_eq!(last, "chat.undo-run: refused (changed since the run)", "{w}");
+        assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "{w}: wrapped, no sideways scroll");
+        let nodes = tree(&mut u);
+        let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+        let card = rect(&p["card"]["rect"]);
+        assert!(card[2] <= pane.x1 - 15.5, "{w}: the card, with its line, 16 inside");
+        // The next action clears it.
+        u.app.run("select.all", serde_json::json!({}));
+        u.frame(vec![]);
+        assert!(panel(&u)["card"]["refused"].is_null(), "{w}: gone on the next action");
+    }
+}

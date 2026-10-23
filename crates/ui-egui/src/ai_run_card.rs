@@ -117,8 +117,29 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
         seen.fade = Some(json!({"rect": [r.min.x, r.min.y, r.max.x, r.max.y], "below": below}));
     }
     for (cmd, params) in actions {
-        app.run(cmd, params);
+        press(app, cmd, &params);
     }
+}
+
+/// The document's revision now (any edit or selection moves it on).
+fn revision(app: &FigApp) -> u64 {
+    app.session.ds().map_or(0, |d| d.revision)
+}
+
+/// A card button's command: run as `app.run` does, but a refusal is the card's line under its
+/// buttons (Fix Z7), not a toast. Diagnostics notes it either way ("chat.undo-run: refused (already
+/// undone)").
+fn press(app: &mut FigApp, cmd: &str, params: &Value) {
+    let r = app.session.execute(cmd, params);
+    app.handle_ui_requests();
+    crate::settings_privacy::noted(app, cmd, r.as_ref().err());
+    app.ui.agent_view.chat.refused = r.err().map(|e| {
+        let words = match e {
+            figcraft_engine::EngineError::Disabled(_, why) => why,
+            other => other.to_string(),
+        };
+        (words, revision(app))
+    });
 }
 
 /// The transcript's fade: `to` at the bottom of `r`, from transparent at its top.
@@ -195,8 +216,12 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let now = ui.ctx().input(|i| i.time);
     let working = app.ui.agent_view.chat.running.is_some() && run.ended.is_none();
     let secs = run.ended.map_or_else(|| now - run.started, |(s, _)| s);
+    // After Undo run (Fix Z7): "Undone", the rows dimmed, Select layers off and Redo run in Undo
+    // run's place, off when something changed since.
+    let (undone, redo_ok) = figcraft_engine::cmd::chat_run::undone(&app.session);
     let heading = match run.ended {
         None => trf("Run · {time}", &[("time", &span(secs))]),
+        Some(_) if undone => trf("Undone · {time}", &[("time", &span(secs))]),
         Some((_, "stopped")) => trf("Stopped · {time}", &[("time", &span(secs))]),
         Some(_) => trf("Done · {time}", &[("time", &span(secs))]),
     };
@@ -216,11 +241,24 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     let side = (inner - 8.0) / 2.0;
     let measure = ui.painter().clone();
     let label_w = |l: &str| measure.layout_no_wrap(l.to_string(), regular(13.0), ro.text).size().x;
-    let widest = label_w(tr("Select layers")).max(label_w(tr("Undo run")));
+    let second = if undone { tr("Redo run") } else { tr("Undo run") };
+    let widest = label_w(tr("Select layers")).max(label_w(second));
     // (The panel's own width: inside the transcript a scroll bar's room is taken off.)
     let stacked = app.ui.right_width < STACK_BELOW || widest + 2.0 * LABEL_PAD > side;
     let buttons_h = if stacked { 34.0 + 8.0 + 34.0 } else { 34.0 };
-    let height = 16.0 + 18.0 + 12.0 + rows_h + bar_h + 4.0 + buttons_h + 16.0;
+    // A refused button's words, 8 under the buttons, wrapped, until the next action (Fix Z7).
+    let rev = revision(app);
+    let refused = app.ui.agent_view.chat.refused.as_ref().filter(|(_, at)| *at == rev).map(|(w, _)| w.clone());
+    let refused_galley = refused.as_ref().map(|w| {
+        let mut job = egui::text::LayoutJob::single_section(
+            w.clone(),
+            egui::TextFormat { font_id: regular(12.0), color: ro.text_secondary, line_height: Some(12.0 * 1.4), ..Default::default() },
+        );
+        job.wrap.max_width = inner;
+        ui.painter().layout_job(job)
+    });
+    let refused_h = refused_galley.as_ref().map_or(0.0, |g| 8.0 + g.size().y);
+    let height = 16.0 + 18.0 + 12.0 + rows_h + bar_h + 4.0 + buttons_h + refused_h + 16.0;
     let (row, _) = ui.allocate_exact_size(vec2(ui.available_width(), height), Sense::hover());
     let r = Rect::from_min_size(pos2(row.min.x + 16.0, row.min.y), vec2(width, height));
     ui.painter().rect_filled(r, CornerRadius::same(12), ro.card);
@@ -239,7 +277,10 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     for (i, (label, n)) in shown.iter().enumerate() {
         let c = pos2(x + 8.0, y + ROW / 2.0);
         let active = working && i + 1 == shown.len();
-        if active {
+        if undone {
+            // Undone: an empty ring, the words dimmed.
+            p.circle_stroke(c, 7.0, Stroke::new(1.5, ro.text_secondary));
+        } else if active {
             p.circle_stroke(c, 7.0, Stroke::new(2.0, ro.mark));
             p.circle_filled(c, 3.0, ro.mark);
             seen.theme.insert("activeRing", ro.mark);
@@ -254,8 +295,15 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         let font = if active { semibold(13.0) } else { regular(13.0) };
         // Shortened with "…" to the row's width (Fix Z1: names can be long).
         let shown = elide(&p, &text, font.clone(), inner - 26.0);
-        p.text(pos2(x + 26.0, c.y), Align2::LEFT_CENTER, &shown, font, ro.text);
-        listed.push(json!({"label": text, "shown": shown, "state": if active { "active" } else { "done" }}));
+        p.text(pos2(x + 26.0, c.y), Align2::LEFT_CENTER, &shown, font, if undone { ro.text_secondary } else { ro.text });
+        let state = if undone {
+            "undone"
+        } else if active {
+            "active"
+        } else {
+            "done"
+        };
+        listed.push(json!({"label": text, "shown": shown, "state": state}));
         y += ROW;
     }
     if working {
@@ -283,16 +331,29 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     };
     let label_rect = |r: Rect, l: &str| Rect::from_center_size(r.center(), vec2(label_w(l), 13.0));
     let rect = |r: Rect| json!([r.min.x, r.min.y, r.max.x, r.max.y]);
-    let (sel_label, undo_label) = (label_rect(select, tr("Select layers")), label_rect(undo, tr("Undo run")));
+    let (sel_label, undo_label) = (label_rect(select, tr("Select layers")), label_rect(undo, second));
     let mut asked = None;
-    if card_button(ui, ro, select, tr("Select layers"), None).clicked() {
+    let sel_why = undone.then(|| tr("Those layers were removed by Undo"));
+    if card_button(ui, ro, select, tr("Select layers"), sel_why).clicked() {
         asked = Some(("chat.select-run-layers", json!({})));
     }
-    // Undo run waits for the run to end (the engine refuses it too): the U3 way.
-    let why = working.then(|| tr("Stop the run first"));
-    if card_button(ui, ro, undo, tr("Undo run"), why).clicked() {
-        asked = Some(("chat.undo-run", json!({})));
+    // Undo run waits for the run to end (the engine refuses it too): the U3 way. Redo run is one
+    // step only while nothing changed since the undo.
+    let (second_cmd, why) = if undone {
+        ("chat.redo-run", (!redo_ok).then(|| tr("Something changed since: Redo is no longer one step")))
+    } else {
+        ("chat.undo-run", working.then(|| tr("Stop the run first")))
+    };
+    if card_button(ui, ro, undo, second, why).clicked() {
+        asked = Some((second_cmd, json!({})));
     }
+    if sel_why.is_some() || why.is_some() {
+        seen.theme.insert("cardDisabled", ro.new_chat_disabled);
+    }
+    if let Some(g) = refused_galley {
+        p.galley(pos2(x, undo.max.y + 8.0), g, ro.text_secondary);
+    }
+    let button = |label: &str, why: Option<&str>| json!({"label": label, "enabled": why.is_none(), "tooltip": why.unwrap_or(label)});
     seen.theme.insert("card", ro.card);
     seen.card = Some(json!({
         "heading": heading,
@@ -300,8 +361,10 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
         "earlier": earlier,
         "rows": listed,
         "progress": working,
-        "buttons": [tr("Select layers"), tr("Undo run")],
-        "undoEnabled": !working,
+        "state": if working { "working" } else if undone { "undone" } else { run.ended.map_or("working", |(_, how)| if how == "stopped" { "stopped" } else { "done" }) },
+        "buttons": [button(tr("Select layers"), sel_why), button(second, why)],
+        "undoEnabled": !working && !undone,
+        "refused": refused,
         "stacked": stacked,
         "buttonRects": [rect(select), rect(undo)],
         "labelRects": [rect(sel_label), rect(undo_label)],

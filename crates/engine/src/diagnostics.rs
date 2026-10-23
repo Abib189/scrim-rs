@@ -359,7 +359,11 @@ impl Entry<'_> {
             Entry::Error { command, error } => {
                 // Only a registered command's id: anything else could be text someone typed.
                 let id = if crate::find_command(command).is_some() { *command } else { "a command" };
-                format!("{id}: {}", category(error))
+                // A run button's refusal says why, in fixed words (Fix Z7).
+                match crate::cmd::chat_run::refusal(error) {
+                    Some(why) => format!("{id}: refused ({why})"),
+                    None => format!("{id}: {}", category(error)),
+                }
             }
             Entry::FollowPaused(why) => format!("following paused: {}", why.text()),
             Entry::FollowSetting { from, to, origin } => {

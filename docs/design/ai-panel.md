@@ -36,6 +36,9 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
       - **The rows:** 36 apart, the run's agent edits from the change log (decision 15), the newest 5, with "{n} earlier" above when there are more. A done row is a `t.success` circle with a check that reads on it; while the run works, the newest is active (a 2 px accent ring and dot, its label SemiBold). No pending rows (decision 16).
       - **The bar:** while it works, a 4 px indeterminate bar (a 30 % accent segment moving along the `t.border_strong` track; still with reduced motion), gone when the run ends. No percentage (decision 16).
       - **Two buttons:** 34 high, radius 10, 8 apart, 16 below the bar or the rows. Select layers runs `chat.select-run-layers`; Undo run runs `chat.undo-run`, held while the run goes (decision 17).
+        - **After Undo run** (Fix Z7, decision 26): the heading reads "Undone · 42 s" and the rows are dimmed (`t.text_secondary`, an empty ring). Select layers is off ("Those layers were removed by Undo"); Undo run becomes Redo run (`chat.redo-run`), off once something changed since ("Something changed since: Redo is no longer one step").
+        - **An off button** is drawn in the `disabled` token, can't be focused or pressed, and says why in its tooltip.
+        - **A refused press** shows its words on one line under the buttons (`t.text_secondary`, 12 px, wrapped), gone on the next action; no toast.
         - **From a 300 px panel** they sit side by side, equal.
         - **Below 300 px** they stack, each the full width (Fix Y2). They also stack wherever a label wouldn't keep 12 px from its button's edges in half the width, as a longer language's might.
 - **The status line**, always 10 above the composer: a 6 px dot at 20 and Inter 12 at 32. "Following is on" with a `t.success` dot, or "Following is off" with a secondary one. The grace hint's line and the missing-CLI line stay above it.
@@ -54,7 +57,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 
 **`ui.inspect` › `agent.aiPanel`** reports what was drawn:
 - **the header:** the title as drawn (`titleShown`), its tooltip, its rectangle and the chevron's (Fix Z3); the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
-- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2), the bottom fade's rectangle while it shows (Fix Z4) and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
+- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles, the replies (each block's kind, its text as shown and its rectangle, Fix Z2), the bottom fade's rectangle while it shows (Fix Z4) and the card (heading, note, its state, rows with their state, bar, buttons, whether Undo run can be used, rectangle; since Fix Z7 each button's label, whether it can be used and its tooltip, and the refusal line);
 - **the composer:** its controls (since Fix Z6, `selectionChip` and `imageChip`, each with its icon, name and rectangle; `compactChips` is gone), rectangle, status line, hint line, missing-CLI line and status;
 - **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
 
@@ -114,6 +117,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - when the person edited the document since the run began, or an agent did after it ended (those would be undone too);
     - in another document, and in a file shared live.
     It is noted in Diagnostics ("Claude Code run undone: 7 edits"). `chat.select-run-layers` selects the layers the run touched that are left.
+    Since Fix Z7 each refusal is "not available now" in fixed words, never "invalid parameters" (decision 26).
 18. **The empty state's core is the accent's mark (`t.accent`), not its fill:** the mark is the colour derived to read at 4.5:1 on the panel; the fill is for things with a label on them.
 19. **Follow off is no longer dimmed** (Fix X1 overrules V3's look): the crosshair is `t.icon` on the rest fill, and the status line and tooltip say "Following is off".
 20. **The Follow icon on its tint is the accent moved until it reads** (`readable_mark`, Fix X5): the default orange came out at 4.499:1 on its own tint in light; the hue is kept.
@@ -125,6 +129,12 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **What it never does:** a link opens nothing and its address isn't shown; raw HTML is text; a marker without its pair (`2 ** 3`) stays as written; nothing scrolls sideways (a long word or line of code is broken to fit).
     - **Only the agent's replies:** your own message, notes and failures are plain text, so what you typed is shown as you typed it.
 25. **The title's accessible name keeps its "Conversation: " prefix** (Fix Z3): the brief asks for the whole title as the accessible name; a screen reader also needs to know the button opens the conversations, so the name is "Conversation: {whole title}". The tooltip is the whole title alone (it was "Conversations").
+26. **After Undo run, the card's buttons say what they can do** (Fix Z7). In the real run, presses after Undo run were logged as "invalid parameters". **The cause:** Undo run is itself an edit after the run began, so a second Undo run hit "the document changed after the run began" before "already undone", and Select layers found none of the layers. Both were refused with `bad()`, which Diagnostics calls "invalid parameters"; and the card kept both buttons live.
+    - **Refusals** of `chat.undo-run`, `chat.redo-run` and `chat.select-run-layers` (and "Stop the run first", for New chat too) are "not available now" with fixed words (`chat_run::REFUSALS`). Diagnostics says "chat.undo-run: refused (already undone)". "Invalid parameters" is left to malformed calls.
+    - **Undo run on an undone run** says "The run is already undone", checked first.
+    - **Redo run** (`chat.redo-run`) puts the run back as the undo found it, one undo step ("Redo run"), while the change log has nothing after the undo but the undo itself. Any other edit, ⌘Z and ⌘⇧Z included, makes it "Something changed since". A selection doesn't. After a redo, Undo run works again: the run's own undo and redo aren't changes since the run began.
+    - **The refusal line goes on the next action:** when the document's revision moves (any edit or selection) or another card button is pressed. Typing in the composer doesn't clear it.
+    - **⌘Z after Undo run** brings the run back through the history, but the card stays "Undone" with Redo run off. The card knows the run from the change log, not by comparing documents every frame.
 
 ## Tests
 
@@ -185,3 +195,12 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - `ai_panel_z_tests.rs` › `the_transcript_fades_at_the_bottom_only_with_more_below` (Z4): light and dark, no fade for a short transcript nor at the bottom of a 60-line one; scrolled up with the wheel, a 12 px fade inside the panel, into the panel's own colour (`theme.fade`).
 - `ai_panel_z_tests.rs` › `selection_and_image_are_round_icon_chips_at_every_width` (Z6): at 240, 280, 336 and 400 px, light and dark, with the image chip and without, Selection (and the image) are 32 × 32, named where they're drawn, 8 apart after the agent chip, clear of Send and inside the panel, and no "Selection" word is drawn. It fails with the text chips. `the_icon_chips_keep_their_tooltips`: hovered, each shows its name.
 - `ai_panel_theme_tests.rs` (Z6): the chips' icon reads at 3:1 on the chip and on its hovered fill, in both themes with every accent.
+- `chat_run_tests.rs` (Z7, engine):
+  - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
+  - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;
+  - `redo_run_is_refused_once_something_changed_since_the_undo` (an edit, and ⌘Z);
+  - `redo_run_is_the_persons_alone` (and refused while a run goes).
+- `ai_panel_z_tests.rs` (Z7):
+  - `after_undo_run_the_card_is_undone_and_redo_run_puts_it_back`, both themes: the heading, the dimmed rows, Select layers off (disabled for screen readers, not focusable, the `disabled` token, a press runs nothing), Redo run restoring the run as one step;
+  - `redo_run_is_off_once_something_changed_since`, with its tooltip;
+  - `a_refused_press_says_why_under_the_buttons_until_the_next_action`, at 240 and 336 px: the line, no toast, Diagnostics' words, gone after the next action.

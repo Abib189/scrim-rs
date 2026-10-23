@@ -89,6 +89,9 @@ pub struct LastRun {
 /// The composer's state in a window.
 #[derive(Default)]
 pub struct State {
+    /// A run card button's refusal, in its words, and the document revision it was refused at: the
+    /// line under the buttons until the next action (Fix Z7).
+    pub refused: Option<(String, u64)>,
     /// The last run (Fix X4), kept after it ends until the next.
     pub last_run: Option<LastRun>,
     pub lines: Vec<Line>,
@@ -319,6 +322,7 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
             app.session.agents.chat_running = true;
             // Its card (Fix X4): the window keeps the record the run's commands read.
             app.session.agents.chat_run = Some(figcraft_engine::cmd::chat_run::RunRecord {
+                undone: None,
                 uid,
                 start_doc: start_doc.clone(),
                 start_rev: rev,

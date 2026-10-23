@@ -19,7 +19,7 @@ fn ran() -> (Session, figcraft_doc::NodeId, std::sync::Arc<figcraft_doc::Documen
     s.execute("shape.rectangle", &json!({"x": 0, "y": 0, "width": 10, "height": 10})).unwrap();
     let (uid, start_doc) = (s.ds().unwrap().uid, s.ds().unwrap().doc.clone());
     let start_rev = s.agents.last_edit(uid).unwrap_or(0);
-    s.agents.chat_run = Some(RunRecord { uid, start_doc: start_doc.clone(), start_rev, end_rev: None, agent: "Claude Code".into() });
+    s.agents.chat_run = Some(RunRecord { uid, start_doc: start_doc.clone(), start_rev, end_rev: None, agent: "Claude Code".into(), undone: None });
     s.agents.chat_running = true;
     s.set_author(Author::agent("mcp (http)"));
     let f = id(&s.execute("frame.create", &json!({"x": 100, "y": 0, "width": 300, "height": 200, "name": "Poster"})).unwrap());
@@ -56,7 +56,7 @@ fn the_rows_say_what_each_command_did_by_name() {
 fn run_of(steps: &[(&str, Value)]) -> Session {
     let mut s = Session::new();
     let (uid, start_doc) = (s.ds().unwrap().uid, s.ds().unwrap().doc.clone());
-    s.agents.chat_run = Some(RunRecord { uid, start_doc, start_rev: 0, end_rev: None, agent: "Claude Code".into() });
+    s.agents.chat_run = Some(RunRecord { uid, start_doc, start_rev: 0, end_rev: None, agent: "Claude Code".into(), undone: None });
     s.set_author(Author::agent("mcp (http)"));
     for (cmd, p) in steps {
         s.execute(cmd, p).unwrap_or_else(|e| panic!("{cmd}: {e}"));
@@ -170,7 +170,7 @@ fn undo_run_is_refused_after_the_person_edited_since() {
     end(&mut s);
     s.execute("shape.ellipse", &json!({"x": 500, "y": 0, "width": 10, "height": 10})).unwrap();
     let e = s.execute("chat.undo-run", &json!({})).unwrap_err().to_string();
-    assert!(e.contains("the document changed after the run began"), "{e}");
+    assert!(e.contains("The document changed after the run began"), "{e}");
     // Without a run: says so.
     let mut fresh = Session::new();
     assert!(fresh.execute("chat.undo-run", &json!({})).unwrap_err().to_string().contains("no run"));
@@ -187,4 +187,93 @@ fn select_run_layers_selects_what_the_run_touched_that_is_left() {
     let kids: Vec<_> = s.doc().unwrap().node(f).unwrap().children.clone();
     s.execute("edit.delete", &json!({"ids": kids.iter().take(2).map(|k| k.0).collect::<Vec<_>>()})).unwrap();
     assert_eq!(s.execute("chat.select-run-layers", &json!({})).unwrap()["selected"], 3);
+}
+
+/// Diagnostics' line for a refused run command, as the window notes it.
+fn noted(s: &mut Session, cmd: &str) -> String {
+    let e = s.execute(cmd, &json!({})).unwrap_err();
+    crate::settings::diagnostics::record(&mut s.prefs.settings, 1, crate::settings::diagnostics::Entry::Error { command: cmd, error: &e });
+    s.prefs.settings.diagnostics.last().map(|d| d.detail.clone()).unwrap_or_default()
+}
+
+/// Fix Z7, the real run's "invalid parameters": after Undo run, pressing the card's buttons again
+/// was refused as malformed calls. The undo is itself an edit since the run began, so a second
+/// Undo run hit "the document changed" (a BadParams), and Select layers found none of the layers.
+/// Now each refusal is "not available now" in fixed words, and Diagnostics says which.
+#[test]
+fn after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters() {
+    let (mut s, ..) = ran();
+    end(&mut s);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    assert_eq!(super::undone(&s), (true, true), "undone, and Redo run is one step");
+    // Selecting isn't a change to the document.
+    s.execute("select.all", &json!({})).unwrap();
+    assert_eq!(super::undone(&s), (true, true), "still one step after a selection");
+    let e = s.execute("chat.undo-run", &json!({})).unwrap_err();
+    assert!(matches!(e, crate::EngineError::Disabled(..)), "{e:?}");
+    assert!(e.to_string().contains("The run is already undone"), "{e}");
+    assert_eq!(noted(&mut s, "chat.undo-run"), "chat.undo-run: refused (already undone)");
+    assert_eq!(noted(&mut s, "chat.select-run-layers"), "chat.select-run-layers: refused (removed by Undo)");
+    let all: Vec<String> = s.prefs.settings.diagnostics.iter().map(|d| d.detail.clone()).collect();
+    assert!(all.iter().all(|d| !d.contains("invalid parameters")), "{all:?}");
+    // A malformed call is still "invalid parameters".
+    let bad = s.execute("command.batch", &json!({"commands": 3})).unwrap_err();
+    assert_eq!(crate::settings::diagnostics::category(&bad), "invalid parameters");
+}
+
+/// Fix Z7: Redo run puts the run back as one step when nothing changed since Undo run; Undo run
+/// works again after it (the run's own undo and redo don't count as changes since).
+#[test]
+fn redo_run_restores_the_run_as_one_step_and_undo_run_works_again() {
+    let (mut s, f, start) = ran();
+    end(&mut s);
+    let after_run = s.ds().unwrap().doc.clone();
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    let depth = s.undo_depth().0;
+    assert_eq!(s.execute("chat.redo-run", &json!({})).unwrap(), json!({"redone": true}));
+    assert_eq!(*s.ds().unwrap().doc, *after_run, "the run's document, exactly");
+    assert!(s.doc().unwrap().contains(f));
+    assert_eq!(s.undo_depth().0, depth + 1, "one undo step");
+    assert_eq!(s.undo_labels(1), ["Redo run"]);
+    assert_eq!(super::undone(&s), (false, false));
+    assert_eq!(s.execute("chat.select-run-layers", &json!({})).unwrap()["selected"], 5);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    assert_eq!(*s.ds().unwrap().doc, *start);
+    // Redo while not undone: refused in words.
+    s.execute("chat.redo-run", &json!({})).unwrap();
+    assert_eq!(noted(&mut s, "chat.redo-run"), "chat.redo-run: refused (not undone)");
+}
+
+/// Fix Z7: after Undo run, any other edit makes Redo run no longer one step: refused, and the card
+/// is told (`undone` says it can't).
+#[test]
+fn redo_run_is_refused_once_something_changed_since_the_undo() {
+    let (mut s, ..) = ran();
+    end(&mut s);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    s.execute("shape.ellipse", &json!({"x": 500, "y": 0, "width": 10, "height": 10})).unwrap();
+    assert_eq!(super::undone(&s), (true, false));
+    let e = s.execute("chat.redo-run", &json!({})).unwrap_err().to_string();
+    assert!(e.contains("Something changed since: Redo is no longer one step"), "{e}");
+    assert_eq!(noted(&mut s, "chat.redo-run"), "chat.redo-run: refused (changed since the undo)");
+    // ⌘Z counts as a change too: here it takes back Undo run itself, through the history.
+    let (mut s, ..) = ran();
+    end(&mut s);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    s.execute("edit.undo", &json!({})).unwrap();
+    assert_eq!(super::undone(&s), (true, false), "after ⌘Z, Redo run isn't one step");
+}
+
+/// Fix Z7: Redo run is the person's alone, like the others, and refused while a run goes.
+#[test]
+fn redo_run_is_the_persons_alone() {
+    let (mut s, ..) = ran();
+    end(&mut s);
+    s.execute("chat.undo-run", &json!({})).unwrap();
+    s.set_author(Author::agent("mcp (http)"));
+    let e = s.execute("chat.redo-run", &json!({})).unwrap_err().to_string();
+    assert!(e.contains("Describe a change is the person's"), "{e}");
+    s.set_author(Author::Person);
+    s.agents.chat_running = true;
+    assert_eq!(noted(&mut s, "chat.redo-run"), "chat.redo-run: refused (the run is going)");
 }
