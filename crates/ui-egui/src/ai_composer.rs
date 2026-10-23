@@ -31,7 +31,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     if app.ui.agent_view.grace_hint.showing {
         seen["hintLine"] = json!(true);
         ui.horizontal_wrapped(|ui| {
-            ui.label(RichText::new(tr("The indicator ended before the agent's next step.")).font(regular(10.5)).color(t.warning));
+            ui.label(RichText::new(tr("The indicator ended before the agent's next step.")).font(regular(10.5)).color(t.text_secondary));
             let link = ui.link(RichText::new(tr("Open the setting")).font(regular(10.5)));
             crate::a11y::link(&link, tr("Open the setting"));
             if link.clicked() {

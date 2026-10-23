@@ -21,6 +21,8 @@ use crate::{FigApp, a11y};
 pub(crate) mod icons;
 #[path = "ai_panel.rs"]
 pub(crate) mod panel;
+#[path = "ai_panel_theme.rs"]
+pub(crate) mod panel_theme;
 
 /// How many of the newest changes the feed lists.
 const FEED: usize = 30;

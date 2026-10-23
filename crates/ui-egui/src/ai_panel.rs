@@ -72,6 +72,7 @@ pub(crate) fn icon_button_tip(
     draw: impl FnOnce(&egui::Painter, Rect, egui::Color32),
 ) -> egui::Response {
     let t = Tokens::get(ui.ctx());
+    let roles = super::panel_theme::roles(&t);
     let (r, resp) = ui.allocate_exact_size(vec2(BUTTON, BUTTON), Sense::click());
     let resp = resp.on_hover_text(tip);
     match on {
@@ -79,15 +80,17 @@ pub(crate) fn icon_button_tip(
         None => a11y::button(&resp, label),
     }
     let _ = id;
-    if on == Some(true) {
-        ui.painter().rect_filled(r, CornerRadius::same(5), t.selected_row);
-    } else if resp.hovered() {
-        ui.painter().rect_filled(r, CornerRadius::same(5), t.hover);
-    }
+    // At rest the pressed fill; a toggle that's on, the accent's tint (Fix X1).
+    let fill = match (on == Some(true), resp.hovered()) {
+        (true, _) => roles.follow_on_fill,
+        (false, true) => t.selected_row,
+        (false, false) => roles.button_fill,
+    };
+    ui.painter().rect_filled(r, CornerRadius::same(5), fill);
     if resp.has_focus() {
         ui.painter().rect_stroke(r, CornerRadius::same(5), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
     }
-    let color = if on == Some(true) { t.accent } else { t.icon };
+    let color = if on == Some(true) { roles.follow_on_icon } else { roles.follow_off_icon };
     draw(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), color);
     resp
 }
@@ -156,16 +159,17 @@ fn header(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32, seen: &mut Seen) {
     let off = state == "off";
     let tip = if off { tr("Following is off. Click to follow agents as they work") } else { label };
     (seen.follow_off, seen.follow_tip) = (off, tip.to_string());
-    let fresp = icon_button_tip(&mut b, "follow", label, tip, Some(state == "following" && !paused), |p, r, c| {
-        icons::paint(p, r, AiIcon::Crosshair, if off { t.disabled } else { c })
-    });
+    // Off: the crosshair in the icon colour on the button's rest fill (Fix X1); the status line says
+    // "Following is off".
+    let fresp =
+        icon_button_tip(&mut b, "follow", label, tip, Some(state == "following" && !paused), |p, r, c| icons::paint(p, r, AiIcon::Crosshair, c));
     seen.follow_rect = Some(fresp.rect);
     let fresp = match crate::follow_agent::status(app) {
         Some(s) => fresp.on_hover_text(s),
         None => fresp,
     };
     if paused {
-        ui.painter().circle_filled(follow.right_top() + vec2(-5.0, 5.0), 3.5, t.warning);
+        ui.painter().circle_filled(follow.right_top() + vec2(-5.0, 5.0), 3.5, super::panel_theme::roles(t).paused_dot);
     }
     if fresp.clicked() {
         let on = paused || state != "following";
@@ -287,7 +291,7 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect) {
     let h = (below.height() - 40.0).max(120.0);
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
     let c = pos2(r.center().x, r.center().y - 30.0);
-    ui.painter().circle_filled(c, 20.0, t.field);
+    ui.painter().circle_filled(c, 20.0, super::panel_theme::roles(t).empty_disc);
     crate::icons::paint(ui.painter(), Rect::from_center_size(c, vec2(18.0, 18.0)), Icon::Comment, t.icon);
     let text_r = Rect::from_min_max(pos2(r.min.x + PAD, c.y + 30.0), pos2(r.max.x - PAD, r.max.y));
     ui.scope_builder(egui::UiBuilder::new().max_rect(text_r).layout(egui::Layout::top_down(egui::Align::Center)), |ui| {
@@ -331,7 +335,6 @@ pub fn inspect(app: &FigApp) -> Value {
             "followLabel": tr("Follow agents as they work"),
             "followRect": s.follow_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
             "followSetting": if s.follow_off { "OFF" } else { "ON" },
-            "followDimmed": s.follow_off,
             "followTooltip": s.follow_tip,
             "newChat": tr("New chat"),
             "newChatEnabled": s.new_chat_enabled,

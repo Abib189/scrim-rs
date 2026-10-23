@@ -455,8 +455,9 @@ fn the_follow_button_and_the_settings_toggle_always_agree_and_survive_a_restart(
     assert_eq!(toggle(&mut again).0, Some(false), "the toggle after a restart");
 }
 
-/// Fix V3: off is plain to see in the header (the crosshair in the `disabled` token, the tooltip
-/// "Following is off. Click to follow agents as they work", `ui.inspect`'s `followSetting`), and the
+/// Fix V3, restyled by Fix X1: off reads plainly (the crosshair in the icon colour on the rest fill,
+/// no accent; the tooltip "Following is off. Click to follow agents as they work"; `ui.inspect`'s
+/// `followSetting`; X2's status line says so too), and the
 /// header button's and Settings toggle's changes are noted with their origin. The reveal's "follow
 /// off" line is unchanged (`reveal_skip_tests.rs`).
 #[test]
@@ -465,7 +466,7 @@ fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin
     let last = |u: &Ui| u.app.session.prefs.settings.diagnostics.last().map(|e| e.detail.clone()).unwrap_or_default();
     let (mut u, _) = window();
     let h = panel(&u)["header"].clone();
-    assert_eq!((h["followSetting"].clone(), h["followDimmed"].clone(), h["followTooltip"].clone()), (json!("ON"), json!(false), json!(NAME)));
+    assert_eq!((h["followSetting"].clone(), h["followTooltip"].clone()), (json!("ON"), json!(NAME)));
     // Off from the header button.
     let nodes = tree(&mut u);
     let b = nodes.iter().find(|n| n.role() == Role::Button && n.label() == Some(NAME)).unwrap().bounds().unwrap();
@@ -474,9 +475,9 @@ fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin
     u.frame(vec![]);
     let h = panel(&u)["header"].clone();
     assert_eq!(h["follow"], "off");
-    assert_eq!((h["followSetting"].clone(), h["followDimmed"].clone()), (json!("OFF"), json!(true)));
+    assert_eq!(h["followSetting"], "OFF");
     assert_eq!(h["followTooltip"], "Following is off. Click to follow agents as they work");
-    // Drawn dimmed: the crosshair's strokes in the disabled token, none in the icon colour.
+    // Drawn off: the crosshair in the icon colour on the rest fill, nothing in the accent (Fix X1).
     let t = crate::theme::Tokens::get(&u.ctx);
     let r = egui::Rect::from_min_max(egui::pos2(b.x0 as f32, b.y0 as f32), egui::pos2(b.x1 as f32, b.y1 as f32));
     let out = u.frame_output(vec![]);
@@ -486,7 +487,7 @@ fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin
             colours.extend(m.vertices.iter().filter(|v| r.shrink(2.0).contains(v.pos) && v.color.a() == 255).map(|v| v.color));
         }
     }
-    assert!(colours.contains(&t.disabled) && !colours.contains(&t.icon), "{colours:?}");
+    assert!(colours.contains(&t.icon) && !colours.contains(&t.accent), "{colours:?}");
     // Its name stays the same for screen readers, not pressed.
     let nodes = tree(&mut u);
     let n = nodes.iter().find(|n| n.role() == Role::Button && n.label() == Some(NAME)).unwrap();
@@ -495,7 +496,7 @@ fn following_off_is_plain_in_the_header_and_each_change_is_noted_with_its_origin
     u.app.run("camera.follow-agents", json!({"on": true, "origin": "settings"}));
     assert_eq!(last(&u), "follow setting: OFF → ON (made by the person's Settings toggle)");
     u.frame(vec![]);
-    assert_eq!(panel(&u)["header"]["followDimmed"], false);
+    assert_eq!(panel(&u)["header"]["followSetting"], "ON");
 }
 
 /// Fix W4: a setting changed in Settings is noted as the person's Settings; the same command from

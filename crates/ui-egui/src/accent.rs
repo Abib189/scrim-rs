@@ -169,3 +169,17 @@ pub fn derive(base: Color32, ramp: &Ramp, dark: bool) -> Result<Accent, Refusal>
     let tint = Color32::from_rgba_unmultiplied(mark.r(), mark.g(), mark.b(), (alpha * 255.0_f64).round() as u8);
     Ok(Accent { mark, fill, on_fill: on_fill(fill), tint })
 }
+
+/// `top` (which may be translucent, like a tint) laid over the opaque `bottom`: the colour seen.
+pub fn over(top: Color32, bottom: Color32) -> Color32 {
+    let a = f32::from(top.a()) / 255.0;
+    let [tr, tg, tb, _] = top.to_srgba_unmultiplied();
+    let mix = |t: u8, b: u8| (f32::from(t) * a + f32::from(b) * (1.0 - a)).round().clamp(0.0, 255.0) as u8;
+    Color32::from_rgb(mix(tr, bottom.r()), mix(tg, bottom.g()), mix(tb, bottom.b()))
+}
+
+/// `#rrggbb` of what is seen (alpha ignored), for `ui.inspect`.
+pub fn rgb_text(c: Color32) -> String {
+    let [r, g, b, _] = c.to_srgba_unmultiplied();
+    format!("#{r:02x}{g:02x}{b:02x}")
+}
