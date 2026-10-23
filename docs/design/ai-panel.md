@@ -2,37 +2,57 @@
 
 **Why:** the AI tab had become a long list: the agents' status, a warning, about sixteen Connect rows, Activity, Design lint and the lock. The composer was squeezed at the bottom. The person wants the AI tab to be a chat, and every connector in Settings. The reference was a screenshot the person supplied.
 
-## The layout, top to bottom
+## The layout, top to bottom (Fix X, 23 Oct 2026)
 
-- **The header** (`ai_panel.rs`):
-  - **The conversation's title with a chevron.** A new chat reads "New chat".
-  - **The Follow agents button,** a crosshair with the tooltip "Follow agents as they work". It runs `camera.follow-agents`.
-    - **On:** accent on a selected fill.
-    - **Paused, while an agent works (Fix N):** an amber dot, and the name "Follow agents as they work: paused, press to resume". Clicking resumes.
-    - **Its tooltip** has a second line, following's status ("Following Codex · Poster").
-    - **Off (Fix V3):** the crosshair is drawn in the `disabled` token, and the tooltip reads "Following is off. Click to follow agents as they work". The accessible name stays "Follow agents as they work", not pressed. A click turns following on and is noted in Settings ▸ Diagnostics as the person's button (`docs/design/follow-setting.md`).
-  - **New chat** (+, `chat.new`).
-    - **While a composer run goes (Fix U3)** it is disabled: drawn in the `disabled` token (the colour of a disabled menu item), with no hover fill, neither clickable nor focusable (Tab skips it), disabled for screen readers, and its tooltip reads "Stop the run first".
-    - **`chat.new` and `chat.clear` refuse with the same words** during a run, from any route. The window keeps the engine told (`agents.chat_running`) when a run starts and ends, and each frame.
+Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 211, 257, 321 and 351 of the design file the person gave. The panel is flexible, 240 to 480 px wide; the design's 336 px is an example. Every colour is a role from the theme (`ai_panel_theme.rs`, `ai-panel-theme.md`), so the person's accent applies.
+
+- **The header** (`ai_panel.rs`), 48 high, its rule `t.border`:
+  - **The title:** the conversation's title (a new chat reads "New chat") in SemiBold 14, 16 from the left, with a 9 × 5 chevron 6 after it, which opens the conversations' popover.
+  - **Two buttons,** 28 × 28, radius 8, 8 apart, 16 from the right, on `t.pressed`:
+    - **Follow agents** (the crosshair, `camera.follow-agents`): on is the accent on its tint; off is `t.icon`; paused while an agent works shows the amber dot (Fix N). The tooltip has following's status.
+    - **New chat** (+, `chat.new`): disabled while a run goes (Fix U3).
   - **No Share button or avatar:** they aren't Scrim features.
+- **The working banner** (`ai_run_card.rs`), only while a composer run goes, directly under the header's rule:
+  - 36 high, `t.field`;
+  - three 6 px dots at 16, 26 and 36 in the working indicator's rhythm (opacity 1, 0.65, 0.35, moving; still with reduced motion);
+  - "{agent} is working" at 52, and the time (m:ss) 16 from the right.
 - **The chevron's popover:**
   - "Search conversations…", matching titles and messages here only, ignoring case.
   - "This document | All documents" (`chat.scope`).
   - The conversations, newest first, the one shown checked (`chat.open`). Under All documents, each also names its document.
-- **The body:** the transcript, scrolling and sticking to its end. When empty, a chat bubble and "Describe what you want to create or change." in the middle.
-- **The composer**, pinned to the bottom (`ai_composer.rs`):
-  - **Above the field, when needed:** the grace hint's line, and the line for a missing CLI.
-  - **The field:** several lines, with the placeholder "Describe a change…".
-  - **A row of controls:**
-    - the selection (`chat.add-selection`);
-    - an image (`chat.attach-image`), only for an agent whose CLI takes one;
-    - the agent (`chat.agent`);
-    - no settings gear since Fix X3: the agent chip's menu ends with "Agent settings…" (Settings ▸ Agents);
-    - Send at the right, which is Stop while a run goes.
-  - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run.
+- **The body:**
+  - **Empty:**
+    - a 64 px `t.pressed` disc with the accent's 32 px core;
+    - 24 below it, "Describe what you want to create or change." (SemiBold 20);
+    - 10 below that, "Your agent edits the canvas while you watch." (13, 140 %, secondary).
+    - The block is centred between the header's rule and the status line, 12 above the middle. No suggestion rows.
+  - **A conversation:**
+    - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
+    - **The agent's replies and notes:** text, 16 from each side.
+    - **The run's card, after the message that started it** (`ai_run_card.rs`):
+      - **The box:** the width less 32, radius 12, 16 inside, `t.field` with a 1 px `t.border_strong` edge.
+      - **The heading:** "Run · 42 s" (then "Done · …" or "Stopped · …") in SemiBold 13, and at its right "Undo is one step".
+      - **The rows:** 36 apart, the run's agent edits from the change log (decision 15), the newest 5, with "{n} earlier" above when there are more. A done row is a `t.success` circle with a check that reads on it; while the run works, the newest is active (a 2 px accent ring and dot, its label SemiBold). No pending rows (decision 16).
+      - **The bar:** while it works, a 4 px indeterminate bar (a 30 % accent segment moving along the `t.border_strong` track; still with reduced motion), gone when the run ends. No percentage (decision 16).
+      - **Two buttons:** 34 high, radius 10, 8 apart, 16 below the bar or the rows. Select layers runs `chat.select-run-layers`; Undo run runs `chat.undo-run`, held while the run goes (decision 17).
+- **The status line**, always 10 above the composer: a 6 px dot at 20 and Inter 12 at 32. "Following is on" with a `t.success` dot, or "Following is off" with a secondary one. The grace hint's line and the missing-CLI line stay above it.
+- **The composer**, pinned to the bottom, 16 from the panel's left, right and bottom, with no rule above it (`ai_composer.rs`, `ai_chips.rs`):
+  - **The box:** radius 16, `t.field`, its edge `theme::field_stroke`; 16 left and right and 14 top and bottom inside; at least 88 high, growing with the text.
+  - **The field:** Inter 14, "Describe a change…".
+  - **A 32 px row under the field,** 8 apart:
+    - the agent chip (a pill with its name and an 8 × 4 chevron, which opens the agent menu: the agents, then "Agent settings…");
+    - the Selection chip (`chat.add-selection`);
+    - an image chip (`chat.attach-image`), only for an agent whose CLI takes one;
+    - Send at the far right: a 36 px `t.accent_fill` circle with an arrow in `t.accent_on`, which is Stop (a 16 × 16 square, radius 3) while a run goes.
+  - **Narrow:** below about 300 px, Selection and the image become round 32 px icon chips, and the agent's name shortens with "…" (decision 14).
+  - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run. Why Send can't go is its tooltip.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
-**`ui.inspect` › `agent.aiPanel`** reports what was drawn: the header (with the Follow button's rectangle, and New chat's state: `newChatEnabled`, `newChatTooltip` and `newChatColor`), the popover, the empty state, read-only, and the composer's controls, hint line, missing-CLI line and status.
+**`ui.inspect` › `agent.aiPanel`** reports what was drawn:
+- **the header:** the Follow button's state, rectangle, tooltip and `followSetting`; New chat's state; the header's rectangle;
+- **the body:** the popover, the empty state and its line, read-only, the banner, the bubbles and the card (heading, note, rows with their state, bar, buttons, whether Undo run can be used, rectangle);
+- **the composer:** its controls, rectangle, status line, hint line, missing-CLI line and status;
+- **`theme`:** the colour drawn for each role (`ai-panel-theme.md`).
 
 ## Where everything else went
 
@@ -76,6 +96,19 @@
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
 13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
 14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Below about 300 px the Selection and image chips become round icon chips, so the agent's name keeps room.
+15. **The card's rows are the run's edits from the engine's change log** (Fix X4, `chat_run::rows`), by the label each command carried. A batch's own wrapper is left out (its steps are logged one by one), and neighbours with the same label are merged with a count ("Rectangle ×20"). Labels are the registry's, so no prompt, path or key reaches them. The run's old "work" lines aren't repeated under its card.
+16. **No pending rows and no percentage:** the agent has no plan to measure, so the card never shows work it doesn't know about. While it works, the newest row is the active one and the bar is indeterminate.
+17. **"Undo is one step" is true:** the history keeps whole documents, so `chat.undo-run` puts back the document as it was when the run began, as one undo step (and one Undo brings the run back). It is refused:
+    - while the run goes ("Stop the run first", U3's words), so the button is held then;
+    - when the person edited the document since the run began, or an agent did after it ended (those would be undone too);
+    - in another document, and in a file shared live.
+    It is noted in Diagnostics ("Claude Code run undone: 7 edits"). `chat.select-run-layers` selects the layers the run touched that are left.
+18. **The empty state's core is the accent's mark (`t.accent`), not its fill:** the mark is the colour derived to read at 4.5:1 on the panel; the fill is for things with a label on them.
+19. **Follow off is no longer dimmed** (Fix X1 overrules V3's look): the crosshair is `t.icon` on the rest fill, and the status line and tooltip say "Following is off".
+20. **The Follow icon on its tint is the accent moved until it reads** (`readable_mark`, Fix X5): the default orange came out at 4.499:1 on its own tint in light; the hue is kept.
+21. **The grace hint's words are secondary text,** no longer `t.warning`: the role table has no warning colour. The paused dot on Follow keeps `t.warning`.
+22. **Nothing is written under the composer any more:** the run's progress is the banner, and why Send can't go is its tooltip.
+23. **The card's time** reads "42 s" under a minute and "1:05" from a minute; the banner always m:ss, as in the design.
 
 ## Tests
 
@@ -108,3 +141,22 @@
 - **The panel and Settings ▸ Agents,** light and dark, at 240 px: `docs/scrim-ports/ai-panel/`. They are offscreen captures, because the screen was locked.
 - **The grace, centring and the reveal in the real app:** `docs/scrim-ports/follow-agent/t6/`.
 - **Settings ▸ Agents' first heading is "Connections"** beneath the page's own "Agents", so the page doesn't read "Agents, Agents".
+
+## Fix X: tests and captures
+
+- `ai_panel_theme_tests.rs`:
+  - the guard against colours written in code;
+  - `readable_on`;
+  - every role reading in both themes with every accent (decision 20);
+  - the accent changing only its own roles.
+- `ai_panel_tests.rs`:
+  - the header, empty state and status line;
+  - the composer and its "Agent settings…" item;
+  - the banner, bubble and card while working and done, with both buttons;
+  - nothing clipped mid-run at 240, 320 and 400 px in both themes.
+- `chat_run_tests.rs` (engine):
+  - the rows;
+  - both commands the person's on every route;
+  - Undo run held during the run, restoring the document exactly as one step, refused after the person's edit, noted without the prompt;
+  - Select layers.
+- **Captures:** `docs/scrim-ports/ai-panel/x/`, offscreen, both themes, three accents, 336 and 240 px, idle and mid-run.

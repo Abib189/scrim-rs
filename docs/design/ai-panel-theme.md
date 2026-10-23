@@ -9,7 +9,7 @@
 | Panel background | `t.panel` |
 | Header rule | `t.border` |
 | Header buttons (Follow, New chat) at rest | fill `t.pressed` |
-| Follow on | fill `t.accent_tint`, icon `t.accent` |
+| Follow on | fill `t.accent_tint`, icon `t.accent` moved until it reads at 4.5:1 on that tint over the panel (`readable_mark`, Fix X5) |
 | Follow off | icon `t.icon` |
 | Follow paused while an agent works (Fix N) | the dot `t.warning` |
 | New chat disabled during a run (Fix U3) | `t.disabled` |
@@ -30,6 +30,7 @@
 | The check in a done circle | `readable_on(t.success)`: white or the near-black ink (`accent::INK`), whichever reads at 4.5:1 |
 | A pending step's ring | `t.field_edge` (no pending steps are drawn: Fix X4) |
 | The progress track | `t.border_strong` |
+| A run's failure line | `t.danger` |
 | The status dot while following is off | `t.text_secondary` |
 
 ## The guard
@@ -46,3 +47,29 @@
 - **Follow off:** the crosshair is drawn in `t.icon` on the rest fill. Fix V3 had dimmed it to `t.disabled`; the brief's role table overrules that. Off now shows in the tooltip and in Fix X2's status line, "Following is off". `ui.inspect`'s `followDimmed` is gone; `followSetting` (ON or OFF) stays.
 - **The empty state's disc:** `t.pressed` (it was `t.field`).
 - **The grace hint's line:** `t.text_secondary` (it was `t.warning`). The role table has no warning colour; the paused dot on Follow keeps `t.warning`, as Fix N's look.
+
+## What is drawn, and the tests (Fix X5)
+
+**`ui.inspect` › `agent.aiPanel.theme`** gives the colour actually drawn for each role, `#rrggbb` as seen, recorded where it is painted:
+- **The header:** `followIcon` and `followFill` (the tint as seen over the panel).
+- **Send:** `sendFill` and `sendGlyph`.
+- **The run:** `workingDots`, `activeRing`, `progressFill` and `progressTrack`, `doneCircle` and `doneCheck`, and `banner`, `bubble` and `card`.
+- **The empty state:** `emptyCore` and `emptyDisc`.
+- **The composer:** `statusDot`, `composerFill` and `composerEdge`, `chips`, `chipText` and `chipSecondary`, and `placeholder`.
+
+A live check can assert these without a screenshot.
+
+**`ai_panel_theme_tests.rs`:** in both themes, with every accent preset, `#FFE066` and `#1F3BFF`, from the drawn colours:
+
+| Check | At least |
+|---|---|
+| The accent's marks (dots, active ring, bar, empty core) on the panel and the field | 4.5:1 |
+| Send's glyph on its fill | 4.5:1 |
+| The done check on its circle | 4.5:1 |
+| The Follow icon on its tint over the panel | 4.5:1 |
+| Text, secondary text and the placeholder on their surfaces (panel, bubble, card, banner, chips, composer) | 4.5:1 |
+| The composer's edge on the panel and on its fill; the pending ring on the card | 3:1 |
+
+- **Fixed colours fail it:** each of the 8 roles tried fails the test when made a fixed colour: the marks, Send's glyph, the done check, the Follow icon, the text, the placeholder, the pending ring, the card.
+- **The accent touches only its own roles:** another test checks that changing the accent changes only the Follow tint and icon, the link, Send's fill and glyph, and the marks.
+- **One check needed a fix:** the Follow icon on its own tint came out at 4.499:1 for the default orange in light. `readable_mark` now moves the icon's lightness, the hue kept, until it reads.
