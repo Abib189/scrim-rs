@@ -81,15 +81,15 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
    - **In the AI panel,** it is one dismissible line above the composer while it is pending. Dismissing it, or its link to the setting, ends it.
    - **In Settings ▸ Agents,** its words stay beside the picker for the rest of the run.
    - **Nowhere else.**
-5. **A missing or signed-out CLI:**
-   - **Not installed** is known at once.
-   - **Not signed in** is only known after a run stops before it began. The line then says "{agent} couldn't start: is it signed in?" with the link to Settings ▸ Agents, until a run starts.
+5. **A missing or signed-out CLI** (Fix Y1): one visible line the person can act on, 8 above the status line, in Inter 12 secondary text, with an "Agent settings" link in `t.accent_text` that opens Settings ▸ Agents (`settings.open`, as the agent menu's last item). The link moves to the next row whole rather than breaking.
+   - **Not installed** is known at once: "{agent} isn't installed." (the agent picked, else Claude Code).
+   - **Not signed in** is only known after a run stops before it began: "{agent} couldn't start: is it signed in?", until a run starts or the person dismisses it (× , `chat.dismiss-hint {hint: "agent"}`).
 6. **The selection button writes "Selected: Name (id), …" into the prompt,** where the person sees and can edit it. R5's automatic context line (locked decision 8: the page and the selection) stays.
 7. **The image is data on the agent's profile** (`image_args`):
    - **Codex:** `-i/--image`, read from `codex exec --help` 0.163.0. It goes right after `exec`, so the next flag ends its list and the prompt isn't read as a file.
    - **Claude Code** runs with no built-in tools (`--tools ''`), so it can't open a path: the button is hidden for it.
    - **An image path** goes only to the agent's argument list: never the document, and never Diagnostics.
-8. **The AI panel's own actions are commands,** the person's alone, like R5's. The new commands are `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint` and `chat.grace-setting`. The last is "Open the setting", which was a direct call before. Typing in the search field is window state, not a command.
+8. **The AI panel's own actions are commands,** the person's alone, like R5's. The new commands are `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint` (`{hint?: grace|agent}`, Fix Y1: the grace hint by default, or the line about an agent that couldn't start) and `chat.grace-setting`. The last is "Open the setting", which was a direct call before. Typing in the search field is window state, not a command.
 9. **New chat waits for a run to end:** the run's lines belong to its conversation. Since Fix U3 the + button shows it is disabled and says "Stop the run first", and `chat.new` refuses with those words instead of doing nothing. The old Clear button is gone, and `chat.clear` now means a new chat, refused the same way. The conversation shown is kept.
 10. **Conversations of an unsaved document** are keyed by its window's document number. After a restart that document is a new one, and its old conversations show as another document's.
 11. **The new icons** are drawn in `ai_icons.rs` (the crosshair and, since Fix X2, the chevrons), because `icons.rs` is over the size limit. Since Fix X3, Send's arrow and Stop's square are drawn with the button in `ai_chips.rs`, and the gear is gone (decision 14).
@@ -107,7 +107,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 19. **Follow off is no longer dimmed** (Fix X1 overrules V3's look): the crosshair is `t.icon` on the rest fill, and the status line and tooltip say "Following is off".
 20. **The Follow icon on its tint is the accent moved until it reads** (`readable_mark`, Fix X5): the default orange came out at 4.499:1 on its own tint in light; the hue is kept.
 21. **The grace hint's words are secondary text,** no longer `t.warning`: the role table has no warning colour. The paused dot on Follow keeps `t.warning`.
-22. **Nothing is written under the composer any more:** the run's progress is the banner, and why Send can't go is its tooltip.
+22. **Nothing is written under the composer any more:** the run's progress is the banner, and why Send can't go, when it is only waiting for words or a choice, is its tooltip. What the person must do (install the agent, sign in) is the visible line above the status line (decision 5, Fix Y1).
 23. **The card's time** reads "42 s" under a minute and "1:05" from a minute; the banner always m:ss, as in the design.
 
 ## Tests

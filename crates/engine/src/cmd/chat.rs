@@ -133,6 +133,12 @@ fn panel(s: &mut Session, p: &Value, id: &'static str) -> Result<Value> {
             _ => return Err(bad(id, "`scope` is document or all")),
         },
         "chat.agent" => json!({"agent": agent_id(p, id)?.id}),
+        // Which line (Fix Y1): the grace hint (the default), or the agent that couldn't start.
+        "chat.dismiss-hint" => match p.get("hint").and_then(Value::as_str) {
+            None | Some("grace") => json!({"hint": "grace"}),
+            Some("agent") => json!({"hint": "agent"}),
+            Some(other) => return Err(bad(id, format!("`hint` is grace or agent, not {other}"))),
+        },
         "chat.attach-image" => json!({"path": p.get("path").and_then(Value::as_str)}),
         _ => json!({}),
     };
@@ -282,7 +288,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "chat.dismiss-hint",
             "Dismiss the indicator hint",
-            "{} → {ok}  (hides the AI panel's grace hint line for this run; the person's alone)",
+            "{hint?: grace|agent (default grace)} → {ok}  (hides the AI panel's grace hint line for this run, or the line about an agent that couldn't start; the person's alone)",
             false,
             |s, p| panel(s, p, "chat.dismiss-hint")
         ),

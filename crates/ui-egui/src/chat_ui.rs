@@ -221,6 +221,8 @@ fn panel_request(app: &mut FigApp, kind: &str, data: &Value) {
             }),
         },
         "chat.agent" => app.ui.agent_view.chat.agent = s("agent"),
+        // The grace hint, or the line about an agent that couldn't start (Fix Y1).
+        "chat.dismiss-hint" if data.get("hint").and_then(Value::as_str) == Some("agent") => app.ui.agent_view.chat.not_ready = None,
         "chat.dismiss-hint" => app.ui.agent_view.grace_hint.showing = false,
         "chat.grace-setting" => crate::follow_agent::grace_hint::open_setting(app),
         _ => {}

@@ -684,3 +684,98 @@ fn mid_run_nothing_is_clipped_or_scrolls_sideways_at_240_320_and_400() {
         }
     }
 }
+
+/// The panel after a run that stopped before it began (as when the CLI isn't signed in).
+fn failed_start() -> (Ui, Shared) {
+    use crate::follow_agent::chat_ui::tests::{feed, send_allowed};
+    use crate::services::{AgentEnd, AgentRunEvent};
+    let (mut u, script) = window();
+    send_allowed(&mut u, "Make a blue poster");
+    feed(&script, vec![AgentRunEvent::Ended { end: AgentEnd::Exited(Some(1)), stderr: vec!["Not logged in".into()], secs: 0.4 }]);
+    u.frame(vec![]);
+    u.frame(vec![]);
+    (u, script)
+}
+
+/// The labelled and valued text the AI pane gives screen readers.
+fn spoken(u: &mut Ui) -> Vec<String> {
+    tree(u).into_iter().flat_map(|n| [n.label().map(str::to_string), n.value().map(str::to_string)]).flatten().collect()
+}
+
+/// Fix Y1: a run that stopped before it began leaves one line the person can act on, "Claude Code
+/// couldn't start: is it signed in?", with the Agent settings link and a dismiss; it's in
+/// `ui.inspect` and spoken; the link opens Settings ▸ Agents; dismissing removes it; and it goes once
+/// a run starts.
+#[test]
+fn a_failed_start_says_what_to_do_until_dismissed_or_a_run_starts() {
+    const LINE: &str = "Claude Code couldn't start: is it signed in?";
+    let (mut u, _) = failed_start();
+    let c = panel(&u)["composer"].clone();
+    assert_eq!(
+        (c["missingCli"].clone(), c["missingLink"].clone(), c["missingDismissible"].clone()),
+        (json!(LINE), json!("Agent settings"), json!(true))
+    );
+    assert!(spoken(&mut u).iter().any(|s| s == LINE), "spoken");
+    click_named(&mut u, "Agent settings");
+    u.app.handle_ui_requests();
+    assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai", "the link opens Settings ▸ Agents");
+    u.app.ui.preferences = false;
+    u.frame(vec![]);
+    click_named(&mut u, "Dismiss");
+    u.frame(vec![]);
+    assert!(panel(&u)["composer"]["missingCli"].is_null(), "dismissed");
+    assert!(!spoken(&mut u).iter().any(|s| s == LINE));
+    // Shown again after another failed start; gone once a run starts.
+    let (mut u, _) = failed_start();
+    assert_eq!(panel(&u)["composer"]["missingCli"], LINE);
+    crate::follow_agent::chat_ui::tests::send_allowed(&mut u, "Try again");
+    u.frame(vec![]);
+    assert!(u.app.ui.agent_view.chat.running.is_some());
+    assert!(panel(&u)["composer"]["missingCli"].is_null(), "gone once a run starts");
+}
+
+/// Fix Y1: with the agent's CLI not installed, the line says so and links to Agent settings.
+#[test]
+fn a_missing_cli_says_so_with_the_agent_settings_link() {
+    let (mut u, script) = window();
+    script.lock().unwrap().claude = None;
+    u.app.ui.agent_view.chat = Default::default();
+    u.frame(vec![]);
+    let c = panel(&u)["composer"].clone();
+    assert_eq!(
+        (c["missingCli"].clone(), c["missingLink"].clone(), c["missingDismissible"].clone()),
+        (json!("Claude Code isn't installed."), json!("Agent settings"), json!(false))
+    );
+    assert!(spoken(&mut u).iter().any(|s| s == "Claude Code isn't installed."), "spoken");
+}
+
+/// Fix Y1: the lines wrap inside the panel at 240, 320 and 400 px in both themes.
+#[test]
+fn the_lines_never_clip_at_240_320_and_400() {
+    for dark in [false, true] {
+        for w in [240.0, 320.0, 400.0] {
+            for missing in [false, true] {
+                let (mut u, script) = failed_start();
+                if missing {
+                    script.lock().unwrap().claude = None;
+                    u.app.ui.agent_view.chat = Default::default();
+                }
+                u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+                u.app.ui.right_width = w;
+                u.frame(vec![]);
+                u.frame(vec![]);
+                // The line of Fix Y1, with its link.
+                assert_eq!(panel(&u)["composer"]["missingLink"], "Agent settings", "{dark} {w} {missing}");
+                let nodes = tree(&mut u);
+                let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
+                for n in nodes
+                    .iter()
+                    .filter(|n| matches!(n.role(), Role::Link | Role::Label) && n.bounds().is_some_and(|b| b.x0 >= pane.x0 && b.y0 >= pane.y0))
+                {
+                    let b = n.bounds().unwrap();
+                    assert!(b.x1 <= pane.x1 + 0.5, "{dark} {w} {missing}: {:?} {:?} past the panel {pane:?}", n.label().or(n.value()), b);
+                }
+            }
+        }
+    }
+}

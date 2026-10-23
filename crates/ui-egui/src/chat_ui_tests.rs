@@ -172,16 +172,16 @@ fn send_says_why_it_cant_go() {
 
 #[test]
 fn with_no_agent_installed_it_says_so_with_a_link_to_settings_agents() {
-    // Fix T4: one line and a link to Settings ▸ Agents, instead of the old list of docs buttons.
+    // Fix T4, then Y1: one line, "{agent} isn't installed.", and the Agent settings link.
     let (mut u, script) = window();
     script.lock().unwrap().claude = None;
     u.app.ui.agent_view.chat = Default::default();
     let n = names(&mut u);
-    assert!(n.iter().any(|(_, l)| l == "Settings ▸ Agents"), "{n:?}");
+    assert!(n.iter().any(|(_, l)| l == "Agent settings"), "{n:?}");
     assert!(!n.iter().any(|(_, l)| l.ends_with(" docs")), "no docs buttons: {n:?}");
     let line = crate::follow_agent::inspect(&u.app)["aiPanel"]["composer"]["missingCli"].clone();
-    assert_eq!(line, "No agent found on this computer: install Claude Code or Codex and sign in.");
-    crate::layers_header::tests::click_named(&mut u, "Settings ▸ Agents");
+    assert_eq!(line, "Claude Code isn't installed.");
+    crate::layers_header::tests::click_named(&mut u, "Agent settings");
     u.app.handle_ui_requests();
     assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai", "the link opens Settings ▸ Agents");
 }

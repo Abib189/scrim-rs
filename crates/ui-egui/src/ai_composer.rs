@@ -46,27 +46,45 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     }
     let found = installed(app, now);
     let current = picked(app, now);
-    // The agent's CLI isn't here, or couldn't start: one line to Settings ▸ Agents.
-    let missing = if found.is_empty() {
-        Some(tr("No agent found on this computer: install Claude Code or Codex and sign in.").to_string())
+    // What the person must do (Fix Y1): the agent's CLI isn't installed, or a run stopped before it
+    // began (not signed in, likely). One line, 8 above the status line, with a link to Settings ▸
+    // Agents; the second can be dismissed. Why Send can't go otherwise stays its tooltip.
+    let roles = crate::panel_view::ai_tab::panel_theme::roles(&t);
+    let (missing, dismissible) = if found.is_empty() {
+        let want = app.ui.agent_view.chat.agent.clone().unwrap_or_else(|| figcraft_engine::cmd::chat::DEFAULT_AGENT.to_string());
+        let name = headless::profile(&want).map_or_else(|| want.clone(), |p| p.name.clone());
+        (Some(trf("{agent} isn't installed.", &[("agent", &name)])), false)
     } else {
         let not_ready = app.ui.agent_view.chat.not_ready.clone();
-        current
+        let text = current
             .as_ref()
             .filter(|(p, _)| not_ready.as_deref() == Some(p.id.as_str()))
-            .map(|(p, _)| trf("{agent} couldn't start: is it signed in?", &[("agent", &p.name)]))
+            .map(|(p, _)| trf("{agent} couldn't start: is it signed in?", &[("agent", &p.name)]));
+        (text, true)
     };
     if let Some(text) = &missing {
         seen["missingCli"] = json!(text);
+        seen["missingLink"] = json!(tr("Agent settings"));
+        seen["missingDismissible"] = json!(dismissible);
         ui.horizontal_wrapped(|ui| {
-            ui.label(RichText::new(text).font(regular(10.5)).color(t.text_secondary));
-            let link = ui.link(RichText::new(tr("Settings ▸ Agents")).font(regular(10.5)));
-            crate::a11y::link(&link, tr("Settings ▸ Agents"));
+            ui.spacing_mut().item_spacing.x = 6.0;
+            ui.label(RichText::new(text).font(regular(12.0)).color(roles.text_secondary));
+            // The link stays whole: it moves to the next row rather than breaking across two.
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+            let link = ui.link(RichText::new(tr("Agent settings")).font(regular(12.0)).color(roles.link));
+            crate::a11y::link(&link, tr("Agent settings"));
             if link.clicked() {
-                app.run("settings.open", json!({"section": "ai"}));
+                app.run("settings.open", json!({"section": "agents"}));
+            }
+            if dismissible {
+                let x = ui.small_button(RichText::new("×").font(regular(12.0)).color(roles.text_secondary)).on_hover_text(tr("Dismiss"));
+                crate::a11y::button(&x, tr("Dismiss"));
+                if x.clicked() {
+                    app.run("chat.dismiss-hint", json!({"hint": "agent"}));
+                }
             }
         });
-        ui.add_space(4.0);
+        ui.add_space(8.0);
     }
     status_line(app, ui, &t, &mut seen);
     let read_only = super::store::read_only(app);
@@ -80,7 +98,6 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     } else {
         (false, ui.input(|i| i.key_pressed(egui::Key::Escape)))
     };
-    let roles = crate::panel_view::ai_tab::panel_theme::roles(&t);
     let blocked = send_blocked(app, now);
     let (mut send, mut stop) = (false, false);
     let has_selection = app.session.ds().is_ok_and(|d| !d.selection.is_empty());
