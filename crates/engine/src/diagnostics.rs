@@ -94,6 +94,9 @@ pub enum Entry<'a> {
     /// (`finished`, `stopped`, `timed out`, `failed`), its exit code and how long it took. Never the
     /// prompt or what the agent said.
     ChatRun { agent: &'a str, ended: Option<(&'a str, Option<i32>, u64)> },
+    /// The person undid a composer run as a whole (Fix X4): the agent and how many edits. Never
+    /// the prompt.
+    ChatUndone { agent: &'a str, edits: usize },
 }
 
 /// A working-state transition (Fix M0).
@@ -332,7 +335,7 @@ impl Entry<'_> {
             Entry::SettingRefused { .. } | Entry::SettingChanged { .. } => "setting",
             Entry::Reveal { .. } | Entry::RevealWaited { .. } => "reveal",
             Entry::Working { .. } | Entry::GraceTooShort { .. } => "working",
-            Entry::ChatRun { .. } => "chat",
+            Entry::ChatRun { .. } | Entry::ChatUndone { .. } => "chat",
         }
     }
 
@@ -382,6 +385,10 @@ impl Entry<'_> {
             }
             Entry::RevealWaited { layers, ms } => {
                 format!("agent layers: {layers} waited {ms} ms for the camera, then entered while it was still on its way")
+            }
+            Entry::ChatUndone { agent, edits } => {
+                let agent = crate::cmd::agent_clients::headless::profiles().iter().find(|p| p.name == *agent).map_or("an agent", |p| p.name.as_str());
+                format!("{agent} run undone: {edits} edits")
             }
             Entry::ChatRun { agent, ended } => {
                 // A headless profile's name; anything else reads "an agent".

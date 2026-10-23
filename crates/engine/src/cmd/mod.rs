@@ -9,6 +9,7 @@ pub mod appearance;
 pub mod arrange;
 pub mod camera;
 pub mod chat;
+pub mod chat_run;
 pub mod claude_desktop;
 pub mod code;
 pub mod comment;
@@ -109,6 +110,7 @@ fn registry() -> &'static Registry {
         list.extend(agent_clients::specs());
         list.extend(agent_work::specs());
         list.extend(chat::specs());
+        list.extend(chat_run::specs());
         list.extend(diagnostics::specs());
         list.extend(layers::specs());
         list.extend(camera::specs());

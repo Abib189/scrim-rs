@@ -119,7 +119,8 @@ fn every_chat_command_is_registered_and_classified_write() {
     for cmd in PERSON_ONLY {
         let c = crate::find_command(cmd).unwrap_or_else(|| panic!("{cmd} registered"));
         assert_eq!(access_of(c), Some(Access::Write), "{cmd}");
-        assert!(!c.history, "{cmd} makes no undo step");
+        // Undo run is the one undo step (Fix X4): it puts the document back as a whole.
+        assert_eq!(c.history, cmd == "chat.undo-run", "{cmd}: an undo step only for Undo run");
     }
 }
 

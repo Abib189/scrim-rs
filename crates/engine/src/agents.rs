@@ -180,6 +180,9 @@ pub struct Agents {
     pub from_settings: bool,
     /// The settings before the person's setting command now running ([`crate::settings::changes`]).
     pub settings_before: Option<(&'static str, std::collections::BTreeMap<String, serde_json::Value>)>,
+    /// The AI panel's last composer run, as the window recorded it (Fix X4): its card's rows and
+    /// `chat.select-run-layers` / `chat.undo-run` read it. Never saved.
+    pub chat_run: Option<crate::cmd::chat_run::RunRecord>,
     /// The AI panel's composer has an agent run under way (the window keeps this up to date): a
     /// new chat waits until it ends (`chat.new`, Fix U3).
     pub chat_running: bool,

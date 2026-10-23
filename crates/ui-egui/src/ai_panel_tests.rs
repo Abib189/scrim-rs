@@ -600,3 +600,53 @@ fn the_composer_follows_the_design_and_its_menu_opens_agent_settings() {
     u.app.handle_ui_requests();
     assert!(u.app.ui.preferences && u.app.ui.settings_section == "ai", "Settings ▸ Agents");
 }
+
+/// Fix X4: while a run goes, the banner names the agent and the time; your message is a bubble; the
+/// card lists the agent's edits from the change log (done, then the newest active), shows a bar
+/// and says "Undo is one step", with Undo run held until the run ends. When it ends the banner and
+/// bar go, the heading says Done, and the buttons do what they say.
+#[test]
+fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
+    use crate::follow_agent::chat_ui::tests::{feed, send_allowed};
+    use crate::follow_agent::tests::agent;
+    use crate::services::{AgentEnd, AgentRunEvent};
+    let (mut u, script) = window();
+    let before = u.app.session.doc().unwrap().clone();
+    send_allowed(&mut u, "Build a poster called Welle");
+    u.frame(vec![]);
+    let f = agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200, "name": "Poster — Welle"}));
+    let rects: Vec<Value> = (0..3)
+        .map(|k| json!({"command": "shape.rectangle", "params": {"x": 10 + k * 40, "y": 10, "width": 30, "height": 30, "parent": f["id"]}}))
+        .collect();
+    agent(&mut u, "command.batch", json!({"commands": rects}));
+    agent(&mut u, "text.create", json!({"text": "Welle", "x": 10, "y": 120, "parent": f["id"]}));
+    u.frame(vec![]);
+    let p = panel(&u);
+    assert_eq!(p["banner"]["text"], "Claude Code is working", "{p}");
+    assert_eq!(p["bubbles"], 1);
+    let card = &p["card"];
+    assert!(card["heading"].as_str().unwrap().starts_with("Run · "), "{card}");
+    assert_eq!(card["note"], "Undo is one step");
+    assert_eq!(
+        card["rows"],
+        json!([{"label": "Create frame", "state": "done"}, {"label": "Rectangle ×3", "state": "done"}, {"label": "Text", "state": "active"}])
+    );
+    assert_eq!((card["progress"].clone(), card["undoEnabled"].clone()), (json!(true), json!(false)));
+    // Undo run is held while it runs (the engine refuses it too).
+    let e = u.app.session.execute("chat.undo-run", &json!({})).unwrap_err().to_string();
+    assert!(e.contains("Stop the run first"), "{e}");
+    // It ends.
+    feed(&script, vec![AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }]);
+    u.frame(vec![]);
+    u.frame(vec![]);
+    let p = panel(&u);
+    assert!(p["banner"].is_null(), "no banner once it ends");
+    let card = &p["card"];
+    assert_eq!(card["heading"], "Done · 42 s");
+    assert_eq!((card["progress"].clone(), card["undoEnabled"].clone()), (json!(false), json!(true)));
+    assert!(card["rows"].as_array().unwrap().iter().all(|r| r["state"] == "done"), "no active row: {card}");
+    click_named(&mut u, "Select layers");
+    assert_eq!(u.app.session.selection().len(), 5, "the frame, three rectangles and the text");
+    click_named(&mut u, "Undo run");
+    assert_eq!(*u.app.session.doc().unwrap(), before, "the document as it was before the run");
+}

@@ -64,7 +64,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 
 These are classified Write, and refused for agents on every route anyway (MCP, the control channel, the headless CLI, plugins): an agent can't start, stop or set up agent runs (`docs/design/chat-composer.md`). Tool access never makes them an agent's.
 
-- **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`, and the AI panel's (Fix T4): `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint`, `chat.grace-setting`
+- **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`, and the AI panel's (Fix T4): `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint`, `chat.grace-setting`, and the run card's (Fix X4): `chat.select-run-layers`, and `chat.undo-run` (an undo step, so it is classified Write by the registry's own flag and isn't in the lists below)
 - **pref:** `pref.describeChange`, `pref.chatTimeLimit`
 
 Since Fix W3, every command that writes a saved setting is refused to agents on every route (the table above; `settings-access.md`), apart from a short allowlist: `agent.finish-working`, `mcp.set-tool` with `on: false`, and `pref.agentGrace` with the test hooks on. `pref.agentGrace` was refused for agents before that (Fix Q1). So is `camera.follow-agents` (Fix V2): only the person turns following on or off, and Settings ▸ Diagnostics notes an agent's attempt (`docs/design/follow-setting.md`).
@@ -175,13 +175,13 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **view:** `view.get` (Get view)
 - **widget:** `widget.list` (List widgets)
 
-## Write, outside the undo history (295)
+## Write, outside the undo history (296)
 
 - **ai:** `ai.copyConnectCommand`, `ai.selectChange`, `ai.selectFinding`, `ai.undoChange`
 - **app:** `app.actions`, `app.preferences`
 - **branch:** `branch.archive`, `branch.create`, `branch.merge`, `branch.open`, `branch.updateFromMain`
 - **camera:** `camera.focus-layer`, `camera.follow-agents`
-- **chat:** `chat.add-selection`, `chat.agent`, `chat.allow-agent`, `chat.attach-image`, `chat.cancel`, `chat.clear`, `chat.dismiss-hint`, `chat.forget-agents`, `chat.grace-setting`, `chat.new`, `chat.open`, `chat.scope`, `chat.send`
+- **chat:** `chat.add-selection`, `chat.agent`, `chat.allow-agent`, `chat.attach-image`, `chat.cancel`, `chat.clear`, `chat.dismiss-hint`, `chat.forget-agents`, `chat.grace-setting`, `chat.new`, `chat.open`, `chat.scope`, `chat.select-run-layers`, `chat.send`
 - **code:** `code.copy`, `code.copyStandaloneHtml`, `code.setFormat`
 - **codeConnect:** `codeConnect.export`
 - **collab:** `collab.cursor`, `collab.cursorChat`, `collab.files`, `collab.follow`, `collab.forgetFile`, `collab.host`, `collab.join`, `collab.leave`, `collab.manageFile`, `collab.openFile`, `collab.publish`, `collab.recoverFile`, `collab.registerLinks`, `collab.removePerson`, `collab.report`, `collab.serverInfo`, `collab.share`, `collab.spotlight`, `collab.stop`

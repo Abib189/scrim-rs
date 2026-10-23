@@ -34,7 +34,7 @@ pub const DEFAULT_TIME_LIMIT: u32 = 15;
 pub const DEFAULT_AGENT: &str = "claude-code";
 
 /// Every command here: none of them is an agent's to run.
-pub const PERSON_ONLY: [&str; 15] = [
+pub const PERSON_ONLY: [&str; 17] = [
     "chat.send",
     "chat.cancel",
     "chat.clear",
@@ -50,6 +50,8 @@ pub const PERSON_ONLY: [&str; 15] = [
     "chat.agent",
     "chat.dismiss-hint",
     "chat.grace-setting",
+    "chat.select-run-layers",
+    "chat.undo-run",
 ];
 
 /// Whether this process was started by an agent run: `SCRIM_CHAT_CHILD` set and not empty (its
@@ -63,7 +65,7 @@ pub fn started_by_agent_run(value: Option<&std::ffi::OsStr>) -> bool {
 pub const STOP_FIRST: &str = "Stop the run first";
 
 /// Refused while the composer's run goes.
-fn not_running(s: &Session, id: &str) -> Result<()> {
+pub(crate) fn not_running(s: &Session, id: &str) -> Result<()> {
     if s.agents.chat_running {
         return Err(bad(id, STOP_FIRST));
     }
@@ -71,7 +73,7 @@ fn not_running(s: &Session, id: &str) -> Result<()> {
 }
 
 /// Refused when an agent asks, whatever its route.
-fn person_only(s: &Session, id: &str) -> Result<()> {
+pub(crate) fn person_only(s: &Session, id: &str) -> Result<()> {
     if s.agents.author.is_agent() {
         return Err(bad(id, "Describe a change is the person's: agents can't start, stop or set up agent runs"));
     }

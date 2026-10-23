@@ -75,9 +75,22 @@ pub struct Running {
     limit: u64,
 }
 
+/// The last run, for its card in the transcript (Fix X4): the conversation and the line (its
+/// "You") it belongs to, the agent, when it began, and how long it took and how it ended once it has.
+#[derive(Clone, Debug)]
+pub struct LastRun {
+    pub conv: Option<String>,
+    pub line: usize,
+    pub agent: String,
+    pub started: f64,
+    pub ended: Option<(f64, &'static str)>,
+}
+
 /// The composer's state in a window.
 #[derive(Default)]
 pub struct State {
+    /// The last run (Fix X4), kept after it ends until the next.
+    pub last_run: Option<LastRun>,
     pub lines: Vec<Line>,
     /// The conversations, the one shown, and the panel's list (Fix T4).
     pub store: store::Store,
@@ -99,6 +112,13 @@ pub struct State {
     /// The installed agents as last looked up (id, path), and when.
     found: Vec<(String, String)>,
     found_at: Option<f64>,
+}
+
+impl Running {
+    /// How long it has run, at `now` (the window's clock).
+    pub fn elapsed(&self, now: f64) -> f64 {
+        (now - self.started).max(0.0)
+    }
 }
 
 impl std::fmt::Debug for State {
@@ -295,6 +315,22 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
             let started = now(app);
             app.ui.agent_view.chat.not_ready = None;
             app.session.agents.chat_running = true;
+            // Its card (Fix X4): the window keeps the record the run's commands read.
+            app.session.agents.chat_run = Some(figcraft_engine::cmd::chat_run::RunRecord {
+                uid,
+                start_doc: start_doc.clone(),
+                start_rev: rev,
+                end_rev: None,
+                agent: agent.name.clone(),
+            });
+            let c = &mut app.ui.agent_view.chat;
+            c.last_run = Some(LastRun {
+                conv: c.store.current.clone(),
+                line: c.lines.len().saturating_sub(1),
+                agent: agent.name.clone(),
+                started,
+                ended: None,
+            });
             app.ui.agent_view.chat.running =
                 Some(Running { agent, started, handle, outcome: Default::default(), stopping: false, uid, start_doc, rev, limit });
             // Settings ▸ Diagnostics: the agent's name only, never the prompt.
@@ -381,6 +417,11 @@ pub fn elapsed(secs: f64) -> String {
 fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
     let Some(r) = app.ui.agent_view.chat.running.take() else { return };
     app.session.agents.chat_running = false;
+    // The card's record ends here: its edits are those up to now (Fix X4).
+    let last = app.session.agents.last_edit(r.uid);
+    if let Some(rec) = app.session.agents.chat_run.as_mut().filter(|rec| rec.uid == r.uid) {
+        rec.end_rev = Some(last.unwrap_or(rec.start_rev));
+    }
     let name = r.agent.name.clone();
     let o = &r.outcome;
     let token = app.session.prefs.settings.mcp.require_auth.then(|| app.session.prefs.settings.mcp.token.clone());
@@ -438,6 +479,9 @@ fn finish(app: &mut FigApp, end: AgentEnd, stderr: &[String], secs: f64) {
         AgentEnd::Exited(c) => c,
         _ => None,
     };
+    if let Some(run) = app.ui.agent_view.chat.last_run.as_mut() {
+        run.ended = Some((secs.max(0.0), outcome));
+    }
     // How it ended, its exit code and how long it took; never what it said.
     crate::settings_privacy::record(app, Entry::ChatRun { agent: &name, ended: Some((outcome, code, secs.max(0.0).round() as u64)) });
 }

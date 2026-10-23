@@ -46,6 +46,8 @@ pub struct Roles {
     pub status_off_dot: Color32,
     /// Following paused while an agent works (Fix N): the dot on the Follow button.
     pub paused_dot: Color32,
+    /// A run's failure line in the transcript.
+    pub failure: Color32,
 }
 
 /// The roles for theme `t` (its accent included).
@@ -81,6 +83,7 @@ pub fn roles(t: &Tokens) -> Roles {
         progress_track: t.border_strong,
         status_off_dot: t.text_secondary,
         paused_dot: t.warning,
+        failure: t.danger,
     }
 }
 

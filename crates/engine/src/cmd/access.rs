@@ -209,6 +209,7 @@ pub const WRITE: &[&str] = &[
     "chat.new",
     "chat.open",
     "chat.scope",
+    "chat.select-run-layers",
     "chat.send",
     "pref.chatTimeLimit",
     "pref.describeChange",

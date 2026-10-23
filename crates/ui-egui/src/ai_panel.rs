@@ -11,11 +11,11 @@
 //!
 //! What was drawn is kept in [`Seen`] for `ui.inspect` › `agent.aiPanel`.
 
-use egui::{Align2, CornerRadius, Id, Rect, RichText, Sense, Stroke, Ui, pos2, vec2};
+use egui::{Align2, CornerRadius, Id, Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::{Value, json};
 
 use super::icons::{self, AiIcon};
-use crate::follow_agent::chat_ui::{Line, store};
+use crate::follow_agent::chat_ui::store;
 use crate::i18n::{tr, trf};
 use crate::icons::Icon;
 use crate::theme::{Tokens, regular, semibold};
@@ -52,6 +52,12 @@ pub struct Seen {
     pub new_chat_enabled: bool,
     pub new_chat_color: egui::Color32,
     pub lines: usize,
+    /// The working banner, the bubbles, the run's card (Fix X4).
+    pub banner: Option<Value>,
+    pub bubbles: usize,
+    pub card: Option<Value>,
+    /// The colour drawn for each role this frame (Fix X5, `ui.inspect` › `agent.aiPanel.theme`).
+    pub theme: std::collections::BTreeMap<&'static str, egui::Color32>,
     pub composer: Value,
     /// The widest thing drawn and the panel's width, for the layout checks.
     pub widest: f32,
@@ -120,6 +126,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     let w = ui.available_width();
     let mut seen = Seen { width: w, ..Seen::default() };
     header(app, ui, &t, w, &mut seen);
+    super::run_card::banner(app, ui, &mut seen);
     let visible = ui.clip_rect();
     let below = Rect::from_min_max(pos2(visible.min.x, ui.cursor().min.y), visible.max);
     if app.ui.agent_view.chat.store.open {
@@ -136,7 +143,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         seen.empty_state = true;
         empty_state(ui, &t, below);
     } else {
-        transcript(ui, &t, &lines, below.height().max(120.0));
+        super::run_card::transcript(app, ui, &lines, below.height().max(120.0), &mut seen);
     }
     seen.widest = seen.widest.max(ui.min_rect().width());
     seen.composer = std::mem::take(&mut app.ui.agent_view.chat.seen.composer);
@@ -331,31 +338,6 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect) {
     ui.put(body_r, egui::Label::new(body));
 }
 
-fn transcript(ui: &mut Ui, t: &Tokens, lines: &[Line], h: f32) {
-    egui::ScrollArea::vertical().id_salt("ai_transcript").max_height(h).stick_to_bottom(true).auto_shrink([false, true]).show(ui, |ui| {
-        ui.add_space(8.0);
-        for l in lines {
-            let (who, text, color) = match l {
-                Line::You(s) => (Some(tr("You").to_string()), s.as_str(), t.text),
-                Line::Reply { agent, text } => (Some(agent.clone()), text.as_str(), t.text),
-                Line::Work(s) | Line::Note(s) | Line::Cost(s) => (None, s.as_str(), t.text_secondary),
-                Line::Failure(s) => (None, s.as_str(), t.danger),
-            };
-            ui.horizontal(|ui| {
-                ui.add_space(PAD);
-                ui.vertical(|ui| {
-                    ui.set_width(ui.available_width() - PAD);
-                    if let Some(who) = who {
-                        ui.label(RichText::new(who).font(semibold(10.5)).color(t.text_secondary));
-                    }
-                    ui.label(RichText::new(text).font(regular(11.0)).color(color));
-                });
-            });
-            ui.add_space(6.0);
-        }
-    });
-}
-
 /// For `ui.inspect` › `agent.aiPanel`: what the panel drew last frame.
 pub fn inspect(app: &FigApp) -> Value {
     let s = &app.ui.agent_view.chat.seen;
@@ -378,6 +360,9 @@ pub fn inspect(app: &FigApp) -> Value {
         "popover": s.popover,
         "emptyState": s.empty_state.then(|| tr("Describe what you want to create or change.")),
         "emptyLine": s.empty_state.then(|| tr("Your agent edits the canvas while you watch.")),
+        "banner": s.banner,
+        "bubbles": s.bubbles,
+        "card": s.card,
         "readOnly": s.read_only_note,
         "lines": s.lines,
         "composer": s.composer,

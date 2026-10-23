@@ -23,6 +23,8 @@ pub(crate) mod icons;
 pub(crate) mod panel;
 #[path = "ai_panel_theme.rs"]
 pub(crate) mod panel_theme;
+#[path = "ai_run_card.rs"]
+pub(crate) mod run_card;
 
 /// How many of the newest changes the feed lists.
 const FEED: usize = 30;
