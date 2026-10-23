@@ -418,3 +418,57 @@ fn the_rasterizer_draws_the_panels_in_their_colours() {
         assert_eq!(at(899 - 120, 545), t.panel, "{theme}: the right panel");
     }
 }
+
+/// Fix X6's captures of the rebuilt AI panel: light and dark; the default orange, a very pale
+/// (#FFE066) and a very dark (#1F3BFF) accent; at the design's 336 px and at 240 px; idle, and
+/// mid-run (the banner, your message, and the card with three done rows and the active one).
+/// Offscreen (`docs/scrim-ports/ai-panel/x/`).
+#[test]
+#[ignore = "writes screenshots when SCRIM_AI_X_DIR is set"]
+fn ai_panel_x_captures() {
+    use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
+    let Some(dir) = std::env::var_os("SCRIM_AI_X_DIR").map(std::path::PathBuf::from) else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    for dark in [false, true] {
+        let orange = figcraft_engine::cmd::appearance::hex(figcraft_engine::cmd::appearance::DEFAULT_ACCENT);
+        for (accent, hex) in [("orange", orange.as_str()), ("pale", "#ffe066"), ("blue", "#1f3bff")] {
+            for width in [336.0, 240.0] {
+                let theme = if dark { "dark" } else { "light" };
+                let name = |what: &str| format!("x-{theme}-{accent}-{}-{what}", width as u32);
+                let script = std::sync::Arc::new(std::sync::Mutex::new(Script { claude: Some(CLAUDE.into()), ..Default::default() }));
+                let mut o = ridgeline(dark, width);
+                o.app.session.prefs.accent = hex.into();
+                o.app.services = Box::new(Platform(script.clone()));
+                o.app.session.agents.mcp.port = Some(7690);
+                run(&mut o, "panel.tab.ai", json!({}));
+                save(&o, &dir, &name("1-idle"));
+                run(&mut o, "chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
+                o.app.ui.agent_view.chat.confirm = None;
+                run(
+                    &mut o,
+                    "chat.send",
+                    json!({"prompt": "Build a poster called Welle: twenty bars forming a sine wave, five peaks in orange.", "agent": "claude-code"}),
+                );
+                // The agent's edits, over the app's MCP route: a frame, twenty bars, a title and a
+                // footer, then a property change (the active row).
+                let ctx = o.ctx.clone();
+                let mut agent = |cmd: &str, p: serde_json::Value| {
+                    crate::control::handle_route(&mut o.app, &ctx, "mcp (http)", "engine.execute", &json!({"command": cmd, "params": p}))
+                        .unwrap_or_default()
+                };
+                let f = agent("frame.create", json!({"x": 3000, "y": 0, "width": 640, "height": 480, "name": "Poster — Welle"}));
+                let bars: Vec<serde_json::Value> = (0..20)
+                    .map(|k| json!({"command": "shape.rectangle", "params": {"x": 20 + k * 30, "y": 200, "width": 20, "height": 60 + (k % 5) * 30, "parent": f["id"]}}))
+                    .collect();
+                agent("command.batch", json!({"commands": bars}));
+                agent("text.create", json!({"text": "Welle", "x": 20, "y": 20, "parent": f["id"]}));
+                agent("text.create", json!({"text": "Five peaks", "x": 20, "y": 440, "parent": f["id"]}));
+                agent("node.set", json!({"id": f["id"], "props": {"name": "Poster — Welle"}}));
+                o.settle();
+                save(&o, &dir, &name("2-mid-run"));
+                run(&mut o, "chat.cancel", json!({}));
+                o.app.ui.agent_view.chat.running = None;
+            }
+        }
+    }
+}
