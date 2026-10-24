@@ -2058,7 +2058,6 @@ name = "English"
 "New chat" = "New chat"
 "Agent settings" = "Agent settings"
 "{agent} isn't installed." = "{agent} isn't installed."
-"Run · {time}" = "Run · {time}"
 "Done · {time}" = "Done · {time}"
 "Stopped · {time}" = "Stopped · {time}"
 "Undo is one step" = "Undo is one step"
@@ -2066,6 +2065,23 @@ name = "English"
 "Select layers" = "Select layers"
 "Undo run" = "Undo run"
 "Redo run" = "Redo run"
+"Working" = "Working"
+"Steps" = "Steps"
+"Steps, {count}" = "Steps, {count}"
+"Show or hide the run's steps" = "Show or hide the run's steps"
+"Now: {step}" = "Now: {step}"
+"{done} of {all}" = "{done} of {all}"
+"{n} layers so far" = { one = "{n} layer so far", other = "{n} layers so far" }
+"{n} layers changed" = { one = "{n} layer changed", other = "{n} layers changed" }
+"{n} frames" = { one = "{n} frame", other = "{n} frames" }
+"Created {what}" = "Created {what}"
+"Created {frames} and {layers}" = "Created {frames} and {layers}"
+"Edited {n}" = { one = "Edited {n}", other = "Edited {n}" }
+"edited {n}" = { one = "edited {n}", other = "edited {n}" }
+"Deleted {n}" = { one = "Deleted {n}", other = "Deleted {n}" }
+"deleted {n}" = { one = "deleted {n}", other = "deleted {n}" }
+"{parts}." = "{parts}."
+", " = ", "
 "Redo is one step" = "Redo is one step"
 "Something changed since the run: Undo run is no longer one step" = "Something changed since the run: Undo run is no longer one step"
 "Undone · {time}" = "Undone · {time}"

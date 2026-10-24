@@ -105,6 +105,8 @@ pub(crate) fn drawn(dark: bool, accent: &str) -> (std::collections::BTreeMap<Str
     let f = agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200}));
     agent(&mut u, "shape.rectangle", json!({"x": 10, "y": 10, "width": 30, "height": 30, "parent": f["id"]}));
     agent(&mut u, "text.create", json!({"text": "Welle", "parent": f["id"]}));
+    // The steps open, so their rings and checks are drawn (Fix AB2: closed at first).
+    u.app.run("chat.toggle-run-steps", json!({}));
     u.frame(vec![]);
     u.frame(vec![]);
     read(&u);

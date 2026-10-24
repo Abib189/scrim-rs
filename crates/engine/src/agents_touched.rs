@@ -43,6 +43,8 @@ pub struct Touched {
     pub parent: Option<NodeId>,
     /// A frame, section or group: a container a row names on its own.
     pub container: bool,
+    /// A frame (Fix AB2: the card's "Created 2 frames and 36 layers").
+    pub frame: bool,
     /// Right on a page.
     pub top: bool,
 }
@@ -86,6 +88,7 @@ pub fn touched(before: &Document, after: &Document, ids: &[NodeId]) -> Vec<Touch
             touch,
             parent: node.parent,
             container: matches!(node.kind, NodeKind::Frame | NodeKind::Section { .. } | NodeKind::Group),
+            frame: matches!(node.kind, NodeKind::Frame),
             top: on_page(doc, node.parent),
         });
     }

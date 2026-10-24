@@ -142,6 +142,7 @@ fn the_ai_panels_commands_are_the_persons_and_check_their_parameters() {
             "chat.open" => json!({"id": "c1"}),
             "chat.scope" => json!({"scope": "all"}),
             "chat.agent" => json!({"agent": "codex"}),
+            "chat.use-suggestion" => json!({"text": "Tidy spacing"}),
             _ => json!({}),
         };
         assert!(s.execute(id, &p).is_ok(), "{id} for the person");
@@ -150,6 +151,8 @@ fn the_ai_panels_commands_are_the_persons_and_check_their_parameters() {
     assert!(s.execute("chat.open", &json!({})).is_err(), "an id");
     assert!(s.execute("chat.scope", &json!({"scope": "everything"})).is_err());
     assert!(s.execute("chat.agent", &json!({"agent": "gpt"})).is_err());
+    assert!(s.execute("chat.use-suggestion", &json!({})).is_err(), "a suggestion's text");
+    assert!(s.execute("chat.use-suggestion", &json!({"text": "x".repeat(201)})).is_err(), "not too long");
     // An image only for an agent that takes one.
     s.prefs.settings.describe_change = true;
     assert!(s.execute("chat.send", &json!({"prompt": "x", "agent": "claude-code", "image": "/tmp/a.png"})).is_err());

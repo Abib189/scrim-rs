@@ -92,6 +92,9 @@ pub struct State {
     /// A run card button's refusal, in its words, and the document revision it was refused at: the
     /// line under the buttons until the next action (Fix Z7).
     pub refused: Option<(String, u64)>,
+    /// The run card's checklist of steps open (Fix AB2, `chat.toggle-run-steps`): closed for each
+    /// new run, never kept.
+    pub steps_open: bool,
     /// The last run (Fix X4), kept after it ends until the next.
     pub last_run: Option<LastRun>,
     pub lines: Vec<Line>,
@@ -215,6 +218,7 @@ fn panel_request(app: &mut FigApp, kind: &str, data: &Value) {
             }
         }
         "chat.scope" => app.ui.agent_view.chat.store.all = s("scope").as_deref() == Some("all"),
+        "chat.toggle-run-steps" => app.ui.agent_view.chat.steps_open = !app.ui.agent_view.chat.steps_open,
         "chat.add-selection" => add_selection(app),
         "chat.attach-image" => match s("path") {
             // An empty path takes the image away.
@@ -330,6 +334,7 @@ fn start(app: &mut FigApp, agent: &'static Headless, path: String, prompt: Strin
                 agent: agent.name.clone(),
             });
             let c = &mut app.ui.agent_view.chat;
+            c.steps_open = false;
             c.last_run = Some(LastRun {
                 conv: c.store.current.clone(),
                 line: c.lines.len().saturating_sub(1),

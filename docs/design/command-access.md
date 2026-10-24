@@ -64,7 +64,7 @@ Settings ▸ Tool access holds `run_command` and `batch` to the same switches as
 
 These are classified Write, and refused for agents on every route anyway (MCP, the control channel, the headless CLI, plugins): an agent can't start, stop or set up agent runs (`docs/design/chat-composer.md`). Tool access never makes them an agent's.
 
-- **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`, and the AI panel's (Fix T4): `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint`, `chat.grace-setting`, and the run card's (Fix X4): `chat.select-run-layers`, `chat.undo-run` and, since Fix Z7, `chat.redo-run` (undo steps, so they are classified Write by the registry's own flag and aren't in the lists below)
+- **chat:** `chat.send`, `chat.cancel`, `chat.clear`, `chat.allow-agent`, `chat.forget-agents`, and the AI panel's (Fix T4): `chat.new`, `chat.open`, `chat.scope`, `chat.add-selection`, `chat.attach-image`, `chat.agent`, `chat.dismiss-hint`, `chat.grace-setting`, and the run card's (Fix X4): `chat.select-run-layers`, `chat.undo-run` and, since Fix Z7, `chat.redo-run`; and since Fix AB, `chat.toggle-run-steps`, `chat.remove-selection` and `chat.use-suggestion` (the run card's steps, the composer's selection chip, a suggestion into the composer) (undo steps, so they are classified Write by the registry's own flag and aren't in the lists below)
 - **pref:** `pref.describeChange`, `pref.chatTimeLimit`
 
 Since Fix W3, every command that writes a saved setting is refused to agents on every route (the table above; `settings-access.md`), apart from a short allowlist: `agent.finish-working`, `mcp.set-tool` with `on: false`, and `pref.agentGrace` with the test hooks on. `pref.agentGrace` was refused for agents before that (Fix Q1). So is `camera.follow-agents` (Fix V2): only the person turns following on or off, and Settings ▸ Diagnostics notes an agent's attempt (`docs/design/follow-setting.md`).
@@ -175,7 +175,7 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **view:** `view.get` (Get view)
 - **widget:** `widget.list` (List widgets)
 
-## Write, outside the undo history (296)
+## Write, outside the undo history (299)
 
 - **ai:** `ai.copyConnectCommand`, `ai.selectChange`, `ai.selectFinding`, `ai.undoChange`
 - **app:** `app.actions`, `app.preferences`

@@ -23,8 +23,21 @@ pub const CLEAR_REQUEST: &str = "chat.clear";
 /// An agent was confirmed: the send waiting for it goes ahead.
 pub const ALLOWED_REQUEST: &str = "chat.allowed";
 /// The AI panel's requests (Fix T4): each command's own id.
-pub const PANEL_REQUESTS: [&str; 8] =
-    ["chat.new", "chat.open", "chat.scope", "chat.add-selection", "chat.attach-image", "chat.agent", "chat.dismiss-hint", "chat.grace-setting"];
+pub const PANEL_REQUESTS: [&str; 11] = [
+    "chat.new",
+    "chat.open",
+    "chat.scope",
+    "chat.add-selection",
+    "chat.attach-image",
+    "chat.agent",
+    "chat.dismiss-hint",
+    "chat.grace-setting",
+    "chat.toggle-run-steps",
+    "chat.remove-selection",
+    "chat.use-suggestion",
+];
+/// The longest suggestion text `chat.use-suggestion` takes, in characters.
+pub const MAX_SUGGESTION: usize = 200;
 /// The longest prompt, in characters.
 pub const MAX_PROMPT: usize = 20_000;
 /// The time limits Settings offers, in minutes.
@@ -34,7 +47,7 @@ pub const DEFAULT_TIME_LIMIT: u32 = 15;
 pub const DEFAULT_AGENT: &str = "claude-code";
 
 /// Every command here: none of them is an agent's to run.
-pub const PERSON_ONLY: [&str; 17] = [
+pub const PERSON_ONLY: [&str; 20] = [
     "chat.send",
     "chat.cancel",
     "chat.clear",
@@ -52,6 +65,9 @@ pub const PERSON_ONLY: [&str; 17] = [
     "chat.grace-setting",
     "chat.select-run-layers",
     "chat.undo-run",
+    "chat.toggle-run-steps",
+    "chat.remove-selection",
+    "chat.use-suggestion",
 ];
 
 /// Whether this process was started by an agent run: `SCRIM_CHAT_CHILD` set and not empty (its
@@ -141,6 +157,14 @@ fn panel(s: &mut Session, p: &Value, id: &'static str) -> Result<Value> {
             Some(other) => return Err(bad(id, format!("`hint` is grace or agent, not {other}"))),
         },
         "chat.attach-image" => json!({"path": p.get("path").and_then(Value::as_str)}),
+        // Fix AB5: the text goes into the composer; nothing is sent.
+        "chat.use-suggestion" => {
+            let t = p.get("text").and_then(Value::as_str).map(str::trim).filter(|x| !x.is_empty()).ok_or_else(|| bad(id, "`text` is required"))?;
+            if t.chars().count() > MAX_SUGGESTION {
+                return Err(bad(id, format!("`text` is at most {MAX_SUGGESTION} characters")));
+            }
+            json!({"text": t})
+        }
         _ => json!({}),
     };
     s.request_ui(id, data.clone());
@@ -292,6 +316,27 @@ pub fn specs() -> Vec<CommandSpec> {
             "{hint?: grace|agent (default grace)} → {ok}  (hides the AI panel's grace hint line for this run, or the line about an agent that couldn't start; the person's alone)",
             false,
             |s, p| panel(s, p, "chat.dismiss-hint")
+        ),
+        spec!(
+            "chat.toggle-run-steps",
+            "Show or hide the run's steps",
+            "{} → {ok}  (opens or closes the AI panel run card's list of steps; not kept; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.toggle-run-steps")
+        ),
+        spec!(
+            "chat.remove-selection",
+            "Remove the selection from the prompt",
+            "{} → {ok}  (takes the selection chip off the AI panel's composer; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.remove-selection")
+        ),
+        spec!(
+            "chat.use-suggestion",
+            "Use a suggestion",
+            "{text} → {ok}  (puts a suggestion's text in the AI panel's composer and focuses it; never sends; the person's alone)",
+            false,
+            |s, p| panel(s, p, "chat.use-suggestion")
         ),
         spec!(
             "chat.grace-setting",

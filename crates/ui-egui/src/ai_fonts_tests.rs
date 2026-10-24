@@ -32,6 +32,8 @@ fn every_role() -> (Ui, BTreeMap<String, Value>) {
     u.frame(vec![]);
     let f = agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200, "name": "Poster"}));
     agent(&mut u, "text.create", json!({"text": "Welle", "parent": f["id"]}));
+    // The steps open, so the active row is drawn (Fix AB2: closed at first).
+    u.app.run("chat.toggle-run-steps", json!({}));
     u.frame(vec![]);
     all.extend(fonts(&u));
     feed(&script, vec![AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }]);

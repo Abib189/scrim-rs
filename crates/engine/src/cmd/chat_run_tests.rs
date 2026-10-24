@@ -313,3 +313,31 @@ fn the_state_follows_undo_and_redo_through_the_history() {
     s.execute("select.all", &json!({})).unwrap();
     assert_eq!(super::state(&s), st(false, true, false));
 }
+
+/// Fix AB2: the card's counts, by layer, from the run's recorded edits: a frame and its 30 bars
+/// created (frames 1, layers 30), then 4 of them edited (still created), one deleted (created then
+/// deleted: nothing), and a layer that was there before edited and another deleted.
+#[test]
+fn the_counts_net_each_layers_change_over_the_run() {
+    let mut s = Session::new();
+    let old_a = id(&s.execute("shape.rectangle", &json!({"x": 0, "y": 0, "width": 10, "height": 10, "name": "Old A"})).unwrap());
+    let old_b = id(&s.execute("shape.rectangle", &json!({"x": 20, "y": 0, "width": 10, "height": 10, "name": "Old B"})).unwrap());
+    let (uid, start_doc) = (s.ds().unwrap().uid, s.ds().unwrap().doc.clone());
+    let start_rev = s.agents.last_edit(uid).unwrap_or(0);
+    s.agents.chat_run = Some(RunRecord { uid, start_doc, start_rev, end_rev: None, agent: "Claude Code".into(), undone: None });
+    s.set_author(Author::agent("mcp (http)"));
+    let f = id(&s.execute("frame.create", &json!({"x": 100, "y": 0, "width": 600, "height": 200, "name": "Poster"})).unwrap());
+    let bars: Vec<Value> =
+        (0..30).map(|k| json!({"command": "shape.rectangle", "params": {"x": k * 20, "y": 10, "width": 10, "height": 30, "parent": f.0, "name": format!("Bar {k}")}})).collect();
+    let made = s.execute("command.batch", &json!({"commands": bars})).unwrap();
+    let bar = |k: usize| id(&made[k]);
+    for k in 0..4 {
+        s.execute("node.set", &json!({"id": bar(k).0, "props": {"name": format!("Tall bar {k}")}})).unwrap();
+    }
+    s.execute("edit.delete", &json!({"ids": [bar(7).0]})).unwrap();
+    s.execute("node.set", &json!({"id": old_a.0, "props": {"name": "Old A, edited"}})).unwrap();
+    s.execute("edit.delete", &json!({"ids": [old_b.0]})).unwrap();
+    s.set_author(Author::Person);
+    assert_eq!(super::counts(&s), super::RunCounts { frames: 1, layers: 29, edited: 1, deleted: 1 });
+    assert_eq!(super::counts(&s).total(), 32);
+}

@@ -627,8 +627,8 @@ fn the_run_shows_a_banner_a_bubble_and_a_card_with_the_edits() {
     assert_eq!(p["banner"]["text"], "Claude Code is working", "{p}");
     assert_eq!(p["bubbles"], 1);
     let card = &p["card"];
-    assert!(card["heading"].as_str().unwrap().starts_with("Run · "), "{card}");
-    assert!(card["note"].is_null(), "no note while it works (Fix AA2): {card}");
+    assert_eq!(card["heading"], "Working", "{card}");
+    assert!(card["note"].as_str().is_some_and(|n| n.contains(':')), "the time while it works (Fix AB2): {card}");
     let rows: Vec<(String, String)> = card["rows"]
         .as_array()
         .unwrap()
@@ -691,7 +691,8 @@ fn mid_run_nothing_is_clipped_or_scrolls_sideways_at_240_320_and_400() {
             let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
             let card = p["card"]["rect"].as_array().unwrap().iter().map(|x| x.as_f64().unwrap()).collect::<Vec<_>>();
             assert!(card[0] >= pane.x0 + 15.5 && card[2] <= pane.x1 - 15.5, "{dark} {w}: the card 16 inside: {card:?} in {pane:?}");
-            for name in ["Select layers", "Undo run", "Stop", "Follow agents as they work", "New chat"] {
+            // The card's buttons come once the run ends (Fix AB2, the design's A2).
+            for name in ["Stop", "Follow agents as they work", "New chat"] {
                 let b = nodes.iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name} ({dark} {w})"));
                 assert!(b.x0 >= pane.x0 - 0.5 && b.x1 <= pane.x1 + 0.5, "{dark} {w}: {name} inside the panel: {b:?} in {pane:?}");
             }
@@ -795,7 +796,7 @@ fn the_lines_never_clip_at_240_320_and_400() {
 }
 
 /// Fix Y2: the run card's buttons are side by side and equal from a 300 px panel, and stacked, each
-/// the full width, below it; 34 high, 8 apart, never overlapping or clipped, and each label keeps
+/// the full width, below it; 36 high (Fix AB2), 8 apart, never overlapping or clipped, and each label keeps
 /// at least 12 px from its button's edges.
 #[test]
 fn the_card_buttons_stack_below_300_px_and_keep_their_labels_padded() {
@@ -803,12 +804,19 @@ fn the_card_buttons_stack_below_300_px_and_keep_their_labels_padded() {
     use crate::follow_agent::tests::agent;
     for dark in [false, true] {
         for w in [240.0, 280.0, 300.0, 336.0] {
-            let (mut u, _) = window();
+            let (mut u, script) = window();
             u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
             u.app.ui.right_width = w;
             send_allowed(&mut u, "Build a poster");
             u.frame(vec![]);
             agent(&mut u, "frame.create", json!({"x": 400, "y": 0, "width": 300, "height": 200}));
+            // The buttons come once it has ended (Fix AB2).
+            use crate::services::{AgentEnd, AgentRunEvent};
+            crate::follow_agent::chat_ui::tests::feed(
+                &script,
+                vec![AgentRunEvent::Ended { end: AgentEnd::Exited(Some(0)), stderr: vec![], secs: 42.0 }],
+            );
+            u.frame(vec![]);
             u.frame(vec![]);
             let card = panel(&u)["card"].clone();
             let rects = |k: &str| -> Vec<Vec<f64>> {
@@ -820,7 +828,7 @@ fn the_card_buttons_stack_below_300_px_and_keep_their_labels_padded() {
             assert_eq!(stacked, w < 300.0, "{dark} {w}: stacked below 300 px only");
             let (a, b) = (&buttons[0], &buttons[1]);
             for r in [a, b] {
-                assert!((r[3] - r[1] - 34.0).abs() < 0.5, "{dark} {w}: 34 high {r:?}");
+                assert!((r[3] - r[1] - 36.0).abs() < 0.5, "{dark} {w}: 36 high (Fix AB2) {r:?}");
                 assert!(r[0] >= c[0] + 15.5 && r[2] <= c[2] - 15.5, "{dark} {w}: inside the card's padding {r:?} in {c:?}");
             }
             if stacked {

@@ -17,6 +17,8 @@ use crate::theme::{Tokens, regular, semibold};
 use crate::widgets::{self, PAD};
 use crate::{FigApp, a11y};
 
+#[path = "ai_card.rs"]
+pub(crate) mod card;
 #[path = "ai_icons.rs"]
 pub(crate) mod icons;
 #[path = "ai_markdown.rs"]

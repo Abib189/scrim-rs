@@ -30,17 +30,20 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
     - **The bottom fade** (Fix Z4): a 12 px fade from transparent into `t.panel` at the transcript's bottom edge, only while there is more below (scrolled up); none at the bottom or when it all fits. Captured scrolled to the top in Fix AA4 (`docs/scrim-ports/ai-panel/aa/aa4-…`): it reads; unchanged.
     - **The agent's replies and notes:** text, 16 from each side. A reply is drawn from its Markdown (Fix Z2, decision 24); notes, failures and your own message stay plain text.
-    - **The run's card, after the message that started it** (`ai_run_card.rs`):
+    - **The run's card, after the message that started it** (`ai_card.rs`, Fix AB2: a summary, the design's A2 to A5):
       - **The box:** the width less 32, radius 12, 16 inside, `t.field` with a 1 px `t.border_strong` edge.
-      - **The heading:** "Run · 42 s" (then "Done · …" or "Stopped · …") in SemiBold 13, and at its right "Undo is one step".
-      - **The rows:** 36 apart, the run's agent edits from the change log (decision 15), the newest 5, with "{n} earlier" above when there are more. A done row is a `t.success` circle with a check that reads on it; while the run works, the newest is active (a 2 px accent ring and dot, its label SemiBold). No pending rows (decision 16).
-      - **The bar:** while it works, a 4 px indeterminate bar (a 30 % accent segment moving along the `t.border_strong` track; still with reduced motion), gone when the run ends. No percentage (decision 16).
-      - **Two buttons:** 34 high, radius 10, 8 apart, 16 below the bar or the rows. Select layers runs `chat.select-run-layers`; Undo run runs `chat.undo-run`, held while the run goes (decision 17).
-        - **After Undo run** (Fix Z7, decision 26): the heading reads "Undone · 42 s" and the rows are dimmed (`t.text_secondary`, an empty ring). Select layers is off ("Those layers were removed by Undo"); Undo run becomes Redo run (`chat.redo-run`), off once something changed since ("Something changed since: Redo is no longer one step").
+      - **The header row:** the state in SemiBold 13: "Working", "Done · 1:47", "Stopped · …", "Undone · 17:52". At its right, in 12 text-3: the time while it works, "Undo is one step" while Undo run is live, "Redo is one step" while Redo run is, nothing otherwise (decision 28).
+      - **The summary row:** a 10 px dot (the accent's mark while working, `t.success` when done, text-3 when undone or stopped) and SemiBold 14: "18 layers so far" while working, "43 layers changed" after.
+      - **The detail line** (12, text-2, wrapped): "Created 2 frames and 36 layers, edited 4, deleted 1." The parts that are zero are left out, and the line is gone when nothing changed. While working it reads "Now: {the newest step}".
+        - **The counts** (`chat_run::counts`) come from the run's recorded edits, each layer counted once by its net change: one created stays created however it was edited after; created then deleted counts nothing; edited then deleted is deleted. Never from comparing documents.
+      - **The bar:** while it works, 4 px, indeterminate, as before. The card asks for a frame every 0.1 s, the banner's pace (one frame for both); with reduced motion once a second, for its time; ended, none. While an agent works the window draws more anyway: the canvas's working indicator, every frame with motion, and the run's output poll, about 7 a second.
+      - **The Steps row,** between hairlines: "Steps" (13, text-2) and its count (12, text-3): "5", or "3 of 4" while working. The newest step is under way, and the agent has no plan, so there is no total to count ahead to. A chevron is at the right.
+        - **Closed at first.** The row, or `chat.toggle-run-steps`, opens the checklist: a `t.success` check circle and the step in text-2, 26 apart, the newest 5 with "{n} earlier", and the active one ringed while it works. The chevron turns 90° to point down. Open is per run and never kept.
+      - **The actions,** once the run has ended (the design's A2 has none while working): Select layers and Undo run, 36 high, radius 10, 8 apart, 12 below the Steps row.
+        - **After Undo run** (Fix Z7, decision 26): Select layers is off ("Those layers were removed by Undo"), and Undo run becomes Redo run (`chat.redo-run`), off once something changed since. The summary and detail rows are drawn at half strength.
         - **An off button** is drawn in the `disabled` token, can't be focused or pressed, and says why in its tooltip.
         - **A refused press** shows its words on one line under the buttons (`t.text_secondary`, 12 px, wrapped), gone on the next action; no toast.
-        - **From a 300 px panel** they sit side by side, equal.
-        - **Below 300 px** they stack, each the full width (Fix Y2). They also stack wherever a label wouldn't keep 12 px from its button's edges in half the width, as a longer language's might.
+        - **From a 300 px panel** they sit side by side, equal. **Below 300 px** they stack, each the full width (Fix Y2), and also wherever a label wouldn't keep 12 px from its button's edges.
 - **The status line**, always 10 above the composer: a 6 px dot at 20 and Inter 12 at 32. "Following is on" with a `t.success` dot, or "Following is off" with a secondary one. The grace hint's line and the missing-CLI line stay above it.
 - **The composer**, pinned to the bottom, 16 from the panel's left, right and bottom, with no rule above it (`ai_composer.rs`, `ai_chips.rs`):
   - **The box:** radius 16, `t.field`, its edge `theme::field_stroke`; 16 left and right and 14 top and bottom inside; at least 88 high, growing with the text.
@@ -221,6 +224,9 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - AA6:
   - `ai_panel_z_tests.rs` › `the_header_stays_put_whatever_is_scrolled`: at 240 and 336 px in both themes, the wheel over the header, the transcript and the composer, and a scrolled Design tab before switching. The header's rectangle doesn't move; on the old code it moved up 80 px.
   - `offscreen_tests.rs` › `the_ai_header_is_painted_after_scrolling`: the Follow button's rectangle holds its fill, not the panel's colour, as it did on the old code.
+- AB2:
+  - `ai_card_tests.rs`: the detail line from the counts; the card in each state (working, done, undone) in both themes, with its heading, note, dot, summary, detail, Steps count and buttons; the steps closed at first, opened and closed by the row and the command, closed for a new run; the card's own repaint pace.
+  - `chat_run_tests.rs` › `the_counts_net_each_layers_change_over_the_run`.
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

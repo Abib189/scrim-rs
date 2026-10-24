@@ -439,7 +439,7 @@ pub fn inspect(app: &FigApp) -> Value {
 mod fonts_tests;
 #[cfg(test)]
 #[path = "ai_idle_tests.rs"]
-mod idle_tests;
+pub(crate) mod idle_tests;
 #[cfg(test)]
 #[path = "ai_panel_tests.rs"]
 mod tests;

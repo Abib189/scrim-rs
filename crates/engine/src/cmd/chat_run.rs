@@ -166,6 +166,64 @@ pub fn state(s: &Session) -> RunState {
     }
 }
 
+/// What the run changed, by layer (Fix AB2, the card's summary): frames and other layers it
+/// created, layers it edited (or moved) and layers it deleted. From the run's recorded edits
+/// (`Change::touched`), never from comparing documents.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct RunCounts {
+    pub frames: usize,
+    pub layers: usize,
+    pub edited: usize,
+    pub deleted: usize,
+}
+
+impl RunCounts {
+    /// Every layer the run changed ("43 layers changed").
+    pub fn total(&self) -> usize {
+        self.frames + self.layers + self.edited + self.deleted
+    }
+}
+
+/// The run's counts: each layer counted once, by its net change over the run. One the run created
+/// stays created however it was edited after; created then deleted counts nothing; edited then
+/// deleted is deleted.
+pub fn counts(s: &Session) -> RunCounts {
+    use crate::agents::touched::Touch;
+    #[derive(Clone, Copy, PartialEq)]
+    enum Net {
+        Created { frame: bool },
+        Edited,
+        Deleted,
+    }
+    let Some(r) = &s.agents.chat_run else { return RunCounts::default() };
+    let mut net: std::collections::BTreeMap<NodeId, Net> = std::collections::BTreeMap::new();
+    for c in run_units(s, r) {
+        for t in &c.touched {
+            let now = match (net.get(&t.id).copied(), &t.touch) {
+                (Some(Net::Created { .. }), Touch::Deleted) => {
+                    net.remove(&t.id);
+                    continue;
+                }
+                (Some(created @ Net::Created { .. }), _) => created,
+                (None, Touch::Created) => Net::Created { frame: t.frame },
+                (_, Touch::Deleted) => Net::Deleted,
+                _ => Net::Edited,
+            };
+            net.insert(t.id, now);
+        }
+    }
+    let mut out = RunCounts::default();
+    for n in net.values() {
+        match n {
+            Net::Created { frame: true } => out.frames += 1,
+            Net::Created { frame: false } => out.layers += 1,
+            Net::Edited => out.edited += 1,
+            Net::Deleted => out.deleted += 1,
+        }
+    }
+    out
+}
+
 /// The run's rows, oldest first, as (what happened, how many times in a row) (Fix Z1): each
 /// command or batch of the run says what it did to the layers it touched, by name ("Created
 /// Poster (30 layers)", "Edited 4 layers", "Deleted Bar 3"); a batch the agent labelled with a
