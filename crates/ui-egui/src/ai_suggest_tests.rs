@@ -54,6 +54,9 @@ fn the_selections_suggestions_fill_the_composer_and_never_send() {
     let c = panel(&u)["composer"]["composerRect"].clone();
     let last = s["rows"][1]["rect"][3].as_f64().unwrap();
     assert!(last <= c[1].as_f64().unwrap(), "just above the composer");
+    // Full width: the composer's own edges (Fix AB7: they were 16 inside them).
+    let (r0, r2) = (s["rows"][0]["rect"][0].as_f64().unwrap(), s["rows"][0]["rect"][2].as_f64().unwrap());
+    assert!((r0 - c[0].as_f64().unwrap()).abs() < 1.0 && (r2 - c[2].as_f64().unwrap()).abs() < 1.0, "full width: {s} {c}");
     click_named(&mut u, "Align everything to the grid");
     u.frame(vec![]);
     assert_eq!(u.app.ui.agent_view.chat.draft, "Align everything to the grid");

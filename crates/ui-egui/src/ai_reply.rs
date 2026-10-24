@@ -34,7 +34,7 @@ fn format(font: FontId, ro: &Roles) -> TextFormat {
 }
 
 /// `spans` as one wrapped job in `base`'s font, `width` wide.
-fn job(spans: &[Span], base: FontId, ro: &Roles, width: f32) -> LayoutJob {
+pub(crate) fn job(spans: &[Span], base: FontId, ro: &Roles, width: f32) -> LayoutJob {
     let mut j = LayoutJob::default();
     j.wrap.max_width = width;
     for s in spans {
@@ -44,7 +44,8 @@ fn job(spans: &[Span], base: FontId, ro: &Roles, width: f32) -> LayoutJob {
             Span::Bold(t) => (t, TextFormat { font_id: semibold(SIZE), ..plain }),
             // The real Inter Italic face (Fix AA1), not a slanted regular.
             Span::Italic(t) => (t, TextFormat { font_id: italic(SIZE), ..plain }),
-            Span::Code(t) => (t, TextFormat { font_id: mono(), background: ro.code, ..plain }),
+            // Its box is drawn behind it (`code_boxes`), with an edge egui's background can't have.
+            Span::Code(t) => (t, TextFormat { font_id: mono(), ..plain }),
             Span::Link(t) => (t, TextFormat { color: ro.link, ..plain }),
         };
         j.append(text, 0.0, f);
@@ -118,8 +119,50 @@ fn item(ui: &mut Ui, marker: Option<(&str, egui::Color32)>, j: LayoutJob, ro: &R
         ui.painter().galley(row.min, mg, color);
     }
     let r = Rect::from_min_size(row.min + vec2(indent, 0.0), galley.size());
+    for b in code_boxes(&galley) {
+        let b = b.translate(r.min.to_vec2()).expand2(vec2(3.0, 0.0));
+        ui.painter().rect_filled(b, CornerRadius::same(4), ro.code_fill);
+        ui.painter().rect_stroke(b, CornerRadius::same(4), egui::Stroke::new(1.0, ro.code_edge), egui::StrokeKind::Inside);
+    }
     ui.put(r, egui::Label::new(galley));
     r
+}
+
+/// Where inline code sits in `galley` (Fix AB7): one box per row a code span covers, from its
+/// glyphs (one per character, a row's newline counted after it), relative to the galley's corner.
+pub(crate) fn code_boxes(galley: &egui::Galley) -> Vec<Rect> {
+    let text = &galley.job.text;
+    let chars_to = |byte: usize| text.get(..byte).map_or(0, |t| t.chars().count());
+    let code: Vec<std::ops::Range<usize>> = galley
+        .job
+        .sections
+        .iter()
+        .filter(|s| s.format.font_id.family == egui::FontFamily::Monospace)
+        .map(|s| chars_to(s.byte_range.start.0)..chars_to(s.byte_range.end.0))
+        .collect();
+    let in_code = |i: usize| code.iter().any(|r| r.contains(&i));
+    let mut out = Vec::new();
+    let mut i = 0;
+    for placed in &galley.rows {
+        let (top, bottom) = (placed.pos.y - 1.0, placed.pos.y + placed.row.size.y + 1.0);
+        let mut run: Option<(f32, f32)> = None;
+        for g in &placed.row.glyphs {
+            if in_code(i) {
+                let x0 = run.map_or(g.pos.x, |r| r.0);
+                run = Some((x0, g.pos.x + g.advance_width));
+            } else if let Some((x0, x1)) = run.take() {
+                out.push(Rect::from_min_max(egui::pos2(placed.pos.x + x0, top), egui::pos2(placed.pos.x + x1, bottom)));
+            }
+            i += 1;
+        }
+        if let Some((x0, x1)) = run.take() {
+            out.push(Rect::from_min_max(egui::pos2(placed.pos.x + x0, top), egui::pos2(placed.pos.x + x1, bottom)));
+        }
+        if placed.ends_with_newline {
+            i += 1;
+        }
+    }
+    out
 }
 
 /// A fenced block: monospace in a `t.field` box, `PAD` inside, wrapped to fit.

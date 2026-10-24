@@ -86,10 +86,13 @@ pub fn plus(app: &mut FigApp, ui: &mut Ui, ro: &Roles, takes_image: bool, read_o
     let panel = ui.clip_rect();
     let width = W.min(panel.width() - 32.0);
     let height = PAD * 2.0 + ROW * ROWS.len() as f32;
-    let left = button.min.x.min(panel.max.x - 16.0 - width).max(panel.min.x + 16.0);
-    // Above the composer's box (as it was drawn last frame), 8 clear of it.
-    let composer_top = app.ui.agent_view.chat.seen.composer["composerRect"][1].as_f64().map_or(button.min.y - 60.0, |y| y as f32);
-    let top = composer_top - 8.0 - height;
+    let box_left = app.ui.agent_view.chat.seen.composer["composerRect"][0].as_f64().map_or(button.min.x, |x| x as f32);
+    let left = box_left.min(panel.max.x - 16.0 - width).max(panel.min.x + 16.0);
+    // Above the status line (as drawn last frame), 8 clear of it, as the design has it; its left
+    // edge at the composer box's.
+    let last = &app.ui.agent_view.chat.seen.composer;
+    let above = last["statusRect"][1].as_f64().or_else(|| last["composerRect"][1].as_f64()).map_or(button.min.y - 60.0, |y| y as f32);
+    let top = above - 8.0 - height;
     // (A layer of its own: only the window's top edge bounds it.)
     let menu = Rect::from_min_size(pos2(left, top.max(0.0)), vec2(width, height));
     let mut picked: Option<Row> = None;

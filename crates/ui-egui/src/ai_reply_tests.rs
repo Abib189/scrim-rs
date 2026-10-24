@@ -91,3 +91,45 @@ fn a_reply_never_reaches_past_the_panel_at_240_320_and_400() {
         }
     }
 }
+
+/// Fix AB7: inline code sits in a box of its own, one per row it covers, on the raised fill with a
+/// 1 px edge: the edge reads at 3:1 on the panel and the code at 4.5:1 on the fill, both themes,
+/// every accent. (It was `t.field` with no edge: faint on the dark panel at 240 px.)
+#[test]
+fn inline_code_has_a_bordered_raised_box() {
+    use crate::theme::accent::contrast;
+    let ctx = egui::Context::default();
+    crate::theme::install_fonts(&ctx, false, 0);
+    ctx.run_ui(egui::RawInput::default(), |_| {}).textures_delta.clear();
+    let t = crate::theme::Tokens::dark();
+    let ro = crate::panel_view::ai_tab::panel_theme::roles(&t);
+    let job = super::job(
+        &crate::panel_view::ai_tab::markdown::inline("Set `#FF6A00` on the bars and `Inter` for the title"),
+        crate::theme::regular(13.0),
+        &ro,
+        2000.0,
+    );
+    let galley = ctx.fonts_mut(|f| f.layout_job(job));
+    let boxes = super::code_boxes(&galley);
+    assert_eq!(boxes.len(), 2, "one box per span: {boxes:?}");
+    assert!(boxes[0].min.x > 10.0 && boxes[0].width() > 20.0 && boxes[1].min.x > boxes[0].max.x, "{boxes:?}");
+    // Wrapped across rows: a box on each.
+    let job = super::job(&crate::panel_view::ai_tab::markdown::inline("x `aaaa bbbb cccc dddd eeee` y"), crate::theme::regular(13.0), &ro, 60.0);
+    let galley = ctx.fonts_mut(|f| f.layout_job(job));
+    assert!(super::code_boxes(&galley).len() >= 2, "a span that wraps has a box per row");
+    for dark in [false, true] {
+        for a in crate::panel_view::ai_tab::panel_theme::tests::accents() {
+            let base = if dark { crate::theme::Tokens::dark() } else { crate::theme::Tokens::light() };
+            let t = base.with_accent(crate::theme::accent::parse_hex(&a).unwrap());
+            let ro = crate::panel_view::ai_tab::panel_theme::roles(&t);
+            assert!(contrast(ro.code_edge, t.panel) >= 3.0, "{dark} {a}: the edge on the panel");
+            assert!(contrast(ro.text, ro.code_fill) >= 4.5, "{dark} {a}: the code on its fill");
+        }
+    }
+    // Drawn so in the panel.
+    let mut u = with_reply(true, 240.0);
+    let theme = crate::follow_agent::inspect(&u.app)["aiPanel"]["theme"].clone();
+    assert_eq!(theme["codeFill"], crate::theme::accent::rgb_text(crate::theme::Tokens::get(&u.ctx).selected_row));
+    assert_eq!(theme["codeEdge"], crate::theme::accent::rgb_text(crate::theme::Tokens::get(&u.ctx).field_edge));
+    u.frame(vec![]);
+}

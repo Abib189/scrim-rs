@@ -284,6 +284,7 @@ fn status_line(app: &FigApp, ui: &mut Ui, t: &Tokens, seen: &mut serde_json::Val
     ui.painter().text(egui::pos2(left + 32.0, row.center().y), egui::Align2::LEFT_CENTER, text, regular(12.0), roles.text_3);
     crate::a11y::status(&resp, text, "");
     seen["following"] = json!(text);
+    seen["statusRect"] = json!([row.min.x, row.min.y, row.max.x, row.max.y]);
     seen["statusDot"] = json!(crate::theme::accent::rgb_text(dot));
     ui.add_space(10.0);
 }

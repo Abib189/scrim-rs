@@ -219,6 +219,8 @@ fn said(ui: &mut Ui, who: Option<&str>, text: &str, color: egui::Color32, ro: &R
                 let blocks = crate::panel_view::ai_tab::reply::draw(ui, text, ro, &mut seen.fonts);
                 seen.replies.push(json!({"agent": who, "blocks": blocks}));
                 seen.theme.insert("code", ro.code);
+                seen.theme.insert("codeFill", ro.code_fill);
+                seen.theme.insert("codeEdge", ro.code_edge);
             } else {
                 ui.label(RichText::new(text).font(regular(13.0)).color(color));
                 seen.fonts.insert("note", regular(13.0));

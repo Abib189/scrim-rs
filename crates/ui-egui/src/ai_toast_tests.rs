@@ -38,6 +38,8 @@ fn undo_run_shows_the_toast_and_its_redo_puts_the_run_back() {
         let t = toast(&u);
         assert_eq!((t["text"].as_str(), t["action"].as_str()), (Some("Undone: 3 edits"), Some("Redo")), "{dark}: {t}");
         assert_eq!(t["name"], "Undone 3 edits. Redo.");
+        let composer = crate::follow_agent::inspect(&u.app)["aiPanel"]["composer"]["composerRect"].clone();
+        assert_eq!((t["rect"][0].clone(), t["rect"][2].clone()), (composer[0].clone(), composer[2].clone()), "{dark}: as wide as the composer box");
         let nodes = tree(&mut u);
         assert!(nodes.iter().any(|n| n.label() == Some("Undone 3 edits. Redo.")), "{dark}: the screen reader's name");
         click_named(&mut u, "Redo");

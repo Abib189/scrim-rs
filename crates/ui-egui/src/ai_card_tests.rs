@@ -103,6 +103,7 @@ fn the_steps_open_and_close_and_start_closed() {
     let (mut u, script) = run(false);
     end(&mut u, &script);
     assert_eq!(card(&u)["steps"]["open"], false, "closed at first");
+    assert_eq!(card(&u)["steps"]["chevron"], "right");
     let r: Vec<f32> = card(&u)["steps"]["rect"].as_array().unwrap().iter().map(|x| x.as_f64().unwrap() as f32).collect();
     let at = egui::pos2((r[0] + r[2]) / 2.0, (r[1] + r[3]) / 2.0);
     for pressed in [true, false] {
@@ -113,6 +114,7 @@ fn the_steps_open_and_close_and_start_closed() {
     }
     u.frame(vec![]);
     assert_eq!(card(&u)["steps"]["open"], true, "the Steps row opens them");
+    assert_eq!(card(&u)["steps"]["chevron"], "up", "pointing up while open, as in the design");
     u.app.run("chat.toggle-run-steps", json!({}));
     u.frame(vec![]);
     assert_eq!(card(&u)["steps"]["open"], false, "the command closes them");

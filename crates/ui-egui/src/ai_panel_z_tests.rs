@@ -489,3 +489,16 @@ fn the_header_stays_put_whatever_is_scrolled() {
         }
     }
 }
+
+/// Fix AB7: the + menu sits above the status line, 8 clear of it (it covered "Following is on"),
+/// its left edge at the composer box's.
+#[test]
+fn the_plus_menu_clears_the_status_line() {
+    let mut u = agents(false, 336.0, false);
+    click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+    u.frame(vec![]);
+    let c = panel(&u)["composer"].clone();
+    let (menu, status, composer) = (rect(&c["plus"]["menu"]["rect"]), rect(&c["statusRect"]), rect(&c["composerRect"]));
+    assert!(menu[3] <= status[1] - 7.5, "above the status line: {menu:?} {status:?}");
+    assert!((menu[0] - composer[0]).abs() < 0.5, "aligned with the composer: {menu:?} {composer:?}");
+}

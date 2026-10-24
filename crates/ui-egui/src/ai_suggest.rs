@@ -28,20 +28,21 @@ pub fn for_selection(app: &FigApp, ui: &mut Ui, ro: &Roles) -> (Option<String>, 
     let label = trf("For the selected {name}", &[("name", &name)]);
     let w = ui.available_width();
     let (lr, _) = ui.allocate_exact_size(vec2(w, 20.0), Sense::hover());
-    let shown = crate::panel_view::ai_tab::run_card::elide(ui.painter(), &label, regular(12.0), w - 32.0);
-    ui.painter().text(pos2(lr.min.x + 16.0, lr.center().y), Align2::LEFT_CENTER, &shown, regular(12.0), ro.text_3);
+    // (The composer's area is already 16 inside the panel.)
+    let shown = crate::panel_view::ai_tab::run_card::elide(ui.painter(), &label, regular(12.0), w);
+    ui.painter().text(pos2(lr.min.x, lr.center().y), Align2::LEFT_CENTER, &shown, regular(12.0), ro.text_3);
     let mut picked = None;
     let mut rows = Vec::new();
     for (i, text) in [tr("Tidy the selected layers"), tr("Align everything to the grid")].into_iter().enumerate() {
         ui.add_space(6.0);
-        let (row, _) = ui.allocate_exact_size(vec2(w, ROW), Sense::hover());
-        let r = Rect::from_min_max(pos2(row.min.x + 16.0, row.min.y), pos2(row.max.x - 16.0, row.max.y));
+        let (r, _) = ui.allocate_exact_size(vec2(w, ROW), Sense::hover());
         let resp = ui.interact(r, Id::new(("ai_suggest_selection", i)), Sense::click()).on_hover_text(tr("Put this in the prompt"));
         crate::a11y::button(&resp, text);
         let fill = if resp.hovered() { ro.chip_fill } else { ro.composer_fill };
         ui.painter().rect_filled(r, CornerRadius::same(10), fill);
         ui.painter().rect_stroke(r, CornerRadius::same(10), Stroke::new(1.0, ro.card_edge), egui::StrokeKind::Inside);
-        ui.painter().text(pos2(r.min.x + 12.0, r.center().y), Align2::LEFT_CENTER, text, regular(13.0), ro.text);
+        let shown = crate::panel_view::ai_tab::run_card::elide(ui.painter(), text, regular(13.0), r.width() - 24.0);
+        ui.painter().text(pos2(r.min.x + 12.0, r.center().y), Align2::LEFT_CENTER, shown, regular(13.0), ro.text);
         if resp.clicked() {
             picked = Some(text.to_string());
         }

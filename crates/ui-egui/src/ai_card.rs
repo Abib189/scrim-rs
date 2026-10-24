@@ -11,7 +11,7 @@
 //! - **While working:** a 4 px indeterminate bar (raised track, the accent's mark).
 //! - **The Steps row** between hairlines: "Steps" and the count ("5", "3 of 4" while working: the
 //!   newest is under way and the agent has no plan to count ahead), a chevron at the right. Closed
-//!   at first; `chat.toggle-run-steps` opens the checklist (the chevron turns 90°), per run, not
+//!   at first; `chat.toggle-run-steps` opens the checklist (the chevron turns from right to up, as in the design's A4), per run, not
 //!   kept.
 //! - **The actions row** once the run has ended: Select layers and Undo run, 36 high, equal; after
 //!   Undo run, Select layers off and Redo run. Stacked below 300 px (Fix Y2).
@@ -298,7 +298,7 @@ pub fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut See
         "note": (!note.is_empty()).then_some(note),
         "summary": summary,
         "detail": detail_text,
-        "steps": {"count": steps_count, "open": open, "rect": rect(steps_r)},
+        "steps": {"count": steps_count, "open": open, "chevron": if open { "up" } else { "right" }, "rect": rect(steps_r)},
         "earlier": earlier,
         "rows": steps,
         "progress": working,
@@ -323,11 +323,11 @@ pub fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut See
     asked
 }
 
-/// The Steps row's chevron: pointing right, or down when the list is open (turned 90°).
+/// The Steps row's chevron: pointing right, or up when the list is open (the design's A4).
 fn chevron(p: &egui::Painter, c: egui::Pos2, open: bool, color: egui::Color32) {
     let line = Stroke::new(1.5, color);
     let pts = if open {
-        vec![c + vec2(-4.5, -2.5), c + vec2(0.0, 2.5), c + vec2(4.5, -2.5)]
+        vec![c + vec2(-4.5, 2.5), c + vec2(0.0, -2.5), c + vec2(4.5, 2.5)]
     } else {
         vec![c + vec2(-2.5, -4.5), c + vec2(2.5, 0.0), c + vec2(-2.5, 4.5)]
     };
@@ -346,7 +346,9 @@ pub(crate) fn card_button(ui: &mut Ui, ro: &Roles, r: Rect, label: &str, why: Op
     } else if resp.hovered() {
         ui.painter().rect_filled(r, CornerRadius::same(10), t.hover);
     }
-    ui.painter().rect_stroke(r, CornerRadius::same(10), Stroke::new(1.0, ro.card_button_edge), egui::StrokeKind::Inside);
+    // Off: its edge and label dimmed (the design's A5).
+    let edge = if why.is_some() { ro.card_edge } else { ro.card_button_edge };
+    ui.painter().rect_stroke(r, CornerRadius::same(10), Stroke::new(1.0, edge), egui::StrokeKind::Inside);
     if resp.has_focus() {
         ui.painter().rect_stroke(r, CornerRadius::same(10), Stroke::new(2.0, t.focus), egui::StrokeKind::Inside);
     }

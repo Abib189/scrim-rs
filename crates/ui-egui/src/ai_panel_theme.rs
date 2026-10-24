@@ -52,6 +52,9 @@ pub struct Roles {
     pub failure: Color32,
     /// A reply's code: the inline span's fill and the block's box (Fix Z2).
     pub code: Color32,
+    /// Inline code's box (Fix AB7): the raised fill and a 1 px edge that reads at 3:1 on the panel.
+    pub code_fill: Color32,
+    pub code_edge: Color32,
     /// The Selection and Image chips' icons, and their fill hovered (Fix Z6).
     pub chip_icon: Color32,
     pub chip_hover: Color32,
@@ -97,6 +100,8 @@ pub fn roles(t: &Tokens) -> Roles {
         paused_dot: t.warning,
         failure: t.danger,
         code: t.field,
+        code_fill: t.selected_row,
+        code_edge: t.field_edge,
         chip_icon: t.icon,
         chip_hover: t.pressed,
     }
@@ -132,4 +137,4 @@ pub fn readable_on(fill: Color32) -> Color32 {
 
 #[cfg(test)]
 #[path = "ai_panel_theme_tests.rs"]
-mod tests;
+pub(crate) mod tests;

@@ -38,8 +38,8 @@ pub fn draw(app: &mut FigApp, ui: &mut Ui, ro: &Roles) -> Option<Value> {
     }
     chat.toast = Some((edits, Some(until)));
     let w = ui.available_width();
-    let (row, _) = ui.allocate_exact_size(vec2(w, H), Sense::hover());
-    let r = Rect::from_min_max(pos2(row.min.x + 16.0, row.min.y), pos2(row.max.x - 16.0, row.max.y));
+    // As wide as the composer box (the composer's area is already 16 inside the panel).
+    let (r, _) = ui.allocate_exact_size(vec2(w, H), Sense::hover());
     let text = trn("Undone: {n} edits", edits, &[("n", &edits)]);
     let name = trn("Undone {n} edits. Redo.", edits, &[("n", &edits)]);
     let body = ui.interact(r, ui.id().with("ai_undone_toast"), Sense::hover());
