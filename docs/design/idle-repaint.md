@@ -73,3 +73,15 @@ Nothing, once settled. While a run goes, the banner's dots (10 frames a second; 
 
 - **Reading:** the Design tab draws nothing while the pointer is still, over the window or not. The frames in tries 2 and 3 were all real input, someone using the machine, not the app asking.
 - **Not measured:** a try with the pointer outside the window and still for the whole 10 s. The pointer moved in the two tries where it was outside, and the script doesn't move it.
+
+## Fix AB8: the bundle, with the pointer parked outside (24 Oct 2026)
+
+The release bundle at 8ade50d (`cargo xtask bundle-macos`), on a scratch HOME and settings folder, MCP on 7690. The window was set to 1200 × 760 so there was room beside it, and the system pointer was moved once, from over the window to (1395, 458) outside it; CoreGraphics' window list (`idle-repaint/winbounds.swift`) sampled it before and after each 10 s.
+
+| Case | The pointer (before, after) | Repaints a second | Causes |
+|---|---|---|---|
+| The AI tab, empty | (1395, 458), (1395, 458), outside | **0.0** | none (3 frames: the measurement's own) |
+| The Design tab | (1395, 458), (1395, 458), outside | **0.0** | none |
+| The AI tab, the composer focused (clicked) | (1395, 458), (1395, 458), outside | **2.0** | `caret.rs:45` (the blink), 10 frames |
+
+This is the reading AB6 couldn't get: the Design tab draws nothing with the pointer outside the window and still.
