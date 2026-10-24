@@ -43,8 +43,11 @@ pub struct Seen {
     pub follow: String,
     pub popover: Option<Value>,
     pub empty_state: bool,
-    /// The empty state's line, naming the agent (Fix AB5).
+    /// The empty state's line, naming the agent (Fix AB5); its rows as wrapped and the block's
+    /// rectangle, disc to line (Fix AC2).
     pub empty_line: String,
+    pub empty_rows: Vec<String>,
+    pub empty_block: Option<Rect>,
     /// Where the Follow agents button was drawn; the setting off (the crosshair dimmed) and its
     /// tooltip (Fix V3).
     pub follow_rect: Option<Rect>,
@@ -158,7 +161,11 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         // The agent the line names: the one chosen, else the default (Fix AB5).
         let id = app.ui.agent_view.chat.agent.clone().unwrap_or_else(|| figcraft_engine::cmd::chat::DEFAULT_AGENT.to_string());
         let agent = figcraft_engine::cmd::agent_clients::headless::profile(&id).map_or(id, |p| p.name.clone());
-        empty_state(ui, &t, below, &agent, &mut seen);
+        // What follows the empty state: the selection's label, else the status line, where the
+        // composer drew them (it is drawn first); else the visible area's bottom.
+        let c = &app.ui.agent_view.chat.seen.composer;
+        let next = c["suggestions"]["labelRect"][1].as_f64().or_else(|| c["statusRect"][1].as_f64()).map_or(below.max.y, |y| y as f32);
+        empty_state(ui, &t, below, next, &agent, &mut seen);
     } else {
         super::run_card::transcript(app, ui, &lines, below.height().max(120.0), &mut seen);
     }
@@ -343,10 +350,11 @@ fn popover(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) -> Value {
 /// The empty panel (Fix AB5, the design's A1): a 56 px accent-soft disc with an accent-text ring,
 /// "What should we make?" (SemiBold 18) and a line naming the agent (13, text-2), centred and
 /// wrapped to the panel's width less 32.
-fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, agent: &str, seen: &mut Seen) {
+fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, next: f32, agent: &str, seen: &mut Seen) {
     let roles = super::panel_theme::roles(t);
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), below.height().max(160.0)), Sense::hover());
-    let wrap = (r.width() - 32.0).max(80.0);
+    // The design's line box: 248 wide, or the panel less 16 each side when that is narrower (Fix AC2).
+    let wrap = (r.width() - 32.0).clamp(80.0, 248.0);
     let centred = |text: &str, font: egui::FontId, color: egui::Color32, line: Option<f32>| {
         let mut job = egui::text::LayoutJob::single_section(
             text.to_string(),
@@ -361,16 +369,21 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, agent: &str, seen: &mut See
     let body = centred(&line, regular(13.0), roles.text_secondary, Some(13.0 * 1.45));
     seen.fonts.insert("emptyHeading", semibold(18.0));
     seen.fonts.insert("emptyLine", regular(13.0));
+    seen.empty_rows = body.rows.iter().map(|row| row.text().trim_end().to_string()).collect();
     seen.empty_line = line;
-    let block = 56.0 + 16.0 + heading.size().y + 8.0 + body.size().y;
-    let top = r.center().y - 12.0 - block / 2.0;
+    // As in the design's A1 and A7: the disc, 12, the heading, 12, the line; centred between 16
+    // under the header and 14 above what follows (the selection's suggestions, else the status
+    // line) (Fix AC2; it sat 12 above the middle).
+    let block = 56.0 + 12.0 + heading.size().y + 12.0 + body.size().y;
+    let top = (below.min.y + 16.0 + next - 14.0) / 2.0 - block / 2.0;
     let c = pos2(r.center().x, top + 28.0);
     ui.painter().circle_filled(c, 28.0, roles.empty_disc);
     ui.painter().circle_stroke(c, 9.0, Stroke::new(2.0, roles.link));
     seen.theme.insert("emptyDisc", roles.empty_disc);
     seen.theme.insert("emptyRing", roles.link);
-    let heading_r = Rect::from_center_size(pos2(r.center().x, top + 56.0 + 16.0 + heading.size().y / 2.0), heading.size());
-    let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 8.0 + body.size().y / 2.0), body.size());
+    let heading_r = Rect::from_center_size(pos2(r.center().x, top + 56.0 + 12.0 + heading.size().y / 2.0), heading.size());
+    let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 12.0 + body.size().y / 2.0), body.size());
+    seen.empty_block = Some(Rect::from_min_max(pos2(r.min.x, top), pos2(r.max.x, body_r.max.y)));
     ui.put(heading_r, egui::Label::new(heading));
     ui.put(body_r, egui::Label::new(body));
 }
@@ -431,6 +444,8 @@ pub fn inspect(app: &FigApp) -> Value {
         "popover": s.popover,
         "emptyState": s.empty_state.then(|| tr("What should we make?")),
         "emptyLine": s.empty_state.then(|| s.empty_line.clone()),
+        "emptyRows": s.empty_state.then(|| s.empty_rows.clone()),
+        "emptyBlock": s.empty_block.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
         "banner": s.banner,
         "bubbles": s.bubbles,
         "card": s.card,

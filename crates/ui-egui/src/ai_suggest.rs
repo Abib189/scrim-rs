@@ -49,7 +49,7 @@ pub fn for_selection(app: &FigApp, ui: &mut Ui, ro: &Roles) -> (Option<String>, 
         rows.push(json!({"text": text, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]}));
     }
     ui.add_space(10.0);
-    (picked, json!({"label": label, "rows": rows}))
+    (picked, json!({"label": label, "labelRect": [lr.min.x, lr.min.y, lr.max.x, lr.max.y], "rows": rows}))
 }
 
 /// The chips under a finished run's card, 8 apart, wrapping to a second row when the panel is

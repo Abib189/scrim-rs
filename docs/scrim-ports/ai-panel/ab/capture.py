@@ -1,5 +1,7 @@
-"""capture.py APP SCRATCH OUTDIR THEME WIDTH: Fix AB7, the AI panel's design states from the real
-app. A scratch HOME and settings folder (theme and right panel width seeded; MCP on 7690, never
+"""capture.py APP SCRATCH OUTDIR THEME WIDTH [MODE]: Fix AB7, the AI panel's design states from the
+real app. MODE is `states` (the default: A1 to A6, or A7 below 300 px), `quiet` (A1 or A7 only, Fix AC2), `fade` (Fix AC1: three runs,
+then the transcript scrolled to the top and to the bottom) or `card` (Fix AC3: one run's card, Done
+and Undone). A scratch HOME and settings folder (theme and right panel width seeded; MCP on 7690, never
 7680), a stub `claude` first on PATH and allowed. Driven with ui.input like a person; each state's
 window shot saved as OUTDIR/{theme}-{state}.png, with the AI panel's rectangle in states.json."""
 import atexit, json, os, subprocess, sys, time
@@ -10,6 +12,7 @@ sys.path.insert(0, os.path.join(REPO, 'docs', 'scrim-ports', 'follow-agent', 't6
 from d3 import App
 
 app_bin, scratch, outdir, theme, width = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5])
+mode = sys.argv[6] if len(sys.argv) > 6 else 'states'
 stub = os.path.join(REPO, 'crates', 'mcp', 'tests', 'stub', 'stub_agent.py')
 home, settings, bindir = (os.path.join(scratch, d) for d in ('home', 'settings', 'bin'))
 for d in (home, settings, bindir, os.path.join(home, 'Documents', 'Scrim'), outdir):
@@ -67,7 +70,7 @@ def shot(name):
     p = panel()
     path = os.path.join(outdir, f'{theme}-{name}.png')
     take(path)
-    states[name] = {'header': p.get('headerRect'), 'card': (p.get('card') or {}).get('state')}
+    states[name] = {'header': p.get('headerRect'), 'card': (p.get('card') or {}).get('state'), 'stacked': (p.get('card') or {}).get('stacked'), 'fade': p.get('fade')}
     print(name, 'saved', flush=True)
 
 
@@ -94,41 +97,78 @@ f = a.run('frame.create', {'x': 0, 'y': 0, 'width': 400, 'height': 300, 'name': 
 a.run('select.set', {'ids': [f['id']]})
 a.call('ui.set', {'home': False, 'rightTab': 'ai'})
 time.sleep(1.5)
+
+
+def send(prompt):
+    """Type the prompt into the composer and send it with ⌘↩, until a new bubble shows it went."""
+    before = panel().get('bubbles') or 0
+
+    def go():
+        c = panel().get('composer', {}).get('composerRect') or [0, 0, 0, 0]
+        click((c[0] + c[2]) / 2, c[1] + 24)
+        # ⌘A first, so a retry replaces what a missed attempt typed.
+        a.call('ui.input', {'events': [{'key': 'A', 'cmd': True}]})
+        a.call('ui.input', {'events': [{'text': prompt}]})
+        time.sleep(0.3)
+        a.call('ui.input', {'events': [{'key': 'Enter', 'cmd': True}]})
+
+    if not until(go, lambda: (panel().get('bubbles') or 0) > before):
+        raise SystemExit('the prompt was never sent')
+
+
+def finished():
+    for _ in range(120):
+        time.sleep(0.5)
+        if (panel().get('card') or {}).get('state') in ('done', 'stopped'):
+            break
+    time.sleep(1.0)
+
+
+card = lambda: panel().get('card') or {}
+if mode == 'fade':
+    for n in (1, 2, 3):
+        send(f'Build poster number {n} named Welle{n} with batches 14')
+        finished()
+
+    def wheel(dy):
+        t = panel().get('headerRect') or [0, 0, 0, 0]
+        x, y = (t[0] + t[2]) / 2, t[3] + 200
+        a.call('window.focus', {'id': 0})
+        for _ in range(12):
+            a.call('ui.input', {'events': [{'move': [x, y]}, {'scroll': [0, dy]}]})
+            time.sleep(0.1)
+        time.sleep(0.8)
+
+    wheel(-400)
+    shot('fade-bottom')
+    wheel(400)
+    shot('fade-top')
+elif mode == 'card':
+    send('Build a poster called Welle with batches 6')
+    finished()
+    shot(f'card-{width}-done')
+    until(lambda: click(*centre(card()['buttonRects'][1])), lambda: card().get('state') == 'undone')
+    shot(f'card-{width}-undone')
 # A1: + ▸ Add selection.
-until(lambda: click(*centre(panel()['composer']['plus']['rect'])), lambda: panel().get('composer', {}).get('plus', {}).get('open') is True)
+if mode in ('states', 'quiet'):
+    until(lambda: click(*centre(panel()['composer']['plus']['rect'])), lambda: panel().get('composer', {}).get('plus', {}).get('open') is True)
 rows = panel().get('composer', {}).get('plus', {}).get('menu', {}).get('rows') or []
 add = next((r for r in rows if r.get('label') == 'Add selection'), None)
-if add:
+if add and mode in ('states', 'quiet'):
     click(*centre(add['rect']))
-time.sleep(0.6)
-shot('a1-quiet' if width > 300 else 'a7-quiet-240')
-if width > 300:
+    time.sleep(0.6)
+    shot('a1-quiet' if width > 300 else 'a7-quiet-240')
+if mode == 'states' and width > 300:
     # Take the chip off; then the run: typed and sent with ⌘↩.
     chip = lambda: (panel().get('composer', {}).get('selectedChip') or {}).get('rect')
     if chip():
         until(lambda: click(chip()[2] - 15, (chip()[1] + chip()[3]) / 2), lambda: not chip())
 
-    def send():
-        c = panel().get('composer', {}).get('composerRect') or [0, 0, 0, 0]
-        click((c[0] + c[2]) / 2, c[1] + 24)
-        # ⌘A first, so a retry replaces what a missed attempt typed.
-        a.call('ui.input', {'events': [{'key': 'A', 'cmd': True}]})
-        a.call('ui.input', {'events': [{'text': 'Build a poster called Welle with batches 6 and slow 25'}]})
-        time.sleep(0.3)
-        a.call('ui.input', {'events': [{'key': 'Enter', 'cmd': True}]})
-
-    # Sent once the card is there (a click the window missed leaves the panel quiet).
-    if not until(send, lambda: panel().get('card') is not None):
-        raise SystemExit('the prompt was never sent')
+    send('Build a poster called Welle with batches 6 and slow 25')
     time.sleep(5.4)
     shot('a2-working')
-    for _ in range(90):
-        time.sleep(0.5)
-        if (panel().get('card') or {}).get('state') in ('done', 'stopped'):
-            break
-    time.sleep(1.0)
+    finished()
     shot('a3-done')
-    card = lambda: panel().get('card') or {}
     until(lambda: click(*centre(card()['steps']['rect'])), lambda: card().get('steps', {}).get('open') is True)
     shot('a4-steps-open')
     until(lambda: click(*centre(card()['steps']['rect'])), lambda: card().get('steps', {}).get('open') is False)
@@ -144,7 +184,7 @@ if width > 300:
     take(path)
     states['a6-plus-menu'] = {'header': p.get('headerRect'), 'menu': p.get('composer', {}).get('plus', {}).get('open')}
     print('a6-plus-menu saved', flush=True)
-json.dump(states, open(os.path.join(outdir, f'{theme}-{width}-states.json'), 'w'), indent=1)
+json.dump(states, open(os.path.join(outdir, f'{theme}-{width}-{mode}-states.json'), 'w'), indent=1)
 a.call('window.focus', {'id': 0})
 try:
     a.call('app.quit', {})

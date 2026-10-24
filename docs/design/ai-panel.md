@@ -23,9 +23,9 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - **The body:**
   - **Empty** (Fix AB5, the design's A1 and A7):
     - a 56 px accent-soft disc (`t.accent_tint`) with an accent-text ring (`readable_mark` of `t.ai_accent_text`, 2 px, 9 px radius);
-    - 16 below it, "What should we make?" (SemiBold 18);
-    - 8 below that, "{agent} works on this canvas. Follow keeps the camera on its edits." (13, 145 %, text-2). The agent is the one chosen.
-    - Both are centred and wrapped to the panel's width less 32 (no fixed width). The block sits 12 above the middle of the space between the header's rule and the composer.
+    - 12 below it, "What should we make?" (SemiBold 18);
+    - 12 below that, "{agent} works on this canvas. Follow keeps the camera on its edits." (13, 145 %, text-2). The agent is the one chosen.
+    - Both are centred. The line wraps in the design's 248 px box, or the panel's width less 32 when that is narrower: at 336 px it breaks after "canvas.", at 240 px in three rows. The block is centred between 16 under the header's rule and 14 above what follows it (the selection's label, else the status line). All from the design file's A1 and A7 frames (Fix AC2; until then the gaps were 16 and 8, the line as wide as the panel less 32, and the block 12 above the middle, about 17 px higher).
   - **Suggestions, only where they apply** (Fix AB5, `ai_suggest.rs`). A suggestion puts its words in the composer and focuses it (`chat.use-suggestion`); it never sends.
     - **With a selection, on the quiet panel** (no conversation yet, no run going): "For the selected {name}" (12, text-3) and two full-width rows, "Tidy the selected layers" and "Align everything to the grid" (surface fill, border, radius 10, 36 high, 6 apart). They sit just above the status line.
     - **After a run finishes** (done; not while it works, not once undone or stopped): two chips under its card, "Tidy spacing" and "Make a variation" (raised fill, 30 high, 8 apart). The second moves to a row of its own when the panel is too narrow.
@@ -172,6 +172,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 33. **Inline code is a bordered box** (Fix AB7): each span gets its own box on the raised fill (`code_fill`, the selected row's fill) with a 1 px edge (`code_edge`, the field's edge), one per row it covers, painted behind the glyphs. It was a TextFormat background in `t.field`, which barely showed on the dark panel. egui 0.36 keeps a glyph's section private, so the boxes come from char indices.
 34. **The + menu sits above the status line** (Fix AB7), 8 clear of it, its left edge at the composer box's, in a layer of its own bounded only by the window's top. It was placed from the composer's top and covered "Following is on". It reads the status line's rectangle from the previous frame (the composer is drawn after the button).
 35. **The selection's rows and the Undone toast are as wide as the composer box** (Fix AB7), as in the design; both were inset 16 more on each side. A disabled card button dims its edge as well as its label, and the open Steps row's chevron points up (both as in the design's A5 and A4).
+36. **The empty state's line has a 248 px box** (Fix AC2), the design's, so it keeps the design's two rows at 336 px; it was as wide as the panel less 32. Below 280 px it is the panel less 32, as before. At 240 px the design breaks "…this / canvas. Follow keeps the camera / on its edits."; egui sets the middle row a little wider than 208 px, so "camera" goes to the third row.
 
 ## Tests
 
@@ -252,6 +253,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - `attach_image_from_the_plus_menu`; `the_rows_controls_have_their_spanish_names`.
   - `the_selection_button_adds_the_layers_names_and_ids` (now the chip, its ×, and the line sent with the prompt); `the_image_button_shows_only_for_an_agent_whose_cli_takes_one` (now the menu row's state).
   - Fix Z6's chip tests and AA3's agent-menu fallback test are gone with the chips.
+- AC2: `ai_suggest_tests.rs` › `the_empty_state_wraps_and_sits_as_in_the_design`, both themes, at 336 and 240 px with a selection and at 336 px without: the rows as wrapped (at 336, after "canvas."; at 240, three rows, the first "Claude Code works on this"), each row within the box, and the block's centre within 2 px of the midpoint between 16 under the header and 14 above the selection's label or the status line. It fails on the old layout on each count (the line broke after "Follow"; the block sat 17 px high). `ui.inspect` › `agent.aiPanel` reports `emptyRows` and `emptyBlock`, and the suggestions their `labelRect`.
 - AB7: `ai_reply_tests.rs` › `inline_code_has_a_bordered_raised_box` (one box per span, the edge at 3:1 on the panel and the code at 4.5:1 on its fill, both themes, every accent); `ai_panel_z_tests.rs` › `the_plus_menu_clears_the_status_line`; the full-width rows in `ai_suggest_tests.rs`; the toast as wide as the composer in `ai_toast_tests.rs`; the chevron's direction in `ai_card_tests.rs`. The captures, side by side with the design and every difference listed: `docs/scrim-ports/ai-panel/ab/`.
 - `ai_suggest_tests.rs` (AB5): the empty state names the chosen agent and wraps inside the panel at 240 and 336 px, with the accent-soft disc and accent-text ring. The selection's rows show with a selection, sit just above the composer, fill and focus the field and send nothing, and are gone without a selection. A finished run's two chips are not shown while it works, fill the composer without sending, and go once undone.
 - `chat_run_tests.rs` (Z7, engine):

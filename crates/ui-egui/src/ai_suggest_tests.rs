@@ -42,6 +42,52 @@ fn the_empty_state_names_the_agent_and_wraps_to_the_panel() {
     assert!(panel(&u)["emptyLine"].as_str().unwrap().starts_with("Codex works on this canvas"));
 }
 
+/// Fix AC2, against the design's A1 and A7: the line's box is 248 wide, or the panel less 16 each
+/// side when narrower, so at 336 px it breaks after "canvas." (it broke after "Follow"), and every
+/// row fits; the block (disc, 12, heading, 12, line) is centred between 16 under the header and 14
+/// above what follows: the selection's label, else the status line. Both themes. It fails on the
+/// old layout (a 272 px line, and the block 12 above the middle).
+#[test]
+fn the_empty_state_wraps_and_sits_as_in_the_design() {
+    for dark in [false, true] {
+        for (w, selected) in [(336.0, true), (240.0, true), (336.0, false)] {
+            let (mut u, _) = window();
+            u.app.session.prefs.theme = if dark { "dark" } else { "light" }.into();
+            u.app.ui.right_width = w;
+            if !selected {
+                u.app.run("select.set", json!({"ids": []}));
+            }
+            u.frame(vec![]);
+            u.frame(vec![]);
+            let p = panel(&u);
+            let rows: Vec<&str> = p["emptyRows"].as_array().unwrap().iter().map(|r| r.as_str().unwrap()).collect();
+            if w > 300.0 {
+                assert_eq!(rows, ["Claude Code works on this canvas.", "Follow keeps the camera on its edits."], "{dark} {w}");
+            } else {
+                // The design's A7 breaks "…this / canvas. Follow keeps the camera / on its edits.";
+                // egui sets the middle row a little wider than 208, so "camera" goes to the third.
+                assert!(rows.len() == 3 && rows[0] == "Claude Code works on this", "{dark} {w}: three rows: {rows:?}");
+            }
+            let f = |v: &Value| v.as_f64().unwrap() as f32;
+            let font = egui::FontId::new(13.0, egui::FontFamily::Proportional);
+            for row in &rows {
+                let width = u.ctx.fonts_mut(|fo| fo.layout_no_wrap(row.to_string(), font.clone(), egui::Color32::WHITE).size().x);
+                assert!(width <= (w - 32.0).min(248.0) + 0.5, "{dark} {w}: {row:?} is {width} wide");
+            }
+            let header = f(&p["headerRect"][3]);
+            let next = if selected { f(&p["composer"]["suggestions"]["labelRect"][1]) } else { f(&p["composer"]["statusRect"][1]) };
+            let b = &p["emptyBlock"];
+            let (top, bottom) = (f(&b[1]), f(&b[3]));
+            let want = (header + 16.0 + next - 14.0) / 2.0;
+            assert!(
+                ((top + bottom) / 2.0 - want).abs() <= 2.0,
+                "{dark} {w} {selected}: centred at {} for {want} ({b} under {header}, over {next})",
+                (top + bottom) / 2.0
+            );
+        }
+    }
+}
+
 /// With a selection on the quiet panel: "For the selected Poster" and the two rows; a row puts its
 /// words in the composer and focuses it, and sends nothing. Without a selection: none.
 #[test]

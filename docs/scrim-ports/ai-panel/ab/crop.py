@@ -1,5 +1,5 @@
 """crop.py SHOTS OUT: each window shot capture.py saved (2x), cut to the AI panel (from the header's
-left, top and right edges recorded at shot time in {theme}-{width}-states.json, to the window's
+left, top and right edges recorded at shot time in {theme}-{width}-{mode}-states.json, to the window's
 bottom) and scaled to 1x, as OUT/{theme}-{state}.png. The window can grow between runs, so each
 shot is cut by its own size."""
 import json, os, subprocess, sys

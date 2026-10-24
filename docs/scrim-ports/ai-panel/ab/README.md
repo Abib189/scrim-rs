@@ -7,11 +7,11 @@ The seven states of the design's page "AI panel — A+B" (`../ab-design/`, expor
 
 ## How they were made
 
-1. `capture.py APP SCRATCH OUTDIR THEME WIDTH` drives the app like a person (`ui.input` clicks, typing, ⌘↩), once per theme at 336 px (A1 to A6) and once at 240 px (A7). It refuses to run unless the settings folder is a scratch one and MCP is not on 7680. The run is the stub's "batches 6 and slow 25": six batches of three rectangles, slowly, so A2 is caught while it works.
+1. `capture.py APP SCRATCH OUTDIR THEME WIDTH [MODE]` (MODE `states`, `quiet`, `fade` or `card`) drives the app like a person (`ui.input` clicks, typing, ⌘↩), once per theme at 336 px (A1 to A6) and once at 240 px (A7). It refuses to run unless the settings folder is a scratch one and MCP is not on 7680. The run is the stub's "batches 6 and slow 25": six batches of three rectangles, slowly, so A2 is caught while it works.
 2. `crop.py SHOTS OUT` cuts each window shot to the panel, using the header's rectangle recorded at shot time.
 3. `sidebyside.swift` (`swiftc sidebyside.swift -o sidebyside`) puts each next to its design export.
 
-A1 to A6 were retaken after the last AB7 fix, in both themes; A7 is from the run before it (nothing A7 shows changed since). Clicks can miss while another app is in front, so each step is retried until `ui.inspect` shows it took, and each shot waits for its file.
+A2 to A6 were retaken after the last AB7 fix, in both themes; A1 and A7 after Fix AC2. Clicks can miss while another app is in front, so each step is retried until `ui.inspect` shows it took, and each shot waits for its file.
 
 The window is 1440 × 900 points, so the panel below the header is about 720 high, where the design's frame is 900: everything at the bottom (the composer, the status line, the toast, the + menu) sits higher in the captures. That is the window, not the panel.
 
@@ -43,6 +43,22 @@ The window is 1440 × 900 points, so the panel below the header is about 720 hig
 - A5's Select layers, off after Undo run, dimmed only its label; its edge is now dimmed too, as in the design.
 - A4's chevron pointed down while the steps are open; it points up, as in the design (`the_steps_open_and_close_and_start_closed`).
 
+**Fixed in AC2** (A1 and A7 retaken in both themes):
+- A1's empty line broke after "Follow" at 336 px; it now breaks after "canvas.", as in the design: the line wraps in the design's 248 px box, or the panel less 32 when narrower.
+- A1's block sat about 17 px higher than the design's rule puts it; it is now centred between 16 under the header and 14 above the suggestions' label (the design's "Empty state" frame), with the design's 12 and 12 between disc, heading and line (they were 16 and 8). `the_empty_state_wraps_and_sits_as_in_the_design`.
+
 **Not intended, left as they are:**
-- **A1: the empty state's line** wraps at the panel's width less 32, so at 336 px it breaks after "Follow"; the design breaks after "canvas.", a narrower block. At 240 px both break alike.
-- **A1: the empty state sits about 18 px higher** in the space above the suggestions than in the design (it is centred 12 above the middle).
+- **A7: one word.** At 240 px the design breaks "…this / canvas. Follow keeps the camera / on its edits."; the app's middle row is a little wider than 208 px in egui's layout, so "camera" goes to the third row.
+- **The block's height on the page** differs from the design's because the window is shorter (723 px under the header against 852); its place relative to the header and the suggestions is the design's.
+
+## AC1: the transcript's fade
+
+`{theme}-fade-top.png` and `{theme}-fade-bottom.png`: three runs (`capture.py … 336 fade`), then the transcript scrolled to the top (975 px more below) and to the bottom. At the top, the 12 px fade (`ui.inspect` › `fade`, y 744 to 756) dissolves the last visible line, the reply's cost line, into the panel just above the status line; at the bottom there is none. **It reads in both themes; nothing changed.**
+
+Seen on the way: only the latest run has a card. The two earlier runs show their progress lines ("Agent: made 3 layers", one per batch) above their replies, as the transcript did before the card (`ai_run_card.rs` keeps one `last_run`). Not changed here.
+
+## AC3: the card at 280 px
+
+`{theme}-card-280-done.png` and `{theme}-card-280-undone.png`, each beside the design's A3 or A5 (`side-…`, `capture.py … 280 card`). Below 300 px Select layers and Undo run (or Redo run) stack, each the card's full width (`ui.inspect` › `card.stacked`: true in all four). After Undo run, Select layers is off with its edge and label dimmed, as in A5.
+
+**Against the design's intent:** the design has no card narrower than 336 px, so the stacking is the app's own rule (Fix Y2, decision in `docs/design/ai-panel.md`). At 280 px the design's side-by-side pair would still fit (each half about 105 px, "Select layers" needing about 103 with its 12 px padding), so the app stacks where the design's layout wouldn't have to. Reported, not changed.
