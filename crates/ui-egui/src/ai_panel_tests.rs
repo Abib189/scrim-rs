@@ -129,7 +129,7 @@ fn ui_inspect_has_the_header_popover_empty_state_and_composer() {
     assert_eq!(p["emptyState"], "Describe what you want to create or change.");
     let c = &p["composer"];
     assert_eq!(c["placeholder"], "Describe a change…");
-    assert_eq!(c["selectionButton"], "Add the selection to the prompt");
+    assert_eq!(c["plus"]["open"], false, "the + menu (Fix AB4) is closed");
     // The gear moved into the agent chip's menu (Fix X3).
     assert_eq!(c["agentMenu"], "Agent settings…");
     assert_eq!((c["agent"].clone(), c["send"].clone(), c["imageButton"].clone()), (json!("Claude Code"), json!("Send"), json!(false)));
@@ -143,7 +143,7 @@ fn ui_inspect_has_the_header_popover_empty_state_and_composer() {
     assert_eq!(pop["items"], json!([]));
     // Every icon button has its name (and so its tooltip).
     let names = tree(&mut u).into_iter().filter_map(|n| n.label().map(str::to_string)).collect::<Vec<_>>();
-    for b in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent: Claude Code"] {
+    for b in ["Follow agents as they work", "New chat", "More: add the selection, attach an image, follow the agent", "Agent: Claude Code"] {
         assert!(names.iter().any(|n| n == b), "{b:?} in {names:?}");
     }
     assert!(names.iter().any(|n| n.starts_with("Send")), "Send");
@@ -267,12 +267,38 @@ fn another_documents_conversation_opens_read_only() {
     assert_eq!(u.app.ui.agent_view.chat.lines.len(), 2, "its transcript");
 }
 
+/// Since Fix AB4: + ▸ Add selection puts a "Selected · Poster" chip on the composer, and the
+/// prompt sent carries "Selected: Poster ({id})" on a line of its own; the × takes the chip off.
 #[test]
 fn the_selection_button_adds_the_layers_names_and_ids() {
-    let (mut u, _) = window();
+    let (mut u, script) = window();
     let poster = u.app.session.selection()[0];
-    click_named(&mut u, "Add the selection to the prompt");
-    assert_eq!(u.app.ui.agent_view.chat.draft, format!("Selected: Poster ({})", poster.0));
+    click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+    click_named(&mut u, "Add selection");
+    assert_eq!(panel(&u)["composer"]["selectedChip"]["text"], "Selected · Poster");
+    assert!(u.app.ui.agent_view.chat.draft.is_empty(), "the draft is the person's own words");
+    assert!(!panel(&u)["composer"]["plus"]["open"].as_bool().unwrap_or(true), "the menu closed");
+    click_named(&mut u, "Remove the selection");
+    assert!(panel(&u)["composer"]["selectedChip"].is_null(), "the × takes it off");
+    click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+    click_named(&mut u, "Add selection");
+    u.app.ui.agent_view.chat.draft = "make it blue".into();
+    u.app.run("chat.allow-agent", json!({"agent": "claude-code", "path": CLAUDE}));
+    u.app.ui.agent_view.chat.confirm = None;
+    u.frame(vec![]);
+    let send = tree(&mut u).iter().find(|n| n.label().is_some_and(|l| l.starts_with("Send"))).and_then(|n| n.bounds()).expect("Send");
+    let at = egui::pos2(((send.x0 + send.x1) / 2.0) as f32, ((send.y0 + send.y1) / 2.0) as f32);
+    for pressed in [true, false] {
+        u.frame(vec![
+            egui::Event::PointerMoved(at),
+            egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed, modifiers: Default::default() },
+        ]);
+    }
+    u.frame(vec![]);
+    let spec = script.lock().unwrap().specs.pop().expect("it ran");
+    let prompt = spec.args.iter().find(|a| a.contains("make it blue")).cloned().unwrap_or_default();
+    assert!(prompt.contains(&format!("Selected: Poster ({})\nmake it blue", poster.0)), "{prompt}");
+    assert!(panel(&u)["composer"]["selectedChip"].is_null(), "sent with it");
 }
 
 #[test]
@@ -283,17 +309,22 @@ fn the_image_button_shows_only_for_an_agent_whose_cli_takes_one() {
     let script: Shared =
         Arc::new(Mutex::new(Script { claude: Some(CLAUDE.into()), codex: Some("/opt/agents/bin/codex".into()), ..Default::default() }));
     u.app.services = Box::new(Platform(script.clone()));
-    // Wide enough for the image chip (below that it is in the agent menu, Fix AA3).
-    u.app.ui.right_width = 336.0;
     u.app.run("panel.tab.ai", json!({}));
     u.frame(vec![]);
-    let names = |u: &mut Ui| tree(u).into_iter().filter_map(|n| n.label().map(str::to_string)).collect::<Vec<_>>();
+    // Since Fix AB4 the image is "Attach image" in the + menu: on for an agent that takes one.
+    let attach = |u: &mut Ui| {
+        u.app.ui.agent_view.chat.plus_open = true;
+        u.frame(vec![]);
+        let rows = panel(u)["composer"]["plus"]["menu"]["rows"].clone();
+        u.app.ui.agent_view.chat.plus_open = false;
+        rows.as_array().unwrap().iter().find(|r| r["label"] == "Attach image").map(|r| r["enabled"].clone()).unwrap_or_default()
+    };
     assert_eq!(panel(&u)["composer"]["imageButton"], false, "Claude Code runs with no tools that open a path");
-    assert!(!names(&mut u).iter().any(|n| n == "Attach an image"));
+    assert_eq!(attach(&mut u), json!(false));
     u.app.run("chat.agent", json!({"agent": "codex"}));
     u.frame(vec![]);
     assert_eq!(panel(&u)["composer"]["imageButton"], true, "Codex takes --image");
-    assert!(names(&mut u).iter().any(|n| n == "Attach an image"));
+    assert_eq!(attach(&mut u), json!(true));
     // Attached, it goes with the send as a path.
     u.app.run("chat.attach-image", json!({"path": "/tmp/ref.png"}));
     u.frame(vec![]);
@@ -334,7 +365,13 @@ fn at_its_minimum_width_nothing_is_clipped_or_scrolls_sideways() {
         u.frame(vec![]);
         let nodes = tree(&mut u);
         let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
-        for name in ["Follow agents as they work", "New chat", "Add the selection to the prompt", "Agent: Claude Code", "Search conversations"] {
+        for name in [
+            "Follow agents as they work",
+            "New chat",
+            "More: add the selection, attach an image, follow the agent",
+            "Agent: Claude Code",
+            "Search conversations",
+        ] {
             let b = nodes.iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name} at {w}"));
             assert!(b.x0 >= pane.x0 - 0.5 && b.x1 <= pane.x1 + 0.5, "{name} inside the {w} px panel: {b:?} in {pane:?}");
         }
@@ -587,7 +624,7 @@ fn the_composer_follows_the_design_and_its_menu_opens_agent_settings() {
     let bounds = |name: &str| {
         nodes.iter().find(|n| n.label().is_some_and(|l| l.starts_with(name))).and_then(|n| n.bounds()).unwrap_or_else(|| panic!("{name}"))
     };
-    let (agent, sel, send) = (bounds("Agent: Claude Code"), bounds("Add the selection to the prompt"), bounds("Send"));
+    let (agent, sel, send) = (bounds("Agent: Claude Code"), bounds("More: add the selection, attach an image, follow the agent"), bounds("Send"));
     for b in [agent, sel] {
         assert!((b.y1 - b.y0 - 32.0).abs() < 0.5, "a 32 px chip: {b:?}");
     }

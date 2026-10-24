@@ -17,7 +17,6 @@ use serde_json::{Value, json};
 use super::{chips, elapsed, installed, picked, send_blocked};
 use crate::FigApp;
 use crate::i18n::{tr, trf};
-use crate::panel_view::ai_tab::icons::AiIcon;
 use crate::theme::{Tokens, regular};
 
 /// The composer's least height (Fix X3); it grows with the text.
@@ -103,9 +102,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     };
     let blocked = send_blocked(app, now);
     let (mut send, mut stop) = (false, false);
-    let has_selection = app.session.ds().is_ok_and(|d| !d.selection.is_empty());
     let takes_image = current.as_ref().is_some_and(|(p, _)| !p.image_args.is_empty());
-    seen["selectionButton"] = json!(tr("Add the selection to the prompt"));
     seen["imageButton"] = json!(takes_image);
     // The box (Fix X3): radius 16, 16 and 14 inside, at least 88 high and growing with the text; the
     // field above a 32 px row of the agent, the selection, an image and Send.
@@ -114,6 +111,13 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     let r = egui::Frame::NONE.fill(roles.composer_fill).corner_radius(16).inner_margin(egui::Margin::symmetric(16, 14)).stroke(edge).show(ui, |ui| {
         ui.set_min_height(MIN_H - 28.0);
         ui.spacing_mut().item_spacing.y = 8.0;
+        // The selection added from the + menu (Fix AB4): "Selected · {name}" with its ×, at the top.
+        if let Some((name, _)) = app.ui.agent_view.chat.selected.clone() {
+            seen["selectedChip"] = selected_chip(app, ui, &roles, &name);
+        }
+        if std::mem::take(&mut app.ui.agent_view.chat.focus_field) {
+            ui.memory_mut(|m| m.request_focus(field_id));
+        }
         let field = ui.add_enabled(
             !read_only,
             egui::TextEdit::multiline(&mut app.ui.agent_view.chat.draft)
@@ -141,21 +145,16 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         ui.horizontal(|ui| {
             ui.set_height(chips::CHIP_H);
             ui.spacing_mut().item_spacing.x = 8.0;
-            // What fits before Send: the chips' labels shorten with "…" before anything clips.
+            // What fits before Send: the agent's name shortens with "…" before anything clips.
             let room = (ui.available_width() - chips::SEND - 8.0).max(0.0);
             let agent_label = current.as_ref().map_or_else(String::new, |(p, _)| p.name.clone());
-            // Selection and the image are round icon chips at every width (Fix Z6); the agent's
-            // name has the rest, shortened with "…" when it must be. Below 280 px the agent chip
-            // drops its chevron and pads 8; if its name still can't show six characters and "…",
-            // the image goes into the agent menu as "Attach image…" (Fix AA3).
+            // The + and its menu first (Fix AB4: Add selection, Attach image and Follow the agent
+            // in place of the Selection and Image chips); the agent's chip has the rest. Below 280
+            // px it drops its chevron and pads 8, so its name reads (Fix AA3).
+            seen["plus"] = crate::panel_view::ai_tab::plus::plus(app, ui, &roles, takes_image, read_only);
             let fit = chips::ChipFit::for_panel(app.ui.right_width, true);
             let want_agent = if found.is_empty() { 0.0 } else { fit.width(ui, &agent_label) };
-            let agent_w = |others: f32| (room - others - 8.0).clamp(44.0, want_agent.max(44.0));
-            let with_image = agent_w(chips::CHIP_H * 2.0 + 8.0);
-            let image_in_menu = takes_image && !found.is_empty() && fit.room(with_image) < chips::readable_width(ui, &agent_label);
-            let image_chip = takes_image && !image_in_menu;
-            let agent_w = if image_chip { with_image } else { agent_w(chips::CHIP_H) };
-            seen["imageInMenu"] = json!(image_in_menu);
+            let agent_w = (room - chips::CHIP_H - 8.0 - 8.0).clamp(44.0, want_agent.max(44.0));
             // The agent: the installed agents with a headless profile, then Agent settings… (the
             // gear's place before Fix X3).
             if !found.is_empty() {
@@ -175,12 +174,6 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
                             app.run("chat.agent", json!({"agent": id}));
                         }
                     }
-                    if image_in_menu {
-                        ui.separator();
-                        if ui.button(tr("Attach image…")).clicked() && !read_only {
-                            app.run("chat.attach-image", json!({}));
-                        }
-                    }
                     ui.separator();
                     if ui.button(tr("Agent settings…")).clicked() {
                         app.run("settings.open", json!({"section": "agents"}));
@@ -188,21 +181,6 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
                 });
                 seen["agent"] = json!(agent_label);
                 seen["agentMenu"] = json!(tr("Agent settings…"));
-            }
-            let sel = chips::icon_chip(ui, &roles, AiIcon::Selection, tr("Add the selection to the prompt"));
-            crate::a11y::button(&sel, tr("Add the selection to the prompt"));
-            let chip_json = |r: egui::Rect, icon: &str, name: &str| json!({"icon": icon, "name": name, "rect": [r.min.x, r.min.y, r.max.x, r.max.y]});
-            seen["selectionChip"] = chip_json(sel.rect, "selection", tr("Add the selection to the prompt"));
-            if sel.clicked() && has_selection && !read_only {
-                app.run("chat.add-selection", json!({}));
-            }
-            if image_chip {
-                let img = chips::icon_chip(ui, &roles, AiIcon::Image, tr("Attach an image"));
-                crate::a11y::button(&img, tr("Attach an image"));
-                seen["imageChip"] = chip_json(img.rect, "image", tr("Attach an image"));
-                if img.clicked() && !read_only {
-                    app.run("chat.attach-image", json!({}));
-                }
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if running {
@@ -263,7 +241,13 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     }
     if send {
         let agent = current.as_ref().map(|(p, _)| p.id.clone()).unwrap_or_default();
-        let mut p = json!({"prompt": app.ui.agent_view.chat.draft.clone(), "agent": agent});
+        // The selection added from the + menu goes with the prompt, on a line of its own, as the
+        // Selection chip wrote it before Fix AB4.
+        let prompt = match app.ui.agent_view.chat.selected.take() {
+            Some((_, line)) => format!("{line}\n{}", app.ui.agent_view.chat.draft),
+            None => app.ui.agent_view.chat.draft.clone(),
+        };
+        let mut p = json!({"prompt": prompt, "agent": agent});
         if let Some(img) = app.ui.agent_view.chat.image.clone().filter(|_| takes_image) {
             p["image"] = json!(img);
         }
@@ -290,4 +274,31 @@ fn status_line(app: &FigApp, ui: &mut Ui, t: &Tokens, seen: &mut serde_json::Val
     seen["following"] = json!(text);
     seen["statusDot"] = json!(crate::theme::accent::rgb_text(dot));
     ui.add_space(10.0);
+}
+
+/// The selection chip (Fix AB4): "Selected · {name}" on the raised fill, radius 8, with an × that
+/// takes it off (`chat.remove-selection`).
+fn selected_chip(app: &mut FigApp, ui: &mut Ui, roles: &crate::panel_view::ai_tab::panel_theme::Roles, name: &str) -> serde_json::Value {
+    let text = trf("Selected · {name}", &[("name", &name)]);
+    let mut rect = egui::Rect::NOTHING;
+    ui.horizontal(|ui| {
+        let max = (ui.available_width() - 28.0).max(40.0);
+        let shown = crate::panel_view::ai_tab::run_card::elide(ui.painter(), &text, regular(12.0), max - 20.0);
+        let w = ui.painter().layout_no_wrap(shown.clone(), regular(12.0), roles.text).size().x + 10.0 + 6.0 + 14.0 + 8.0;
+        let (r, _) = ui.allocate_exact_size(egui::vec2(w, 24.0), egui::Sense::hover());
+        ui.painter().rect_filled(r, egui::CornerRadius::same(8), roles.chip_fill);
+        ui.painter().text(egui::pos2(r.min.x + 10.0, r.center().y), egui::Align2::LEFT_CENTER, &shown, regular(12.0), roles.text);
+        let x = egui::Rect::from_center_size(egui::pos2(r.max.x - 8.0 - 7.0, r.center().y), egui::vec2(14.0, 14.0));
+        let xr = ui.interact(x, egui::Id::new("ai_selected_chip_remove"), egui::Sense::click()).on_hover_text(tr("Remove the selection"));
+        crate::a11y::button(&xr, tr("Remove the selection"));
+        let c = if xr.hovered() { roles.text } else { roles.text_secondary };
+        let s = egui::Stroke::new(1.3, c);
+        ui.painter().line_segment([x.center() + egui::vec2(-3.5, -3.5), x.center() + egui::vec2(3.5, 3.5)], s);
+        ui.painter().line_segment([x.center() + egui::vec2(3.5, -3.5), x.center() + egui::vec2(-3.5, 3.5)], s);
+        if xr.clicked() {
+            app.run("chat.remove-selection", json!({}));
+        }
+        rect = r;
+    });
+    json!({"text": text, "rect": [rect.min.x, rect.min.y, rect.max.x, rect.max.y]})
 }

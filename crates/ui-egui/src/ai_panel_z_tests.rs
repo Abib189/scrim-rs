@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::follow_agent::chat_ui::tests::{send_allowed, window};
 use crate::layers_drag_tests::Ui;
-use crate::layers_header::tests::tree;
+use crate::layers_header::tests::{click_named, tree};
 
 fn panel(u: &Ui) -> Value {
     crate::follow_agent::inspect(&u.app)["aiPanel"].clone()
@@ -131,66 +131,6 @@ fn agents(dark: bool, w: f32, image: bool) -> Ui {
     u.frame(vec![]);
     u.frame(vec![]);
     u
-}
-
-/// Z6: Selection and the image are round 32 × 32 icon chips at every width (240, 280, 336 and
-/// 400 px, light and dark, the image chip there or not), 8 apart, after the agent chip and clear of
-/// Send, with their accessible names and tooltips; no "Selection" word is drawn. It fails with the
-/// text chips (wider than 32 from about 300 px).
-#[test]
-fn selection_and_image_are_round_icon_chips_at_every_width() {
-    for dark in [false, true] {
-        for w in [240.0, 280.0, 336.0, 400.0] {
-            for image in [false, true] {
-                let mut u = agents(dark, w, image);
-                let c = panel(&u)["composer"].clone();
-                let at = format!("{dark} {w} {image}");
-                assert_eq!(c["imageButton"], image, "{at}");
-                let sel = rect(&c["selectionChip"]["rect"]);
-                assert!((sel[2] - sel[0] - 32.0).abs() < 0.5 && (sel[3] - sel[1] - 32.0).abs() < 0.5, "{at}: Selection 32 × 32: {sel:?}");
-                assert_eq!(c["selectionChip"]["icon"], "selection");
-                let nodes = tree(&mut u);
-                let find = |name: &str| nodes.iter().find(|n| n.label().is_some_and(|l| l.starts_with(name))).and_then(|n| n.bounds());
-                let pane = nodes.iter().find(|n| n.role() == Role::Pane && n.label() == Some("AI")).and_then(|n| n.bounds()).expect("the AI pane");
-                let b = find("Add the selection to the prompt").expect("Selection's name");
-                assert!((b.x0 - sel[0]).abs() < 0.5 && (b.x1 - sel[2]).abs() < 0.5, "{at}: named where it's drawn");
-                let agent = find("Agent: ").expect("the agent chip");
-                assert!(agent.x1 <= sel[0] - 7.5, "{at}: after the agent chip, 8 apart: {agent:?} {sel:?}");
-                let mut last = sel[2];
-                // Since Fix AA3 a narrow row keeps the agent's name and puts the image in its menu.
-                if image && c["imageInMenu"] == true {
-                    assert!(c["imageChip"].is_null() && find("Attach an image").is_none(), "{at}: the image is in the agent menu");
-                } else if image {
-                    let img = rect(&c["imageChip"]["rect"]);
-                    assert!((img[2] - img[0] - 32.0).abs() < 0.5 && (img[3] - img[1] - 32.0).abs() < 0.5, "{at}: Image 32 × 32: {img:?}");
-                    assert!((img[0] - sel[2] - 8.0).abs() < 0.6, "{at}: 8 after Selection");
-                    assert!(find("Attach an image").is_some(), "{at}: the image's name");
-                    last = img[2];
-                } else {
-                    assert!(c["imageChip"].is_null() && find("Attach an image").is_none(), "{at}: no image chip");
-                }
-                let send = find("Send").expect("Send");
-                assert!(last <= send.x0 - 7.5 && send.x1 <= pane.x1 + 0.5, "{at}: clear of Send and inside the panel");
-                assert!(!nodes.iter().any(|n| n.label() == Some("Selection") || n.value() == Some("Selection")), "{at}: no Selection word");
-            }
-        }
-    }
-}
-
-/// Z6: hovered, a chip's tooltip is its name, as before.
-#[test]
-fn the_icon_chips_keep_their_tooltips() {
-    let mut u = agents(false, 336.0, true);
-    for name in ["Add the selection to the prompt", "Attach an image"] {
-        u.frame(vec![egui::Event::PointerMoved(egui::pos2(5.0, 5.0))]);
-        let b = tree(&mut u).iter().find(|n| n.label() == Some(name)).and_then(|n| n.bounds()).expect(name);
-        u.frame(vec![egui::Event::PointerMoved(egui::pos2(((b.x0 + b.x1) / 2.0) as f32, ((b.y0 + b.y1) / 2.0) as f32))]);
-        for _ in 0..60 {
-            u.frame(vec![]);
-        }
-        let named = tree(&mut u).iter().filter(|n| n.label() == Some(name) || n.value() == Some(name)).count();
-        assert!(named >= 2, "{name}: the chip and its tooltip ({named})");
-    }
 }
 
 /// A run that made a frame and a text, ended; the window and the document before it.
@@ -355,90 +295,101 @@ fn the_card_follows_cmd_z_and_cmd_shift_z() {
     }
 }
 
-/// Fix AA3: the window with Claude Code or Codex (whose CLI takes an image) chosen, at `w` px.
-fn composer(dark: bool, w: f32, codex: bool) -> Ui {
-    agents(dark, w, codex)
-}
-
-/// Fix AA3: at 240, 260, 280 and 336 px, light and dark, Claude Code and Codex:
-/// the agent chip always shows a readable name (all of it, or six characters and "…"), below 280 px
-/// without its chevron; when that needs the image chip's room, the image is "Attach image…" in the
-/// agent menu; the row never overflows; every control keeps its name and at least a 24 px target.
+/// Fix AB4: at 240, 260, 280 and 336 px, light and dark, with Claude Code and with Codex: the row is
+/// the +, the agent chip and Send, inside the composer and never overflowing; the agent's name
+/// reads (all of it, or six characters and "…"), without its chevron below 280 px (Fix AA3's rule);
+/// every control is named with at least a 24 px target. The image is no longer a chip.
 #[test]
-fn the_agent_chip_shows_a_readable_name_at_every_width() {
+fn the_plus_row_fits_at_every_width() {
     for dark in [false, true] {
         for w in [240.0, 260.0, 280.0, 336.0] {
             for codex in [false, true] {
-                {
-                    let at = format!("{dark} {w} codex={codex}");
-                    let mut u = composer(dark, w, codex);
-                    let c = panel(&u)["composer"].clone();
-                    let name = if codex { "Codex" } else { "Claude Code" };
-                    let chip = &c["agentChip"];
-                    let shown = chip["shown"].as_str().unwrap_or_else(|| panic!("{at}: {c}"));
-                    let readable =
-                        shown == name || (shown.ends_with('…') && shown.chars().count() >= 7 && name.starts_with(shown.trim_end_matches('…')));
-                    assert!(readable, "{at}: the agent's name reads: {shown:?}");
-                    assert_eq!(chip["chevron"], w >= 280.0, "{at}: the chevron only from 280 px");
-                    let in_menu = c["imageInMenu"].as_bool().unwrap();
-                    assert_eq!(c["imageChip"].is_object(), codex && !in_menu, "{at}");
-                    assert!(!in_menu || codex, "{at}");
-                    let nodes = tree(&mut u);
-                    let ai = crate::i18n::tr("AI").to_string();
-                    let pane = nodes
-                        .iter()
-                        .find(|n| n.role() == Role::Pane && n.label() == Some(ai.as_str()))
-                        .and_then(|n| n.bounds())
-                        .expect("the AI pane");
-                    let composer = rect(&c["composerRect"]);
-                    let mut names: Vec<String> = vec![crate::i18n::trf("Agent: {agent}", &[("agent", &name)])];
-                    names.push(crate::i18n::tr("Add the selection to the prompt").to_string());
-                    if codex && !in_menu {
-                        names.push(crate::i18n::tr("Attach an image").to_string());
-                    }
-                    let mut last = f64::MIN;
-                    for n in &names {
-                        let b = nodes
-                            .iter()
-                            .find(|x| x.label() == Some(n.as_str()))
-                            .and_then(|x| x.bounds())
-                            .unwrap_or_else(|| panic!("{at}: {n} named"));
-                        assert!(b.x1 - b.x0 >= 24.0 && b.y1 - b.y0 >= 24.0, "{at}: {n} has a 24 px target: {b:?}");
-                        assert!(b.x0 >= last + 7.5, "{at}: {n} after the one before, 8 apart");
-                        assert!(b.x0 >= composer[0] && b.x1 <= composer[2], "{at}: {n} inside the composer");
-                        last = b.x1;
-                    }
-                    let send = nodes
-                        .iter()
-                        .find(|x| x.label().is_some_and(|l| l.starts_with(crate::i18n::tr("Send"))))
-                        .and_then(|x| x.bounds())
-                        .expect("Send");
-                    assert!(send.x0 >= last + 7.5 && send.x1 <= composer[2] && send.x1 <= pane.x1, "{at}: Send clear and inside");
-                    let p = panel(&u);
-                    assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "{at}: no sideways scroll");
+                let at = format!("{dark} {w} codex={codex}");
+                let mut u = agents(dark, w, codex);
+                let c = panel(&u)["composer"].clone();
+                let name = if codex { "Codex" } else { "Claude Code" };
+                let shown = c["agentChip"]["shown"].as_str().unwrap_or_else(|| panic!("{at}: {c}"));
+                let readable = shown == name || (shown.ends_with('…') && shown.chars().count() >= 7 && name.starts_with(shown.trim_end_matches('…')));
+                assert!(readable, "{at}: the agent's name reads: {shown:?}");
+                assert_eq!(c["agentChip"]["chevron"], w >= 280.0, "{at}: the chevron only from 280 px");
+                assert!(c["imageChip"].is_null() && c["selectionChip"].is_null(), "{at}: no chips but the agent's");
+                let nodes = tree(&mut u);
+                let composer = rect(&c["composerRect"]);
+                let plus = rect(&c["plus"]["rect"]);
+                assert!((plus[2] - plus[0] - 32.0).abs() < 0.5 && (plus[3] - plus[1] - 32.0).abs() < 0.5, "{at}: + is 32 × 32");
+                let mut last = f64::MIN;
+                for n in ["More: add the selection, attach an image, follow the agent".to_string(), format!("Agent: {name}")] {
+                    let b =
+                        nodes.iter().find(|x| x.label() == Some(n.as_str())).and_then(|x| x.bounds()).unwrap_or_else(|| panic!("{at}: {n} named"));
+                    assert!(b.x1 - b.x0 >= 24.0 && b.y1 - b.y0 >= 24.0, "{at}: {n} has a 24 px target: {b:?}");
+                    assert!(b.x0 >= last + 7.5 && b.x0 >= composer[0] && b.x1 <= composer[2], "{at}: {n} in order, inside");
+                    last = b.x1;
                 }
+                let send = nodes.iter().find(|x| x.label().is_some_and(|l| l.starts_with("Send"))).and_then(|x| x.bounds()).expect("Send");
+                assert!(send.x0 >= last + 7.5 && send.x1 <= composer[2], "{at}: Send clear and inside");
+                let p = panel(&u);
+                assert!(p["widest"].as_f64().unwrap() <= p["width"].as_f64().unwrap() + 1.0, "{at}: no sideways scroll");
             }
         }
     }
 }
 
-/// Fix AA3, Spanish: the row's visible words are the agent's name and icons, so a longer language
-/// can't push it over; what Spanish changes is what the controls are called, and each has its
-/// Spanish name. (The UI's language is process-wide, so tests don't switch it while others run.)
+fn plus_menu(u: &Ui) -> Value {
+    panel(u)["composer"]["plus"].clone()
+}
+
+/// Fix AB4: + opens its menu above the composer with its three named rows; Esc closes it, a click
+/// outside closes it; ↓ and Enter run a row ("Follow the agent" toggles the follow setting, the
+/// header's command, and the menu stays); light and dark.
 #[test]
-fn the_rows_controls_have_their_spanish_names() {
-    for key in ["Agent: {agent}", "Add the selection to the prompt", "Attach an image", "Attach image…", "Agent settings…", "Send", "Stop"] {
-        let es = crate::i18n::own_entry("es", key).unwrap_or_else(|| panic!("{key} in Spanish"));
-        assert!(!es.is_empty() && es != key, "{key}: {es}");
+fn the_plus_menu_opens_above_and_closes_and_takes_the_keys() {
+    for dark in [false, true] {
+        let mut u = agents(dark, 336.0, true);
+        click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+        let m = plus_menu(&u);
+        assert_eq!(m["open"], true, "{dark}");
+        let menu = rect(&m["menu"]["rect"]);
+        let composer = rect(&panel(&u)["composer"]["composerRect"]);
+        assert!(menu[3] <= composer[1], "{dark}: above the composer: {menu:?} {composer:?}");
+        let rows: Vec<&str> = m["menu"]["rows"].as_array().unwrap().iter().map(|r| r["label"].as_str().unwrap()).collect();
+        assert_eq!(rows, ["Add selection", "Attach image", "Follow the agent"]);
+        assert_eq!(m["menu"]["rows"][0]["trail"], "Poster", "{dark}: the selection's name at the right");
+        let nodes = tree(&mut u);
+        for r in &rows {
+            assert!(nodes.iter().any(|n| n.label() == Some(*r)), "{dark}: {r} named for screen readers");
+        }
+        u.frame(vec![egui::Event::Key { key: egui::Key::Escape, physical_key: None, pressed: true, repeat: false, modifiers: Default::default() }]);
+        u.frame(vec![]);
+        assert_eq!(plus_menu(&u)["open"], false, "{dark}: Esc closes it");
+        click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+        let out = egui::pos2(1300.0, 120.0);
+        for pressed in [true, false] {
+            u.frame(vec![
+                egui::Event::PointerMoved(out),
+                egui::Event::PointerButton { pos: out, button: egui::PointerButton::Primary, pressed, modifiers: Default::default() },
+            ]);
+        }
+        u.frame(vec![]);
+        assert_eq!(plus_menu(&u)["open"], false, "{dark}: a click outside closes it");
+        click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+        let following = || figcraft_engine::cmd::camera::follow_state(&u.app.session) != "off";
+        let before = following();
+        for key in [egui::Key::ArrowDown, egui::Key::ArrowDown, egui::Key::Enter] {
+            u.frame(vec![egui::Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers: Default::default() }]);
+        }
+        u.frame(vec![]);
+        assert_eq!(plus_menu(&u)["menu"]["keyed"], 2, "{dark}: the keys moved to Follow the agent");
+        assert_ne!(figcraft_engine::cmd::camera::follow_state(&u.app.session) != "off", before, "{dark}: Enter toggled following");
+        assert_eq!(plus_menu(&u)["open"], true, "{dark}: the toggle keeps the menu open");
     }
 }
 
-/// Fix AA3: at 240 px with Codex, "Attach image…" in the agent menu does what the image chip does:
-/// asks for an image and attaches it.
+/// Fix AB4: "Attach image" runs the image chip's command: the dialog asks, and the image is
+/// attached.
 #[test]
-fn attach_image_is_in_the_agent_menu_when_the_chip_has_no_room() {
+fn attach_image_from_the_plus_menu() {
     use crate::follow_agent::chat_ui::tests::{CLAUDE, Platform, Script};
-    let mut u = composer(false, 240.0, true);
+    let mut u = agents(false, 240.0, true);
     let script = std::sync::Arc::new(std::sync::Mutex::new(Script {
         claude: Some(CLAUDE.into()),
         codex: Some("/opt/agents/bin/codex".into()),
@@ -447,15 +398,35 @@ fn attach_image_is_in_the_agent_menu_when_the_chip_has_no_room() {
     }));
     u.app.services = Box::new(Platform(script.clone()));
     u.frame(vec![]);
-    assert_eq!(panel(&u)["composer"]["imageInMenu"], true);
-    assert!(panel(&u)["composer"]["imageChip"].is_null(), "no chip");
-    crate::layers_header::tests::click_named(&mut u, "Agent: Codex");
-    crate::layers_header::tests::click_named(&mut u, "Attach image…");
+    click_named(&mut u, "More: add the selection, attach an image, follow the agent");
+    click_named(&mut u, "Attach image");
     for _ in 0..3 {
         u.frame(vec![]);
     }
-    assert_eq!(script.lock().unwrap().picked, ["Attach an image"], "the chip's dialog");
+    assert_eq!(script.lock().unwrap().picked, ["Attach an image"], "the dialog");
     assert_eq!(u.app.ui.agent_view.chat.image.as_deref(), Some("/tmp/ref.png"), "attached");
+    assert_eq!(plus_menu(&u)["open"], false, "and the menu closed");
+}
+
+/// Fix AB4, Spanish: the row's visible words are the agent's name and icons; what Spanish changes
+/// is what the controls are called, and each has its Spanish name. (The UI's language is
+/// process-wide, so tests don't switch it while others run.)
+#[test]
+fn the_rows_controls_have_their_spanish_names() {
+    for key in [
+        "Agent: {agent}",
+        "More: add the selection, attach an image, follow the agent",
+        "Add selection",
+        "Attach image",
+        "Follow the agent",
+        "Remove the selection",
+        "Agent settings…",
+        "Send",
+        "Stop",
+    ] {
+        let es = crate::i18n::own_entry("es", key).unwrap_or_else(|| panic!("{key} in Spanish"));
+        assert!(!es.is_empty() && es != key, "{key}: {es}");
+    }
 }
 
 /// Fix AA6: the header (title, Follow, New chat) stays where it is drawn, under the tab row,

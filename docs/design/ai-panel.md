@@ -54,13 +54,16 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - **The composer**, pinned to the bottom, 16 from the panel's left, right and bottom, with no rule above it (`ai_composer.rs`, `ai_chips.rs`):
   - **The box:** radius 16, `t.field`, its edge `theme::field_stroke`; 16 left and right and 14 top and bottom inside; at least 88 high, growing with the text.
   - **The field:** Inter 14, "Describe a change…".
-  - **A 32 px row under the field,** 8 apart:
-    - the agent chip (a pill with its name and an 8 × 4 chevron, which opens the agent menu: the agents, then "Agent settings…");
-    - the Selection chip (`chat.add-selection`): a round 32 px icon chip (Fix Z6), a 14 × 14 rounded dashed square with a pointer arrow in it;
-    - an image chip (`chat.attach-image`), only for an agent whose CLI takes one: a round 32 px icon chip, a picture;
-    - **the icon chips:** `t.selected_row`, `t.pressed` hovered, the focus ring; the icon in `t.icon`, stroke 1.5 (`ai_icons.rs`). Their accessible names and tooltips are unchanged: "Add the selection to the prompt" and "Attach an image".
-    - Send at the far right: a 36 px `t.accent_fill` circle with an arrow in `t.accent_on`, which is Stop (a 16 × 16 square, radius 3) while a run goes.
-  - **Narrow:** the agent's name shortens with "…" (decision 14); the icon chips stay 32 px. Below 280 px the agent chip drops its chevron and pads 8. If its name still can't show six characters and "…", the image chip goes into the agent menu as "Attach image…", the same command (Fix AA3, decision 29).
+  - **The selection chip** (Fix AB4): once the selection is added, "Selected · {name}" (or "Selected · 3 layers") on the raised fill, radius 8, at the box's top, with an × (`chat.remove-selection`). The prompt sent carries "Selected: Name (id), …" on a line of its own, as the Selection chip wrote it into the draft before; the draft keeps only the person's words.
+  - **A 32 px row under the field,** 8 apart (Fix AB4, the design's A6):
+    - **a round 32 px "+"** on the raised fill, named "More: add the selection, attach an image, follow the agent". It opens the + menu above the composer: surface fill, border, radius 12, 8 inside, 36 px rows, a row under the pointer or the keys on the raised fill. Its rows:
+      - "Add selection", the selection's name at its right in text-2 (`chat.add-selection`; off with nothing selected);
+      - "Attach image" (`chat.attach-image`; off for an agent whose CLI takes none, "This agent can't take an image");
+      - "Follow the agent", a switch (success when on): `camera.follow-agents`, the header's command, so Fix W's rules for agents hold.
+      It closes on Esc, a click outside, and after Add selection or Attach image; the switch keeps it open. ↑ and ↓ move along the rows and Enter runs one. Each row is named for screen readers, the switch as a checkbox item.
+    - **the agent chip** (a pill with its name and an 8 × 4 chevron, which opens the agent menu: the agents, then "Agent settings…");
+    - **Send** at the far right: a 36 px `t.accent_fill` circle with an arrow in `t.accent_on`, which is Stop (a 16 × 16 square, radius 3) while a run goes.
+  - **Narrow:** below 280 px the agent chip drops its chevron and pads 8, and its name shortens with "…" (Fix AA3). At 240 px the row holds +, the chip and Send.
   - **Keys:** ⌘↩ (Ctrl+Enter) sends; Esc and Stop stop a run. Why Send can't go is its tooltip.
   - **R5 and S1 are unchanged:** the commands are the person's, the first-use dialog, no keys stored, `USER`/`LOGNAME` in the child's environment, the time cap, and Undo one step per edit.
 
@@ -111,7 +114,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 11. **The new icons** are drawn in `ai_icons.rs` (the crosshair and, since Fix X2, the chevrons), because `icons.rs` is over the size limit. Since Fix X3, Send's arrow and Stop's square are drawn with the button in `ai_chips.rs`, and the gear is gone (decision 14).
 12. **The old AI-tab Follow row and its Resume** are gone. The header's button does both, and following's status is in its tooltip.
 13. **U3's dimmed colour is a new token, `disabled`,** equal to `menu_dim` (`text_tertiary`) in both themes: the codebase had no token named for disabled controls, and disabled menu items already use that colour. Like them it isn't held to 3:1 (WCAG exempts inactive controls).
-14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Since Fix Z6 the Selection and image chips are round icon chips at every width, so the agent's name keeps its room (before, they showed their words from about 300 px).
+14. **The composer's gear moved into the agent chip's menu** (Fix X3): "Agent settings…", the menu's last item, opens Settings ▸ Agents. The design has no gear. Since Fix Z6 the Selection and image chips were round icon chips at every width; since Fix AB4 they are rows of the + menu.
 15. **The card's rows say what the run did, by name** (Fix Z1, `chat_run::rows`, replacing Fix X4's command labels). Each command or batch of the run gives rows from the layers it touched, as the change log captured them then (`agents_touched.rs`: created, edited, moved, deleted, with the layer's name at that moment):
     - **Created:** "Created {name}" for each frame, section, group or layer right on a page it made, with " ({n} layers)" for the layers it made inside. Its other creations are "Created {name}" for one, else "Created {n} layers".
     - **Edited:** "Edited {name}" for one layer, else "Edited {n} layers". A single move into another parent is "Moved {name} into {parent}".
@@ -155,11 +158,12 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **A step is known by its place and label, not its document:** ⌘⇧Z rebuilds a step around the document of the moment, so the step's document isn't the one Undo run left.
     - **The note** follows: "Undo is one step" only on a Done card with Undo run live, "Redo is one step" while Redo run is live, nothing otherwise, and nothing while the run works. That last part changes Fix X4, which showed the note mid-run.
     - **Undo run is off once something changed since the run** (tooltip "Something changed since the run: Undo run is no longer one step"), where Z7 kept it live and refused it. So the refusal line now shows for refusals the card can't foresee, such as Select layers after the person deleted every layer the run made.
-29. **The agent chip keeps a readable name at 240 px** (Fix AA3). Below 280 px it has no chevron and 8 px padding (`chips::ChipFit`); the menu still opens on a click. If the name still can't show six characters and "…" (or all of it, when it is shorter), the image chip moves into the agent menu as "Attach image…" (`chat.attach-image`, as the chip). Selection keeps its chip. At 240 px that means Codex reads whole and Claude Code reads "Claude C…".
+29. **The agent chip keeps a readable name at 240 px** (Fix AA3). Below 280 px it has no chevron and 8 px padding (`chips::ChipFit`); the menu still opens on a click. At 240 px Codex reads whole and Claude Code reads "Claude C…". (AA3 also moved the image chip into the agent menu when the name had no room; since Fix AB4 the image is in the + menu, and that fallback is gone.)
     - **Spanish isn't drawn in the tests:** the UI's language is process-wide and the suite runs in parallel. The row's visible words are the agent's name and icons, so a language can't widen it. What Spanish changes, the controls' names, is checked in the catalog.
 30. **The header can't scroll away** (Fix AA6). Reproduced offscreen: the right panel draws every tab in its own scroll area, with 80 px kept below the content.
     - **What happened:** on the AI tab the wheel over the header or the transcript scrolled that area by those 80 px, as did a Design tab scrolled to its end before switching (the two shared its offset). That slid the header (title, Follow, New chat) above the panel's top edge, where it isn't painted, while `ui.inspect` still reported its rectangle.
     - **Now:** on the AI tab the area doesn't scroll and keeps its own offset (`panel_view::scroll_area`). The transcript scrolls itself, and the composer is pinned.
+31. **The + menu** (Fix AB4) replaces the Selection and Image chips (decision 14). "Add selection" now puts a chip on the composer, no longer text in the draft; the line goes with the prompt when it is sent. "Attach image" shows for every agent, off with a reason for one that takes none, where the design shows it on.
 
 ## Tests
 
@@ -234,6 +238,12 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - `ai_card_tests.rs`: the detail line from the counts; the card in each state (working, done, undone) in both themes, with its heading, note, dot, summary, detail, Steps count and buttons; the steps closed at first, opened and closed by the row and the command, closed for a new run; the card's own repaint pace.
   - `chat_run_tests.rs` › `the_counts_net_each_layers_change_over_the_run`.
 - `ai_toast_tests.rs` (AB3): the toast's words and screen-reader name in both themes; its Redo puts the run back and the toast goes; it goes after 6 s with no frame drawn while it waits; and at once on a new message.
+- AB4 (`ai_panel_z_tests.rs`, `ai_panel_tests.rs`):
+  - `the_plus_row_fits_at_every_width`: 240, 260, 280 and 336 px, both themes, Claude Code and Codex. +, then the agent chip, then Send, inside the composer; the agent's name reads; no chevron below 280 px; named, 24 px targets; no other chips.
+  - `the_plus_menu_opens_above_and_closes_and_takes_the_keys`: above the composer, its three named rows, the selection's name, Esc, a click outside, ↓ ↓ Enter toggling Follow with the menu kept.
+  - `attach_image_from_the_plus_menu`; `the_rows_controls_have_their_spanish_names`.
+  - `the_selection_button_adds_the_layers_names_and_ids` (now the chip, its ×, and the line sent with the prompt); `the_image_button_shows_only_for_an_agent_whose_cli_takes_one` (now the menu row's state).
+  - Fix Z6's chip tests and AA3's agent-menu fallback test are gone with the chips.
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

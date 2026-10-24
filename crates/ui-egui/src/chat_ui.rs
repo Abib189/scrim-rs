@@ -97,6 +97,13 @@ pub struct State {
     pub steps_open: bool,
     /// The Undone toast (Fix AB3): the run's edits, and when it goes (set when first drawn).
     pub toast: Option<(usize, Option<f64>)>,
+    /// The + menu (Fix AB4): open, and the row the keys are on.
+    pub plus_open: bool,
+    pub plus_row: usize,
+    /// The selection added to the prompt (Fix AB4): its chip's name, and the line sent with it.
+    pub selected: Option<(String, String)>,
+    /// Focus the composer's field next frame (a suggestion was used, Fix AB5).
+    pub focus_field: bool,
     /// The last run (Fix X4), kept after it ends until the next.
     pub last_run: Option<LastRun>,
     pub lines: Vec<Line>,
@@ -221,6 +228,7 @@ fn panel_request(app: &mut FigApp, kind: &str, data: &Value) {
         }
         "chat.scope" => app.ui.agent_view.chat.store.all = s("scope").as_deref() == Some("all"),
         "chat.toggle-run-steps" => app.ui.agent_view.chat.steps_open = !app.ui.agent_view.chat.steps_open,
+        "chat.remove-selection" => app.ui.agent_view.chat.selected = None,
         "chat.add-selection" => add_selection(app),
         "chat.attach-image" => match s("path") {
             // An empty path takes the image away.
@@ -245,12 +253,10 @@ fn add_selection(app: &mut FigApp) {
     if names.is_empty() {
         return;
     }
+    // Its chip (Fix AB4); the line goes with the prompt when it's sent.
     let line = trf("Selected: {layers}", &[("layers", &names.join(", "))]);
-    let draft = &mut app.ui.agent_view.chat.draft;
-    if !draft.is_empty() && !draft.ends_with('\n') {
-        draft.push('\n');
-    }
-    draft.push_str(&line);
+    let name = crate::panel_view::ai_tab::plus::selection_name(app).unwrap_or_default();
+    app.ui.agent_view.chat.selected = Some((name, line));
 }
 
 fn line(app: &mut FigApp, l: Line) {

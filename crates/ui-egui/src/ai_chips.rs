@@ -49,12 +49,6 @@ pub fn label_width(ui: &Ui, label: &str) -> f32 {
     ui.painter().layout_no_wrap(label.to_string(), regular(13.0), egui::Color32::PLACEHOLDER).size().x
 }
 
-/// The least room a name needs to read (Fix AA3): all of it, or its first six characters and "…".
-pub fn readable_width(ui: &Ui, label: &str) -> f32 {
-    let short: String = label.chars().take(6).collect();
-    if short.chars().count() == label.chars().count() { label_width(ui, label) } else { label_width(ui, &format!("{}…", short.trim_end())) }
-}
-
 /// A pill chip `width` wide (its label shortened with "…" when it doesn't fit): `label` in
 /// `color`, a chevron when `fit` has one. `name` is what screen readers say and the tooltip.
 /// Returns the label as shown.

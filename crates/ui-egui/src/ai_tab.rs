@@ -27,6 +27,8 @@ pub(crate) mod markdown;
 pub(crate) mod panel;
 #[path = "ai_panel_theme.rs"]
 pub(crate) mod panel_theme;
+#[path = "ai_plus.rs"]
+pub(crate) mod plus;
 #[path = "ai_reply.rs"]
 pub(crate) mod reply;
 #[path = "ai_run_card.rs"]
