@@ -2065,6 +2065,9 @@ name = "English"
 "Select layers" = "Select layers"
 "Undo run" = "Undo run"
 "Redo run" = "Redo run"
+"Redo" = "Redo"
+"Undone: {n} edits" = { one = "Undone: {n} edit", other = "Undone: {n} edits" }
+"Undone {n} edits. Redo." = { one = "Undone {n} edit. Redo.", other = "Undone {n} edits. Redo." }
 "Working" = "Working"
 "Steps" = "Steps"
 "Steps, {count}" = "Steps, {count}"

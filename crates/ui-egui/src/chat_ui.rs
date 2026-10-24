@@ -95,6 +95,8 @@ pub struct State {
     /// The run card's checklist of steps open (Fix AB2, `chat.toggle-run-steps`): closed for each
     /// new run, never kept.
     pub steps_open: bool,
+    /// The Undone toast (Fix AB3): the run's edits, and when it goes (set when first drawn).
+    pub toast: Option<(usize, Option<f64>)>,
     /// The last run (Fix X4), kept after it ends until the next.
     pub last_run: Option<LastRun>,
     pub lines: Vec<Line>,
@@ -265,6 +267,7 @@ fn send(app: &mut FigApp, agent: &str, prompt: &str, image: Option<String>) {
     let found = app.services.find_program(&p.program);
     line(app, Line::You(prompt.to_string()));
     app.ui.agent_view.chat.draft.clear();
+    app.ui.agent_view.chat.toast = None;
     let image = image.filter(|_| !p.image_args.is_empty());
     app.ui.agent_view.chat.image = None;
     if let Some(path) = &image {

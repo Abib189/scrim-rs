@@ -129,8 +129,13 @@ pub(crate) fn revision(app: &FigApp) -> u64 {
 /// A card button's command: run as `app.run` does, but a refusal is the card's line under its
 /// buttons (Fix Z7), not a toast. Diagnostics notes it either way ("chat.undo-run: refused (already
 /// undone)").
-fn press(app: &mut FigApp, cmd: &str, params: &Value) {
+pub(crate) fn press(app: &mut FigApp, cmd: &str, params: &Value) {
     let r = app.session.execute(cmd, params);
+    // Undo run done: the Undone toast (Fix AB3).
+    if let (Ok(v), "chat.undo-run") = (&r, cmd) {
+        let edits = v.get("edits").and_then(Value::as_u64).unwrap_or(0) as usize;
+        crate::panel_view::ai_tab::toast::show_for(app, edits);
+    }
     app.handle_ui_requests();
     crate::settings_privacy::noted(app, cmd, r.as_ref().err());
     app.ui.agent_view.chat.refused = r.err().map(|e| {

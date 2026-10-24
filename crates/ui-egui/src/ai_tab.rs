@@ -31,6 +31,8 @@ pub(crate) mod panel_theme;
 pub(crate) mod reply;
 #[path = "ai_run_card.rs"]
 pub(crate) mod run_card;
+#[path = "ai_toast.rs"]
+pub(crate) mod toast;
 
 /// How many of the newest changes the feed lists.
 const FEED: usize = 30;

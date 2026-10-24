@@ -44,6 +44,12 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
         - **An off button** is drawn in the `disabled` token, can't be focused or pressed, and says why in its tooltip.
         - **A refused press** shows its words on one line under the buttons (`t.text_secondary`, 12 px, wrapped), gone on the next action; no toast.
         - **From a 300 px panel** they sit side by side, equal. **Below 300 px** they stack, each the full width (Fix Y2), and also wherever a label wouldn't keep 12 px from its button's edges.
+- **The Undone toast** (Fix AB3, `ai_toast.rs`, the design's A5): after Undo run, just above the status line:
+  - "Undone: 43 edits" at the left and "Redo" (SemiBold, accent-text) at the right, on the raised fill, radius 10, 40 high, 16 from each side. Not a modal.
+  - "Redo" runs `chat.redo-run`. Screen readers hear "Undone 43 edits. Redo."
+  - It goes after 6 s, on a new message, and once the run is no longer undone (Redo, from here, the card or ⌘⇧Z).
+  - While it shows it asks for one frame, at its end: never every frame.
+  - It shows for Undo run pressed on the card. Undo run from elsewhere (the command palette, an agent can't) shows none.
 - **The status line**, always 10 above the composer: a 6 px dot at 20 and Inter 12 at 32. "Following is on" with a `t.success` dot, or "Following is off" with a secondary one. The grace hint's line and the missing-CLI line stay above it.
 - **The composer**, pinned to the bottom, 16 from the panel's left, right and bottom, with no rule above it (`ai_composer.rs`, `ai_chips.rs`):
   - **The box:** radius 16, `t.field`, its edge `theme::field_stroke`; 16 left and right and 14 top and bottom inside; at least 88 high, growing with the text.
@@ -227,6 +233,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
 - AB2:
   - `ai_card_tests.rs`: the detail line from the counts; the card in each state (working, done, undone) in both themes, with its heading, note, dot, summary, detail, Steps count and buttons; the steps closed at first, opened and closed by the row and the command, closed for a new run; the card's own repaint pace.
   - `chat_run_tests.rs` › `the_counts_net_each_layers_change_over_the_run`.
+- `ai_toast_tests.rs` (AB3): the toast's words and screen-reader name in both themes; its Redo puts the run back and the toast goes; it goes after 6 s with no frame drawn while it waits; and at once on a new message.
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

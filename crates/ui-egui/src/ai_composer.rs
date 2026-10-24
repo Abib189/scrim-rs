@@ -12,7 +12,7 @@
 
 use egui::{Id, RichText, Ui};
 use figcraft_engine::cmd::agent_clients::headless;
-use serde_json::json;
+use serde_json::{Value, json};
 
 use super::{chips, elapsed, installed, picked, send_blocked};
 use crate::FigApp;
@@ -87,6 +87,8 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         });
         ui.add_space(8.0);
     }
+    // The Undone toast, above the status line (Fix AB3).
+    seen["toast"] = crate::panel_view::ai_tab::toast::draw(app, ui, &roles).unwrap_or(Value::Null);
     status_line(app, ui, &t, &mut seen);
     let read_only = super::store::read_only(app);
     seen["readOnly"] = json!(read_only);

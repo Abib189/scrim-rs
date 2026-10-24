@@ -2066,6 +2066,9 @@ status = "draft — needs native review"
 "Select layers" = "Seleccionar capas"
 "Undo run" = "Deshacer ejecución"
 "Redo run" = "Rehacer ejecución"
+"Redo" = "Rehacer"
+"Undone: {n} edits" = { one = "Deshecho: {n} cambio", other = "Deshecho: {n} cambios" }
+"Undone {n} edits. Redo." = { one = "Deshecho {n} cambio. Rehacer.", other = "Deshecho {n} cambios. Rehacer." }
 "Working" = "Trabajando"
 "Steps" = "Pasos"
 "Steps, {count}" = "Pasos, {count}"
