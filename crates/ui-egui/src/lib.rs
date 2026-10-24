@@ -1275,8 +1275,10 @@ impl FigApp {
     fn autosave_tick(&mut self, ctx: &egui::Context) {
         let now = ctx.input(|i| i.time);
         if now < self.ui.next_autosave {
-            // Wake up for it even if nothing else draws a frame by then.
-            repaint_in(ctx, self.ui.next_autosave - now);
+            // Wake up for it only while a document has edits it could keep (Fix AB6: none asked for clean).
+            if self.session.docs.iter().any(|d| d.is_dirty() || (self.session.prefs.auto_save && !d.history.undo.is_empty())) {
+                repaint_in(ctx, self.ui.next_autosave - now);
+            }
             return;
         }
         if self.ui.next_autosave > 0.0 {

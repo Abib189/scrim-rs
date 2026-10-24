@@ -160,3 +160,31 @@ fn repaints_per_second_stay_at_most_two_once_settled() {
         assert!(rate <= 2.0, "{what}: {rate} repaints a second: {causes}");
     }
 }
+
+/// The line of `lib.rs` where the autosave timer asks to be woken.
+fn autosave_line() -> u32 {
+    let src = include_str!("lib.rs");
+    let at = src.lines().position(|l| l.trim() == "repaint_in(ctx, self.ui.next_autosave - now);").expect("the autosave's wake-up");
+    at as u32 + 1
+}
+
+/// Fix AB6: on a clean document, 60 s of frames (one a second on a fake clock) and the autosave
+/// timer asks for no repaint in any of them; once there are unsaved edits it asks again. It asked
+/// on every frame before.
+#[test]
+fn the_autosave_timer_asks_for_nothing_on_a_clean_document() {
+    let line = autosave_line();
+    let mut u = Ui::new(figcraft_engine::Session::new());
+    let asked = |u: &Ui| u.ctx.repaint_causes().iter().filter(|c| c.file.ends_with("ui-egui/src/lib.rs") && c.line == line).count();
+    let mut total = 0;
+    for _ in 0..60 {
+        u.time += 1.0;
+        u.frame(vec![]);
+        total += asked(&u);
+    }
+    assert_eq!(total, 0, "the autosave asked {total} times in 60 s on a clean document");
+    u.app.run("shape.rectangle", json!({"x": 0, "y": 0, "width": 10, "height": 10}));
+    u.frame(vec![]);
+    u.frame(vec![]);
+    assert!(asked(&u) > 0, "with unsaved edits it asks to be woken for the autosave");
+}

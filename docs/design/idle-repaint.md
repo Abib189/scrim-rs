@@ -56,3 +56,20 @@ The average of 23 a second over 16 minutes fits runs and scrolling plus the focu
 ## Still above 2 a second
 
 Nothing, once settled. While a run goes, the banner's dots (10 frames a second; none with reduced motion) and the card's bar (20 a second) animate on purpose. They stop when the run ends.
+
+## Fix AB6: the autosave timer, and the Design tab again (24 Oct 2026)
+
+**The autosave timer** (`lib.rs`, `autosave_tick`) asked to be woken for its next checkpoint on every frame, with nothing to save as well. It drew no frame by itself (the wake-up was up to 30 minutes out), but it was a request each frame, and it filled every cause list.
+- **Now:** it asks only while a document has edits it could keep (unsaved, or with auto-save on, any undo history), a pointer compare per document. A clean window asks for nothing.
+- **The test:** `ai_idle_tests.rs` › `the_autosave_timer_asks_for_nothing_on_a_clean_document`. It runs 60 s of frames on a fake clock (one a second) on a clean document, and counts the frames in which the autosave line asked: 0 now, 60 on the old code. With an unsaved edit it asks again.
+
+**The Design tab, measured again** (`idle-repaint/ab6_design.py`, a scratch app from this tree: scratch HOME and settings, MCP on 7690). It records the system pointer and the scratch window's bounds before and after each 10 s. `idle-repaint/winbounds.swift` reads them from CoreGraphics' window list, which needs no permission. The pointer was never moved by the script.
+
+| Try | The pointer | Repaints a second | Causes |
+|---|---|---|---|
+| 1 | over the window's top edge, still (494, 87 before and after) | **0.0** | none (the 3 frames counted are the measurement's own) |
+| 2 | moved during the 10 s (to 1368, 235, over the panels) | 19.2 | input (`context.rs:538`, 78 frames) and tooltips |
+| 3 | outside, but the window list changed (the main window wasn't listed after) | 3.6 | input (`context.rs:538`, 16 frames) |
+
+- **Reading:** the Design tab draws nothing while the pointer is still, over the window or not. The frames in tries 2 and 3 were all real input, someone using the machine, not the app asking.
+- **Not measured:** a try with the pointer outside the window and still for the whole 10 s. The pointer moved in the two tries where it was outside, and the script doesn't move it.
