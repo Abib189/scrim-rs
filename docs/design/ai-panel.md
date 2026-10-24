@@ -148,6 +148,9 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **Undo run is off once something changed since the run** (tooltip "Something changed since the run: Undo run is no longer one step"), where Z7 kept it live and refused it. So the refusal line now shows for refusals the card can't foresee, such as Select layers after the person deleted every layer the run made.
 29. **The agent chip keeps a readable name at 240 px** (Fix AA3). Below 280 px it has no chevron and 8 px padding (`chips::ChipFit`); the menu still opens on a click. If the name still can't show six characters and "…" (or all of it, when it is shorter), the image chip moves into the agent menu as "Attach image…" (`chat.attach-image`, as the chip). Selection keeps its chip. At 240 px that means Codex reads whole and Claude Code reads "Claude C…".
     - **Spanish isn't drawn in the tests:** the UI's language is process-wide and the suite runs in parallel. The row's visible words are the agent's name and icons, so a language can't widen it. What Spanish changes, the controls' names, is checked in the catalog.
+30. **The header can't scroll away** (Fix AA6). Reproduced offscreen: the right panel draws every tab in its own scroll area, with 80 px kept below the content.
+    - **What happened:** on the AI tab the wheel over the header or the transcript scrolled that area by those 80 px, as did a Design tab scrolled to its end before switching (the two shared its offset). That slid the header (title, Follow, New chat) above the panel's top edge, where it isn't painted, while `ui.inspect` still reported its rectangle.
+    - **Now:** on the AI tab the area doesn't scroll and keeps its own offset (`panel_view::scroll_area`). The transcript scrolls itself, and the composer is pinned.
 
 ## Tests
 
@@ -215,6 +218,9 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - `attach_image_is_in_the_agent_menu_when_the_chip_has_no_room`: the menu item opens the chip's dialog and attaches the image.
   - `the_rows_controls_have_their_spanish_names`.
   These fail on the old row, where the chip was only "…".
+- AA6:
+  - `ai_panel_z_tests.rs` › `the_header_stays_put_whatever_is_scrolled`: at 240 and 336 px in both themes, the wheel over the header, the transcript and the composer, and a scrolled Design tab before switching. The header's rectangle doesn't move; on the old code it moved up 80 px.
+  - `offscreen_tests.rs` › `the_ai_header_is_painted_after_scrolling`: the Follow button's rectangle holds its fill, not the panel's colour, as it did on the old code.
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

@@ -121,7 +121,7 @@ pub fn right_panel(app: &mut FigApp, ui: &mut Ui) {
         }
     });
     crate::panel_view::header(app, ui, w);
-    egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+    crate::panel_view::scroll_area(app).show(ui, |ui| {
         ui.spacing_mut().item_spacing = vec2(8.0, 0.0);
         if app.session.tool.tool == figcraft_engine::ToolId::Comment {
             crate::comments::panel(app, ui);

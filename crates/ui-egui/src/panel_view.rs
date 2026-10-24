@@ -19,6 +19,17 @@ use crate::{FigApp, RightTab, UiState, a11y, widgets};
 pub(crate) mod ai_tab;
 
 /// The tab a [`Tab`] draws as.
+/// The right panel's scroll area. On the AI tab it doesn't scroll and keeps its own offset (Fix
+/// AA6): the panel fills the height with its header, its own scrolling transcript and the composer
+/// pinned below. Scrolled, it slid the header out of view (by the 80 px kept below the content, or
+/// by a scrolled Design tab's offset), while `ui.inspect` still reported the header's rectangle.
+pub fn scroll_area(app: &FigApp) -> egui::ScrollArea {
+    let ai = app.ui.right_tab == RightTab::Ai;
+    let bars = if ai { egui::scroll_area::ScrollBarVisibility::AlwaysHidden } else { egui::scroll_area::ScrollBarVisibility::VisibleWhenNeeded };
+    let source = if ai { egui::scroll_area::ScrollSource::NONE } else { egui::scroll_area::ScrollSource::default() };
+    egui::ScrollArea::vertical().auto_shrink([false, false]).id_salt(("right_panel", ai)).scroll_source(source).scroll_bar_visibility(bars)
+}
+
 fn right_tab(tab: Tab) -> RightTab {
     match tab {
         Tab::Design => RightTab::Design,

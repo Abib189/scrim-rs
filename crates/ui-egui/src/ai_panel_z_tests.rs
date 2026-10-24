@@ -457,3 +457,64 @@ fn attach_image_is_in_the_agent_menu_when_the_chip_has_no_room() {
     assert_eq!(script.lock().unwrap().picked, ["Attach an image"], "the chip's dialog");
     assert_eq!(u.app.ui.agent_view.chat.image.as_deref(), Some("/tmp/ref.png"), "attached");
 }
+
+/// Fix AA6: the header (title, Follow, New chat) stays where it is drawn, under the tab row,
+/// whatever is scrolled: the wheel over the header, the transcript or the composer, and a Design
+/// tab scrolled to its end before switching. The right panel's own scroll area slid it up 80 px out
+/// of view, while `ui.inspect` still reported its rectangle.
+#[test]
+fn the_header_stays_put_whatever_is_scrolled() {
+    use crate::follow_agent::chat_ui::Line;
+    let wheel = |u: &mut Ui, at: egui::Pos2, dy: f32| {
+        u.frame(vec![egui::Event::PointerMoved(at)]);
+        for _ in 0..20 {
+            u.frame(vec![egui::Event::MouseWheel {
+                unit: egui::MouseWheelUnit::Point,
+                delta: egui::vec2(0.0, dy),
+                phase: egui::TouchPhase::Move,
+                modifiers: egui::Modifiers::NONE,
+            }]);
+        }
+        for _ in 0..30 {
+            u.frame(vec![]);
+        }
+    };
+    for dark in [false, true] {
+        for w in [240.0, 336.0] {
+            for scenario in ["design-scrolled-then-ai", "header", "transcript", "composer"] {
+                let at_ = format!("{dark} {w} {scenario}");
+                let mut u = themed(dark, w);
+                u.app.ui.agent_view.chat.lines = (0..60).map(|i| Line::Note(format!("Note {i}"))).collect();
+                for _ in 0..3 {
+                    u.frame(vec![]);
+                }
+                let home = rect(&panel(&u)["headerRect"]);
+                let p = panel(&u);
+                let c = rect(&p["composer"]["composerRect"]);
+                let x = 1440.0 - w / 2.0;
+                match scenario {
+                    "design-scrolled-then-ai" => {
+                        u.app.run("panel.tab.design", serde_json::json!({}));
+                        u.frame(vec![]);
+                        wheel(&mut u, egui::pos2(x, 500.0), -2000.0);
+                        u.app.run("panel.tab.ai", serde_json::json!({}));
+                        for _ in 0..5 {
+                            u.frame(vec![]);
+                        }
+                    }
+                    s => {
+                        let y = match s {
+                            "header" => (home[1] + home[3]) / 2.0,
+                            "composer" => c[1] + 5.0,
+                            _ => 400.0,
+                        } as f32;
+                        for dy in [-2000.0, 2000.0, -2000.0] {
+                            wheel(&mut u, egui::pos2(x, y), dy);
+                        }
+                    }
+                }
+                assert_eq!(rect(&panel(&u)["headerRect"]), home, "{at_}: the header didn't move");
+            }
+        }
+    }
+}

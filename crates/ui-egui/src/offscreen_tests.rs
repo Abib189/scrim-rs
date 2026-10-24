@@ -419,6 +419,50 @@ fn the_rasterizer_draws_the_panels_in_their_colours() {
     }
 }
 
+/// Fix AA6: the AI panel's header is painted, not only laid out, after the wheel scrolls over the
+/// transcript and after a scrolled Design tab: the Follow button's rectangle (from `ui.inspect`)
+/// holds the button's own fill, light and dark, at 240 and 336 px.
+#[test]
+fn the_ai_header_is_painted_after_scrolling() {
+    use crate::follow_agent::chat_ui::Line;
+    for dark in [false, true] {
+        for width in [240.0, 336.0] {
+            let mut s = Session::new();
+            s.prefs.theme = if dark { "dark" } else { "light" }.into();
+            s.prefs.panel_widths = (240.0, width);
+            let mut o = Offscreen::new(s, vec2(1440.0, 900.0));
+            o.settle();
+            run(&mut o, "panel.tab.design", json!({}));
+            let wheel = |o: &mut Offscreen, at: Pos2| {
+                o.frame(vec![Event::PointerMoved(at)]);
+                for _ in 0..20 {
+                    o.frame(vec![Event::MouseWheel {
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: vec2(0.0, -2000.0),
+                        phase: egui::TouchPhase::Move,
+                        modifiers: Default::default(),
+                    }]);
+                }
+                o.settle();
+            };
+            let x = 1440.0 - width / 2.0;
+            wheel(&mut o, egui::pos2(x, 500.0));
+            run(&mut o, "panel.tab.ai", json!({}));
+            o.app.ui.agent_view.chat.lines = (0..60).map(|i| Line::Note(format!("Note {i}"))).collect();
+            o.settle();
+            wheel(&mut o, egui::pos2(x, 400.0));
+            let p = crate::follow_agent::inspect(&o.app)["aiPanel"].clone();
+            let r: Vec<f32> = p["header"]["followRect"].as_array().unwrap().iter().map(|v| v.as_f64().unwrap() as f32).collect();
+            let img = o.image();
+            let t = if dark { crate::theme::Tokens::dark() } else { crate::theme::Tokens::light() };
+            // Inside the button, off its icon: its fill (`t.pressed`, or the accent's tint when on).
+            let p = img.get_pixel((r[0] + 3.0) as u32, (r[3] - 3.0) as u32);
+            let c = Color32::from_rgb(p[0], p[1], p[2]);
+            assert_ne!(c, t.panel, "{dark} {width}: the Follow button is painted at {r:?}");
+        }
+    }
+}
+
 /// Fix X6's captures of the rebuilt AI panel: light and dark; the default orange, a very pale
 /// (#FFE066) and a very dark (#1F3BFF) accent; at the design's 336 px and at 240 px; idle, and
 /// mid-run (the banner, your message, and the card with three done rows and the active one).
