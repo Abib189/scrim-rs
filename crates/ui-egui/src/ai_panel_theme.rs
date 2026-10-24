@@ -23,6 +23,8 @@ pub struct Roles {
     pub text: Color32,
     pub text_secondary: Color32,
     pub placeholder: Color32,
+    /// Tertiary text (Fix AB1): the status line, the card's note and its Steps count.
+    pub text_3: Color32,
     /// Accent-coloured words (a link).
     pub link: Color32,
     pub chevron: Color32,
@@ -63,14 +65,17 @@ pub fn roles(t: &Tokens) -> Roles {
         button_fill: t.pressed,
         follow_on_fill: t.accent_tint,
         // The accent, on its own tint: moved until it reads there (Fix X5).
-        follow_on_icon: readable_mark(t.accent, over(t.accent_tint, t.panel), t.dark),
+        follow_on_icon: readable_mark(t.ai_accent_text, over(t.accent_tint, t.panel), t.dark),
         follow_off_icon: t.icon,
         new_chat_icon: t.icon,
         new_chat_disabled: t.disabled,
         text: t.text,
         text_secondary: t.text_secondary,
-        placeholder: t.text_tertiary,
-        link: t.accent_text,
+        placeholder: t.ai_text_3,
+        text_3: t.ai_text_3,
+        // Accent-text sits on surfaces and on raised fills (the toast): moved until it reads on
+        // the raised one, the darkest in light, for any accent (Fix AB1).
+        link: readable_mark(t.ai_accent_text, t.selected_row, t.dark),
         chevron: t.icon,
         composer_fill: t.field,
         chip_fill: t.selected_row,

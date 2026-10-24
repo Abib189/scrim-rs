@@ -237,6 +237,7 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         "chips": hexes(roles.chip_fill),
         "chipText": hexes(roles.text),
         "chipSecondary": hexes(roles.text_secondary),
+        "statusText": hexes(roles.text_3),
         "chipIcon": hexes(roles.chip_icon),
         "chipHover": hexes(roles.chip_hover),
         "placeholder": hexes(roles.placeholder),
@@ -282,7 +283,7 @@ fn status_line(app: &FigApp, ui: &mut Ui, t: &Tokens, seen: &mut serde_json::Val
     let (row, resp) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 14.0), egui::Sense::hover());
     let left = row.min.x - crate::widgets::PAD;
     ui.painter().circle_filled(egui::pos2(left + 23.0, row.center().y), 3.0, dot);
-    ui.painter().text(egui::pos2(left + 32.0, row.center().y), egui::Align2::LEFT_CENTER, text, regular(12.0), roles.text_secondary);
+    ui.painter().text(egui::pos2(left + 32.0, row.center().y), egui::Align2::LEFT_CENTER, text, regular(12.0), roles.text_3);
     crate::a11y::status(&resp, text, "");
     seen["following"] = json!(text);
     seen["statusDot"] = json!(crate::theme::accent::rgb_text(dot));

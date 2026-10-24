@@ -9,14 +9,15 @@
 | Panel background | `t.panel` |
 | Header rule | `t.border` |
 | Header buttons (Follow, New chat) at rest | fill `t.pressed` |
-| Follow on | fill `t.accent_tint`, icon `t.accent` moved until it reads at 4.5:1 on that tint over the panel (`readable_mark`, Fix X5) |
+| Follow on | fill `t.accent_tint`, icon `t.ai_accent_text` (Fix AB1) moved until it reads at 4.5:1 on that tint over the panel (`readable_mark`, Fix X5) |
 | Follow off | icon `t.icon` |
 | Follow paused while an agent works (Fix N) | the dot `t.warning` |
 | New chat disabled during a run (Fix U3) | `t.disabled` |
 | Title and body text | `t.text` |
 | Secondary text: notes, times, status, the Selection label, the grace hint | `t.text_secondary` |
-| Placeholder | `t.text_tertiary` |
-| Accent-coloured words (a link) | `t.accent_text` |
+| Placeholder | `t.ai_text_3` (Fix AB1) |
+| Tertiary text: the status line, the card's note, its Steps count (Fix AB1) | `t.ai_text_3` |
+| Accent-coloured words (a link, the toast's action) | `t.ai_accent_text`, moved until it reads on the raised fill (`readable_mark`, Fix AB1) |
 | Composer | fill `t.field`; edge `theme::field_stroke(t, hovered, focused)` (rest `t.field_edge`, focused `t.accent`) |
 | Chips (agent, selection, image) | fill `t.selected_row`; the Selection and Image chips `t.pressed` hovered (Fix Z6) |
 | The Selection and Image chips' icons (Fix Z6) | `t.icon` (3:1 on the chip, at rest and hovered) |
@@ -76,3 +77,17 @@ A live check can assert these without a screenshot.
 - **Fixed colours fail it:** each of the 8 roles tried fails the test when made a fixed colour: the marks, Send's glyph, the done check, the Follow icon, the text, the placeholder, the pending ring, the card.
 - **The accent touches only its own roles:** another test checks that changing the accent changes only the Follow tint and icon, the link, Send's fill and glyph, and the marks.
 - **One check needed a fix:** the Follow icon on its own tint came out at 4.499:1 for the default orange in light. `readable_mark` now moves the icon's lightness, the hue kept, until it reads.
+
+## The design file's text-3 and accent-text (Fix AB1)
+
+The AI panel design's variable collection "Scrim AI panel" (Dark / Light, read with `variable.export`) is the colour source. Two of its values differed from the app's tokens, so the AI panel has its own tokens for them. The rest of the app keeps `text_tertiary` and `accent_text`.
+
+| Token | Dark | Light | Was (the app's) |
+|---|---|---|---|
+| `ai_text_3` (`ai/text-3`) | `#8A8D94` | `#6B6E75` | `#91959C` / `#5F6268` |
+| `ai_accent_text` (`ai/accent-text`) | `#FF7A47` | `#B02E00` | `#FF5A1F` / `#C53400` |
+
+- **With another accent,** `ai_accent_text` is the accent's derived mark, as `accent_text` is. The role moves it until it reads at 4.5:1 on the raised fill: a blue accent read 4.17:1 there.
+- **Tests** (`ai_panel_theme_tests.rs`):
+  - `text_3_and_accent_text_are_the_designs`;
+  - the contrast test now also checks text-3 on the panel and on a surface, text-2 on raised, text on the bubble, accent-text on a surface and on raised, and the label on the accent fill, all at 4.5:1 in both themes with every accent.

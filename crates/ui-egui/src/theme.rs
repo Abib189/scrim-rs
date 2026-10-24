@@ -53,6 +53,11 @@ pub struct Tokens {
     /// A wash of the mark, for drop targets and highlights.
     pub accent_tint: Color32,
     pub accent_text: Color32,
+    /// The AI panel's tertiary text and accent text (Fix AB1, the design's `ai/text-3` and
+    /// `ai/accent-text`): placeholders, the status line, notes and counts; the toast's action and
+    /// links. The accent text follows the person's accent as `accent_text` does.
+    pub ai_text_3: Color32,
+    pub ai_accent_text: Color32,
     pub selected_row: Color32,
     pub selected_row_child: Color32,
     pub component: Color32,
@@ -127,6 +132,8 @@ impl Tokens {
             accent_on: ACCENT_ON,
             accent_tint: Color32::from_rgba_unmultiplied(0xC5, 0x34, 0x00, 31),
             accent_text: hex(0xC53400),
+            ai_text_3: hex(0x6B6E75),
+            ai_accent_text: hex(0xB02E00),
             selected_row: hex(0xE1E1DF),
             selected_row_child: hex(0xF4F4F3),
             component: COMPONENT,
@@ -175,6 +182,8 @@ impl Tokens {
             accent_on: ACCENT_ON,
             accent_tint: Color32::from_rgba_unmultiplied(0xFF, 0x5A, 0x1F, 41),
             accent_text: ACCENT,
+            ai_text_3: hex(0x8A8D94),
+            ai_accent_text: hex(0xFF7A47),
             selected_row: hex(0x2C2D32),
             selected_row_child: hex(0x1B1C1F),
             component: hex(0xD27CFF),
@@ -220,6 +229,7 @@ impl Tokens {
         let (h, s, l) = accent::to_hsl(a.fill);
         self.accent = a.mark;
         self.accent_text = a.mark;
+        self.ai_accent_text = a.mark;
         self.focus = a.mark;
         self.accent_fill = a.fill;
         self.accent_hover = accent::from_hsl(h, s, (l - 0.04).max(0.0));

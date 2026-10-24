@@ -285,7 +285,8 @@ fn card(app: &FigApp, ui: &mut Ui, ro: &Roles, run: &LastRun, seen: &mut Seen) -
     seen.fonts.insert("cardHeading", semibold(13.0));
     seen.fonts.insert("cardNote", regular(12.0));
     seen.fonts.insert("cardButton", regular(13.0));
-    p.text(pos2(x + inner, y), Align2::RIGHT_CENTER, note, regular(12.0), ro.text_secondary);
+    p.text(pos2(x + inner, y), Align2::RIGHT_CENTER, note, regular(12.0), ro.text_3);
+    seen.theme.insert("cardNote", ro.text_3);
     y += 9.0 + 12.0;
     if earlier > 0 {
         p.text(pos2(x, y + 8.0), Align2::LEFT_CENTER, trf("{n} earlier", &[("n", &earlier)]), regular(12.0), ro.text_secondary);

@@ -163,6 +163,21 @@ fn every_role_reads_in_both_themes_with_every_accent() {
             say("composer edge on its fill", at("composerEdge"), at("composerFill"), 3.0);
             let pending = super::roles(&t).pending_ring;
             say("pending ring on the card", pending, at("card"), 3.0);
+            // Fix AB1: the design's text-3 and accent-text, on the surfaces they're drawn on.
+            let ro = super::roles(&t);
+            for (what, fg, bg) in [
+                ("text-3 on the panel", ro.text_3, t.panel),
+                ("text-3 on a surface", ro.text_3, t.field),
+                ("the placeholder on a surface", ro.placeholder, t.field),
+                ("text-2 on raised", t.text_secondary, t.selected_row),
+                ("text on the bubble", t.text, ro.bubble),
+                ("accent-text on a surface", ro.link, t.field),
+                ("accent-text on raised", ro.link, t.selected_row),
+                ("on-accent on the accent", ro.send_glyph, ro.send_fill),
+            ] {
+                say(what, fg, bg, 4.5);
+            }
+            assert_eq!(at("statusText"), ro.text_3, "the status line is text-3");
             // The Selection and Image chips' icons, at rest and hovered (Fix Z6).
             say("chip icon on a chip", at("chipIcon"), at("chips"), 3.0);
             say("chip icon on a hovered chip", at("chipIcon"), at("chipHover"), 3.0);
@@ -188,5 +203,18 @@ fn the_accent_changes_only_the_accent_roles() {
             r
         };
         assert_eq!(neutral(&a), neutral(&b), "{other}: only the accent roles change");
+    }
+}
+
+/// Fix AB1: with the default accent, the AI panel's text-3 and accent-text are the design file's
+/// variables ("Scrim AI panel" collection, `ai/text-3` and `ai/accent-text`), and the placeholder,
+/// status line and links use them.
+#[test]
+fn text_3_and_accent_text_are_the_designs() {
+    use crate::theme::accent::rgb_text;
+    for (t, text_3, accent_text) in [(crate::theme::Tokens::dark(), "#8a8d94", "#ff7a47"), (crate::theme::Tokens::light(), "#6b6e75", "#b02e00")] {
+        let ro = super::roles(&t);
+        assert_eq!((rgb_text(ro.text_3), rgb_text(ro.placeholder)), (text_3.to_string(), text_3.to_string()), "dark {}", t.dark);
+        assert_eq!(rgb_text(ro.link), accent_text, "dark {}", t.dark);
     }
 }
