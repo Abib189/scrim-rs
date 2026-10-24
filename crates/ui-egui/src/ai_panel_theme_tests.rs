@@ -139,10 +139,12 @@ fn every_role_reads_in_both_themes_with_every_accent() {
                 assert!(c >= min, "{} {a}: {what} {fg:?} on {bg:?} is {c:.2}:1, under {min}", if dark { "dark" } else { "light" });
             };
             // (a) The accent's marks.
-            for k in ["workingDots", "activeRing", "progressFill", "emptyCore"] {
+            for k in ["workingDots", "activeRing", "progressFill"] {
                 say(k, at(k), t.panel, 4.5);
                 say(k, at(k), t.field, 4.5);
             }
+            // The empty state's ring on its accent-soft disc (Fix AB5): a mark, 3:1.
+            say("empty ring on its disc", at("emptyRing"), over(t.accent_tint, t.panel), 3.0);
             // (b) Send / Stop.
             say("send glyph", at("sendGlyph"), at("sendFill"), 4.5);
             // (c) The done check.
@@ -202,7 +204,8 @@ fn the_accent_changes_only_the_accent_roles() {
         // Every role but the accent's stays as it was.
         let neutral = |r: &super::Roles| {
             let mut r = *r;
-            for c in [&mut r.follow_on_fill, &mut r.follow_on_icon, &mut r.link, &mut r.send_fill, &mut r.send_glyph, &mut r.mark] {
+            for c in [&mut r.follow_on_fill, &mut r.follow_on_icon, &mut r.link, &mut r.send_fill, &mut r.send_glyph, &mut r.mark, &mut r.empty_disc]
+            {
                 *c = egui::Color32::TRANSPARENT;
             }
             r

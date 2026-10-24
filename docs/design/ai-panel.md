@@ -21,11 +21,15 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - "This document | All documents" (`chat.scope`).
   - The conversations, newest first, the one shown checked (`chat.open`). Under All documents, each also names its document.
 - **The body:**
-  - **Empty:**
-    - a 64 px `t.pressed` disc with the accent's 32 px core;
-    - 24 below it, "Describe what you want to create or change." (SemiBold 20);
-    - 10 below that, "Your agent edits the canvas while you watch." (13, 140 %, secondary).
-    - The block is centred between the header's rule and the status line, 12 above the middle. No suggestion rows.
+  - **Empty** (Fix AB5, the design's A1 and A7):
+    - a 56 px accent-soft disc (`t.accent_tint`) with an accent-text ring (`readable_mark` of `t.ai_accent_text`, 2 px, 9 px radius);
+    - 16 below it, "What should we make?" (SemiBold 18);
+    - 8 below that, "{agent} works on this canvas. Follow keeps the camera on its edits." (13, 145 %, text-2). The agent is the one chosen.
+    - Both are centred and wrapped to the panel's width less 32 (no fixed width). The block sits 12 above the middle of the space between the header's rule and the composer.
+  - **Suggestions, only where they apply** (Fix AB5, `ai_suggest.rs`). A suggestion puts its words in the composer and focuses it (`chat.use-suggestion`); it never sends.
+    - **With a selection, on the quiet panel** (no conversation yet, no run going): "For the selected {name}" (12, text-3) and two full-width rows, "Tidy the selected layers" and "Align everything to the grid" (surface fill, border, radius 10, 36 high, 6 apart). They sit just above the status line.
+    - **After a run finishes** (done; not while it works, not once undone or stopped): two chips under its card, "Tidy spacing" and "Make a variation" (raised fill, 30 high, 8 apart). The second moves to a row of its own when the panel is too narrow.
+    - None with no selection and no finished run.
   - **A conversation:**
     - **Your message:** a right-aligned bubble, radius 14, at most the width less 56, 16 from the right, 14 × 11 inside, 24 below the banner or header, 18 above what follows.
     - **The bottom fade** (Fix Z4): a 12 px fade from transparent into `t.panel` at the transcript's bottom edge, only while there is more below (scrolled up); none at the bottom or when it all fits. Captured scrolled to the top in Fix AA4 (`docs/scrim-ports/ai-panel/aa/aa4-…`): it reads; unchanged.
@@ -164,6 +168,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
     - **What happened:** on the AI tab the wheel over the header or the transcript scrolled that area by those 80 px, as did a Design tab scrolled to its end before switching (the two shared its offset). That slid the header (title, Follow, New chat) above the panel's top edge, where it isn't painted, while `ui.inspect` still reported its rectangle.
     - **Now:** on the AI tab the area doesn't scroll and keeps its own offset (`panel_view::scroll_area`). The transcript scrolls itself, and the composer is pinned.
 31. **The + menu** (Fix AB4) replaces the Selection and Image chips (decision 14). "Add selection" now puts a chip on the composer, no longer text in the draft; the line goes with the prompt when it is sent. "Attach image" shows for every agent, off with a reason for one that takes none, where the design shows it on.
+32. **Suggestions show on the quiet panel and under a finished run** (Fix AB5), as the design places them. The selection's rows don't show once a conversation has begun, so they don't stack up over a transcript. The words are fixed, not written by an agent.
 
 ## Tests
 
@@ -244,6 +249,7 @@ Rebuilt to Scrim's AI panel design, in dark and light; the reference was frames 
   - `attach_image_from_the_plus_menu`; `the_rows_controls_have_their_spanish_names`.
   - `the_selection_button_adds_the_layers_names_and_ids` (now the chip, its ×, and the line sent with the prompt); `the_image_button_shows_only_for_an_agent_whose_cli_takes_one` (now the menu row's state).
   - Fix Z6's chip tests and AA3's agent-menu fallback test are gone with the chips.
+- `ai_suggest_tests.rs` (AB5): the empty state names the chosen agent and wraps inside the panel at 240 and 336 px, with the accent-soft disc and accent-text ring. The selection's rows show with a selection, sit just above the composer, fill and focus the field and send nothing, and are gone without a selection. A finished run's two chips are not shown while it works, fill the composer without sending, and go once undone.
 - `chat_run_tests.rs` (Z7, engine):
   - `after_undo_run_the_buttons_are_refused_in_words_never_as_invalid_parameters` reproduces the real run. It fails on the old code with "chat.undo-run: invalid parameters" ("the document changed after the run began").
   - `redo_run_restores_the_run_as_one_step_and_undo_run_works_again`;

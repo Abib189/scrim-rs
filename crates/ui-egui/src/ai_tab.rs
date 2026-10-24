@@ -33,6 +33,8 @@ pub(crate) mod plus;
 pub(crate) mod reply;
 #[path = "ai_run_card.rs"]
 pub(crate) mod run_card;
+#[path = "ai_suggest.rs"]
+pub(crate) mod suggest;
 #[path = "ai_toast.rs"]
 pub(crate) mod toast;
 

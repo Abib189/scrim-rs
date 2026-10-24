@@ -26,6 +26,15 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let now = ui.ctx().input(|i| i.time);
     let mut seen = json!({"placeholder": tr("Describe a change…")});
+    // The selection's suggestions, just above the status line (Fix AB5).
+    {
+        let ro = crate::panel_view::ai_tab::panel_theme::roles(&t);
+        let (picked, shown) = crate::panel_view::ai_tab::suggest::for_selection(app, ui, &ro);
+        seen["suggestions"] = shown;
+        if let Some(text) = picked {
+            app.run("chat.use-suggestion", json!({"text": text}));
+        }
+    }
     // The grace hint: one line while it is pending (Fix Q2, T4).
     if app.ui.agent_view.grace_hint.showing {
         seen["hintLine"] = json!(true);
@@ -115,7 +124,10 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
         if let Some((name, _)) = app.ui.agent_view.chat.selected.clone() {
             seen["selectedChip"] = selected_chip(app, ui, &roles, &name);
         }
-        if std::mem::take(&mut app.ui.agent_view.chat.focus_field) {
+        // A suggestion asked for the field: focused on a frame without a click, since egui takes
+        // the focus off a field when a click lands elsewhere.
+        if app.ui.agent_view.chat.focus_field && !ui.input(|i| i.pointer.any_pressed() || i.pointer.any_released()) {
+            app.ui.agent_view.chat.focus_field = false;
             ui.memory_mut(|m| m.request_focus(field_id));
         }
         let field = ui.add_enabled(

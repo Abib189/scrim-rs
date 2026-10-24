@@ -104,6 +104,15 @@ pub fn transcript(app: &mut FigApp, ui: &mut Ui, lines: &[Line], h: f32, seen: &
             }
             if let Some(r) = run.as_ref().filter(|r| r.line == i) {
                 actions.extend(super::card::card(app, ui, &ro, r, seen));
+                // After a run that finished: two suggestions under its card (Fix AB5).
+                let st = figcraft_engine::cmd::chat_run::state(&app.session);
+                if matches!(r.ended, Some((_, how)) if how != "stopped") && !st.undone {
+                    let (picked, shown) = super::suggest::after_run(ui, &ro);
+                    seen.suggestions = Some(shown);
+                    if let Some(text) = picked {
+                        actions.push(("chat.use-suggestion", json!({"text": text})));
+                    }
+                }
                 ui.add_space(18.0);
             }
         }

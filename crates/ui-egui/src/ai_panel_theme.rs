@@ -87,7 +87,8 @@ pub fn roles(t: &Tokens) -> Roles {
         send_fill: t.accent_fill,
         send_glyph: t.accent_on,
         mark: t.accent,
-        empty_disc: t.pressed,
+        // The design's accent-soft (Fix AB5).
+        empty_disc: t.accent_tint,
         success: t.success,
         done_check: readable_on(t.success),
         pending_ring: t.field_edge,

@@ -5,8 +5,8 @@
 //! - **The chevron's popover:** "Search conversations…", "This document | All documents"
 //!   (`chat.scope`), and the conversations, the one shown checked (`chat.open`). Search matches
 //!   titles and messages, here only. Another document's conversation opens read-only.
-//! - **The body:** the transcript, or, empty, a chat bubble and "Describe what you want to create or
-//!   change." in the middle.
+//! - **The body:** the transcript, or, empty, the accent-soft mark, "What should we make?" and a line
+//!   naming the agent in the middle (Fix AB5).
 //! - **The composer** is pinned below ([`crate::follow_agent::chat_ui::composer`]).
 //!
 //! What was drawn is kept in [`Seen`] for `ui.inspect` › `agent.aiPanel`.
@@ -43,6 +43,8 @@ pub struct Seen {
     pub follow: String,
     pub popover: Option<Value>,
     pub empty_state: bool,
+    /// The empty state's line, naming the agent (Fix AB5).
+    pub empty_line: String,
     /// Where the Follow agents button was drawn; the setting off (the crosshair dimmed) and its
     /// tooltip (Fix V3).
     pub follow_rect: Option<Rect>,
@@ -60,6 +62,8 @@ pub struct Seen {
     pub banner: Option<Value>,
     pub bubbles: usize,
     pub card: Option<Value>,
+    /// The suggestions under a finished run's card (Fix AB5).
+    pub suggestions: Option<Value>,
     /// The transcript's bottom fade while there is more below: its rectangle (Fix Z4).
     pub fade: Option<Value>,
     /// Each reply's blocks as drawn: kind, text as shown, rectangle (Fix Z2).
@@ -151,7 +155,10 @@ pub fn show(app: &mut FigApp, ui: &mut Ui) {
     seen.lines = lines.len();
     if lines.is_empty() {
         seen.empty_state = true;
-        empty_state(ui, &t, below, &mut seen);
+        // The agent the line names: the one chosen, else the default (Fix AB5).
+        let id = app.ui.agent_view.chat.agent.clone().unwrap_or_else(|| figcraft_engine::cmd::chat::DEFAULT_AGENT.to_string());
+        let agent = figcraft_engine::cmd::agent_clients::headless::profile(&id).map_or(id, |p| p.name.clone());
+        empty_state(ui, &t, below, &agent, &mut seen);
     } else {
         super::run_card::transcript(app, ui, &lines, below.height().max(120.0), &mut seen);
     }
@@ -333,10 +340,13 @@ fn popover(app: &mut FigApp, ui: &mut Ui, t: &Tokens, w: f32) -> Value {
 /// No messages yet (Fix X2): a 64 px disc with the accent's 32 px core, the heading 24 below it, the
 /// line 10 below that; the block centred between the header's rule and the status line, 12 above
 /// the true centre.
-fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, seen: &mut Seen) {
+/// The empty panel (Fix AB5, the design's A1): a 56 px accent-soft disc with an accent-text ring,
+/// "What should we make?" (SemiBold 18) and a line naming the agent (13, text-2), centred and
+/// wrapped to the panel's width less 32.
+fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, agent: &str, seen: &mut Seen) {
     let roles = super::panel_theme::roles(t);
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), below.height().max(160.0)), Sense::hover());
-    let wrap = (r.width() - 48.0).max(80.0);
+    let wrap = (r.width() - 32.0).max(80.0);
     let centred = |text: &str, font: egui::FontId, color: egui::Color32, line: Option<f32>| {
         let mut job = egui::text::LayoutJob::single_section(
             text.to_string(),
@@ -346,19 +356,21 @@ fn empty_state(ui: &mut Ui, t: &Tokens, below: Rect, seen: &mut Seen) {
         job.halign = egui::Align::Center;
         ui.painter().layout_job(job)
     };
-    let heading = centred(tr("Describe what you want to create or change."), semibold(20.0), roles.text, None);
-    let body = centred(tr("Your agent edits the canvas while you watch."), regular(13.0), roles.text_secondary, Some(13.0 * 1.4));
-    seen.fonts.insert("emptyHeading", semibold(20.0));
+    let line = trf("{agent} works on this canvas. Follow keeps the camera on its edits.", &[("agent", &agent)]);
+    let heading = centred(tr("What should we make?"), semibold(18.0), roles.text, None);
+    let body = centred(&line, regular(13.0), roles.text_secondary, Some(13.0 * 1.45));
+    seen.fonts.insert("emptyHeading", semibold(18.0));
     seen.fonts.insert("emptyLine", regular(13.0));
-    let block = 64.0 + 24.0 + heading.size().y + 10.0 + body.size().y;
+    seen.empty_line = line;
+    let block = 56.0 + 16.0 + heading.size().y + 8.0 + body.size().y;
     let top = r.center().y - 12.0 - block / 2.0;
-    let c = pos2(r.center().x, top + 32.0);
-    ui.painter().circle_filled(c, 32.0, roles.empty_disc);
-    ui.painter().circle_filled(c, 16.0, roles.mark);
+    let c = pos2(r.center().x, top + 28.0);
+    ui.painter().circle_filled(c, 28.0, roles.empty_disc);
+    ui.painter().circle_stroke(c, 9.0, Stroke::new(2.0, roles.link));
     seen.theme.insert("emptyDisc", roles.empty_disc);
-    seen.theme.insert("emptyCore", roles.mark);
-    let heading_r = Rect::from_center_size(pos2(r.center().x, top + 64.0 + 24.0 + heading.size().y / 2.0), heading.size());
-    let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 10.0 + body.size().y / 2.0), body.size());
+    seen.theme.insert("emptyRing", roles.link);
+    let heading_r = Rect::from_center_size(pos2(r.center().x, top + 56.0 + 16.0 + heading.size().y / 2.0), heading.size());
+    let body_r = Rect::from_center_size(pos2(r.center().x, heading_r.max.y + 8.0 + body.size().y / 2.0), body.size());
     ui.put(heading_r, egui::Label::new(heading));
     ui.put(body_r, egui::Label::new(body));
 }
@@ -417,12 +429,13 @@ pub fn inspect(app: &FigApp) -> Value {
         "headerRect": s.header_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
         "newChatRect": s.new_chat_rect.map(|r| [r.min.x, r.min.y, r.max.x, r.max.y]),
         "popover": s.popover,
-        "emptyState": s.empty_state.then(|| tr("Describe what you want to create or change.")),
-        "emptyLine": s.empty_state.then(|| tr("Your agent edits the canvas while you watch.")),
+        "emptyState": s.empty_state.then(|| tr("What should we make?")),
+        "emptyLine": s.empty_state.then(|| s.empty_line.clone()),
         "banner": s.banner,
         "bubbles": s.bubbles,
         "card": s.card,
         "fade": s.fade,
+        "runSuggestions": s.suggestions,
         "replies": s.replies,
         "readOnly": s.read_only_note,
         "lines": s.lines,

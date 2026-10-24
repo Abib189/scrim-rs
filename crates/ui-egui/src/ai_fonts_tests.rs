@@ -140,9 +140,7 @@ fn no_role_falls_back_to_another_face() {
     for b in p["replies"][0]["blocks"].as_array().cloned().unwrap_or_default().iter().filter(|b| b["kind"] != "code") {
         words.push(b["text"].as_str().unwrap_or_default().into());
     }
-    words.extend(
-        ["Describe what you want to create or change.", "Select layers", "Undo run", "Following is on", "Describe a change…"].map(String::from),
-    );
+    words.extend(["What should we make?", "Select layers", "Undo run", "Following is on", "Describe a change…"].map(String::from));
     // The faces they're drawn in are Inter's, not a fallback that happens to have the glyphs.
     for (family, key) in [("proportional", INTER_KEYS[0]), (SEMIBOLD, INTER_KEYS[1]), (ITALIC, INTER_KEYS[2])] {
         assert_eq!(first_face(&u, family), key, "{family}");

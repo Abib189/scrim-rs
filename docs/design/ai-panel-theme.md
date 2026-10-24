@@ -27,7 +27,7 @@
 | Run card | fill `t.field`, 1 px edge `t.border_strong`; its buttons a 1 px `t.field_edge` edge, label `t.text` |
 | Send and Stop | circle `t.accent_fill`; the arrow and the stop square `t.accent_on` (white or near-black, whichever reads on the fill; never fixed) |
 | Marks: the working dots, the active step's ring and dot, the progress, the empty state's core | `t.accent` |
-| The empty state's disc behind the core | `t.pressed` |
+| The empty state's disc behind the ring | `t.accent_tint`, the design's accent-soft (Fix AB5); the ring is accent-text, 3:1 on it |
 | The status dot while following; a done step's circle | `t.success` |
 | The check in a done circle | `readable_on(t.success)`: white or the near-black ink (`accent::INK`), whichever reads at 4.5:1 |
 | A pending step's ring | `t.field_edge` (no pending steps are drawn: Fix X4) |

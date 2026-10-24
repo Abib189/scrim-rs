@@ -126,7 +126,7 @@ fn ui_inspect_has_the_header_popover_empty_state_and_composer() {
         (p["header"]["chevron"].clone(), p["header"]["follow"].clone(), p["header"]["newChat"].clone()),
         (json!(true), json!("following"), json!("New chat"))
     );
-    assert_eq!(p["emptyState"], "Describe what you want to create or change.");
+    assert_eq!(p["emptyState"], "What should we make?");
     let c = &p["composer"];
     assert_eq!(c["placeholder"], "Describe a change…");
     assert_eq!(c["plus"]["open"], false, "the + menu (Fix AB4) is closed");
@@ -596,15 +596,15 @@ fn the_header_empty_state_and_status_line_follow_the_design() {
     }
     assert!((plus[0] - follow[2] - 8.0).abs() < 0.5, "8 apart");
     assert!((head[2] - plus[2] - 16.0).abs() < 0.5, "16 from the right edge");
-    assert_eq!(p["emptyState"], "Describe what you want to create or change.");
-    assert_eq!(p["emptyLine"], "Your agent edits the canvas while you watch.");
+    assert_eq!(p["emptyState"], "What should we make?");
+    assert_eq!(p["emptyLine"], "Claude Code works on this canvas. Follow keeps the camera on its edits.");
     assert_eq!(p["composer"]["following"], "Following is on");
     u.app.run("camera.follow-agents", json!({"on": false, "origin": "button"}));
     u.frame(vec![]);
     assert_eq!(panel(&u)["composer"]["following"], "Following is off");
     // The heading and the line are there for screen readers too.
     let nodes = tree(&mut u);
-    for text in ["Describe what you want to create or change.", "Your agent edits the canvas while you watch."] {
+    for text in ["What should we make?", "Claude Code works on this canvas. Follow keeps the camera on its edits."] {
         assert!(nodes.iter().any(|n| n.label() == Some(text) || n.value() == Some(text)), "{text}");
     }
 }

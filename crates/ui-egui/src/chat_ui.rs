@@ -229,6 +229,13 @@ fn panel_request(app: &mut FigApp, kind: &str, data: &Value) {
         "chat.scope" => app.ui.agent_view.chat.store.all = s("scope").as_deref() == Some("all"),
         "chat.toggle-run-steps" => app.ui.agent_view.chat.steps_open = !app.ui.agent_view.chat.steps_open,
         "chat.remove-selection" => app.ui.agent_view.chat.selected = None,
+        // A suggestion's words in the composer, focused; never sent (Fix AB5).
+        "chat.use-suggestion" => {
+            if let Some(text) = s("text") {
+                app.ui.agent_view.chat.draft = text;
+                app.ui.agent_view.chat.focus_field = true;
+            }
+        }
         "chat.add-selection" => add_selection(app),
         "chat.attach-image" => match s("path") {
             // An empty path takes the image away.
