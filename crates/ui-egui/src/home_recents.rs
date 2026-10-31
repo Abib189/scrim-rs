@@ -19,7 +19,7 @@ use crate::FigApp;
 use crate::a11y;
 use crate::i18n::{tr, tr_noop, trf, trn};
 use crate::icons::{self, Icon};
-use crate::theme::{BRAND, BRAND_ON, Tokens, ink, regular, semibold};
+use crate::theme::{Tokens, ink, regular, semibold};
 use crate::widgets;
 
 /// The gap between cards, across and down.
@@ -738,8 +738,7 @@ fn file_icon(ui: &Ui, t: &Tokens, center: egui::Pos2, path: &str) {
     let r = Rect::from_center_size(center, vec2(16.0, 16.0));
     match FileKind::of(Path::new(path)) {
         FileKind::FigCraft | FileKind::Fig => {
-            ui.painter().rect_filled(r, CornerRadius::same(4), BRAND);
-            icons::paint(ui.painter(), r.shrink(3.0), Icon::Logo, BRAND_ON);
+            crate::brand_mark::paint_tile(ui.painter(), r, 4);
         }
         kind => {
             ui.painter().rect_filled(r, CornerRadius::same(4), t.field);

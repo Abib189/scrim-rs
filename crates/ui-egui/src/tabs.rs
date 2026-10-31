@@ -105,7 +105,7 @@ pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
             } else if resp.hovered() {
                 ui.painter().rect_filled(r, CornerRadius::ZERO, t.hover);
             }
-            icons::paint(ui.painter(), Rect::from_center_size(pos2(r.min.x + 18.0, r.center().y), vec2(14.0, 14.0)), Icon::Logo, crate::theme::BRAND);
+            crate::brand_mark::paint_brand(ui.painter(), Rect::from_center_size(pos2(r.min.x + 18.0, r.center().y), vec2(14.0, 14.0)), t.text);
             // The unsaved-changes dot follows the name on screen, whichever way the name reads.
             let shown = crate::bidi::paint_name(
                 ui.painter(),

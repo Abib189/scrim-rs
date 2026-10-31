@@ -13,7 +13,7 @@ use crate::FigApp;
 use crate::a11y;
 use crate::i18n::{tr, tr_noop};
 use crate::icons::{self, Icon};
-use crate::theme::{BRAND, Tokens, ink, regular, semibold};
+use crate::theme::{Tokens, ink, regular, semibold};
 use crate::widgets;
 
 /// The section the home screen shows.
@@ -101,7 +101,13 @@ pub(crate) fn file_row(ui: &Ui, t: &Tokens, r: Rect, resp: &Response, row: &File
         ui.painter().rect_filled(r, CornerRadius::same(5), t.hover);
     }
     if let Some((icon, tint)) = row.mark {
-        icons::paint(ui.painter(), Rect::from_min_size(pos2(r.min.x + 8.0, r.center().y - 8.0), vec2(16.0, 16.0)), icon, tint);
+        let mr = Rect::from_min_size(pos2(r.min.x + 8.0, r.center().y - 8.0), vec2(16.0, 16.0));
+        // Scrim's own files carry the mark in its two colours.
+        if matches!(icon, Icon::Logo) {
+            crate::brand_mark::paint_brand(ui.painter(), mr, t.text);
+        } else {
+            icons::paint(ui.painter(), mr, icon, tint);
+        }
     }
     let (name_font, detail_font) = (regular(12.0), regular(row.detail_size));
     let width = |s: &str, font: &egui::FontId| ui.painter().layout_no_wrap(s.to_string(), font.clone(), Color32::WHITE).size().x;
@@ -202,7 +208,7 @@ fn dropped(app: &mut FigApp, ctx: &egui::Context) {
 
 fn sidebar(app: &mut FigApp, ui: &mut Ui, t: &Tokens, left: Rect) {
     let mut y = left.min.y + 20.0;
-    icons::paint(ui.painter(), Rect::from_min_size(pos2(left.min.x + 16.0, y), vec2(20.0, 20.0)), Icon::Logo, BRAND);
+    crate::brand_mark::paint_brand(ui.painter(), Rect::from_min_size(pos2(left.min.x + 16.0, y), vec2(20.0, 20.0)), t.text);
     ui.painter().text(pos2(left.min.x + 44.0, y + 10.0), Align2::LEFT_CENTER, "Scrim", semibold(14.0), t.text);
     y += 48.0;
     let search = Rect::from_min_size(pos2(left.min.x + 8.0, y), vec2(SIDEBAR - 16.0, widgets::FIELD_H));
@@ -389,8 +395,14 @@ fn open_files(app: &mut FigApp, ui: &mut Ui, t: &Tokens, query: &str) -> usize {
     let mut switch = None;
     for (i, d) in app.session.docs.iter().enumerate().filter(|(_, d)| hit(d)) {
         let detail = d.path.as_deref().unwrap_or_default();
-        let row =
-            FileRow { mark: Some((Icon::Logo, BRAND)), name: &d.doc.name, ink: t.text, detail, detail_size: 11.0, detail_ink: t.text_secondary };
+        let row = FileRow {
+            mark: Some((Icon::Logo, crate::brand_mark::OLIVE)),
+            name: &d.doc.name,
+            ink: t.text,
+            detail,
+            detail_size: 11.0,
+            detail_ink: t.text_secondary,
+        };
         if listed(ui, t, ui.id().with(("open", d.uid)), 36.0, &row) {
             switch = Some(i);
         }

@@ -406,6 +406,10 @@ impl P<'_> {
 
 /// Paint `icon` centred in `rect` (a 16-unit glyph scaled to fit) in `color`.
 pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
+    if matches!(icon, Icon::Logo) {
+        // Scrim's mark, in one colour (`brand_mark.rs`; the brand spots draw it in two).
+        return crate::brand_mark::paint(painter, rect, color, color);
+    }
     let ppp = painter.ctx().pixels_per_point();
     let px = 1.0 / ppp;
     // Physical pixels per grid unit: whole steps from 16 px up (quarter steps on fractional
@@ -1076,14 +1080,7 @@ fn draw(p: &P, icon: Icon) {
             p.line(8.0, 6.0, 8.0, 9.5);
             p.dot(8.0, 11.5, 0.9);
         }
-        Logo => {
-            // Scrim's placeholder mark (awaiting the owner's real one; docs/design/rebrand.md): a
-            // bold S, two bowls of radius 3. `cargo xtask icon` draws the same S on the app icon.
-            let mut s_path: Vec<(f32, f32)> = arc_pts(8.0, 5.0, 3.0, -0.698, -1.5 * PI).collect();
-            s_path.extend(arc_pts(8.0, 11.0, 3.0, -FRAC_PI_2, 2.443));
-            let v: Vec<Pos2> = s_path.iter().map(|&(x, y)| p.raw(x, y)).collect();
-            p.painter.add(Shape::line(v, Stroke::new(1.9 * p.s, p.color)));
-        }
+        Logo => {} // drawn by `brand_mark` before the grid is set up
     }
 }
 

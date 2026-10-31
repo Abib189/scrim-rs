@@ -10,6 +10,7 @@ pub mod accent_ink;
 pub mod assets_panel;
 pub mod bidi;
 pub mod branch_ui;
+pub mod brand_mark;
 pub mod camera_flight;
 pub mod canvas;
 pub mod canvas_labels;

@@ -42,7 +42,9 @@
 
 **Since 31 Oct 2026, the owner's mark** replaces the A2 placeholder (an orange tile with a bold S). Two identical pieces interlock into one shape, a person and an agent on one surface. On an olive tile (`#7F7500`) the top piece is white and the bottom one ink (`#111214`), 58% of the tile wide and nudged up 1.5% for the optical centre. The pieces' outlines are the owner's drawing, copied unchanged into the one swap point, `xtask/src/icon.rs`; `cargo xtask icon` regenerated the committed icons in `assets/app-icon/scrim/`. The brand kit (lockups, wordmark, web icons, usage guide) is the owner's and lives outside the repository.
 
-Not changed with it: the interface still draws its own small S (`Icon::Logo`) and uses the orange accent (`#FF5A1F`); bringing those in line with the mark and olive is a separate change.
+**In the interface** (`crates/ui-egui/src/brand_mark.rs`), the same mark replaces the placeholder S wherever Scrim draws its logo: the document tabs, the Layers rail, Home's header and its open-file rows in two colours (olive, and the theme's text colour for the second piece, so it stays visible in dark mode); the recent-file cards and About on the olive tile, as the app icon. `Icon::Logo` draws it in one colour. egui fills only convex shapes smoothly, so each piece is its bar and its leg as rounded rectangles, plus the inner curve. Tests: `brand_mark_tests.rs` (the two pieces are one shape turned 180°, 6 apart; it fits without stretching).
+
+Not changed: the orange accent (`#FF5A1F`) of buttons and selection; that is the accent setting, not the logo.
 
 *(A2, superseded: Scrim shipped a placeholder app icon drawn in code, an original simple mark, not FigCraft's chameleon and nothing of ArtCraft's, awaiting the owner's real mark.)*
 
