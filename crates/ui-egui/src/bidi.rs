@@ -76,6 +76,17 @@ pub fn paint_name(painter: &Painter, left_center: Pos2, name: &str, font: FontId
     rect
 }
 
+/// [`paint_name`] for a name `resp` stands for: cut short with "…", the whole name is its tooltip.
+pub fn paint_name_tip(painter: &Painter, resp: &Response, left_center: Pos2, name: &str, font: FontId, color: Color32, max_w: f32) -> Rect {
+    let galley = name_galley(painter, name, font, color, max_w);
+    if galley.elided || (galley.text().ends_with('…') && !name.ends_with('…')) {
+        let _ = resp.clone().on_hover_text(name);
+    }
+    let rect = Rect::from_min_size(pos2(left_center.x, left_center.y - galley.size().y / 2.0), galley.size());
+    painter.galley(rect.min, galley, color);
+    rect
+}
+
 /// Each shown cluster's left and right x in a galley of `v.text` laid out from x = 0.
 fn edges(v: &VisualLine, galley: &Galley) -> Vec<(f64, f64)> {
     let chars: Vec<(f64, f64)> = galley

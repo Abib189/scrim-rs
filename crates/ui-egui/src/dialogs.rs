@@ -557,7 +557,7 @@ fn export_dialog(app: &mut FigApp, ctx: &Context) {
         app.ui.export_preview = false;
         return;
     };
-    let (doc, page) = (ds.doc.clone(), ds.page);
+    let (doc, page, name) = (ds.doc.clone(), ds.page, crate::doc_title::of(ds));
     let ids = if sel.is_empty() { doc.node(page).map(|p| p.children.clone()).unwrap_or_default() } else { sel.clone() };
     // With nothing selected, every layer on the page that has export settings.
     let with_settings = if sel.is_empty() { exportable_layers(&doc, page) } else { sel };
@@ -637,11 +637,46 @@ fn export_dialog(app: &mut FigApp, ctx: &Context) {
         Some(ExportChoice::Layers) => export_layers(app, &with_settings, false),
         Some(ExportChoice::Once(s)) if !ids.is_empty() => save_one(app, &ids, &s, &suggested_name(&doc, &ids, &s, "Export")),
         Some(ExportChoice::Once(_)) => app.toast(tr("Nothing to export")),
-        Some(ExportChoice::Fig) => save_fig(app, &doc.name),
+        Some(ExportChoice::Fig) => save_fig(app, &name),
         None => {}
     }
     if close {
         app.ui.export_preview = false;
+    }
+}
+
+// Save as lives here, not in `lib.rs` (at its size cap).
+impl FigApp {
+    /// File ▸ Save as: a save dialog for the file of the document shown.
+    pub fn save_as_dialog(&mut self) {
+        // The name shown suggests the file's (Fix AF): "Untitled 2" saves as "Untitled 2.figcraft".
+        let Some(name) = crate::doc_title::active(self) else { return };
+        self.pick_save(tr("Save as"), &format!("{name}.figcraft"), &["figcraft", "fig"], |app, mut p| {
+            if p.extension().is_none_or(|e| e.is_empty()) {
+                if !p.set_extension("figcraft") {
+                    app.toast(tr("Use the .figcraft or .fig extension."));
+                    return;
+                }
+                // This name wasn't confirmed by the system dialog: don't replace an existing file.
+                match p.try_exists() {
+                    Ok(false) => {}
+                    Ok(true) => {
+                        app.toast(tr("A .figcraft file with this name already exists. Choose its full name to confirm replacement."));
+                        return;
+                    }
+                    Err(e) => {
+                        app.toast(e.to_string());
+                        return;
+                    }
+                }
+            } else if !p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("figcraft") || e.eq_ignore_ascii_case("fig")) {
+                app.toast(tr("Use the .figcraft or .fig extension."));
+                return;
+            }
+            if let Some(r) = app.run("file.saveAs", json!({"path": p.to_string_lossy()})) {
+                file_saved(app, &r);
+            }
+        });
     }
 }
 

@@ -241,7 +241,7 @@ fn sidebar(app: &mut FigApp, ui: &mut Ui, t: &Tokens, left: Rect) {
     crate::home_settings_row::show(app, ui, t, left, y);
 }
 
-fn file_matches(name: &str, location: &str, query: &str) -> bool {
+pub(crate) fn file_matches(name: &str, location: &str, query: &str) -> bool {
     name.to_lowercase().contains(query) || location.to_lowercase().contains(query)
 }
 
@@ -386,7 +386,7 @@ fn recents(app: &mut FigApp, ui: &mut Ui, t: &Tokens) {
 /// The Open files list: the documents whose name or path has `query` (lower case; all for ""), a
 /// row each; choosing one shows its tab. How many are listed.
 fn open_files(app: &mut FigApp, ui: &mut Ui, t: &Tokens, query: &str) -> usize {
-    let hit = |d: &&figcraft_engine::DocState| file_matches(&d.doc.name, d.path.as_deref().unwrap_or_default(), query);
+    let hit = |d: &&figcraft_engine::DocState| file_matches(&crate::doc_title::of(d), d.path.as_deref().unwrap_or_default(), query);
     let count = app.session.docs.iter().filter(hit).count();
     if count == 0 {
         return 0;
@@ -395,9 +395,10 @@ fn open_files(app: &mut FigApp, ui: &mut Ui, t: &Tokens, query: &str) -> usize {
     let mut switch = None;
     for (i, d) in app.session.docs.iter().enumerate().filter(|(_, d)| hit(d)) {
         let detail = d.path.as_deref().unwrap_or_default();
+        let name = crate::doc_title::of(d);
         let row = FileRow {
             mark: Some((Icon::Logo, crate::brand_mark::OLIVE)),
-            name: &d.doc.name,
+            name: &name,
             ink: t.text,
             detail,
             detail_size: 11.0,

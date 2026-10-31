@@ -117,7 +117,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!("file.duplicate", "Duplicate file", "{}", false, |s, _| {
             let ds = s.ds()?;
             let mut d = (*ds.doc).clone();
-            d.name = format!("{} (Copy)", d.name);
+            d.name = format!("{} (Copy)", ds.display_name());
             super::show_new_doc(s, DocState::new(d, None));
             Ok(json!({"index": s.active}))
         }),
@@ -220,7 +220,7 @@ pub fn specs() -> Vec<CommandSpec> {
                 let ds = s.ds()?;
                 let v = ds.versions.get(version_index("version.duplicate", ds, p)?).ok_or_else(|| bad("version.duplicate", "no such version"))?;
                 let mut doc = (*read_version(v)?).clone();
-                doc.name = format!("{} ({})", ds.doc.name, v.name);
+                doc.name = format!("{} ({})", ds.display_name(), v.name);
                 doc.take_dirty();
                 super::show_new_doc(s, DocState::new(doc, None));
                 Ok(json!({"index": s.active}))
@@ -465,9 +465,9 @@ fn file_stem(path: &str) -> String {
     std::path::Path::new(path).file_stem().and_then(|e| e.to_str()).unwrap_or("Untitled").to_string()
 }
 
-/// The counts the import report shows for a freshly loaded document.
-fn import_summary(doc: &Document) -> Value {
-    json!({"name": doc.name, "pages": doc.pages.len(), "layers": doc.nodes().filter(|n| !n.is_page()).count(), "images": doc.images.len()})
+/// The counts the import report shows for a freshly loaded document, and `name` (what it is called).
+fn import_summary(doc: &Document, name: String) -> Value {
+    json!({"name": name, "pages": doc.pages.len(), "layers": doc.nodes().filter(|n| !n.is_page()).count(), "images": doc.images.len()})
 }
 
 /// Load a document from any supported file (REST API file JSON images come from an `images`
@@ -667,7 +667,7 @@ fn open_recent(s: &mut Session, p: &Value) -> Result<Value> {
         .iter()
         .filter(|r| listed(r))
         .map(|r| {
-            let name = std::path::Path::new(r).file_name().map_or_else(|| r.clone(), |f| f.to_string_lossy().into_owned());
+            let name = crate::doc_name::of_file(&s.docs, r, figcraft_format::stored_name::stored_name(r.as_ref()).as_deref()).english();
             json!({"path": r, "name": name, "exists": crate::file_access::exists(r)})
         })
         .collect();
@@ -699,9 +699,8 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
             more => format!("{}: {} problems were repaired or left out while opening it, e.g. {}", file_stem(&path), more.len(), more[0]),
         });
     }
-    let summary = import_summary(&loaded.doc);
     super::show_new_doc(s, DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
-    let mut out = json!({"index": s.active, "summary": summary});
+    let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
     out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
     Ok(out)
 }
@@ -714,9 +713,8 @@ fn open_data(s: &mut Session, data: &str, p: &Value, variables: Option<&Value>) 
     let bytes = base64::engine::general_purpose::STANDARD.decode(data.trim()).map_err(|e| bad("file.open", e.to_string()))?;
     let (loaded, rest) = load_with(&bytes, &name, variables, &figcraft_format::rest::no_images)?;
     let warnings = rest || ext(&name) == "svg";
-    let summary = import_summary(&loaded.doc);
     super::show_new_doc(s, DocState::new(loaded.doc, None).with_versions(loaded.versions).with_branches(loaded.branches));
-    let mut out = json!({"index": s.active, "summary": summary});
+    let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
     out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
     Ok(out)
 }
@@ -1274,7 +1272,7 @@ fn import(s: &mut Session, p: &Value) -> Result<Value> {
             };
             let sibling = if variables.is_none() { path.as_deref().and_then(sibling_variables) } else { None };
             let (other, rest) = load_with(&bytes, &name, variables.as_ref().or(sibling.as_ref()), images)?;
-            let summary = import_summary(&other.doc);
+            let summary = import_summary(&other.doc, crate::doc_name::resolve(&other.doc.name, path.as_deref(), 1).english());
             let pages = append_pages(s.doc_mut()?, &other.doc)?;
             let mut out = json!({"pages": pages, "summary": summary});
             if rest {

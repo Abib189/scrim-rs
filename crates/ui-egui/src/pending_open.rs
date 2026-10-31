@@ -100,7 +100,7 @@ pub fn pending_opens(app: &mut FigApp, ctx: &egui::Context) {
                 .pending_opens
                 .first()
                 .and_then(|pending| pending.target.as_ref().map(|target| target.name.clone()))
-                .or_else(|| app.session.doc().ok().map(|d| d.name.clone()))
+                .or_else(|| crate::doc_title::active(app))
                 .unwrap_or_default();
             trf("Adding to {name}", &[("name", &name)])
         }

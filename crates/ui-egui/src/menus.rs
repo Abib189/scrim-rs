@@ -231,7 +231,7 @@ pub fn invoke(app: &mut FigApp, id: &str) {
 
 /// Every visible top-level frame of the page as one PDF page each, through a save dialog.
 fn export_frames_pdf(app: &mut FigApp) {
-    let name = app.session.doc().map(|d| d.name.clone()).unwrap_or_else(|_| "Untitled".into());
+    let name = crate::doc_title::active(app).unwrap_or_else(|| tr("Untitled").into());
     app.pick_save(tr("Export"), &format!("{name}.pdf"), &["pdf"], |app, p| {
         if app.run("file.exportFramesPdf", json!({"path": p.to_string_lossy()})).is_some() {
             app.toast(trf("Exported {name}", &[("name", &p.file_name().map(|f| f.to_string_lossy().to_string()).unwrap_or_default())]));
@@ -308,7 +308,7 @@ fn recent_menu(app: &mut FigApp, ui: &mut Ui, prefix: &str, key: &str, label: &s
         let mut picked = None;
         for p in recents.iter().copied() {
             let path = std::path::Path::new(p);
-            let name = path.file_name().map_or_else(|| p.clone(), |f| f.to_string_lossy().into_owned());
+            let name = crate::doc_title::of_file(app, p, app.ui.home_view.recents.stored(p));
             let exists = path.exists();
             if item(ui, &name, "", exists, false, t) && exists {
                 picked = Some(json!({"path": p}));

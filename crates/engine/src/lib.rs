@@ -30,6 +30,7 @@ pub mod dev_resources;
 pub mod devcompare;
 pub mod devinspect;
 pub mod distance;
+pub mod doc_name;
 pub use clipboard::Clipboard;
 mod doc_preview;
 use doc_preview::ENDS_PREVIEW;
@@ -389,6 +390,8 @@ pub struct DocState {
     /// The last duplicate while its copies are the selection: Duplicate repeats its offset (see
     /// [`cmd::edit::Duplicated`]; not saved).
     pub(crate) last_duplicate: Option<cmd::edit::Duplicated>,
+    /// "Untitled 2" and on: the number shown while the document has no name or file ([`doc_name`]).
+    pub untitled: u32,
 }
 
 static NEXT_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
@@ -429,17 +432,10 @@ impl DocState {
             rotation_origin: None,
             view_from_prefs: false,
             last_duplicate: None,
+            untitled: 1,
         };
         st.zoom_to_fit();
         st
-    }
-
-    /// The selected ruler guide (its owner and index): it counts while no layer is selected and it
-    /// is still there on this page.
-    pub fn selected_guide(&self) -> Option<(NodeId, usize)> {
-        let (owner, i) = self.guide.filter(|_| self.selection.is_empty())?;
-        let on_page = owner == self.page || self.doc.top_level_frame(owner).is_some_and(|f| self.doc.ancestors(f).contains(&self.page));
-        (on_page && guides::keeps_guides(&self.doc, owner) && self.doc.node(owner).is_some_and(|n| i < n.guides().len())).then_some((owner, i))
     }
 
     /// With the version history read from its file.
@@ -1234,7 +1230,7 @@ impl Session {
     pub fn status(&self) -> Value {
         match self.ds() {
             Ok(ds) => json!({
-                "document": ds.doc.name,
+                "document": ds.display_name(),
                 "path": ds.path,
                 "dirty": ds.is_dirty(),
                 "page": ds.page,

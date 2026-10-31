@@ -237,10 +237,8 @@ pub struct Shown {
 }
 
 impl Shown {
-    fn new(path: &str, stat: Option<Stat>) -> Shown {
-        // Shown without its extension, like a document's name; the full path is the tooltip.
-        let p = Path::new(path);
-        let name = p.file_stem().or_else(|| p.file_name()).map_or_else(|| path.to_string(), |f| f.to_string_lossy().into_owned());
+    /// `name`: the document's name ([`crate::doc_title::of_file`]); the full path is the tooltip.
+    fn new(path: &str, stat: Option<Stat>, name: String) -> Shown {
         Shown { path: path.to_string(), name, stat }
     }
 
@@ -300,6 +298,8 @@ struct Ready {
 #[derive(Default)]
 struct Known {
     stat: Option<Stat>,
+    /// The name the file stores (Fix AF) and the modification time it was read at.
+    stored: Option<(Option<u64>, Option<String>)>,
     /// Whether the dates were asked for since the recent files came into view, and whether that is
     /// still under way.
     asked: bool,
@@ -330,12 +330,13 @@ pub struct Recents {
 const RECHECK_SECS: f64 = 2.0;
 
 enum Job {
-    Stat(String),
+    /// With the modification time the stored name was read at: it is read again once that changes.
+    Stat(String, Option<Option<u64>>),
     Preview(String, Option<u64>),
 }
 
 enum Reply {
-    Stat(String, Stat),
+    Stat(String, Stat, Option<(Option<u64>, Option<String>)>),
     Preview(String, Option<u64>, Preview),
 }
 
@@ -345,14 +346,16 @@ fn secs(t: std::io::Result<std::time::SystemTime>) -> Option<u64> {
 
 fn run(job: Job) -> Reply {
     match job {
-        Job::Stat(path) => {
+        Job::Stat(path, named_at) => {
             let meta = std::fs::metadata(&path).ok().filter(std::fs::Metadata::is_file);
             let stat = Stat {
                 exists: meta.is_some(),
                 modified: meta.as_ref().and_then(|m| secs(m.modified())),
                 created: meta.as_ref().and_then(|m| secs(m.created())),
             };
-            Reply::Stat(path, stat)
+            let name = (stat.exists && named_at != Some(stat.modified))
+                .then(|| (stat.modified, figcraft_format::stored_name::stored_name(Path::new(&path))));
+            Reply::Stat(path, stat, name)
         }
         Job::Preview(path, modified) => {
             let preview = figcraft_format::thumbnail::file_preview(Path::new(&path), PICTURE_PX);
@@ -443,9 +446,10 @@ impl Recents {
         let loader = self.loader.get_or_insert_with(|| Loader::new(ctx));
         for reply in loader.poll() {
             match reply {
-                Reply::Stat(path, stat) => {
+                Reply::Stat(path, stat, name) => {
                     if let Some(k) = self.files.get_mut(&path) {
                         k.stat = Some(stat);
+                        k.stored = name.or(k.stored.take());
                         k.pending = false;
                     }
                 }
@@ -476,7 +480,7 @@ impl Recents {
             if !k.pending && !k.asked {
                 k.pending = true;
                 k.asked = true;
-                loader.submit(Job::Stat(p.clone()));
+                loader.submit(Job::Stat(p.clone(), k.stored.as_ref().map(|s| s.0)));
             }
         }
     }
@@ -499,15 +503,22 @@ impl Recents {
         Some((r.page, r.texture.clone(), (((time - r.arrived) / FADE_SECS) as f32).clamp(0.0, 1.0)))
     }
 
-    /// The files as listed, with what is known about them.
-    fn shown(&self, paths: &[String]) -> Vec<Shown> {
-        paths.iter().map(|p| Shown::new(p, self.files.get(p).and_then(|k| k.stat))).collect()
+    /// The name stored in the file at `path`, once read.
+    pub fn stored(&self, path: &str) -> Option<&str> {
+        self.files.get(path)?.stored.as_ref()?.1.as_deref()
     }
 
-    /// For `ui.inspect`: each file listed, whether it is there and whether its picture is in.
-    pub fn inspect(&self, prefs: &Prefs) -> Value {
+    /// The files as listed, with what is known about them and their names (`app`'s open documents
+    /// go by theirs).
+    fn shown(&self, app: &FigApp, paths: &[String]) -> Vec<Shown> {
+        paths.iter().map(|p| Shown::new(p, self.files.get(p).and_then(|k| k.stat), crate::doc_title::of_file(app, p, self.stored(p)))).collect()
+    }
+
+    /// For `ui.inspect`: each file listed, its name, whether it is there and whether its picture is in.
+    pub fn inspect(&self, app: &FigApp) -> Value {
+        let prefs = &app.session.prefs;
         let paths: Vec<String> = listed(&prefs.recent_files).take(SHOWN).cloned().collect();
-        let files: Vec<Value> = sorted(self.shown(&paths), Sort::of(prefs))
+        let files: Vec<Value> = sorted(self.shown(app, &paths), Sort::of(prefs))
             .iter()
             .map(|f| {
                 let k = self.files.get(&f.path);
@@ -541,7 +552,7 @@ pub fn inspect(app: &FigApp) -> Value {
         "view": View::of(prefs).id(),
         "sort": sort.key.id(),
         "order": if sort.descending { "desc" } else { "asc" },
-        "files": app.ui.home_view.recents.inspect(prefs),
+        "files": app.ui.home_view.recents.inspect(app),
     })
 }
 
@@ -565,12 +576,13 @@ pub fn section(app: &mut FigApp, ui: &mut Ui, t: &Tokens, query: &str) -> usize 
     let now = figcraft_engine::cmd::comment::now_secs();
     let reduce_motion = app.reduce_motion();
     let (view, sort) = (View::of(&app.session.prefs), Sort::of(&app.session.prefs));
+    app.ui.home_view.recents.refresh(ui.ctx(), &paths, time);
+    // Named, searched and sorted by name as everywhere else (Fix AF).
+    let mut files = sorted(app.ui.home_view.recents.shown(app, &paths), sort);
     let state = &mut app.ui.home_view.recents;
-    state.refresh(ui.ctx(), &paths, time);
-    let mut files = sorted(state.shown(&paths), sort);
     if searching {
         let docs = &app.session.docs;
-        files.retain(|f| f.path.to_lowercase().contains(query) && !docs.iter().any(|d| d.path.as_deref() == Some(f.path.as_str())));
+        files.retain(|f| crate::home::file_matches(&f.name, &f.path, query) && !docs.iter().any(|d| d.path.as_deref() == Some(f.path.as_str())));
         if files.is_empty() {
             return 0;
         }

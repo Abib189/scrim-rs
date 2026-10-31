@@ -11,6 +11,16 @@ pub fn keeps_guides(doc: &Document, owner: NodeId) -> bool {
     doc.node(owner).is_some_and(|n| n.is_page() || (n.kind.is_frame_like() && doc.top_level_frame(owner) == Some(owner)))
 }
 
+impl crate::DocState {
+    /// The selected ruler guide (its owner and index): it counts while no layer is selected and it
+    /// is still there on this page.
+    pub fn selected_guide(&self) -> Option<(NodeId, usize)> {
+        let (owner, i) = self.guide.filter(|_| self.selection.is_empty())?;
+        let on_page = owner == self.page || self.doc.top_level_frame(owner).is_some_and(|f| self.doc.ancestors(f).contains(&self.page));
+        (on_page && keeps_guides(&self.doc, owner) && self.doc.node(owner).is_some_and(|n| i < n.guides().len())).then_some((owner, i))
+    }
+}
+
 /// The spacing (page pixels) of the rulers' labelled ticks at `zoom`: the first of 1, 2, 5, 10, 20, …
 /// that leaves at least 50 screen pixels between labels.
 pub fn ruler_step(zoom: f64) -> f64 {

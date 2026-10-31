@@ -123,7 +123,7 @@ pub fn take_input(app: &mut FigApp, viewport_id: ViewportId) -> Vec<egui::Event>
 
 fn title_of(ds: Option<&DocState>) -> String {
     match ds {
-        Some(ds) => format!("{}{} – Scrim", ds.doc.name, if ds.is_dirty() { " •" } else { "" }),
+        Some(ds) => format!("{}{} – Scrim", crate::doc_title::of(ds), if ds.is_dirty() { " •" } else { "" }),
         None => "Scrim".into(),
     }
 }
@@ -173,7 +173,7 @@ impl FigApp {
 
     /// Files in this window with unsaved changes (a branch tab's edits live on in its file).
     fn unsaved(&self) -> Vec<String> {
-        self.session.docs.iter().filter(|d| self.shows(d.uid) && d.is_dirty() && d.branch_of.is_none()).map(|d| d.doc.name.clone()).collect()
+        self.session.docs.iter().filter(|d| self.shows(d.uid) && d.is_dirty() && d.branch_of.is_none()).map(crate::doc_title::of).collect()
     }
 }
 
@@ -320,8 +320,8 @@ pub fn list(app: &FigApp) -> Value {
                 "id": id,
                 "main": id == 0,
                 "title": title_of(shown),
-                "files": app.session.docs.iter().filter(mine).map(|d| d.doc.name.as_str()).collect::<Vec<_>>(),
-                "active": shown.map(|d| d.doc.name.as_str()),
+                "files": app.session.docs.iter().filter(mine).map(crate::doc_title::of).collect::<Vec<_>>(),
+                "active": shown.map(crate::doc_title::of),
                 "focused": id == app.windows.focused,
             })
         })

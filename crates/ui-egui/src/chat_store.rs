@@ -56,7 +56,7 @@ fn unix_now() -> u64 {
 /// The document shown: its key and name.
 pub fn doc_key(app: &FigApp) -> Option<(String, String)> {
     let ds = app.session.ds().ok()?;
-    let name = ds.doc.name.clone();
+    let name = crate::doc_title::of(ds);
     Some(match ds.path.as_ref() {
         Some(p) => (p.clone(), name),
         None => (format!("unsaved:{}", ds.uid), name),

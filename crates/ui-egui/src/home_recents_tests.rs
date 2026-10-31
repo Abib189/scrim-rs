@@ -149,7 +149,8 @@ fn files(name: &str) -> (PathBuf, Vec<String>) {
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let doc = |rgb: f32| {
-        let mut d = figcraft_doc::Document::new("File");
+        // Stored under the placeholder name, each goes by its file name (Fix AF).
+        let mut d = figcraft_doc::Document::new(figcraft_engine::doc_name::UNTITLED);
         let p = d.first_page().unwrap();
         if let Some(figcraft_doc::NodeKind::Page { background, .. }) = d.node_mut(p).map(|n| &mut n.kind) {
             *background = figcraft_color::Color { r: rgb, g: rgb, b: rgb, a: 1.0 };

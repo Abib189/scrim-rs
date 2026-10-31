@@ -1,0 +1,26 @@
+frames after 1 focus
+saved: {'bytes': 8680, 'path': '/var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-af-ic9hevl5/scratch/home/Documents/Scrim/zeichen-26.figcraft'}
+stored name in the file: 'Untitled' | sha256 f40aa2219176
+  1 Home: tabs [] | window title 'Scrim' | document.inspect name None | Home recents [('zeichen-26.figcraft', 'zeichen-26')]
+   shot 1-home.png
+  MCP open_file: isError False | opened.summary.name 'zeichen-26' | document.name 'zeichen-26'
+  2 opened: tabs ['zeichen-26'] | window title 'zeichen-26 – Scrim' | document.inspect name 'zeichen-26' | Home recents [('zeichen-26.figcraft', 'zeichen-26')]
+   shot 2-opened.png
+   file bytes unchanged by opening: True
+  saveAs: {'bytes': 8680, 'path': '/var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-af-ic9hevl5/scratch/home/Documents/Scrim/Festival poster.figcraft'}
+  3 saved as: tabs ['Festival poster'] | window title 'Festival poster – Scrim' | document.inspect name 'Festival poster' | Home recents [('zeichen-26.figcraft', 'zeichen-26'), ('Festival poster.figcraft', 'Festival poster')]
+   shot 3-saved-as.png
+   stored name in the new file: 'Untitled' | zeichen-26 untouched: True
+  3b Home after Save as: tabs ['Festival poster'] | window title 'Festival poster – Scrim' | document.inspect name 'Festival poster' | Home recents [('Festival poster.figcraft', 'Festival poster'), ('zeichen-26.figcraft', 'zeichen-26')]
+   shot 3b-home-after-save-as.png
+   shot 4a-renaming.png
+  4 renamed: tabs ['Spring festival poster, final, for print at A1 size'] | window title 'Spring festival poster, final, for print at A1 size • – Scrim' | document.inspect name 'Spring festival poster, final, for print at A1 size' | Home recents [('Festival poster.figcraft', 'Spring festival poster, final, for print at A1 size'), ('zeichen-26.figcraft', 'zeichen-26')]
+   shot 4-renamed.png
+   files on disk: ['Festival poster.figcraft', 'zeichen-26.figcraft'] | Festival poster.figcraft untouched until saved: True
+  4b Home after rename: tabs ['Spring festival poster, final, for print at A1 size'] | window title 'Spring festival poster, final, for print at A1 size • – Scrim' | document.inspect name 'Spring festival poster, final, for print at A1 size' | Home recents [('Festival poster.figcraft', 'Spring festival poster, final, for print at A1 size'), ('zeichen-26.figcraft', 'zeichen-26')]
+   shot 4b-home-after-rename.png
+  save: {'bytes': 8711, 'path': '/var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-af-ic9hevl5/scratch/home/Documents/Scrim/Festival poster.figcraft'} | stored name now 'Spring festival poster, final, for print at A1 size' | files ['Festival poster.figcraft', 'zeichen-26.figcraft']
+MCP 7690 inspect_document isError = False | name 'Spring festival poster, final, for print at A1 size'
+log errors: []
+captures in /var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-af-ic9hevl5/out
+quit 0

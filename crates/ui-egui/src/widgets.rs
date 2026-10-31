@@ -1055,7 +1055,7 @@ pub fn text_field_inline(ui: &mut Ui, id: Id, value: &str, rect: Rect, font: egu
             if resp.hovered() {
                 ui.painter().rect_filled(rect.expand(2.0), CornerRadius::same(4), t.hover);
             }
-            crate::bidi::paint_name(ui.painter(), rect.left_center(), value, font, t.text, rect.width());
+            crate::bidi::paint_name_tip(ui.painter(), &resp, rect.left_center(), value, font, t.text, rect.width());
             None
         }
     }

@@ -73,7 +73,7 @@ pub fn banner(app: &mut FigApp, ctx: &egui::Context, canvas: Rect) {
     }
     let Some(m) = app.session.docs.iter().find(|d| d.uid == main) else { return };
     let Some(b) = m.branches.iter().find(|b| b.id == id) else { return };
-    let (file, name, active) = (m.doc.name.clone(), b.name.clone(), b.state == BranchState::Active);
+    let (file, name, active) = (crate::doc_title::of(m), b.name.clone(), b.state == BranchState::Active);
     let t = Tokens::get(ctx);
     let review = widgets::canvas_banner(ctx, Id::new("branch_banner"), canvas, |ui| {
         ui.label(egui::RichText::new(format!("“{name}”")).font(semibold(11.0)).color(t.text));

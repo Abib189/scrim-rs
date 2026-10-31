@@ -68,7 +68,7 @@ pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
         let several = !ui.ctx().embed_viewports();
         for (i, d) in app.session.docs.iter().enumerate().filter(|(_, d)| app.shows(d.uid)) {
             let active = i == app.session.active && !app.ui.home && app.ui.present.is_none();
-            let name = d.doc.name.clone();
+            let name = crate::doc_title::of(d);
             // In a live session: a mark after the name says whether others get in.
             let live = live_mark(app, d.uid);
             let mark_w = if live.is_some() { 18.0 } else { 0.0 };
@@ -98,7 +98,9 @@ pub fn tab_bar(app: &mut FigApp, ui: &mut Ui) {
                 Some(false) => trf("{name}, online, open only to you", &[("name", &name)]),
                 None => name.clone(),
             };
-            let resp = if live.is_some() { resp.on_hover_text(&label) } else { resp };
+            // A name too long for the tab ends in "…": the tooltip has it whole.
+            let cut = ui.painter().layout_no_wrap(name.clone(), regular(12.0), t.text).size().x > w - mark_w - if dirty { 72.0 } else { 60.0 };
+            let resp = if live.is_some() || cut { resp.on_hover_text(&label) } else { resp };
             crate::a11y::tab(&resp, &label, active);
             if active {
                 ui.painter().rect_filled(r, CornerRadius::ZERO, t.tab_active);

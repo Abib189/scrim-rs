@@ -18,7 +18,8 @@ fn open_recent_lists_opens_prunes_and_clears() {
     s.execute("file.saveAs", &json!({"path": b})).unwrap();
     let list = s.execute("file.openRecent", &json!({})).unwrap();
     assert_eq!(list["files"][0]["path"], b.as_str(), "newest first");
-    assert_eq!(list["files"][1]["name"], "a.figcraft");
+    // Named as the document is everywhere (Fix AF): saved with the placeholder, by its file name.
+    assert_eq!(list["files"][1]["name"], "a");
     assert_eq!(list["files"][1]["exists"], true);
     // Opening one moves it to the top (an open file is switched to).
     s.execute("file.openRecent", &json!({"index": 1})).unwrap();

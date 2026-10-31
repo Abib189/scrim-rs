@@ -1103,7 +1103,7 @@ pub fn open_publish(app: &mut FigApp) {
         app.toast(tr("Publishing to a server needs the desktop app; in the browser you can join a server's files"));
         return;
     }
-    let name = app.session.doc().map(|d| d.name.clone()).unwrap_or_default();
+    let name = crate::doc_title::active(app).unwrap_or_default();
     app.ui.live.publish = Some(PublishForm { server: app.ui.live.last_server.clone(), name, info: None });
     app.ui.live.focus_publish = true;
 }

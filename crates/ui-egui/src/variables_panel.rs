@@ -207,7 +207,7 @@ fn header(app: &mut FigApp, ui: &mut Ui, open: &mut bool) {
 /// Export this file's collections through a save dialog, or as a download where the platform has
 /// no save dialogs (the browser).
 pub(crate) fn export_dialog(app: &mut FigApp, format: &str) {
-    let name = app.session.doc().map(|d| format!("{}.variables.{format}", d.name)).unwrap_or_else(|_| format!("variables.{format}"));
+    let name = crate::doc_title::active(app).map_or_else(|| format!("variables.{format}"), |n| format!("{n}.variables.{format}"));
     if app.services.downloads() {
         let Some(r) = app.run("variable.export", json!({"format": format})) else { return };
         let text = r["text"].as_str().unwrap_or_default();

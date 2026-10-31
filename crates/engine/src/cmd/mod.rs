@@ -177,6 +177,7 @@ pub(crate) fn show_new_doc(s: &mut crate::Session, ds: crate::DocState) {
     }
     s.docs.push(ds);
     s.active = s.docs.len() - 1;
+    crate::doc_name::number(s, s.active);
 }
 
 /// `id` changes only what a panel shows (no new document revision; `layers::VIEW_ONLY`).

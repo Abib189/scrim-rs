@@ -28,6 +28,7 @@ pub mod dev_compare;
 pub mod dev_icon;
 pub mod dev_mode;
 pub mod dialogs;
+pub mod doc_title;
 pub mod export_panel;
 pub mod field_math;
 pub mod follow_agent;
@@ -1037,36 +1038,6 @@ impl FigApp {
         (w != width).then_some(w)
     }
 
-    pub fn save_as_dialog(&mut self) {
-        let Ok(name) = self.session.doc().map(|d| d.name.clone()) else { return };
-        self.pick_save(i18n::tr("Save as"), &format!("{name}.figcraft"), &["figcraft", "fig"], |app, mut p| {
-            if p.extension().is_none_or(|e| e.is_empty()) {
-                if !p.set_extension("figcraft") {
-                    app.toast(i18n::tr("Use the .figcraft or .fig extension."));
-                    return;
-                }
-                // This name wasn't confirmed by the system dialog: don't replace an existing file.
-                match p.try_exists() {
-                    Ok(false) => {}
-                    Ok(true) => {
-                        app.toast(i18n::tr("A .figcraft file with this name already exists. Choose its full name to confirm replacement."));
-                        return;
-                    }
-                    Err(e) => {
-                        app.toast(e.to_string());
-                        return;
-                    }
-                }
-            } else if !p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("figcraft") || e.eq_ignore_ascii_case("fig")) {
-                app.toast(i18n::tr("Use the .figcraft or .fig extension."));
-                return;
-            }
-            if let Some(r) = app.run("file.saveAs", json!({"path": p.to_string_lossy()})) {
-                dialogs::file_saved(app, &r);
-            }
-        });
-    }
-
     pub fn save(&mut self) {
         // A branch tab saves its main file.
         let tab = figcraft_engine::branches::file_tab(&self.session);
@@ -1617,7 +1588,7 @@ impl FigApp {
             "leftTab": self.ui.left_tab,
             "home": self.ui.home || !self.has_files(),
             "online": online::inspect(self),
-            "tabs": self.session.docs.iter().map(|d| json!({"name": d.doc.name, "live": tabs::live_mark(self, d.uid).map(|shared| if shared { "shared" } else { "private" })})).collect::<Vec<_>>(),
+            "tabs": self.session.docs.iter().map(|d| json!({"name": doc_title::of(d), "live": tabs::live_mark(self, d.uid).map(|shared| if shared { "shared" } else { "private" })})).collect::<Vec<_>>(),
             "homeSection": self.ui.home_view.section.id(),
             "homeRecents": home_recents::inspect(self),
             "dark": self.ui.dark,
