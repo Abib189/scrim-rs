@@ -38,9 +38,13 @@
 - **The deb and rpm maintainer address** defaults to a placeholder (`Scrim maintainers <scrim-rs@users.noreply.github.com>`, `FIGCRAFT_MAINTAINER`): the owner sets a real one before publishing.
 - **The server's packaging** (`packaging/server/`, group 4b).
 
-## The placeholder icon (A2)
+## The app icon
 
-Scrim ships a **placeholder** app icon drawn in code: an original, simple mark, not FigCraft's chameleon and nothing of ArtCraft's. **It awaits the owner's real mark.** When it arrives, it replaces the placeholder in one place (the generator), and the packaged icons regenerate.
+**Since 31 Oct 2026, the owner's mark** replaces the A2 placeholder (an orange tile with a bold S). Two identical pieces interlock into one shape, a person and an agent on one surface. On an olive tile (`#7F7500`) the top piece is white and the bottom one ink (`#111214`), 58% of the tile wide and nudged up 1.5% for the optical centre. The pieces' outlines are the owner's drawing, copied unchanged into the one swap point, `xtask/src/icon.rs`; `cargo xtask icon` regenerated the committed icons in `assets/app-icon/scrim/`. The brand kit (lockups, wordmark, web icons, usage guide) is the owner's and lives outside the repository.
+
+Not changed with it: the interface still draws its own small S (`Icon::Logo`) and uses the orange accent (`#FF5A1F`); bringing those in line with the mark and olive is a separate change.
+
+*(A2, superseded: Scrim shipped a placeholder app icon drawn in code, an original simple mark, not FigCraft's chameleon and nothing of ArtCraft's, awaiting the owner's real mark.)*
 
 ## GitHub-facing text (A4; the owner pastes these into the repository settings)
 

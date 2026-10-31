@@ -7,7 +7,7 @@
 //! - **Contents/Info.plist:** the release template (`packaging/macos/Info.plist.in`): Scrim,
 //!   `design.scrim.app`, NSHighResolutionCapable, with the version from Cargo, the minimum macOS
 //!   the build targets, and this executable's name.
-//! - **Contents/Resources/Scrim.icns:** made from the placeholder icon's PNGs. The one swap point
+//! - **Contents/Resources/Scrim.icns:** made from the app icon's PNGs. The one swap point
 //!   for the real mark is `assets/app-icon/scrim/` (`cargo xtask icon` writes it).
 //! - **Signed ad hoc** (`codesign -s -`): it runs on this Mac. It isn't notarised; another Mac's
 //!   Gatekeeper refuses it until opened from the context menu. Nothing here changes Gatekeeper
@@ -61,7 +61,7 @@ fn target_dir(root: &Path) -> PathBuf {
     std::env::var_os("CARGO_TARGET_DIR").map(PathBuf::from).unwrap_or_else(|| root.join("target"))
 }
 
-/// `Contents/Resources/Scrim.icns` from the placeholder icon's PNGs.
+/// `Contents/Resources/Scrim.icns` from the app icon's PNGs.
 fn icon(root: &Path, work: &Path, resources: &Path) -> bool {
     let icons = root.join("assets/app-icon/scrim");
     let set = work.join("Scrim.iconset");

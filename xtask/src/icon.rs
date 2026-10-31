@@ -1,6 +1,8 @@
-//! The app icon: Scrim's **placeholder** mark, drawn here in code (it awaits the owner's real one;
-//! `docs/design/rebrand.md` › The placeholder icon). The same bold S the interface draws
-//! (`crates/ui-egui/src/icons.rs` › `Icon::Logo`), in ink on the accent orange, on a rounded tile.
+//! The app icon: Scrim's mark (`docs/design/rebrand.md` › The app icon; the brand kit and its usage
+//! guide are the owner's, outside the repository). Two identical pieces interlock into one shape, a
+//! person and an agent on one surface: on the olive tile, the top piece in white and the bottom one
+//! in ink, 58% of the tile wide and nudged up 1.5% for the optical centre. The pieces' outlines are
+//! the owner's drawing, copied here unchanged.
 //! `cargo xtask icon` writes `assets/app-icon/scrim/`: the SVG, scrim-<size>.png (macOS grid), the
 //! hicolor theme (`design.scrim.app`) and scrim.ico, rasterised with the `resvg` CLI
 //! (`cargo install resvg`) or `rsvg-convert`. The outputs are committed, so building and packaging
@@ -12,26 +14,35 @@ use std::process::Command;
 /// The app id the icons are named for.
 pub const APP_ID: &str = "design.scrim.app";
 
-/// The 16-unit glyph scaled onto the 512 tile: x, y → 96 + 20·(x, y).
-fn s_path() -> String {
-    let (cx, r) = (256.0, 60.0);
-    let pt = |cy: f64, deg: f64| (cx + r * deg.to_radians().cos(), cy + r * deg.to_radians().sin());
-    // Top bowl: centre (8, 5) from −40° anticlockwise to the bottom; bottom bowl: centre (8, 11)
-    // from the top clockwise to 140°.
-    let (top, bottom) = (196.0, 316.0);
-    let (a, b, c) = (pt(top, -40.0), pt(top, 90.0), pt(bottom, 140.0));
-    format!("M {:.2} {:.2} A {r} {r} 0 1 0 {:.2} {:.2} A {r} {r} 0 1 1 {:.2} {:.2}", a.0, a.1, b.0, b.1, c.0, c.1)
-}
+/// Brand colours (the brand kit's usage guide).
+const OLIVE: &str = "#7f7500";
+const INK: &str = "#111214";
 
-/// The placeholder icon as SVG: the tile edge to edge (`view_box` pads it for macOS).
+/// The mark's two pieces, each a transform and an outline in the drawing's own units (its box is
+/// 150 × 141 at 4, 4): the ink piece, then the top piece.
+const PIECES: [(&str, &str); 2] = [
+    (
+        "matrix(-1 0 0 -1 153.745 145)",
+        "M50.153 0L139.745 0C145.268 0 149.745 4.477 149.745 10L149.745 35C149.745 40.523 145.268 45 139.745 45L59.871 45C54.316 45 49.826 49.526 49.871 55.081L50.071 79.831C50.116 85.42 45.573 89.961 39.983 89.92C31.461 89.859 19.324 89.785 10.612 89.788C4.663 89.79 0 84.81 0 78.862L0 10C0 4.477 4.477 0 10 0L50.153 0Z",
+    ),
+    (
+        "matrix(1 0 0 1 4.254 4)",
+        "M50.077 0L139.746 0C145.269 0 149.746 4.477 149.746 10L149.746 35C149.746 40.523 145.269 45 139.746 45L59.796 45C54.241 45 49.751 49.526 49.796 55.081L49.995 79.831C50.04 85.42 45.497 89.96 39.908 89.92C31.405 89.859 19.307 89.786 10.614 89.788C4.665 89.79 0 84.81 0 78.86L0 10C0 4.477 4.477 0 10 0L50.077 0Z",
+    ),
+];
+
+/// The icon as SVG: the tile edge to edge (`view_box` pads it for macOS).
 pub fn svg(view_box: &str) -> String {
+    let [(ink_t, ink_d), (top_t, top_d)] = PIECES;
     format!(
         r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="{view_box}" width="512" height="512">
-  <rect x="0" y="0" width="512" height="512" rx="112" fill="#ff5a1f"/>
-  <path d="{}" fill="none" stroke="#111214" stroke-width="44" stroke-linecap="round"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="{OLIVE}"/>
+  <g transform="translate(99.60 100.83) scale(1.9797)">
+    <path transform="{ink_t}" d="{ink_d}" fill="{INK}"/>
+    <path transform="{top_t}" d="{top_d}" fill="#ffffff"/>
+  </g>
 </svg>
-"##,
-        s_path()
+"##
     )
 }
 
@@ -101,9 +112,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_placeholder_is_drawn_from_code_and_names_the_app_id() {
+    fn the_mark_is_drawn_from_code_and_names_the_app_id() {
         let s = svg("0 0 512 512");
-        assert!(s.contains("#ff5a1f") && s.contains(" A 60 60 0 1 0 ") && s.contains(" A 60 60 0 1 1 "), "{s}");
+        // The olive tile, the ink piece and the white piece, both outlines present.
+        assert!(s.contains(r##"fill="#7f7500""##) && s.contains(r##"fill="#111214""##) && s.contains(r##"fill="#ffffff""##), "{s}");
+        assert_eq!(s.matches("<path ").count(), 2, "{s}");
         // Committed outputs match the generator.
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
         let committed = std::fs::read_to_string(root.join("assets/app-icon/scrim/scrim.svg")).unwrap();
