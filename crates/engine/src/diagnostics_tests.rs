@@ -90,8 +90,12 @@ fn retention_drops_old_events_and_zero_keeps_none() {
 #[test]
 fn the_commands_list_copy_save_and_clear_and_only_the_person_clears() {
     let mut s = Session::new();
-    record(&mut s.prefs.settings, NOW, Entry::McpStarted(7600));
-    record(&mut s.prefs.settings, NOW + 1, Entry::Reload);
+    // Dated by the real clock: the agent's refused attempt below is recorded at the real time, and
+    // recording prunes what is older than the retention, so fixed dates expire (they did 7 days
+    // after NOW, on 27 Oct 2026).
+    let now = super::now();
+    record(&mut s.prefs.settings, now, Entry::McpStarted(7600));
+    record(&mut s.prefs.settings, now + 1, Entry::Reload);
     let st = s.execute("diagnostics.events", &json!({})).unwrap();
     assert_eq!(st["events"][0]["kind"], "reload", "newest first");
     s.ui_requests.clear();
