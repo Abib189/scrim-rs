@@ -167,6 +167,17 @@ pub fn all_commands() -> &'static [CommandSpec] {
     &registry().list
 }
 
+/// Add `ds` as the active document. The first in a session with none asks the window to show it
+/// (Fix AD: `doc.shown`): a file an agent opens while only Home shows is shown, and Home asked
+/// for after it still wins, since the window takes its requests in order.
+pub(crate) fn show_new_doc(s: &mut crate::Session, ds: crate::DocState) {
+    if s.docs.is_empty() {
+        s.request_ui("doc.shown", serde_json::json!({}));
+    }
+    s.docs.push(ds);
+    s.active = s.docs.len() - 1;
+}
+
 /// `id` changes only what a panel shows (no new document revision; `layers::VIEW_ONLY`).
 pub fn view_only(id: &str) -> bool {
     // `agent.finish-working` only tells the window an agent is done (Stage I.1); the composer's
@@ -183,3 +194,6 @@ pub fn find_command(id: &str) -> Option<&'static CommandSpec> {
 pub fn ok() -> Result<Value> {
     Ok(serde_json::json!({"ok": true}))
 }
+
+#[cfg(test)]
+mod no_document_tests;

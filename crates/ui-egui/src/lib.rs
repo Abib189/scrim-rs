@@ -768,7 +768,7 @@ impl FigApp {
 
     /// Show command `id`'s error.
     fn failed(&mut self, id: &str, e: &figcraft_engine::EngineError) {
-        let msg = e.to_string();
+        let msg = windows::error_text(e);
         log::warn!("{id}: {msg}");
         self.toast(msg.clone());
         self.ui.last_error = Some(msg);
@@ -993,7 +993,7 @@ impl FigApp {
                 "dialog.plugins" => self.ui.plugins_window = true,
                 "dialog.cursorChat" => live::open_chat(self),
                 "window.new" | "window.focus" | "window.fullscreen" => self.window_requests.push(r),
-                _ => {}
+                other => windows::request(self, other),
             }
         }
         if let Some(m) = self.session.message.take() {
@@ -1450,7 +1450,7 @@ impl FigApp {
             windows::requests(self, &ctx);
             return;
         }
-        if !self.has_files() || self.ui.home {
+        if self.showing_home() {
             home::show(self, ui);
             // The shortcuts panel belongs to the canvas; it doesn't hang over the home screen
             // (cleared after the home widgets, which may have just asked for it).
@@ -1615,7 +1615,7 @@ impl FigApp {
         let mut state = json!({
             "rightTab": self.ui.right_tab,
             "leftTab": self.ui.left_tab,
-            "home": self.ui.home,
+            "home": self.ui.home || !self.has_files(),
             "online": online::inspect(self),
             "tabs": self.session.docs.iter().map(|d| json!({"name": d.doc.name, "live": tabs::live_mark(self, d.uid).map(|shared| if shared { "shared" } else { "private" })})).collect::<Vec<_>>(),
             "homeSection": self.ui.home_view.section.id(),

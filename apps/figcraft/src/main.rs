@@ -21,6 +21,7 @@ mod app_nap;
 mod apple_events;
 mod args;
 mod control_server;
+mod first_screen;
 mod gamepad;
 mod graphics;
 #[cfg(target_os = "linux")]
@@ -57,7 +58,6 @@ use std::sync::{Arc, Mutex};
 use figcraft_engine::Session;
 use figcraft_ui_egui::windows::with_app;
 use figcraft_ui_egui::{ControlRequest, FigApp};
-use serde_json::json;
 
 /// The app state lives in [`figcraft_ui_egui::windows`] (other windows draw it too).
 struct App {
@@ -200,12 +200,7 @@ fn main() -> eframe::Result {
             c.request_repaint();
         }
     }))));
-    for f in &args.files {
-        if let Err(e) = session.execute("file.open", &json!({"path": f})) {
-            log::error!("{f}: {e}");
-        }
-    }
-    let opened: Vec<u64> = session.docs.iter().map(|d| d.uid).collect();
+    let opened = first_screen::open_files(&mut session, &args.files);
     // FigCraft's settings come over once, as a copy (`migrate`); not into a scratch settings
     // folder (`SCRIM_SETTINGS_DIR`, Fix Q3).
     if let (Some(base), false) = (services::base_dir(), figcraft_engine::settings::settings_dir().1) {
@@ -238,12 +233,6 @@ fn main() -> eframe::Result {
     // default, never a build from source unless asked).
     session.live.links = figcraft_collab_net::links::system();
     session.invite_links_startup();
-    // A first run (no settings kept yet, nothing to open) starts on the home screen, with its
-    // tips and templates; later runs start in a new file.
-    let first_run = svc.prefs.is_none() && args.join.is_none();
-    if session.docs.is_empty() && !first_run {
-        let _ = session.execute("file.new", &json!({}));
-    }
     // The interface language from the first frame on, and for the message when the window can't
     // open (no frame then).
     figcraft_ui_egui::i18n::set(&session.prefs.language, figcraft_ui_egui::Services::system_language(&svc).as_deref());
@@ -254,7 +243,8 @@ fn main() -> eframe::Result {
     fig.automation_roots = roots;
     // MCP over HTTP on 127.0.0.1 (Settings ▸ MCP): Claude Code connects with one URL.
     figcraft_ui_egui::mcp_ui::restart(&mut fig);
-    fig.ui.home = false;
+    // Home when there's no file to show (Fix AD): launching makes no Untitled file.
+    fig.ui.home = first_screen::starts_on_home(&fig.session);
     // Files named on the command line are the user's too: their missing fonts are listed.
     fig.ui.font_checks = opened;
     fig.note_recovered(recovered.copies);

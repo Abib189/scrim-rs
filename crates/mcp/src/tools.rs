@@ -567,7 +567,19 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
         "inspect_ui" => b.call("ui.inspect", json!({})).map(|v| ToolResult::json(&v)),
         other => Err(format!("unknown tool `{other}` (tools/list has: {})", TOOL_NAMES.join(", "))),
     };
-    r.unwrap_or_else(ToolResult::error)
+    r.unwrap_or_else(|e| if e.contains(&figcraft_engine::EngineError::NoDocument.to_string()) { no_document() } else { ToolResult::error(e) })
+}
+
+/// The error for a tool that needs a document when none is open (Fix AD: Scrim starts on its Home
+/// screen). Structured, so an agent can tell it apart, and saying how to open one; nothing is
+/// opened or made on the agent's behalf.
+pub fn no_document() -> ToolResult {
+    let v = json!({
+        "error": "no_document",
+        "message": "No document is open in Scrim: the window is showing the Home screen.",
+        "howToOpen": "Open a file with open_file {\"path\": \"/path/to/design.figcraft\"} (also .fig, .json or .svg), or make a blank one with run_command {\"command\": \"file.new\"}.",
+    });
+    ToolResult::error(serde_json::to_string_pretty(&v).unwrap_or_else(|_| v.to_string()))
 }
 
 fn list_commands(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolResult, String> {

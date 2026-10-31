@@ -172,8 +172,7 @@ fn new_from_template(s: &mut Session, p: &Value) -> Result<Value> {
     if let Some(name) = string(p, "name").map(|n| n.trim().chars().take(MAX_NAME).collect::<String>()).filter(|n| !n.is_empty()) {
         doc.name = name;
     }
-    s.docs.push(DocState::new(doc, None));
-    s.active = s.docs.len() - 1;
+    crate::cmd::show_new_doc(s, DocState::new(doc, None));
     Ok(json!({"index": s.active, "template": template.id}))
 }
 

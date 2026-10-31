@@ -179,6 +179,7 @@ in the table. `crates/ui-egui/src/shortcut_keys_tests.rs` drives the keys a look
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-31 | minor | Scrim opens on the Home screen with no document (Fix AD), not a new Untitled file; a file named on the command line or opened from Finder opens alone, with no Untitled tab left behind; closing the last tab returns to Home; with no file open, a command that needs one says so in the interface language, and an MCP tool answers with a structured `no_document` error saying how to open one (`docs/design/home-on-launch.md`) |
 | 2026-10-18 | minor | A rename (layers double-click, F2, File ▸ Rename, a page) selects the whole name in the frame its field first draws, so the first key replaces the name instead of being appended. Checked in the app on Windows over the control channel |
 | 2026-10-17 | minor | Escape or Enter while the pen draws ends the path and keeps its vector in edit mode with the pen, so the next path is drawn into the same layer (unconnected); another Escape leaves edit mode (#760). Entering edit mode on a layer that already is a vector no longer records an empty undo step. Numbers unchanged |
 | 2026-10-17 | minor | Text layers keep the platform IME on for every frame of an edit, not only frames with input (an idle frame turned it off and macOS dropped each composition, #747); the candidate window opens at the caret instead of the canvas corner; keys pressed while composing go to the IME |

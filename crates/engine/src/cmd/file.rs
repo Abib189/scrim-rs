@@ -23,8 +23,7 @@ pub fn specs() -> Vec<CommandSpec> {
                     *b = background;
                 }
             }
-            s.docs.push(DocState::new(doc, None));
-            s.active = s.docs.len() - 1;
+            super::show_new_doc(s, DocState::new(doc, None));
             Ok(json!({"index": s.active}))
         }),
         spec!(
@@ -99,8 +98,7 @@ pub fn specs() -> Vec<CommandSpec> {
             false,
             |s, p| {
                 let path = req_string("file.recover", p, "path")?;
-                s.docs.push(recovered(&path)?);
-                s.active = s.docs.len() - 1;
+                super::show_new_doc(s, recovered(&path)?);
                 Ok(json!({"index": s.active}))
             }
         ),
@@ -120,8 +118,7 @@ pub fn specs() -> Vec<CommandSpec> {
             let ds = s.ds()?;
             let mut d = (*ds.doc).clone();
             d.name = format!("{} (Copy)", d.name);
-            s.docs.push(DocState::new(d, None));
-            s.active = s.docs.len() - 1;
+            super::show_new_doc(s, DocState::new(d, None));
             Ok(json!({"index": s.active}))
         }),
         spec!("file.revert", "Revert to saved", "{}  leave the live session first, if any", false, |s, _| {
@@ -225,8 +222,7 @@ pub fn specs() -> Vec<CommandSpec> {
                 let mut doc = (*read_version(v)?).clone();
                 doc.name = format!("{} ({})", ds.doc.name, v.name);
                 doc.take_dirty();
-                s.docs.push(DocState::new(doc, None));
-                s.active = s.docs.len() - 1;
+                super::show_new_doc(s, DocState::new(doc, None));
                 Ok(json!({"index": s.active}))
             }
         ),
@@ -704,8 +700,7 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
         });
     }
     let summary = import_summary(&loaded.doc);
-    s.docs.push(DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
-    s.active = s.docs.len() - 1;
+    super::show_new_doc(s, DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
     let mut out = json!({"index": s.active, "summary": summary});
     out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
     Ok(out)
@@ -720,8 +715,7 @@ fn open_data(s: &mut Session, data: &str, p: &Value, variables: Option<&Value>) 
     let (loaded, rest) = load_with(&bytes, &name, variables, &figcraft_format::rest::no_images)?;
     let warnings = rest || ext(&name) == "svg";
     let summary = import_summary(&loaded.doc);
-    s.docs.push(DocState::new(loaded.doc, None).with_versions(loaded.versions).with_branches(loaded.branches));
-    s.active = s.docs.len() - 1;
+    super::show_new_doc(s, DocState::new(loaded.doc, None).with_versions(loaded.versions).with_branches(loaded.branches));
     let mut out = json!({"index": s.active, "summary": summary});
     out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
     Ok(out)

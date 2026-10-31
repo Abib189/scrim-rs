@@ -139,6 +139,33 @@ impl FigApp {
         self.session.docs.iter().any(|d| self.shows(d.uid))
     }
 
+    /// Whether the window shows Home this frame: asked for, or no file to show (Fix AD).
+    pub fn showing_home(&self) -> bool {
+        !self.has_files() || self.ui.home
+    }
+}
+
+/// A request from a command that the window takes itself (the ones `handle_ui_requests` doesn't
+/// name). `doc.shown` (Fix AD): the first document in a session with none was made or opened (an
+/// agent's `open_file`, File ▸ New run by an agent), so the window shows it rather than Home, as the
+/// Open dialog does. Home asked for after it (Help ▸ Getting started) comes later and wins; with
+/// files already open nothing is sent, so an agent's open doesn't pull the person off Home.
+pub fn request(app: &mut FigApp, kind: &str) {
+    if kind == "doc.shown" {
+        app.ui.home = false;
+    }
+}
+
+/// What a command's failure says to the person (Fix AD): with no file open, in the interface
+/// language and with what to do; anything else as the engine words it.
+pub fn error_text(e: &figcraft_engine::EngineError) -> String {
+    match e {
+        figcraft_engine::EngineError::NoDocument => tr("No file is open. Open a file, or start a new design file from Home.").to_string(),
+        other => other.to_string(),
+    }
+}
+
+impl FigApp {
     /// The window title: the file it shows and whether it has unsaved changes.
     pub fn title(&self) -> String {
         title_of(self.session.ds().ok().filter(|d| self.shows(d.uid)))
@@ -535,3 +562,7 @@ fn draw(app: &mut FigApp, id: u64, ui: &mut egui::Ui) {
     let (outer, inner) = ctx.input(|i| (i.viewport().outer_rect, i.viewport().inner_rect));
     leave(app, e, outer, inner);
 }
+
+#[cfg(test)]
+#[path = "home_start_tests.rs"]
+mod home_start_tests;
