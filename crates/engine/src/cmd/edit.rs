@@ -18,9 +18,9 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "edit.duplicate",
             "Duplicate",
-            "{ids?, dx?, dy? (page offset; default: the offset of the last duplicate when ids are its copies, still selected; else top-level frames to the right with a 100 gap, everything else in place)}",
+            "{ids?, dx?, dy? (page offset; default: the offset of the last duplicate when ids are its copies, still selected; else top-level frames to the right with a 100 gap, everything else in place), parent? (the layer the copies go into, keeping their place on the canvas), index? (their position among its layers)}",
             true,
-            duplicate
+            super::duplicate::duplicate
         ),
         spec!("edit.copy", "Copy", "{ids?}", false, copy),
         spec!("edit.cut", "Cut", "{ids?}", true, cut),
@@ -432,7 +432,7 @@ impl Duplicated {
 
     /// The page offset from the sources to the copies, if both are still there and the copies move
     /// freely (an auto layout places its own).
-    fn offset(&self, doc: &Document) -> Option<(f64, f64)> {
+    pub(crate) fn offset(&self, doc: &Document) -> Option<(f64, f64)> {
         let free = self
             .copies
             .iter()
@@ -444,58 +444,6 @@ impl Duplicated {
         let d = (b.x0 - a.x0, b.y0 - a.y0);
         (d.0.is_finite() && d.1.is_finite() && (d.0 != 0.0 || d.1 != 0.0)).then_some(d)
     }
-}
-
-fn duplicate(s: &mut Session, p: &Value) -> Result<Value> {
-    let ids = req_targets("edit.duplicate", s, p)?;
-    let rename = s.prefs.rename_duplicates;
-    let explicit = num(p, "dx").is_some() || num(p, "dy").is_some();
-    let ds = s.ds()?;
-    let roots_now = z_sorted(&ds.doc, &roots(&ds.doc, &ids));
-    let repeat = ds.last_duplicate.as_ref().filter(|d| !explicit && d.is_selection(&roots_now)).and_then(|d| d.offset(&ds.doc));
-    let doc = s.doc_mut()?;
-    let ids = roots_now;
-    let mut out = Vec::new();
-    for i in ids.iter().copied() {
-        let n = doc.get(i)?;
-        let parent = n.parent.ok_or_else(|| bad("edit.duplicate", "pages are duplicated with page.duplicate"))?;
-        let top_frame = doc.node(parent).is_some_and(Node::is_page) && n.kind.is_frame_like();
-        let idx = doc.index_in_parent(i).map(|x| x + 1);
-        let w = n.width;
-        let nid = doc.duplicate_into(i, parent, idx)?;
-        let (dx, dy) = match (num(p, "dx"), num(p, "dy")) {
-            (Some(dx), dy) => (dx, dy.unwrap_or(0.0)),
-            (None, Some(dy)) => (0.0, dy),
-            // Top-level frames duplicate to the right with a gap, everything else in place.
-            _ if top_frame => (w + 100.0, 0.0),
-            _ => (0.0, 0.0),
-        };
-        match repeat {
-            Some((rx, ry)) => super::arrange::move_world(doc, nid, rx, ry)?,
-            None => {
-                let nn = doc.get_mut(nid)?;
-                nn.transform = Affine::translate((dx, dy)) * nn.transform;
-            }
-        }
-        if rename {
-            let nn = doc.get_mut(nid)?;
-            nn.name = bump_name(&nn.name);
-        }
-        out.push(nid);
-    }
-    s.set_selection(out.clone());
-    s.ds_mut()?.last_duplicate = Some(Duplicated { sources: ids, copies: out.clone() });
-    Ok(json!({"ids": out}))
-}
-
-fn bump_name(n: &str) -> String {
-    if let Some((base, num)) = n.rsplit_once(' ')
-        && let Ok(k) = num.parse::<u64>()
-        && let Some(next) = k.checked_add(1)
-    {
-        return format!("{base} {next}");
-    }
-    format!("{n} 2")
 }
 
 /// The copied form of the selection.

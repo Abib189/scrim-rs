@@ -16,6 +16,7 @@ pub mod comment;
 pub mod component;
 pub mod create;
 pub mod diagnostics;
+pub mod duplicate;
 pub mod edit;
 pub mod file;
 pub mod image;

@@ -342,7 +342,10 @@ pub(crate) enum Gesture {
         start: Point,
         ids: Vec<NodeId>,
         targets: Targets,
-        duplicate: bool,
+        /// `targets` and the box the layers start in, which copies snap to ([`move_drag`]).
+        copy_targets: Box<Targets>,
+        /// Option held at the last move: copies follow the pointer, not the layers.
+        copy: bool,
         moved: bool,
         /// A Shift-press on this selected layer: it leaves the selection on release, unless the
         /// press became a drag.
@@ -573,6 +576,8 @@ impl ToolState {
         !matches!(self.gesture, Gesture::None)
     }
 }
+
+mod move_drag;
 
 const HANDLE_PX: f64 = 5.0;
 const ROTATE_PX: f64 = 18.0;
@@ -1053,8 +1058,8 @@ impl Session {
                     cursor = Cursor::Pointer;
                 }
                 hover = label_at(&doc, page, &self.tool.labels, ev.p()).or_else(|| leaf.map(|leaf| select_target(&doc, leaf, &sel, ev.cmd)));
-                // Alt over a selected layer: a drag from here duplicates it.
-                if ev.alt && tool == ToolId::Move && hover.is_some_and(|h| sel.contains(&h) && !locked_in(&doc, h)) {
+                // Alt over a layer a drag would move: a drag from here duplicates it.
+                if ev.alt && tool == ToolId::Move && hover.is_some_and(|h| !locked_in(&doc, h)) {
                     cursor = Cursor::Copy;
                 }
                 if ev.alt || self.tool.redlines {
@@ -1224,20 +1229,18 @@ impl Session {
                     }
                     return Ok(());
                 }
-                let mut targets = Targets::gather(&doc, page, &ids);
-                // A copy dragged out with Alt snaps to the layers it came from too (they stay put).
-                if ev.alt
-                    && let Some(b) = targets.moving
-                {
-                    targets.add_box(b);
+                let targets = Targets::gather(&doc, page, &ids);
+                let mut copy_targets = Box::new(targets.clone());
+                if let Some(b) = targets.moving {
+                    copy_targets.add_box(b);
                 }
-                if let Err(e) = self.begin_interaction(if ev.alt { "Duplicate" } else { "Move" }) {
+                if let Err(e) = self.begin_interaction("Move") {
                     if deselect.is_some() {
                         self.set_selection(without_target());
                     }
                     return Err(e);
                 }
-                self.tool.gesture = Gesture::Move { start: ev.p(), ids, targets, duplicate: ev.alt, moved: false, deselect };
+                self.tool.gesture = Gesture::Move { start: ev.p(), ids, targets, copy_targets, copy: ev.alt, moved: false, deselect };
                 self.tool.overlay.cursor = if ev.alt { Cursor::Copy } else { Cursor::Default };
             }
             None => {
@@ -1263,131 +1266,8 @@ impl Session {
                 self.set_selection(sel);
                 Ok(())
             }
-            Gesture::Move { start, moved: false, .. } | Gesture::Resize { start, moved: false, .. } if within_slop(ev, *start) => Ok(()),
-            Gesture::Move { start, ids, targets, duplicate, .. } => {
-                let mut d = ev.p() - *start;
-                if ev.shift {
-                    if d.x.abs() > d.y.abs() {
-                        d.y = 0.0;
-                    } else {
-                        d.x = 0.0;
-                    }
-                }
-                // Cmd/Ctrl (and Control on macOS) held while dragging suspends snapping.
-                let snap_on = self.ds().map(|ds| ds.view.snap_objects).unwrap_or(true) && !ev.cmd && !ev.ctrl;
-                let mut guides = Vec::new();
-                if snap_on {
-                    let (c, g2) = targets.snap_move(d, SNAP_PX / ev.zoom.max(1e-6));
-                    d += c;
-                    guides = g2;
-                }
-                if self.ds().map(|ds| ds.view.snap_pixel).unwrap_or(true) {
-                    // Keep the box's origin on whole pixels (a rotated parent frame's, inside one).
-                    d = targets.round_move(d);
-                }
-                let ids = ids.clone();
-                let dup = *duplicate;
-                let page = self.page()?;
-                let mut drop_cell = None;
-                let mut drop_target = None;
-                let mut in_flow = false;
-                // Placed in a row or column: (is it a column, its gap) for the insertion line.
-                let mut slot_axis: Option<(bool, f64)> = None;
-                self.preview(|doc, sel| {
-                    let mut moving = ids.clone();
-                    if dup {
-                        let mut copies = Vec::new();
-                        for i in &ids {
-                            let parent = doc.get(*i)?.parent.unwrap_or(page);
-                            let idx = doc.index_in_parent(*i).map(|x| x + 1);
-                            copies.push(doc.duplicate_into(*i, parent, idx)?);
-                        }
-                        moving = copies;
-                        *sel = moving.clone();
-                    }
-                    let p = ev.p();
-                    let home = moving.first().and_then(|i| doc.node(*i)).and_then(|n| n.parent);
-                    // Absolute children of an auto layout frame stay in it, and so do the layers of
-                    // groups, boolean groups and instances ([`crate::drop::keeps_layers`]); the
-                    // rest may change parent.
-                    let flow = moving.iter().all(|i| doc.node(*i).is_some_and(|n| !n.child_layout.absolute))
-                        && !home.is_some_and(|h| crate::drop::keeps_layers(doc, h));
-                    let target = if flow { crate::drop::drag_parent(doc, page, p, &moving) } else { home.unwrap_or(page) };
-                    let mode = doc.node(target).and_then(|n| n.layout.as_ref()).map(|l| l.mode);
-                    if let (true, Some(mode)) = (flow, mode) {
-                        // Into (or within) an auto layout frame: the layers take the slot (a grid: the
-                        // cell) under the pointer, as the frame shows it now. A frame other than the
-                        // one they come from is outlined too.
-                        let cell = if mode == LayoutMode::Grid { crate::drop::grid_cell_at(doc, target, p) } else { None };
-                        let idx =
-                            if mode == LayoutMode::Grid { 0 } else { crate::drop::auto_layout_slot(doc, target, p, &moving).map_or(0, |(i, _)| i) };
-                        for m in &moving {
-                            if doc.get(*m)?.parent != Some(target) {
-                                doc.reparent(*m, target, None)?;
-                            }
-                        }
-                        if let (Some(first), Some((col, row, rect))) = (moving.first().copied(), cell) {
-                            let cl = &mut doc.get_mut(first)?.child_layout;
-                            cl.grid_column = Some(col);
-                            cl.grid_row = Some(row);
-                            drop_cell = Some(rect);
-                        } else if mode != LayoutMode::Grid {
-                            let mut kids: Vec<NodeId> = doc.get(target)?.children.iter().copied().filter(|c| !moving.contains(c)).collect();
-                            for (k, m) in moving.iter().enumerate() {
-                                kids.insert((idx + k).min(kids.len()), *m);
-                            }
-                            let gap = doc.node(target).and_then(|n| n.layout.as_ref()).map_or(0.0, |l| l.gap);
-                            doc.get_mut(target)?.children = kids;
-                            slot_axis = Some((mode == LayoutMode::Vertical, gap));
-                        }
-                        drop_target = (Some(target) != home).then_some(target);
-                        in_flow = true;
-                        return Ok(());
-                    }
-                    // A free move. Layers dragged out of an auto layout flow leave it (onto the page
-                    // while dragging; the drop puts them in the frame under the pointer).
-                    for m in &moving {
-                        let in_al = doc.node(*m).and_then(|n| n.parent).and_then(|p| doc.node(p)).is_some_and(|p| p.layout.is_some());
-                        if flow && in_al {
-                            doc.reparent(*m, page, None)?;
-                        }
-                        move_world(doc, *m, d.x, d.y)?;
-                    }
-                    drop_target = (flow && target != page).then_some(target);
-                    Ok(())
-                })?;
-                let placed = if dup { self.selection() } else { ids };
-                // Snapping guides mean nothing while the layout places the layers; with Alt held,
-                // live distances to the neighbours replace them.
-                self.tool.overlay.guides = if in_flow {
-                    Vec::new()
-                } else if ev.alt {
-                    let doc = self.doc()?;
-                    doc.bounds_of(&placed).map(|b| crate::distance::neighbours(doc, page, &placed, b)).unwrap_or_default()
-                } else {
-                    guides
-                };
-                // The preview already shows the layers in their slot: the line marks it there, in
-                // the middle of the gap before them (clear of the selection box).
-                self.tool.overlay.insert_line = slot_axis.and_then(|(vertical, gap)| {
-                    let off = if gap.is_finite() { (gap / 2.0).clamp(3.0, 24.0) } else { 3.0 };
-                    self.doc().ok()?.bounds_of(&placed).map(|b| crate::drop::line_before(b, vertical, off))
-                });
-                self.tool.overlay.drop_cell = drop_cell;
-                self.tool.overlay.drop_target = drop_target;
-                self.tool.overlay.cursor = if self.refused(&placed, true) {
-                    Cursor::NotAllowed
-                } else if dup {
-                    Cursor::Copy
-                } else {
-                    Cursor::Default
-                };
-                self.tool.gesture = g.clone();
-                if let Gesture::Move { moved, .. } = &mut self.tool.gesture {
-                    *moved = true;
-                }
-                return Ok(());
-            }
+            Gesture::Move { .. } => return self.move_drag(ev, &g),
+            Gesture::Resize { start, moved: false, .. } if within_slop(ev, *start) => Ok(()),
             Gesture::Resize { start, r, scale_tool, .. } => {
                 let res = self.resize_drag(ev, *start, r, *scale_tool);
                 self.tool.gesture = Gesture::Resize { start: *start, r: r.clone(), scale_tool: *scale_tool, moved: true };
@@ -1746,57 +1626,7 @@ impl Session {
         self.tool.overlay.drop_cell = None;
         let drop_target = self.tool.overlay.drop_target.take();
         match g {
-            Gesture::Move { ids, moved, duplicate, start, deselect, .. } => {
-                if moved {
-                    // A free move lands in the frame under the pointer (or the page) where it was
-                    // dropped; layers in an auto layout frame already sit in their slot.
-                    let page = self.page()?;
-                    let sel = self.selection();
-                    let sources = if duplicate { ids.clone() } else { Vec::new() };
-                    let moving = if duplicate { sel } else { ids };
-                    let doc = self.doc()?.clone();
-                    let in_al =
-                        moving.iter().any(|m| doc.node(*m).and_then(|n| n.parent).and_then(|p| doc.node(p)).is_some_and(|p| p.layout.is_some()));
-                    let target = drop_target.unwrap_or(page);
-                    let current = moving.first().and_then(|m| doc.node(*m)).and_then(|n| n.parent);
-                    if !in_al && current != Some(target) {
-                        let ds = self.ds_mut()?;
-                        let before = ds.doc.clone();
-                        let d = ds.doc_mut();
-                        for m in &moving {
-                            // Group, boolean group and instance layers stay put: they only move.
-                            let from = d.node(*m).and_then(|n| n.parent);
-                            if from.is_some_and(|f| crate::drop::keeps_layers(d, f)) || crate::components::structure_locked(d, target) {
-                                continue;
-                            }
-                            // A layer can't go into itself; it stays where it is.
-                            let _ = d.reparent(*m, target, None);
-                        }
-                        crate::normalize(ds.doc_mut(), &before);
-                    }
-                    // Reordering or dragging layers out of an instance (outside its slots), or
-                    // moving layers inside one, are edits only its main can make: the gesture is
-                    // undone.
-                    if self.refused(&moving, true) {
-                        self.cancel_interaction()?;
-                    } else {
-                        self.commit_interaction()?;
-                        // Duplicate repeats a free Alt-drag's step (an auto layout places its own).
-                        if duplicate && !in_al && moving.len() == sources.len() {
-                            self.ds_mut()?.last_duplicate = Some(crate::cmd::edit::Duplicated { sources, copies: moving });
-                        }
-                    }
-                } else {
-                    self.cancel_interaction()?;
-                    if let Some(d) = deselect {
-                        let sel = self.selection().into_iter().filter(|x| *x != d).collect();
-                        self.set_selection(sel);
-                    }
-                    if deselect.is_none() && !(ev.shift || ev.cmd || duplicate) {
-                        self.widget_click(start, ev.tol() * 2.0)?;
-                    }
-                }
-            }
+            g @ Gesture::Move { .. } => self.move_up(ev, g, drop_target)?,
             Gesture::Resize { .. } | Gesture::Rotate { .. } | Gesture::Arc { .. } | Gesture::Shape { .. } => {
                 // Layers inside an instance keep their main's size and rotation.
                 if self.refused(&self.selection(), false) {

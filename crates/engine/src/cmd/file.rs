@@ -269,7 +269,7 @@ fn autosave(s: &mut Session, _: &Value) -> Result<Value> {
     let ds = s.ds_mut()?;
     // A file that saves itself is rarely unsaved: edits since it was opened count then.
     let edited = ds.is_dirty() || (auto_save && !ds.history.undo.is_empty());
-    if ds.preview.is_some() || !edited || !ds.changed_since_checkpoint() {
+    if ds.preview.is_some() || ds.interaction.is_some() || !edited || !ds.changed_since_checkpoint() {
         return Ok(json!({"saved": false}));
     }
     Ok(match add_version(ds, AUTOSAVE, "", true) {

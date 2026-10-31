@@ -82,7 +82,7 @@ fn each_tool_has_its_cursor_by_modifier_and_what_is_under_the_pointer() {
         (ToolId::Move, NONE, ON_SQUARE, Default, "the arrow over a layer"),
         (ToolId::Move, NONE, ON_TEXT, Default, "the arrow over a text that isn't being edited"),
         (ToolId::Move, ALT, ON_SQUARE, Copy, "Alt over a selected layer: a drag makes a copy"),
-        (ToolId::Move, ALT, ON_TEXT, Default, "Alt over another layer measures to it"),
+        (ToolId::Move, ALT, ON_TEXT, Copy, "Alt over another layer: it measures to it, and a drag from it copies it (Fix AE)"),
         (ToolId::Move, ALT, EMPTY, Default, "Alt over empty canvas"),
         (ToolId::Scale, NONE, ON_SQUARE, Default, "the Scale tool away from the handles"),
         (ToolId::Scale, ALT, ON_SQUARE, Default, "the Scale tool doesn't duplicate"),

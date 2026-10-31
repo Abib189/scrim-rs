@@ -1,0 +1,40 @@
+canvas rect [296.0, 40.0, 1040.0, 800.0] | view {'zoom': 0.75, 'cx': 450.0, 'cy': 320.0, 'vw': 744.0, 'vh': 760.0} | page (100,100) at [405.5, 255.0] | MCP port 7690
+1-frame: (frames after 1 focus)
+  before: {"Card": [["page", 100.0, 100.0, 2]], "Inner": [["Card", 160.0, 30.0, 3]], "Dot": [["Inner", 30.0, 30.0, 4]], "Tag": [["Card", 20.0, 150.0, 5]]} | selection [2] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction False
+   shot 1-frame-1-before.png
+  mid-drag: {"Card": [["page", 100.0, 100.0, 2], ["page", 430.0, 100.0, 11]], "Inner": [["Card", 160.0, 30.0, 3], ["Card", 160.0, 30.0, 12]], "Dot": [["Inner", 30.0, 30.0, 4], ["Inner", 30.0, 30.0, 13]], "Tag": [["Card", 20.0, 150.0, 5], ["Card", 20.0, 150.0, 14]]} | selection [11] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction True
+   shot 1-frame-2-mid-drag.png
+  after release: {"Card": [["page", 100.0, 100.0, 2], ["page", 430.0, 100.0, 11]], "Inner": [["Card", 160.0, 30.0, 3], ["Card", 160.0, 30.0, 12]], "Dot": [["Inner", 30.0, 30.0, 4], ["Inner", 30.0, 30.0, 13]], "Tag": [["Card", 20.0, 150.0, 5], ["Card", 20.0, 150.0, 14]]} | selection [11] | undo ['Duplicate', 'Agent: Set properties', 'Agent: Rectangle'] | cursor copy | interaction False
+   shot 1-frame-3-after-release.png
+   undo via menu: {'lastError': None, 'ok': True}
+  after Edit > Undo (Cmd+Z): {"Card": [["page", 100.0, 100.0, 2]], "Inner": [["Card", 160.0, 30.0, 3]], "Dot": [["Inner", 30.0, 30.0, 4]], "Tag": [["Card", 20.0, 150.0, 5]]} | selection [2] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor default | interaction False
+   shot 1-frame-4-after-undo.png
+2-auto-layout: (frames after 1 focus)
+  before: {"A": [["Row", 10.0, 10.0, 7]], "B": [["Row", 80.0, 10.0, 8]], "C": [["Row", 150.0, 10.0, 9]]} | selection [7] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction False
+   shot 2-auto-layout-1-before.png
+  mid-drag: {"A": [["Row", 10.0, 10.0, 7], ["Row", 220.0, 10.0, 11]], "B": [["Row", 80.0, 10.0, 8]], "C": [["Row", 150.0, 10.0, 9]]} | selection [11] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction True
+   shot 2-auto-layout-2-mid-drag.png
+  after release: {"A": [["Row", 10.0, 10.0, 7], ["Row", 220.0, 10.0, 11]], "B": [["Row", 80.0, 10.0, 8]], "C": [["Row", 150.0, 10.0, 9]]} | selection [11] | undo ['Duplicate', 'Agent: Set properties', 'Agent: Rectangle'] | cursor copy | interaction False
+   shot 2-auto-layout-3-after-release.png
+   undo via menu: {'lastError': None, 'ok': True}
+  after Edit > Undo (Cmd+Z): {"A": [["Row", 10.0, 10.0, 7]], "B": [["Row", 80.0, 10.0, 8]], "C": [["Row", 150.0, 10.0, 9]]} | selection [7] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor default | interaction False
+   shot 2-auto-layout-4-after-undo.png
+3-option-shift: (frames after 1 focus)
+  before: {"Chip": [["page", 560.0, 420.0, 10]]} | selection [10] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction False
+   shot 3-option-shift-1-before.png
+  mid-drag: {"Chip": [["page", 560.0, 420.0, 10], ["page", 800.0, 420.0, 11]]} | selection [11] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction True
+   shot 3-option-shift-2-mid-drag.png
+  after release: {"Chip": [["page", 560.0, 420.0, 10], ["page", 800.0, 420.0, 11]]} | selection [11] | undo ['Duplicate', 'Agent: Set properties', 'Agent: Rectangle'] | cursor copy | interaction False
+   shot 3-option-shift-3-after-release.png
+   undo via menu: {'lastError': None, 'ok': True}
+  after Edit > Undo (Cmd+Z): {"Chip": [["page", 560.0, 420.0, 10]]} | selection [10] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor default | interaction False
+   shot 3-option-shift-4-after-undo.png
+4-toggle-escape: (frames after 1 focus)
+  moving, no Option: {"Chip": [["page", 710.0, 510.0, 10]]} | selection [10] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor default | interaction True
+  Option pressed, pointer still: {"Chip": [["page", 560.0, 420.0, 10], ["page", 710.0, 510.0, 11]]} | selection [11] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor copy | interaction True
+   shot 4-1-option-pressed-mid-drag.png
+  Escape with Option held: {"Chip": [["page", 560.0, 420.0, 10]]} | selection [10] | undo ['Agent: Set properties', 'Agent: Rectangle', 'Agent: Set properties'] | cursor None | interaction False
+   document identical to before the press: True | undo identical: True
+MCP 7690 inspect_document isError = False | 3008 chars
+log errors: []
+quit 0

@@ -1653,7 +1653,8 @@ turned off 0°.
   repeats the last duplicate's page offset while its copies are what it duplicates (and still the
   selection), measured when it runs: Alt-drag or duplicate and move a copy, then each
   `edit.duplicate` steps out the next one as far again. Copies placed by an auto layout set no
-  step; explicit `dx`/`dy` always win.
+  step; explicit `dx`/`dy` always win. `parent` (and `index` among its layers) puts the copies in
+  another layer keeping their place on the canvas: an Option-drag's release runs it that way.
 - **Scale tool** (`tool.scale`, K): dragging a selection handle with `pointer` scales everything by
   one factor (sizes and positions whatever the constraints, strokes, effects, corner radii, auto
   layout spacing, min/max sizes, layout grids, guides, tiled images, text), one undo step per drag,

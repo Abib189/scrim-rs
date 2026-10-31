@@ -241,6 +241,11 @@ fn key_event(app: &mut FigApp, key: Key, physical: Option<Key>, m: Modifiers, re
     if key == Key::Escape && crate::selection_spacing::cancel(app, ctx) {
         return true;
     }
+    // A drag under way: Escape cancels it whatever is held with it (Option, in an Option-drag).
+    if key == Key::Escape && app.session.tool.busy() {
+        run_binding(app, "select.none");
+        return true;
+    }
     if key_box(app, key, m) {
         return true;
     }
@@ -557,3 +562,7 @@ fn ime_output(app: &FigApp, ctx: &Context) {
         })
     });
 }
+
+#[cfg(test)]
+#[path = "option_drag_ui_tests.rs"]
+mod option_drag_ui_tests;
