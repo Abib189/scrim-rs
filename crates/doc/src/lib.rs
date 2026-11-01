@@ -14,6 +14,7 @@ pub mod colors;
 pub mod comments;
 mod copy;
 pub mod geometry;
+mod guides_key;
 pub mod handoff;
 pub mod ids;
 pub mod library;
@@ -378,13 +379,8 @@ impl Document {
     /// Add a page at the end.
     pub fn add_page(&mut self, name: &str) -> NodeId {
         let id = self.alloc_id();
-        let node = Node::new(
-            id,
-            NodeKind::Page { background: Color::DEFAULT_PAGE, flows: Vec::new(), prototype: Default::default(), guides: Vec::new() },
-            name,
-            0.0,
-            0.0,
-        );
+        let node =
+            Node::new(id, NodeKind::Page { background: Color::DEFAULT_PAGE, flows: Vec::new(), prototype: Default::default() }, name, 0.0, 0.0);
         self.nodes.insert(id, Arc::new(node));
         self.dirty.touch(id);
         self.pages.push(id);
@@ -944,6 +940,8 @@ mod copy_tests;
 mod diff_tests;
 #[cfg(test)]
 mod effects_tests;
+#[cfg(test)]
+mod guides_tests;
 #[cfg(test)]
 mod handoff_tests;
 #[cfg(test)]

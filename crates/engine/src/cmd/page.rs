@@ -106,8 +106,10 @@ pub fn specs() -> Vec<CommandSpec> {
                 copies.extend(doc.subtree(*c).into_iter().zip(doc.subtree(*copy)));
             }
             // The copy keeps the page's colour, flows (pointing at the copied frames), prototype settings and guides.
-            if let NodeKind::Page { background, flows, prototype, guides } = doc.get(src)?.kind.clone()
-                && let NodeKind::Page { background: b, flows: f, prototype: pr, guides: g } = &mut doc.get_mut(np)?.kind
+            let guides = doc.get(src)?.guides.clone();
+            doc.get_mut(np)?.guides = guides;
+            if let NodeKind::Page { background, flows, prototype } = doc.get(src)?.kind.clone()
+                && let NodeKind::Page { background: b, flows: f, prototype: pr } = &mut doc.get_mut(np)?.kind
             {
                 *b = background;
                 *f = flows
@@ -115,7 +117,6 @@ pub fn specs() -> Vec<CommandSpec> {
                     .filter_map(|fl| copies.iter().find(|(old, _)| *old == fl.start).map(|(_, new)| Flow { start: *new, ..fl }))
                     .collect();
                 *pr = prototype;
-                *g = guides;
             }
             // Keep the new page right after the source.
             if let Some(si) = doc.pages.iter().position(|x| *x == src) {

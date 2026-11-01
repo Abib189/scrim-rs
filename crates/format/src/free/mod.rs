@@ -383,11 +383,13 @@ impl<'a> Ctx<'a> {
     fn page(&mut self, v: &Value, index: usize) -> NodeId {
         let name = text(v, "name").filter(|n| !n.trim().is_empty()).map_or_else(|| format!("Page {}", index + 1), |n| clip(n).to_string());
         let page = self.doc.add_page(&name);
-        if let Some(NodeKind::Page { background, guides, .. }) = self.doc.node_mut(page).map(|n| &mut n.kind) {
-            if let Some(c) = json::color(v, "background").filter(|c: &Color| c.a > 0.0) {
+        if let Some(n) = self.doc.node_mut(page) {
+            if let NodeKind::Page { background, .. } = &mut n.kind
+                && let Some(c) = json::color(v, "background").filter(|c: &Color| c.a > 0.0)
+            {
                 *background = c;
             }
-            *guides = layers::guides(v.get("rulers"));
+            n.guides = layers::guides(v.get("rulers"));
         }
         if v.get("layers").is_some_and(|l| !l.is_array()) {
             self.warn(Severity::Dropped, &name, "The page's layer list is malformed; its layers were not imported.");

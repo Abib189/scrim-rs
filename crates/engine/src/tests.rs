@@ -579,10 +579,7 @@ fn document_colors_are_counted_per_page() {
 #[test]
 fn guides_add_move_remove() {
     let mut s = sess();
-    let guides = |s: &Session| match &s.doc().unwrap().node(s.page().unwrap()).unwrap().kind {
-        NodeKind::Page { guides, .. } => guides.clone(),
-        _ => vec![],
-    };
+    let guides = |s: &Session| s.doc().unwrap().node(s.page().unwrap()).unwrap().guides().to_vec();
     let r = s.execute("guide.add", &json!({"vertical": true, "offset": 120})).unwrap();
     assert_eq!(r["index"], json!(0));
     s.execute("guide.add", &json!({"vertical": false, "offset": 40.5})).unwrap();

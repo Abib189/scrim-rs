@@ -817,6 +817,8 @@ mod jpeg_tests;
 #[cfg(test)]
 mod large_tests;
 #[cfg(test)]
+mod page_guides_tests;
+#[cfg(test)]
 mod staging_tests;
 #[cfg(test)]
 mod stale_ids_tests;

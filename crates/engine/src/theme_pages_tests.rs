@@ -195,9 +195,12 @@ fn a_copy_of_a_page_keeps_its_flows_prototype_settings_and_guides() {
     let source = s.page().unwrap();
     let copy = id_of(&ex(&mut s, "page.duplicate", json!({}))["id"]).unwrap();
     let frames = s.doc().unwrap().node(copy).unwrap().children.clone();
-    let state = |s: &Session, id: NodeId| match &s.doc().unwrap().node(id).unwrap().kind {
-        NodeKind::Page { flows, prototype, guides, .. } => (flows.clone(), prototype.clone(), guides.clone()),
-        _ => panic!("expected a page"),
+    let state = |s: &Session, id: NodeId| {
+        let n = s.doc().unwrap().node(id).unwrap();
+        match &n.kind {
+            NodeKind::Page { flows, prototype, .. } => (flows.clone(), prototype.clone(), n.guides.clone()),
+            _ => panic!("expected a page"),
+        }
     };
     let (flows, prototype, guides) = state(&s, copy);
     let (src_flows, src_prototype, src_guides) = state(&s, source);

@@ -63,6 +63,9 @@ pub enum PropDef {
 }
 
 /// What a node is, with per-type data.
+// Text sets the size; the lint counts the gap to the next largest variant, which grew only because
+// a page's guides moved to the node (Fix AI LW-1).
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum NodeKind {
@@ -73,8 +76,6 @@ pub enum NodeKind {
         flows: Vec<crate::proto::Flow>,
         #[serde(default)]
         prototype: crate::proto::PrototypeSettings,
-        #[serde(default)]
-        guides: Vec<Guide>,
     },
     Frame,
     Group,
@@ -453,8 +454,9 @@ pub struct Node {
     pub mask_type: MaskType,
     #[serde(default, skip_serializing_if = "is_default")]
     pub grids: Vec<LayoutGrid>,
-    /// A frame's ruler guides, in its own coordinates (a page's are in [`NodeKind::Page`]).
-    #[serde(default, skip_serializing_if = "is_default")]
+    /// A page's or frame's ruler guides, in its own coordinates (one `guides` key in the file:
+    /// [`crate::guides_key`]).
+    #[serde(flatten, with = "crate::guides_key")]
     pub guides: Vec<Guide>,
     #[serde(default, skip_serializing_if = "is_default")]
     pub exports: Vec<ExportSetting>,
@@ -680,17 +682,12 @@ impl Node {
 
     /// The ruler guides on this page or frame, in its own coordinates.
     pub fn guides(&self) -> &[Guide] {
-        match &self.kind {
-            NodeKind::Page { guides, .. } => guides,
-            _ => &self.guides,
-        }
+        &self.guides
     }
 
+    /// The ruler guides on this page or frame, to edit.
     pub fn guides_mut(&mut self) -> &mut Vec<Guide> {
-        match &mut self.kind {
-            NodeKind::Page { guides, .. } => guides,
-            _ => &mut self.guides,
-        }
+        &mut self.guides
     }
 
     /// Children in paint order, bottom to top: the child list, reversed in an auto layout frame
