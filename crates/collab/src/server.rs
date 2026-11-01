@@ -533,6 +533,7 @@ impl Server {
         let doc = self.state.document();
         let mut props: BTreeMap<NodeId, BTreeSet<Prop>> = BTreeMap::new();
         let mut gone: BTreeSet<NodeId> = BTreeSet::new();
+        let (mut asked, mut sent) = (BTreeSet::new(), BTreeSet::new());
         let mut out = Vec::new();
         for c in changes {
             match c {
@@ -545,9 +546,13 @@ impl Server {
                 Change::Delete { id } => {
                     gone.insert(*id);
                 }
+                // The same target has the same fix: look each one up once, and send each fix once
+                // (upstream FigCraft 08173cc5, audit #1063; comparing every fix with all earlier
+                // ones was quadratic).
                 other => {
-                    if let Some(fix) = docprops::current(doc, other)?
-                        && !out.contains(&fix)
+                    if Target::of(other).is_some_and(|t| asked.insert(t))
+                        && let Some(fix) = docprops::current(doc, other)?
+                        && Target::of(&fix).is_some_and(|t| sent.insert(t))
                     {
                         out.push(fix);
                     }
@@ -565,16 +570,22 @@ impl Server {
                 nodes.extend(t.write(self.state.value(&t)?.as_ref()));
             }
         }
+        // Each deleted layer's subtree, pre-order, every layer once: a restored layer's whole
+        // subtree went out with it, so the walk stops there (deleting a deep chain stays linear,
+        // where restoring each subtree again was quadratic; upstream 08173cc5).
+        let mut restored = BTreeSet::new();
         for id in gone {
-            match doc.node(id) {
-                Some(_) => {
-                    for d in doc.subtree(id) {
-                        if let Some(n) = doc.node(d) {
-                            nodes.push(create_change(n, self.state.key(d))?);
-                        }
-                    }
+            if !doc.contains(id) {
+                nodes.push(Change::Delete { id });
+                continue;
+            }
+            let mut stack = vec![id];
+            while let Some(d) = stack.pop() {
+                let Some(n) = doc.node(d) else { continue };
+                if restored.insert(d) {
+                    nodes.push(create_change(n, self.state.key(d))?);
+                    stack.extend(n.children.iter().rev());
                 }
-                None => nodes.push(Change::Delete { id }),
             }
         }
         nodes.extend(out);
