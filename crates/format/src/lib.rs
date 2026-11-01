@@ -22,6 +22,7 @@
 pub mod fig;
 pub mod free;
 pub mod import_report;
+pub mod jpeg;
 pub mod library;
 pub mod old_scrim;
 pub mod penpot;
@@ -220,6 +221,9 @@ pub fn image_hash(bytes: &[u8]) -> String {
 
 /// Register encoded image bytes with the document; returns the hash and pixel size.
 pub fn add_image(doc: &mut Document, bytes: Vec<u8>) -> Result<(String, u32, u32), FormatError> {
+    if let Some(why) = jpeg::refusal(&bytes) {
+        return Err(FormatError::Corrupt(format!("unsupported image: {why}")));
+    }
     let (w, h) = image::ImageReader::new(std::io::Cursor::new(&bytes))
         .with_guessed_format()
         .map_err(|e| FormatError::Corrupt(e.to_string()))?
@@ -232,8 +236,11 @@ pub fn add_image(doc: &mut Document, bytes: Vec<u8>) -> Result<(String, u32, u32
 
 /// Image bytes with their pixel size (0×0 when they can't be decoded).
 pub(crate) fn image_data(data: Vec<u8>) -> ImageData {
-    let (w, h) =
-        image::ImageReader::new(std::io::Cursor::new(&data)).with_guessed_format().ok().and_then(|r| r.into_dimensions().ok()).unwrap_or((0, 0));
+    // A JPEG no decoder here may read (`jpeg::refusal`) is kept, as unreadable.
+    let (w, h) = (jpeg::refusal(&data).is_none())
+        .then(|| image::ImageReader::new(std::io::Cursor::new(&data)).with_guessed_format().ok().and_then(|r| r.into_dimensions().ok()))
+        .flatten()
+        .unwrap_or((0, 0));
     ImageData { bytes: Arc::new(data), width: w, height: h }
 }
 
@@ -783,6 +790,8 @@ mod branch_tests;
 mod image_budget_tests;
 #[cfg(test)]
 mod image_tests;
+#[cfg(test)]
+mod jpeg_tests;
 #[cfg(test)]
 mod large_tests;
 #[cfg(test)]

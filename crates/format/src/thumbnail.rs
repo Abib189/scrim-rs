@@ -36,6 +36,14 @@ pub fn thumbnail_png<R: Read + Seek>(archive: R) -> Option<Vec<u8>> {
 /// Decode a picture (PNG, JPEG, WebP, GIF, BMP or TIFF) no larger than [`MAX_THUMBNAIL_SIDE`] on
 /// either side, scaled down to at most `fit` pixels on its longer side (never up).
 pub fn decode_thumbnail(bytes: &[u8], fit: u32) -> Option<Thumbnail> {
+    if crate::jpeg::refusal(bytes).is_some() {
+        return None;
+    }
+    // A decoder that panics on a file it can't read gives no picture, never a crash.
+    std::panic::catch_unwind(|| decode_unchecked(bytes, fit)).ok().flatten()
+}
+
+fn decode_unchecked(bytes: &[u8], fit: u32) -> Option<Thumbnail> {
     let mut reader = image::ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().ok()?;
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(MAX_THUMBNAIL_SIDE);

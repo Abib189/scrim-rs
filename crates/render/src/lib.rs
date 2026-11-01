@@ -458,6 +458,8 @@ mod image_budget_tests;
 #[cfg(test)]
 mod image_profile_tests;
 #[cfg(test)]
+mod jpeg_guard_tests;
+#[cfg(test)]
 mod lod_tests;
 #[cfg(test)]
 mod paint_behaviour_tests;

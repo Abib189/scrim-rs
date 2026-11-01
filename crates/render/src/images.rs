@@ -98,6 +98,15 @@ fn decode_in(bytes: &[u8], target: ColorProfile) -> Option<(Pixmap, bool)> {
 /// [`decode_in`] for images at most `max_side` wide and tall whose decoded pixels take at most
 /// `max_bytes`; larger ones are refused from their header, before any pixels are decoded.
 pub(crate) fn decode_within(bytes: &[u8], target: ColorProfile, max_side: u32, max_bytes: u64) -> Option<(Pixmap, bool)> {
+    // A JPEG its decoder can't take safely is refused from its markers (figcraft_format::jpeg),
+    // and a decoder panic on anything else is an unreadable image, not a crash.
+    if figcraft_format::jpeg::refusal(bytes).is_some() {
+        return None;
+    }
+    std::panic::catch_unwind(|| decode_checked(bytes, target, max_side, max_bytes)).ok().flatten()
+}
+
+fn decode_checked(bytes: &[u8], target: ColorProfile, max_side: u32, max_bytes: u64) -> Option<(Pixmap, bool)> {
     use image::ImageDecoder;
     let mut reader = image::ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().ok()?;
     let mut limits = image::Limits::default();
