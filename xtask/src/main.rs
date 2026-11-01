@@ -27,6 +27,8 @@ mod fidelity;
 mod icon;
 mod layers;
 mod live_scripts;
+#[cfg(test)]
+mod packaging_tests;
 mod pii_scan;
 mod size;
 

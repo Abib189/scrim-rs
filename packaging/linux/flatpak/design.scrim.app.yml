@@ -35,9 +35,10 @@ finish-args:
   # line, Open Recent, "Save" next to the original) work in the usual places.
   - --filesystem=xdg-pictures
   - --filesystem=xdg-documents
-  # Deliberately not granted: network (the optional --control server listens on 127.0.0.1 in
-  # the sandbox; `flatpak override --user --share=network design.scrim.app` exposes it to
-  # host agents) and home/host filesystem access.
+  # Network: live sessions, Share > Online and team libraries reach the server a person chooses
+  # (Scrim builds in none). The optional --control and MCP servers still listen on 127.0.0.1 in the
+  # sandbox only. Home/host filesystem access is deliberately not granted.
+  - --share=network
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
 modules:

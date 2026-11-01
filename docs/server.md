@@ -553,18 +553,9 @@ upgrades the binary and restarts the server only when something changed.
 1. Create the server (Ubuntu 24.04, x86_64 or arm64) with your SSH key, and note its address.
 2. At your DNS provider, point `figcraft.example.com` (A, and AAAA for IPv6) at that address. Caddy
    needs it to get the certificate.
-3. Log in and run the script, from a release archive:
-
-   ```sh
-   ssh root@figcraft.example.com
-   VERSION=$(curl -fsSL https://api.github.com/repos/storytold/figcraft/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
-   curl -fLO "https://github.com/storytold/figcraft/releases/download/v$VERSION/figcraft-server-$VERSION-linux-$(uname -m).tar.gz"
-   tar -xzf figcraft-server-*.tar.gz && cd figcraft-server-*/
-   sudo ./install.sh --host figcraft.example.com --email abuse@example.com --terms https://example.com/figcraft-terms
-   ```
-
-   or from a copy of the source (a private repository, or unreleased changes): it then builds that
-   copy as it is (with the swap file on a small machine).
+3. Log in and run the script from a copy of Scrim's source. Scrim publishes no server release
+   archives yet, so the script builds the server from that copy as it is (with a swap file on a
+   small machine). It never downloads anyone else's binaries.
 
    ```sh
    git archive --format=tar.gz -o figcraft-src.tar.gz HEAD          # on your machine
@@ -592,26 +583,14 @@ server behind Caddy or nginx for TLS, and systemd keeping it running. The comman
 and Ubuntu; other distributions differ only in how packages are installed. `install.sh` does all of
 it ([above](#on-a-fresh-ubuntu-server-with-installsh)); these are the steps by hand.
 
-**1. Install the binary**, from the latest release (x86_64 or aarch64), checked against the
-release's `SHA256SUMS.txt`:
-
-```sh
-VERSION=$(curl -fsSL https://api.github.com/repos/storytold/figcraft/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
-NAME="figcraft-server-$VERSION-linux-$(uname -m)"
-curl -fLO "https://github.com/storytold/figcraft/releases/download/v$VERSION/$NAME.tar.gz"
-curl -fLO "https://github.com/storytold/figcraft/releases/download/v$VERSION/SHA256SUMS.txt"
-sha256sum --ignore-missing -c SHA256SUMS.txt
-tar -xzf "$NAME.tar.gz" && cd "$NAME"
-sudo install -m 755 figcraft-server /usr/local/bin/
-```
-
-or from source (it needs a C compiler for the TLS library; the example files are then in
-`packaging/server/`):
+**1. Build and install the binary** from Scrim's source (Scrim publishes no server release
+archives yet). It needs a C compiler for the TLS library; the example files are then in
+`packaging/server/`:
 
 ```sh
 sudo apt install -y build-essential git curl
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && . "$HOME/.cargo/env"
-git clone https://github.com/storytold/figcraft && cd figcraft
+git clone https://github.com/Abib189/scrim-rs && cd scrim-rs
 cargo build --release --locked -p figcraft-server
 sudo install -m 755 target/release/figcraft-server /usr/local/bin/
 cd packaging/server
