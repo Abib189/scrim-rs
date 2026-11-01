@@ -209,7 +209,8 @@ impl Recovery {
             // the server, the file's id, then the session, client id and last change), while it
             // is one. Written after the copy, never before: a note must not promise more of the
             // server's changes than its copy holds.
-            let online = s.online_of(d.uid).map(|(server, file, at)| format!("{server}\n{file}\n{} {} {}", at.session, at.client_id, at.seq));
+            let online =
+                s.online_of(d.uid).map(|(server, file, at)| format!("{server}\n{file}\n{} {} {} {}", at.session, at.client_id, at.seq, at.secret));
             let job = move || {
                 if !write_atomic(&path, &doc, &versions, &branches) {
                     return false;
@@ -312,7 +313,10 @@ fn rejoin_online(file: &Path, s: &mut Session) -> Option<u64> {
     let (server, id, at) = (lines.next()?, lines.next()?, lines.next()?);
     let mut at = at.split(' ').map(|n| n.parse::<u64>().ok());
     let (session, client, seq) = (at.next()??, at.next()??, at.next()??);
-    let params = json!({"path": file.to_string_lossy(), "server": server, "file": id, "session": session, "client": client, "seq": seq});
+    // Absent in notes written before ids had secrets.
+    let secret = at.next().flatten().unwrap_or(0);
+    let params =
+        json!({"path": file.to_string_lossy(), "server": server, "file": id, "session": session, "client": client, "seq": seq, "secret": secret});
     s.execute("collab.recoverFile", &params).ok()?.get("session")?.as_u64()
 }
 

@@ -152,7 +152,7 @@ impl Raw {
     fn next(&mut self) -> Option<ServerMsg> {
         loop {
             match self.0.read() {
-                Ok(Message::Binary(b)) => return Some(message::decode(&b, 64 << 20).unwrap()),
+                Ok(Message::Binary(b)) => return Some(message::decode_peer(&b, 64 << 20).unwrap()),
                 Ok(Message::Close(_)) | Err(_) => return None,
                 Ok(_) => {}
             }

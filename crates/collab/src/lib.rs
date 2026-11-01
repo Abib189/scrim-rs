@@ -144,6 +144,8 @@ mod owned_tests;
 #[cfg(test)]
 mod reconnect_tests;
 #[cfg(test)]
+mod resume_tests;
+#[cfg(test)]
 mod server_tests;
 #[cfg(test)]
 mod signal_tests;

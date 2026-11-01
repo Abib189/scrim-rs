@@ -224,7 +224,7 @@ pub(crate) const REFUSED: &str = "the server refused: ";
 fn reply<T>(ws: &mut Ws, limits: &NetLimits, pick: impl Fn(ServerMsg) -> Option<T>) -> Result<T, String> {
     loop {
         return match ws.read() {
-            Ok(Message::Binary(b)) => match message::decode::<ServerMsg>(&b, limits.max_server_message) {
+            Ok(Message::Binary(b)) => match message::decode_peer::<ServerMsg>(&b, limits.max_server_message) {
                 Ok(ServerMsg::Refused { reason }) => Err(format!("{REFUSED}{reason}")),
                 Ok(ServerMsg::Pong) => continue,
                 Ok(m) => pick(m).ok_or_else(|| "the server sent something other than an answer".into()),

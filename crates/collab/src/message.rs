@@ -23,9 +23,24 @@ pub const SIGNALS: &str = "signals";
 /// [`ServerMsg::Reported`]: a server sends them only to clients that say so.
 pub const HOSTING: &str = "hosting";
 
+/// The word a client puts in its [`Hello::client_version`] when it reads [`ServerMsg::Welcome`]'s
+/// `secret` and resumes with it ([`Resume::secret`]): a server gives secrets only to clients that
+/// can read them ([`reads_resume_secret`]).
+pub const RESUME_SECRET: &str = "resume-secret";
+
 /// The `client_version` this build announces: its version, then what it reads beyond the protocol.
 pub fn client_version() -> String {
-    format!("{} {SIGNALS} {HOSTING}", env!("CARGO_PKG_VERSION"))
+    format!("{} {SIGNALS} {HOSTING} {RESUME_SECRET}", env!("CARGO_PKG_VERSION"))
+}
+
+/// A [`Hello::client_version`] whose client reads a welcome's secret: it announces
+/// [`RESUME_SECRET`], or it is FigCraft 0.11.0 or later, which reads the secret without announcing
+/// a word (FigCraft added it unannounced, in the same wire shape, in 0.11.0).
+pub fn reads_resume_secret(client_version: &str) -> bool {
+    let version = client_version.split_whitespace().next().unwrap_or_default();
+    let mut parts = version.split(['.', '-', '+']).map(|p| p.parse::<u64>().ok());
+    let figcraft_0_11 = matches!((parts.next().flatten(), parts.next().flatten()), (Some(major), Some(minor)) if major > 0 || minor >= 11);
+    figcraft_0_11 || client_version.split_whitespace().any(|w| w == RESUME_SECRET)
 }
 
 /// A [`Hello::client_version`] that announces [`SIGNALS`].
@@ -94,6 +109,15 @@ pub struct Resume {
     pub client_id: u32,
     /// The last sequence number it applied.
     pub seq: u64,
+    /// The secret the server gave this client id with ([`ServerMsg::Welcome`]'s `secret`): only
+    /// the client the id was given to can resume it. 0: none (an older server gave none). Written
+    /// only when set, so a resume to an older server keeps the shape it reads.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub secret: u64,
+}
+
+fn is_zero(n: &u64) -> bool {
+    *n == 0
 }
 
 /// Someone in the session.
@@ -635,7 +659,9 @@ pub enum ServerMsg {
     /// Joined: the session's identity (a server that restarted without its saved state is a new
     /// session), this connection's client id, the current sequence number, the document (or the
     /// batches missed since a reconnecting client's last sequence number), what the server did
-    /// with this client's batches so far, who else is here and what this client may do.
+    /// with this client's batches so far, who else is here, what this client may do and the secret
+    /// it resumes its id with ([`Resume::secret`]; only this client is told, and only when it reads
+    /// one, [`reads_resume_secret`]: 0, left out on the wire, for the others).
     Welcome {
         session: u64,
         client_id: u32,
@@ -644,6 +670,8 @@ pub enum ServerMsg {
         processed: Processed,
         peers: Vec<Peer>,
         access: Access,
+        #[serde(default, skip_serializing_if = "is_zero")]
+        secret: u64,
     },
     /// Accepted changes, in order, to everyone (the author's own come back as confirmation).
     Changes(Accepted),
@@ -738,6 +766,46 @@ pub fn decode<T: DeserializeOwned>(bytes: &[u8], max_bytes: usize) -> Result<T, 
         return Err(Error::Decode(format!("{} bytes after the message", rest.len())));
     }
     Ok(msg)
+}
+
+/// A message whose last field a peer from before it was added leaves out ([`decode_peer`]).
+pub trait LastField {
+    /// Whether `self` is such a message, read with that field as 0.
+    fn lacks_last_field(&self) -> bool;
+}
+
+impl LastField for ClientMsg {
+    fn lacks_last_field(&self) -> bool {
+        matches!(self, ClientMsg::Hello(Hello { resume: Some(Resume { secret: 0, .. }), .. }))
+    }
+}
+
+impl LastField for ServerMsg {
+    fn lacks_last_field(&self) -> bool {
+        matches!(self, ServerMsg::Welcome { secret: 0, .. })
+    }
+}
+
+/// [`decode`] for a message from a peer, which may be an older build: a resume or welcome written
+/// without its `secret` (it ends the message, and the binary form has no field names) is read with
+/// the secret as 0. Anything else reads exactly as [`decode`] reads it.
+pub fn decode_peer<T: DeserializeOwned + LastField>(bytes: &[u8], max_bytes: usize) -> Result<T, Error> {
+    match decode::<T>(bytes, max_bytes) {
+        Ok(m) => Ok(m),
+        Err(e) => {
+            if bytes.len() > max_bytes {
+                return Err(e);
+            }
+            // The secret is a varint: one 0 byte.
+            let mut whole = Vec::with_capacity(bytes.len() + 1);
+            whole.extend_from_slice(bytes);
+            whole.push(0);
+            match decode::<T>(&whole, max_bytes.saturating_add(1)) {
+                Ok(m) if m.lacks_last_field() => Ok(m),
+                _ => Err(e),
+            }
+        }
+    }
 }
 
 /// The JSON form of `msg` (`{"<type>": {…}}`).

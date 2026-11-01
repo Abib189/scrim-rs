@@ -165,7 +165,7 @@ impl Raw {
     pub fn next(&mut self) -> ServerMsg {
         loop {
             if let Message::Binary(b) = self.0.read().unwrap() {
-                return message::decode(&b, usize::MAX).unwrap();
+                return message::decode_peer(&b, usize::MAX).unwrap();
             }
         }
     }

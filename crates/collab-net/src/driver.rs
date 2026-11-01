@@ -115,7 +115,7 @@ impl<S: Socket> Driver<S> {
     pub(crate) fn message(&mut self, bytes: &[u8], now: Instant) {
         let Some(c) = self.conn.as_mut() else { return };
         c.last_heard = now;
-        let taken = match message::decode::<ServerMsg>(bytes, self.cfg.limits.max_server_message) {
+        let taken = match message::decode_peer::<ServerMsg>(bytes, self.cfg.limits.max_server_message) {
             // The join code's answer: join the file it opens, on a new connection.
             Ok(ServerMsg::Resolved { file, token }) if self.cfg.code.is_some() => {
                 return match resolved(&mut self.cfg, file, token) {

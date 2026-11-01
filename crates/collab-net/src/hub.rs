@@ -827,7 +827,7 @@ fn next_message(ws: &mut WebSocket<Duplex>, max: usize) -> Result<Option<(Client
             Ok(Message::Binary(b)) => {
                 // Whole now: it counts as in flight from here, no longer as being read.
                 ws.get_mut().read_done();
-                message::decode::<ClientMsg>(&b, max).map(|m| Some((m, b.len()))).map_err(|_| "that message couldn't be read".to_string())
+                message::decode_peer::<ClientMsg>(&b, max).map(|m| Some((m, b.len()))).map_err(|_| "that message couldn't be read".to_string())
             }
             Ok(Message::Text(_)) => Err("only binary messages are spoken here".into()),
             Ok(Message::Ping(_) | Message::Pong(_) | Message::Frame(_)) => continue,

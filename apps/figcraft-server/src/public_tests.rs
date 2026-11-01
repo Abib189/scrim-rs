@@ -286,7 +286,7 @@ pub(crate) fn via_proxy(addr: SocketAddr, forwarded: &str) -> (tungstenite::WebS
     ws.send(Message::Binary(Bytes::from(message::encode(&open).unwrap()))).unwrap();
     let reply = loop {
         if let Message::Binary(b) = ws.read().unwrap() {
-            break message::decode(&b, usize::MAX).unwrap();
+            break message::decode_peer(&b, usize::MAX).unwrap();
         }
     };
     (ws, reply)

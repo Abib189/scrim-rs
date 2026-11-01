@@ -352,7 +352,7 @@ fn read_loop(mut ws: WebSocket<Duplex>, ctx: &ReaderCtx) {
     let mut seen = Seen::default();
     let outcome = loop {
         match ws.read() {
-            Ok(Message::Binary(b)) => match message::decode::<ServerMsg>(&b, ctx.cfg.limits.max_server_message) {
+            Ok(Message::Binary(b)) => match message::decode_peer::<ServerMsg>(&b, ctx.cfg.limits.max_server_message) {
                 Ok(m) => {
                     let welcomed = || {
                         let _ = ctx.tx.send(Cmd::Welcomed(ctx.epoch));

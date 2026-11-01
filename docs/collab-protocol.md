@@ -186,6 +186,23 @@ welcome, and a client sends `Report` only to a server that sent it one. New vari
 at the end of an enum, and existing messages keep their fields, so nothing an older peer reads
 changes.
 
+**Resume secrets** came later within version 2 (Fix AI-2a, from upstream FigCraft 10702311, audit
+#1054). Before them, a resume was authorised by the session id and client id alone, which every
+participant sees, so anyone holding the invite could take over anyone's id, the host's included.
+Now a client is given a secret with its id, in its welcome, and resumes only with it (`Resume`'s
+`secret`). A resume without the right secret, or with none, joins as a new participant.
+
+Older peers still read each other:
+- **A client that reads a secret** says so with the word `resume-secret` in its hello's
+  `client_version`. FigCraft 0.11.0 and later read it too, without announcing a word.
+- **Only those clients get a secret.** For every other client the secret is 0, and a 0 secret is
+  left out on the wire, so its welcome is exactly the one it always read.
+- **A peer from before the change leaves out the trailing field.** Its resume, or its server's
+  welcome, is read with the secret as 0. A client given no secret resumes without one, in the shape
+  an older server reads.
+
+The secret ends both messages, so leaving it out changes nothing else in them.
+
 **Join codes** came later within version 2 the same way: a connection that opens with `Resolve`
 asks a server which file a code opens, and `Admin code` asks it for a link's code. Both are new
 variants at the end of their enums, so everything an older peer reads is unchanged. A server from
@@ -214,7 +231,7 @@ Client → server:
 
 | Message | Meaning |
 |---|---|
-| `Hello {protocol, file, token, name, color, client_version, resume?}` | Join a file's session; `resume {session, client_id, seq}` when coming back after a dropped connection. |
+| `Hello {protocol, file, token, name, color, client_version, resume?}` | Join a file's session; `resume {session, client_id, seq, secret?}` when coming back after a dropped connection (`secret`: the one its welcome gave; see Resume secrets). |
 | `Changes {base_seq, batch_id, changes: [Change]}` | One user action's changes (one undo step). |
 | `Presence {cursor?, selection?, viewport?, editing_text? {node, caret, selection?}}` | Ephemeral; throttled to ~30 Hz, latest wins. |
 | `Ack {seq}` | Highest sequence applied (lets the server trim per-client buffers). |
@@ -237,7 +254,7 @@ Server → client:
 
 | Message | Meaning |
 |---|---|
-| `Welcome {session, client_id, seq, catch_up: Snapshot or Delta, processed, peers, access}` | Join accepted: the full document, or for a reconnecting client the batches it missed; what the server did with that client's batches (`processed {last_batch, refused}`); `access` is `edit` or `view` (a view link: every batch is refused). |
+| `Welcome {session, client_id, seq, catch_up: Snapshot or Delta, processed, peers, access, secret?}` | Join accepted: the full document, or for a reconnecting client the batches it missed; what the server did with that client's batches (`processed {last_batch, refused}`); `access` is `edit` or `view` (a view link: every batch is refused); `secret?` is what this client resumes its id with (only for clients that read one). |
 | `Changes {seq, author, batch_id, changes}` | Accepted changes, in order, to everyone (the author gets its own back as confirmation). |
 | `Reject {batch_id, reason, fixes: [Change]}` | A batch (or part of it) was invalid: the current values to roll back to. |
 | `Presence {client_id, …}` / `PeerJoined` / `PeerLeft` | Other people's cursors, selections and arrivals. |
