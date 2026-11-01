@@ -2,7 +2,6 @@
 # never grow (AGENTS.md › Scrim's rules 3). Remove an entry once its file is under the limit.
 1573 apps/figcraft-server/src/store.rs
 1749 crates/collab-net/src/hub.rs
-1197 crates/doc/src/lib.rs
 1490 crates/doc/src/props.rs
 1045 crates/doc/src/proto.rs
 1427 crates/engine/src/cmd/component.rs
