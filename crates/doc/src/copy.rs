@@ -1,12 +1,28 @@
 //! Copying layers within or into a document: duplicates and pastes with fresh ids, and the
 //! references inside the copy (interactions, instances, pattern sources) remapped to it.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
 use crate::{DocError, DocResult, Document, Node, NodeId, NodeKind, proto};
 
 impl Document {
+    /// The next id no layer holds. A file's saved `next_id` can be behind the ids it uses (an old
+    /// or hand-edited file): taken ids are skipped, so a copy never overwrites a layer (upstream
+    /// FigCraft 8aa456b1, audit #1064). A full client space keeps returning its last id, which
+    /// [`paste_nodes`](Self::paste_nodes) then refuses.
+    pub(crate) fn free_id(&mut self) -> NodeId {
+        let mut id = self.next_id.alloc();
+        while self.nodes.contains_key(&id) {
+            let next = self.next_id.alloc();
+            if next == id {
+                break;
+            }
+            id = next;
+        }
+        id
+    }
+
     /// Deep-copy `id`'s subtree under `parent` (at `index`), returning the new root id. The copy
     /// keeps the original's local transform; ids are fresh.
     pub fn duplicate_into(&mut self, id: NodeId, parent: NodeId, index: Option<usize>) -> DocResult<NodeId> {
@@ -52,6 +68,11 @@ impl Document {
             return Err(DocError::NotContainer(parent));
         }
         let new_root = *map.get(&root).ok_or(DocError::NoNode(root))?;
+        // A copy never overwrites a layer, nor another copy (upstream 8aa456b1 and 46b02d44).
+        let mut copied = BTreeSet::new();
+        if let Some(taken) = nodes.iter().filter_map(|n| map.get(&n.id)).find(|i| self.nodes.contains_key(*i) || !copied.insert(**i)) {
+            return Err(DocError::Invalid(format!("node {taken} already exists")));
+        }
         for n in nodes {
             let Some(new_id) = map.get(&n.id) else { continue };
             let mut c = n.clone();

@@ -269,9 +269,9 @@ impl Document {
     }
 
     /// A fresh unused id (in this document's client space during a collaboration session; see
-    /// [`set_client_id`](Self::set_client_id)).
+    /// [`set_client_id`](Self::set_client_id)), never one a layer holds.
     pub fn alloc_id(&mut self) -> NodeId {
-        self.next_id.alloc()
+        self.free_id()
     }
 
     /// The id [`alloc_id`](Self::alloc_id) returns next.
@@ -970,6 +970,8 @@ mod boolean_hit_tests;
 mod client_id_tests;
 #[cfg(test)]
 mod colors_tests;
+#[cfg(test)]
+mod copy_tests;
 #[cfg(test)]
 mod diff_tests;
 #[cfg(test)]

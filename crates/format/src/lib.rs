@@ -788,6 +788,8 @@ mod large_tests;
 #[cfg(test)]
 mod staging_tests;
 #[cfg(test)]
+mod stale_ids_tests;
+#[cfg(test)]
 mod thumbnail_tests;
 #[cfg(test)]
 mod version_tests;
