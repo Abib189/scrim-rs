@@ -1,0 +1,249 @@
+# Hand corrections to scan.py's keyword groups: hash prefix, group (a-f), note. Read from every subject.
+# Fixes the keyword rule filed as features:
+fad47ac8	a
+f0ceb46d	a
+87e42a14	a
+019058ff	a	data loss: a recovery copy could hold the previewed version
+4224f4b6	a
+05f81110	a
+96eed159	b	memory: nested mask layers share one budget
+0df91897	a
+81f89b31	a
+9426eff1	a
+97f502cb	a
+07c936f5	a
+a3d70d4c	c
+7d18fa39	a
+2ff69183	a
+fe787270	a
+2136ec20	a
+795567f0	a
+84b48bc7	a
+398c5404	a
+c6dd115e	a
+839e9fa4	a
+d55781e5	a
+a8363f06	c
+000c0e3d	a
+14267619	a
+598a4a28	a
+2baeff34	a
+494387a6	a
+1cb5f403	a
+8864e42d	a
+7df328d1	a
+3a1ddf33	a
+0b3ce29e	a
+8989e7b2	a
+8af2efd1	a
+d114c6ed	a
+a44bba56	a
+caeab4e8	a
+2a6e460a	a
+410c1f10	a
+d77e0021	a
+83dac86b	a
+8f0982b5	a
+bb2e56a7	a
+40315a12	a
+eb077177	a
+ca30791f	a
+83b9f746	a
+3d5f3e79	a
+ddeceb17	a
+a713897d	a
+8ee0218d	a
+6394e960	a
+f619dca7	a
+12bb6503	a
+df5ffec8	a
+3df56736	a
+b1f0eafb	a
+b5a315a7	a
+9ee0c7f5	a
+21d5090d	a
+09427e72	a
+6a163721	a
+c7261cb9	a
+017517fb	a
+c530b406	a
+aec3a22f	a
+d489235d	a
+4707cb15	a
+0a4e70fb	a
+32e8fd0b	a
+8f3afbf6	a
+d4471376	a
+a5596384	a
+1aa1d61b	a
+# Docs, tests, string catalogs and refactors the rule filed as fixes or features:
+87e4abfb	f
+28a0fe6d	f
+872c85bf	f
+6c0ffe66	f
+dd37c176	f
+c7d2a5f0	f
+d9cb5cd2	f
+7fad345e	f
+22ef4fdd	f
+ce615ada	f
+97f2c99d	f
+f2ede63d	f
+75784f24	f
+08c3f8f9	f
+109b90c0	f
+cfbb5a8f	f
+7126deae	f
+7558ac04	f
+9ec80bf2	f
+a0e93791	f
+245a8cca	f
+573b43d6	f
+5bed2827	f
+8d52baa4	f
+b162ef88	f
+08ce40fd	f
+e1117d2a	f
+502098e0	f
+8fadd5d8	f
+3567bef8	f
+64e648ae	f
+f98da278	f
+beb87d86	f
+2a63418d	f
+7c0c5fd9	f
+4826d54a	f
+56ed786e	f
+3d5185c2	f
+bd7a277c	f
+ea2fa7c3	f
+d9c924c3	f
+4eb5224f	f
+7ce19ebe	f
+be6a547f	f
+ad9116ff	f
+bbe691cb	f
+0449edf6	f
+e8c47428	f
+4c101fa5	f
+6f50d830	f
+bdddf9a2	f
+c4be9c1a	f
+054d5390	f
+381ec852	f
+5186d834	f
+8f518757	f
+8ffc5e57	f
+02f15fa4	f
+234a6645	f
+4a07c6a4	f
+030dffc2	f
+a5afa004	f
+e8c47428	f
+229e333b	f
+ddde77db	d	release font pin
+35da7b7c	d	craft-window (craft-libs) for Linux decorations
+# Features the rule filed as fixes:
+2d23f956	e
+a8bade14	e
+6b28ef57	e
+920aafb8	e
+54a0c695	e
+268c0ead	e
+6ef899cd	e
+be7a2ecd	e
+aa727500	e
+2af54a26	e
+d2dfe2ef	e
+ce8e9a7d	e
+309bac61	e
+b00cccb1	e
+59af2bc4	e
+0b7528b7	e
+b0717ba6	e
+20e4028a	e
+088693cf	e
+5a4b7c27	e	brand colours (ArtCraft marks; removed in this fork)
+4cc22300	e
+113d7ec1	e
+d015436b	e
+79894cfa	a	upstream's own Sketch importer
+c4810235	b	supply chain: pinned tool downloads with checked hashes
+4b76c407	a
+a132eb37	a
+32bc8224	a
+10702311	b	upstream audit #1054 (COL-1, High)
+b57c6778	b	upstream audit #1055 (PLG-1, High)
+b3e65c89	b	upstream audit #1056 (ENG-1, High (Windows))
+a80df8ed	b	upstream audit #1057 (FMT-1, High)
+c857f8d0	b	upstream audit #1058 (FMT-2, High)
+3009d19f	b	upstream audit #1059 (FMT-3, High)
+2baeff34	b	upstream audit #1060 (RND-1, High)
+494387a6	b	upstream audit #1060 (RND-1, High)
+96eed159	b	upstream audit #1061 (RND-2, High)
+4da6a11b	b	upstream audit #1062 (ENG-2, High)
+08173cc5	b	upstream audit #1063 (COL-2, High)
+8aa456b1	b	upstream audit #1064 (ENG-3, High)
+b2421885	b	upstream audit #1065 (COL-3, Medium-High)
+5a53425f	b	upstream audit #1066 (COL-4, Medium)
+08a36418	b	upstream audit #1067 (COL-5, Medium)
+2d02f289	b	upstream audit #1067 (COL-5, Medium)
+d5de4be1	b	upstream audit #1068 (COL-6, Medium)
+436cfa1b	b	upstream audit #1069 (COL-7, Medium)
+c80d1e7a	b	upstream audit #1070 (COL-8, Medium)
+b8741162	b	upstream audit #1071 (PLG-2, Medium)
+d7d6bc84	b	upstream audit #1073 (SRV-1, Medium)
+fb0465f3	b	upstream audit #1074 (SRV-2, Medium)
+f6ccef0c	b	upstream audit #1075 (SRV-3, Medium)
+675777e0	b	upstream audit #1077 (FMT-5, Medium)
+d5ce10f0	b	upstream audit #1078 (FMT-6, Medium)
+e2742795	b	upstream audit #1079 (FMT-7, Medium)
+2e3d9b6f	b	upstream audit #1080 (RND-3, Medium)
+35f5faa2	b	upstream audit #1081 (RND-4, Medium)
+7fdbda9f	b	upstream audit #1082 (RND-5, Medium)
+393abf80	b	upstream audit #1083 (RND-6, Medium)
+0d9c2c3f	b	upstream audit #1084 (ENG-4, Medium)
+9573b8b2	b	upstream audit #1085 (ENG-5, Medium)
+cc0976a4	b	upstream audit #1085 (ENG-5, Medium)
+57cf1bec	b	upstream audit #1086 (COL-9, Low-Medium)
+7cce115a	b	upstream audit #1086 (COL-9, Low-Medium)
+949d74f7	b	upstream audit #1086 (COL-9, Low-Medium)
+f1c2ee81	b	upstream audit #1086 (COL-9, Low-Medium)
+4f39406f	b	upstream audit #1087 (COL-10, Low)
+8ab0de26	b	upstream audit #1088 (SRV-4, Low)
+7d18fa39	b	upstream audit #1089 (SRV-5, Low)
+eafa1a1d	b	upstream audit #1090 (SRV-6, Low)
+49c0d4c7	b	upstream audit #1091 (SRV-7, Low)
+51a4509c	b	upstream audit #1092 (SRV-8, Low)
+11cf6fb1	b	upstream audit #1093 (SRV-9, Low)
+e6059b35	b	upstream audit #1095 (IPC-3, Low)
+ef4c0aac	b	upstream audit #1095 (IPC-3, Low)
+53f47706	b	upstream audit #1096 (IPC-4, Low)
+76608778	b	upstream audit #1096 (IPC-4, Low)
+7b886404	b	upstream audit #1097 (IPC-5, Low)
+7bc59463	b	upstream audit #1098 (ENG-6, Low-Medium)
+24cf6432	b	upstream audit #1099 (ENG-7, Low)
+9c0d1c19	b	upstream audit #1100 (ENG-8, Low)
+4224f4b6	b	upstream audit #1101 (FMT-8, Low-Medium)
+2e9212d9	b	upstream audit #1102 (RND-7, Low-Medium)
+cc3052de	b	upstream audit #1104 (RND-9, Low)
+b5e5c210	b	upstream audit #1106 (RND-11, Low)
+c6dba8c8	b	upstream audit #1112 (Minor 3, Low)
+8ae76d9b	b	upstream audit #1113 (Minor 4, Low)
+c4717749	b	upstream audit #1114 (Minor 5, Low)
+43a255fe	b	upstream audit #1115 (Minor 6, Low)
+8864e42d	b	upstream audit #1116 (Minor 7, Low)
+b2885452	b	upstream audit #1117 (Minor 8, Low)
+67ae35b1	b	upstream audit #1118 (Minor 9, Low)
+7e114c34	b	upstream audit #1119 (Minor 10, Low)
+57e08729	b	upstream audit #1120 (Minor 11, Low)
+f1eaf3fc	b	upstream audit #1121 (Minor 12, Low)
+98298a35	b	upstream audit #1122 (Minor 13, Low)
+974ab395	b	upstream audit #1123 (Minor 14, Low)
+bdb6a059	b	upstream audit #1124 (Minor 15, Low)
+c23f2334	b	upstream audit #1125 (Minor 16, Low)
+37500198	b	upstream audit #1126 (Minor 17, Low)
+8c46b733	b	upstream audit #1127 (Minor 18, Low)
+82779ec0	b	upstream audit #1128 (Minor 19, Low)
+21d66646	b	upstream audit #1129 (Minor 20, Low)
+8da99e53	b	upstream audit #1130 (Minor 21, Low)

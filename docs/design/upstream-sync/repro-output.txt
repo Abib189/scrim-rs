@@ -1,0 +1,17 @@
+test page_guides_survive_a_save_and_reopen ... FAILED
+test eng3_stale_next_id_never_overwrites_existing_layers ... FAILED
+test col1_a_resume_cannot_take_over_someone_elses_client_id ... FAILED
+test a_page_guide_added_after_a_reopen_still_saves_a_readable_file ... FAILED
+test col4_is_ancestor_fails_closed_on_a_deep_chain ... FAILED
+thread 'page_guides_survive_a_save_and_reopen' (8722388) panicked at tests/upstream.rs:76:5:
+assertion `left == right` failed: the page's guide was lost
+thread 'eng3_stale_next_id_never_overwrites_existing_layers' (8722387) panicked at tests/upstream.rs:20:5:
+the copy took an existing id: NodeId(1)
+thread 'col1_a_resume_cannot_take_over_someone_elses_client_id' (8722385) panicked at tests/upstream.rs:43:24:
+assertion `left != right` failed: a second client resumed (took over) client id 1
+thread 'a_page_guide_added_after_a_reopen_still_saves_a_readable_file' (8722384) panicked at tests/upstream.rs:98:9:
+the second save doesn't open: duplicate field `guides` at line 1 column 348
+thread 'col4_is_ancestor_fails_closed_on_a_deep_chain' (8722386) panicked at tests/upstream.rs:59:5:
+a layer 10,050 levels down is reported as not inside `top`
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+error: test failed, to rerun pass `--test upstream`

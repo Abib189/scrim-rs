@@ -1,0 +1,80 @@
+# Upstream's security audit issues (storytold/figcraft, titled "[Audit] ...", filed 22 Oct 2026 against rev 9ec80bf2) and the upstream commits that closed them (from each issue's closing pull requests). Columns: issue, state (O open, C closed), severity, title, fix commits.
+309	C	-	[Audit] 4 defects with evidence + patches: collab counter overflow, failed batch wipes redo stack, name counter overflow, page.move corruption	closed 17 Oct, before the fork
+1054	C	High	[Audit] COL-1: Client-id takeover through Hello.resume (High)	10702311
+1055	C	High	[Audit] PLG-1: Read-only plugin can upload the document over the network (High)	b57c6778
+1056	C	High (Windows) / Low elsewhere	[Audit] ENG-1: Document-named library paths reach UNC shares (NTLM leak) (High (Windows))	b3e65c89
+1057	C	High	[Audit] FMT-1: .fig (kiwi) value budget skips single scalar fields (High)	a80df8ed
+1058	C	High	[Audit] FMT-2: Uncapped issue list in Document::validate (High)	c857f8d0
+1059	C	High	[Audit] FMT-3: .fig embedded image bytes copied once per hash (High)	3009d19f
+1060	C	High	[Audit] RND-1: Dash count not bounded against path length (High)	2baeff34 494387a6
+1061	C	High	[Audit] RND-2: Nested isolated layers allocate full-view pixmaps with no total (High)	96eed159
+1062	C	High	[Audit] ENG-2: Unbounded world_render_bounds recursion (High)	4da6a11b
+1063	C	High	[Audit] COL-2: Quadratic fixes() for a refused batch (High)	08173cc5
+1064	C	High	[Audit] ENG-3: Stale next_id makes paste_nodes overwrite existing nodes (High)	8aa456b1
+1065	C	Medium-High	[Audit] COL-3: O(n^2) sibling placement on the single hub thread (Medium-High)	b2421885
+1066	C	Medium	[Audit] COL-4: is_ancestor fails open after 10,000 steps (Medium)	5a53425f
+1067	C	Medium	[Audit] COL-5: Id-space exhaustion blocks all future joins (Medium)	08a36418 2d02f289
+1068	C	Medium	[Audit] COL-6: Pre-authentication slowloris (Medium)	d5de4be1
+1069	C	Medium	[Audit] COL-7: Unbounded replay log on desktop host and private servers (Medium)	436cfa1b
+1070	C	Medium	[Audit] COL-8: Kicked connections aren't shut and keep their queue budget (Medium)	c80d1e7a
+1071	C	Medium	[Audit] PLG-2: Plugins can read files and reach UNC paths via text.loadFont (Medium)	b8741162
+1072	O	Medium	[Audit] IPC-1: Unauthenticated local control channel (Medium)	
+1073	C	Medium	[Audit] SRV-1: Per-address quotas count only the /64 (Medium)	d7d6bc84
+1074	C	Medium	[Audit] SRV-2: Join/leave of an idle file causes I/O amplification on the hub thread (Medium)	fb0465f3
+1075	C	Medium	[Audit] SRV-3: Owner admin requests limited only by message rate (Medium)	f6ccef0c
+1076	O	Medium	[Audit] FMT-4: .fig zip images have no total budget (Medium)	
+1077	C	Medium	[Audit] FMT-5: Instance expansion of uncounted layers / override cloning is quadratic (Medium)	675777e0
+1078	C	Medium	[Audit] FMT-6: validate/repair/library manifest checks are O(n^2) (Medium)	d5ce10f0
+1079	C	Medium	[Audit] FMT-7: Per-area decompression caps add up to ~8GB for one .figcraft (Medium)	e2742795
+1080	C	Medium	[Audit] RND-3: SVG pattern tile re-rendered per use with reset node budget (Medium)	2e3d9b6f
+1081	C	Medium	[Audit] RND-4: Nesting pre-scan skips DTD bodies; entity expansion passes MAX_NESTING (Medium)	35f5faa2
+1082	C	Medium	[Audit] RND-5: Render worker/rayon stacks are 2MiB; pattern sources restart depth at 0 (Medium)	7fdbda9f
+1083	C	Medium	[Audit] RND-6: Grid auto-placement is O(children x rows x span^2) (Medium)	393abf80
+1084	C	Medium	[Audit] ENG-4: Mutually containing components aren't refused (Medium)	0d9c2c3f
+1085	C	Medium	[Audit] ENG-5: normalize runs outside guard; grouped restore skipped on unwind (Medium)	9573b8b2 cc0976a4
+1086	C	Low-Medium	[Audit] COL-9: Image entries accepted under any hash; width/height unchecked (Low-Medium)	57cf1bec 7cce115a 949d74f7 f1c2ee81
+1087	C	Low	[Audit] COL-10: Message size limit raised to full size before token check (Low)	4f39406f
+1088	C	Low	[Audit] SRV-4: A correct join code resets the wrong-code streak (Low)	8ab0de26
+1089	C	Low	[Audit] SRV-5: Libraries/plugins larger than the 16MiB burst can never be downloaded (Low)	7d18fa39
+1090	C	Low	[Audit] SRV-6: Any log read error discards confirmed edits (Low)	eafa1a1d
+1091	C	Low	[Audit] SRV-7: Read-only-looking CLI commands run the expiry sweep (Low)	49c0d4c7
+1092	C	Low	[Audit] SRV-8: Editor can freeze a team library with version = u64::MAX (Low)	51a4509c
+1093	C	Low	[Audit] SRV-9: New file's directory entry is not fsynced (Low)	11cf6fb1
+1094	O	Low-Medium	[Audit] IPC-2: Automation roots canonicalize UNC paths before refusing them (Low-Medium)	
+1095	C	Low	[Audit] IPC-3: Automation roots confine files only; network remains open (Low)	e6059b35 ef4c0aac
+1096	C	Low	[Audit] IPC-4: Prototype can open unlimited URLs without a click (Low)	53f47706 76608778
+1097	C	Low	[Audit] IPC-5: Opening a document contacts any library server it names (beacon) (Low)	7b886404
+1098	C	Low-Medium	[Audit] ENG-6: layout.setTrack resizes to unclamped grid_columns (Low-Medium)	7bc59463
+1099	C	Low	[Audit] ENG-7: command.batch keeps a full undo snapshot per step (Low)	24cf6432
+1100	C	Low	[Audit] ENG-8: Rollback restores doc/selection/page only, not clipboard or history (Low)	9c0d1c19
+1101	C	Low-Medium	[Audit] FMT-8: 256-level recursion with large frames on wasm's 1MB stack (Low-Medium)	4224f4b6
+1102	C	Low-Medium	[Audit] RND-7: Text style dedupe is O(spans x styles) while holding the font-db lock (Low-Medium)	2e9212d9
+1103	O	Low	[Audit] RND-8: Morphology is O(w*h*r) with r <= 400 (Low)	
+1104	C	Low	[Audit] RND-9: Boolean ops have no input-complexity cap (Low)	cc3052de
+1105	O	Low	[Audit] RND-10: Many full-size RGBA buffers in flight in krilla's async deflate (Low)	
+1106	C	Low	[Audit] RND-11: unique_id is O(n^2) for repeated layer names (Low)	b5e5c210
+1107	O	Low	[Audit] DEP-1: zip 2.6.1 has three extract-only advisories; not reachable today (Low)	
+1108	O	Info	[Audit] DEP-2: tokio yanked; unmaintained rustybuzz/ttf-parser/zvariant (Info)	
+1109	O	Info	[Audit] DEP-3: No deny.toml; audit/deny not in CI; release has no overflow-checks (Info)	
+1110	O	Low	[Audit] Minor 1: Control channel	
+1111	O	Low	[Audit] Minor 2: Control channel	
+1112	C	Low	[Audit] Minor 3: Control channel	c6dba8c8
+1113	C	Low	[Audit] Minor 4: MCP --attach	8ae76d9b
+1114	C	Low	[Audit] Minor 5: Unbounded reads of caller-given paths	c4717749
+1115	C	Low	[Audit] Minor 6: Uncapped inspect depth	43a255fe
+1116	C	Low	[Audit] Minor 7: Plugin id reuse	8864e42d
+1117	C	Low	[Audit] Minor 8: doc.list shows the paths of other open documents	b2885452
+1118	C	Low	[Audit] Minor 9: Widget data check depth stops at 64 while serde allows 128 (not explo...	67ae35b1
+1119	C	Low	[Audit] Minor 10: Inbox drops the oldest events past 10,000 including Sync; client dete...	7e114c34
+1120	C	Low	[Audit] Minor 11: Library-fetch thread can hang	57e08729
+1121	C	Low	[Audit] Minor 12: Client-side maps unbounded	f1eaf3fc
+1122	C	Low	[Audit] Minor 13: Unvalidated image member names	98298a35
+1123	C	Low	[Audit] Minor 14: Panic guard missing on wasm	974ab395
+1124	C	Low	[Audit] Minor 15: Invalid XML in SVG export	bdb6a059
+1125	C	Low	[Audit] Minor 16: 32-bit font index overflow	c23f2334
+1126	C	Low	[Audit] Minor 17: Bidi characters in names	37500198
+1127	C	Low	[Audit] Minor 18: Data directory permissions are 0700 only if the server created the di...	8c46b733
+1128	C	Low	[Audit] Minor 19: generation + 1 can wrap at store.rs:1170 and :1246	82779ec0
+1129	C	Low	[Audit] Minor 20: Partial temp cleanup	21d66646
+1130	C	Low	[Audit] Minor 21: Server key compared in plaintext (docs say hash), constant time	8da99e53
+1131	O	Low	[Audit] Minor 22: Plain ws:// on the LAN	

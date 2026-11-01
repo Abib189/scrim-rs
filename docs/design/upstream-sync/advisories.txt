@@ -1,0 +1,154 @@
+# cargo audit 0.22.2 (RustSec advisory database, 1,395 advisories, fetched 1 Nov 2026) and cargo deny 0.20.2 (check advisories, default policy) against Scrim's Cargo.lock at 67e0e41 (599 packages).
+# Commands: cargo-audit audit --db ~/.cache/scrim-advisory-db --file Cargo.lock; cargo-deny --all-features check advisories
+
+## cargo audit
+Crate:     rustls
+Version:   0.23.45
+Title:     `Debug` impls for client session values expose TLS secrets
+Date:      2026-10-14
+ID:        RUSTSEC-2026-0346
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0346
+Severity:  4 (medium)
+Solution:  Upgrade to >=0.23.46
+
+Crate:     rustls
+Version:   0.23.45
+Title:     Buffered application data sent to outer server after ECH rejection
+Date:      2026-10-14
+ID:        RUSTSEC-2026-0347
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0347
+Severity:  2.3 (low)
+Solution:  Upgrade to >=0.23.46
+
+Crate:     rustls
+Version:   0.23.45
+Title:     Brotli certificate decompression can allocate up to 1 GiB before authentication
+Date:      2026-10-14
+ID:        RUSTSEC-2026-0348
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0348
+Severity:  3.7 (low)
+Solution:  Upgrade to >=0.23.46
+
+Crate:     rustls
+Version:   0.23.45
+Title:     Unauthenticated ServerHello can downgrade later connections to classical key exchange
+Date:      2026-10-14
+ID:        RUSTSEC-2026-0349
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0349
+Severity:  3.7 (low)
+Solution:  Upgrade to >=0.23.46
+
+Crate:     rustls-webpki
+Version:   0.103.15
+Title:     Certificate verification may accept distrusted intermediates
+Date:      2026-10-20
+ID:        RUSTSEC-2026-0382
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0382
+Solution:  Upgrade to >=0.103.16, <0.104.0-alpha.1 OR >=0.104.0-alpha.8
+
+Crate:     webpki-roots
+Version:   1.0.9
+Title:     Bundled root certificates allow trust in distrusted emSign intermediates
+Date:      2026-10-19
+ID:        RUSTSEC-2026-0381
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0381
+Solution:  Upgrade to >=1.0.10
+
+Crate:     zip
+Version:   2.4.2
+Title:      Insecure Preservation of SUID/SGID Bits during ZIP Extraction Leading to Potential Privilege Escalation
+Date:      2026-10-09
+ID:        RUSTSEC-2026-0367
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0367
+Severity:  7.3 (high)
+Solution:  Upgrade to >=9.0.0
+
+Crate:     zip
+Version:   2.4.2
+Title:     zip: `ZipArchive::extract` creates symbolic links whose attacker-controlled targets are outside the destination directory
+Date:      2026-10-09
+ID:        RUSTSEC-2026-0368
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0368
+Solution:  Upgrade to >=9.0.0
+
+Crate:     zip
+Version:   2.4.2
+Title:     ZipStreamReader::extract() and ZipArchive::extract() apply Unix permissions through symlinks without confining the target
+Date:      2026-10-10
+ID:        RUSTSEC-2026-0369
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0369
+Severity:  9.1 (critical)
+Solution:  Upgrade to >=9.0.0
+
+Crate:     rustybuzz
+Version:   0.20.1
+Warning:   unmaintained
+Title:     `rustybuzz` is unmaintained
+Date:      2026-07-11
+ID:        RUSTSEC-2026-0206
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0206
+
+Crate:     ttf-parser
+Version:   0.25.1
+Warning:   unmaintained
+Title:     `ttf-parser` is unmaintained
+Date:      2026-06-28
+ID:        RUSTSEC-2026-0192
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0192
+
+Crate:     zbus_names
+Version:   4.3.4
+Warning:   unmaintained
+Title:     `zbus_names` is unmaintained
+Date:      2026-10-16
+ID:        RUSTSEC-2026-0371
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0371
+
+Crate:     zvariant
+Version:   5.15.0
+Warning:   unmaintained
+Title:     `zvariant` is unmaintained
+Date:      2026-10-16
+ID:        RUSTSEC-2026-0370
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0370
+
+Crate:     zvariant_derive
+Version:   5.15.0
+Warning:   unmaintained
+Title:     `zvariant_derive` is unmaintained
+Date:      2026-10-16
+ID:        RUSTSEC-2026-0372
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0372
+
+Crate:     tokio
+Version:   1.53.2
+Warning:   unsound
+Title:     `AsyncFd::new` and related constructors violate I/O safety
+Date:      2026-10-13
+ID:        RUSTSEC-2026-0386
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0386
+
+Crate:     clipboard-win
+Version:   5.4.1
+Warning:   yanked
+
+error: 9 vulnerabilities found!
+warning: 7 allowed warnings found
+
+## cargo deny (findings)
+   1 error[unmaintained]: `rustybuzz` is unmaintained
+   1 error[unmaintained]: `ttf-parser` is unmaintained
+   1 error[unmaintained]: `zbus_names` is unmaintained
+   1 error[unmaintained]: `zvariant_derive` is unmaintained
+   1 error[unmaintained]: `zvariant` is unmaintained
+   1 error[vulnerability]:  Insecure Preservation of SUID/SGID Bits during ZIP Extraction Leading to Potential Privilege Escalation
+   1 error[vulnerability]: Brotli certificate decompression can allocate up to 1 GiB before authentication
+   1 error[vulnerability]: Buffered application data sent to outer server after ECH rejection
+   1 error[vulnerability]: Bundled root certificates allow trust in distrusted emSign intermediates
+   1 error[vulnerability]: Certificate verification may accept distrusted intermediates
+   1 error[vulnerability]: Unauthenticated ServerHello can downgrade later connections to classical key exchange
+   1 error[vulnerability]: ZipStreamReader::extract() and ZipArchive::extract() apply Unix permissions through symlinks without confining the target
+   1 error[vulnerability]: `Debug` impls for client session values expose TLS secrets
+   1 error[vulnerability]: zip: `ZipArchive::extract` creates symbolic links whose attacker-controlled targets are outside the destination directory
+   1 warning[yanked]: detected yanked crate (try `cargo update -p clipboard-win`)
+advisories FAILED
