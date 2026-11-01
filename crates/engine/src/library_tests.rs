@@ -448,6 +448,7 @@ fn library_survives_saving_with_versions() {
 
 #[test]
 fn a_file_stamp_from_the_moment_it_was_read_does_not_prove_it_unchanged() {
+    use super::cache::{Entry, Stamp};
     use std::time::{Duration, SystemTime};
     let read_at = SystemTime::now();
     let entry = |modified: SystemTime| Entry {

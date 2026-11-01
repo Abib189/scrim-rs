@@ -22,6 +22,9 @@ use crate::components::inside_instance;
 use crate::params::id_of;
 use crate::{EngineError, Result};
 
+mod cache;
+pub use cache::{Cache, on_this_computer};
+
 /// Largest library file read.
 pub const MAX_LIBRARY_FILE: u64 = 1024 * 1024 * 1024;
 /// Most library files a session remembers.
@@ -437,135 +440,6 @@ pub fn publish(doc: &Document, prev: Option<&PublishedLibrary>, sel: &Selection,
         return Err(disabled(cmd, format!("no changes to publish since version {}", p.manifest.version)));
     }
     Ok(PublishedLibrary { manifest, doc: Arc::new(snap) })
-}
-
-/// When a library file was last read.
-#[derive(Clone, Debug, PartialEq)]
-struct Stamp {
-    len: u64,
-    modified: Option<std::time::SystemTime>,
-}
-
-#[derive(Clone, Debug)]
-struct Entry {
-    stamp: Option<Stamp>,
-    /// When the file was read: a stamp only proves the file unchanged once its modification time
-    /// is safely older than that, since file systems keep the time in coarse ticks.
-    read_at: Option<std::time::SystemTime>,
-    result: std::result::Result<Arc<PublishedLibrary>, String>,
-}
-
-/// How far a file's modification time must lie before its read for the stamp to be trusted.
-const RACY_STAMP: std::time::Duration = std::time::Duration::from_secs(2);
-
-impl Entry {
-    /// A file stamped in the future (clock skew, unpacked archives) never settles: it is re-read on
-    /// every load until the clock passes it.
-    fn still_valid(&self, now: &Stamp) -> bool {
-        let settled = match (now.modified, self.read_at) {
-            (Some(modified), Some(read_at)) => modified.checked_add(RACY_STAMP).is_some_and(|t| t < read_at),
-            _ => false,
-        };
-        settled && self.stamp.as_ref() == Some(now)
-    }
-}
-
-/// Library files read by a session, by path (re-read when they change on disk).
-#[derive(Clone, Debug, Default)]
-pub struct Cache {
-    entries: HashMap<String, Entry>,
-}
-
-impl Cache {
-    /// The published library in the file at `path`.
-    pub fn load(&mut self, path: &str) -> Result<Arc<PublishedLibrary>> {
-        self.load_limited(path, MAX_LIBRARY_FILE)
-    }
-
-    /// [`load`](Self::load), refusing files larger than `max_bytes`. A server library link gives
-    /// what was last fetched ([`Session::load_library`](crate::Session::load_library) fetches).
-    pub fn load_limited(&mut self, path: &str, max_bytes: u64) -> Result<Arc<PublishedLibrary>> {
-        if crate::library_server::is_server_link(path) {
-            return match self.cached(path) {
-                Some(r) => r.cloned().map_err(|e| EngineError::Other(e.to_string())),
-                None => Err(EngineError::Other(crate::library_server::NOT_FETCHED.into())),
-            };
-        }
-        let stamp = stat(path);
-        // Checked before the cache: the limit is the caller's.
-        if let Ok(st) = &stamp
-            && st.len > max_bytes
-        {
-            return Err(EngineError::Other(format!("{path} is too large to use as a library (the limit is {} MB)", max_bytes / 1024 / 1024)));
-        }
-        if let (Some(e), Ok(st)) = (self.entries.get(path), &stamp)
-            && e.still_valid(st)
-        {
-            return e.result.clone().map_err(EngineError::Other);
-        }
-        let read_at = now();
-        let result = match &stamp {
-            Ok(_) => read_file(path).map(Arc::new),
-            Err(e) => Err(e.clone()),
-        };
-        if self.entries.len() >= MAX_CACHED && !self.entries.contains_key(path) {
-            self.entries.clear();
-        }
-        self.entries.insert(path.to_string(), Entry { stamp: stamp.ok(), read_at, result: result.clone() });
-        result.map_err(EngineError::Other)
-    }
-
-    /// What the last read of `path` gave (no file access).
-    pub fn cached(&self, path: &str) -> Option<std::result::Result<&Arc<PublishedLibrary>, &str>> {
-        self.entries.get(path).map(|e| e.result.as_ref().map_err(String::as_str))
-    }
-
-    /// Remember `result` for `path` (a library fetched from a server).
-    pub fn insert(&mut self, path: &str, result: std::result::Result<Arc<PublishedLibrary>, String>) {
-        if self.entries.len() >= MAX_CACHED && !self.entries.contains_key(path) {
-            self.entries.clear();
-        }
-        self.entries.insert(path.to_string(), Entry { stamp: None, read_at: None, result });
-    }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn now() -> Option<std::time::SystemTime> {
-    Some(std::time::SystemTime::now())
-}
-
-#[cfg(target_arch = "wasm32")]
-fn now() -> Option<std::time::SystemTime> {
-    None
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn stat(path: &str) -> std::result::Result<Stamp, String> {
-    let m = crate::file_access::metadata(path).map_err(|e| e.to_string())?;
-    if !m.is_file() {
-        return Err(format!("{path} is not a file"));
-    }
-    Ok(Stamp { len: m.len(), modified: m.modified().ok() })
-}
-
-#[cfg(target_arch = "wasm32")]
-fn stat(_path: &str) -> std::result::Result<Stamp, String> {
-    Err(NO_FILES.into())
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn read_file(path: &str) -> std::result::Result<PublishedLibrary, String> {
-    let f = crate::file_access::open(path).map_err(|e| e.to_string())?;
-    match figcraft_format::read_library(std::io::BufReader::new(f)) {
-        Ok(Some(lib)) => Ok(lib),
-        Ok(None) => Err(format!("{path} has no published library: open it and publish it first (Libraries ▸ Publish library…)")),
-        Err(e) => Err(format!("{path}: {e}")),
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-fn read_file(_path: &str) -> std::result::Result<PublishedLibrary, String> {
-    Err(NO_FILES.into())
 }
 
 /// Turn `path` into an absolute path (library links outlive the working directory).

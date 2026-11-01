@@ -133,7 +133,7 @@ impl Session {
             // otherwise reach whatever path it names. Only a path on this computer is followed: a
             // network share would make opening a document contact that server, and on Windows
             // send the credentials of whoever opened it.
-            if !craft_docpath::is_local(path) {
+            if !crate::library::on_this_computer(path) {
                 return Err(EngineError::Other(format!("{path}: a library is opened only from this computer")));
             }
             return self.libraries.load(path);
