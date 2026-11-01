@@ -10,6 +10,8 @@ pub mod brush;
 #[cfg(test)]
 mod brush_tests;
 #[cfg(test)]
+mod dash_limit_tests;
+#[cfg(test)]
 mod ops_tests;
 mod points;
 #[cfg(test)]
@@ -285,7 +287,10 @@ pub fn stroke_center(path: &BezPath, width: f64, props: &StrokeProps) -> BezPath
         .with_miter_limit(props.miter_limit.clamp(1.0, 100.0))
         .with_start_cap(kcap(props.cap_start))
         .with_end_cap(kcap(props.cap_end));
-    if let Some(pat) = width::dash_pattern(props) {
+    // Too many dashes for the path (kurbo makes an outline for each) stroke solid. Each subpath
+    // starts the pattern again, so it may add one more pattern's worth (upstream 494387a6, 2baeff34).
+    let subpaths = path.elements().iter().filter(|e| matches!(e, PathEl::MoveTo(_))).count() as f64;
+    if let Some(pat) = width::dash_pattern(props).filter(|p| width::dashes_fit(path.perimeter(1.0) + subpaths * p.iter().sum::<f64>(), p)) {
         style = style.with_dashes(0.0, pat);
     }
     kurbo::stroke(path.iter(), &style, &kurbo::StrokeOpts::default(), 0.05)
