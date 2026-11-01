@@ -20,9 +20,11 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod fig;
+pub mod free;
 pub mod import_report;
 pub mod library;
 pub mod old_scrim;
+pub mod penpot;
 pub mod rest;
 pub mod sketch;
 pub mod sniff;

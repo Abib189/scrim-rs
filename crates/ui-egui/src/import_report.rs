@@ -213,7 +213,8 @@ pub fn show(app: &mut FigApp, ctx: &egui::Context) {
         ui.add_space(4.0);
         ui.label(RichText::new(report.count_line()).strong());
         ui.add_space(4.0);
-        egui::ScrollArea::vertical().id_salt("import_report_notes").max_height(260.0).show(ui, |ui| {
+        // Room for five or so notes before it scrolls (Fix AH5: the fifth was cut off at 260).
+        egui::ScrollArea::vertical().id_salt("import_report_notes").max_height(360.0).show(ui, |ui| {
             for note in &report.notes {
                 ui.label(RichText::new(format!("{} · {}", severity_label(&note.severity), if note.path.is_empty() { tr("The file") } else { &note.path })).color(t.text_secondary).font(regular(11.0)));
                 ui.label(&note.shown);

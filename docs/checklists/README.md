@@ -20,3 +20,4 @@ The Scrim ports add their own areas (`agent-safety.md`, `fig-import.md`, `query.
 - `connect-agents.md`: Stage J, connecting any MCP client and naming it.
 - `document-names.md`: Fix AF, one name for a document in every place.
 - `scrim-format.md`: Fix AG, the `.scrim` format, `.figcraft` compatibility and the import registry.
+- `importers.md`: Fix AH, the Penpot and FREE importers, closed formats and Home previews.

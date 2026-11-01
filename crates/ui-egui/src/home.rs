@@ -188,7 +188,11 @@ fn dropped(app: &mut FigApp, ctx: &egui::Context) {
     for f in files {
         let path = f.path().to_path_buf();
         if !crate::opens(&path) {
-            app.toast(trf("Drop a {formats} or image file.", &[("formats", &formats())]));
+            // A closed format is explained, never opened (Fix AH3).
+            match crate::file_kinds::closed(&path) {
+                Some(tool) => app.ui.closed_format = Some(tool),
+                None => app.toast(trf("Drop a {formats} or image file.", &[("formats", &formats())])),
+            }
             continue;
         }
         // `opens` saw an extension, so there is a file name to tell the format by.
@@ -322,7 +326,7 @@ fn subheading(ui: &mut Ui, t: &Tokens, text: &str) {
 /// A card with an icon tile, a title and a line under it; true when chosen.
 fn action_card(ui: &mut Ui, t: &Tokens, icon: Icon, title: &str, sub: &str) -> bool {
     // Wide enough for the formats the registry names (Fix AG).
-    let (r, mut resp) = ui.allocate_exact_size(vec2(320.0, 72.0), Sense::click());
+    let (r, mut resp) = ui.allocate_exact_size(vec2(380.0, 72.0), Sense::click());
     a11y::button(&resp, title);
     // One line each inside the card; a long translation ends with an ellipsis, in full on hover.
     let text_w = r.width() - 72.0;
@@ -625,7 +629,7 @@ pub(crate) fn cached_thumbnails(ctx: &egui::Context, dark: bool) -> Vec<&'static
     thumbs.0.iter().filter(|((_, d), thumb)| *d == dark && thumb.is_some()).map(|((id, _), _)| *id).collect()
 }
 
-/// The formats Scrim opens by name, from the import registry: ".scrim, .fig, .sketch, .svg".
+/// The formats Scrim opens by name, from the import registry: ".scrim, .fig, .sketch, .penpot, .free, .svg".
 pub(crate) fn formats() -> String {
     figcraft_engine::importers::listed().join(", ")
 }

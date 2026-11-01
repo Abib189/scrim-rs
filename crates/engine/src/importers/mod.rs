@@ -6,6 +6,7 @@
 //!
 //! Adding an importer is one entry in [`REGISTRY`]: the UI reads everything it shows from here.
 
+mod closed;
 mod kinds;
 
 use figcraft_format::import_report::ImportWarning;
@@ -14,7 +15,8 @@ use serde_json::Value;
 
 use crate::{DocState, EngineError, Result};
 
-pub use kinds::{FIG, IMAGES, NATIVE, OLD_SCRIM, REST_JSON, SKETCH, SVG};
+pub use closed::{CLOSED, ClosedFormat, closed_format};
+pub use kinds::{FIG, FREE, IMAGES, NATIVE, OLD_SCRIM, PENPOT, REST_JSON, SKETCH, SVG};
 
 /// What an import is given besides the bytes.
 pub struct Options<'a> {
@@ -57,10 +59,14 @@ pub trait Importer: Sync {
 }
 
 /// Every importer, surest first where two could claim a file.
-pub static REGISTRY: &[&dyn Importer] = &[&NATIVE, &OLD_SCRIM, &FIG, &SKETCH, &REST_JSON, &SVG, &IMAGES];
+pub static REGISTRY: &[&dyn Importer] = &[&NATIVE, &OLD_SCRIM, &FIG, &SKETCH, &PENPOT, &FREE, &REST_JSON, &SVG, &IMAGES];
 
-/// The importer for `bytes`: the one surest of them (the first on a tie), or none.
+/// The importer for `bytes`: the one surest of them (the first on a tie), or none. A file named as
+/// a closed format ([`CLOSED`]) has none: it is never opened, whatever it holds.
 pub fn pick(bytes: &[u8], name: &str) -> Option<&'static dyn Importer> {
+    if closed_format(name).is_some() {
+        return None;
+    }
     let mut best: Option<(&'static dyn Importer, u8)> = None;
     for imp in REGISTRY.iter().copied() {
         let c = imp.sniff(bytes, name);
@@ -73,8 +79,13 @@ pub fn pick(bytes: &[u8], name: &str) -> Option<&'static dyn Importer> {
 
 /// Read `bytes` with the importer [`pick`] chooses.
 pub fn load(bytes: &[u8], options: &Options) -> Result<(Imported, &'static dyn Importer)> {
-    let imp = pick(bytes, options.name).ok_or(EngineError::Unreadable(Unreadable::NotSupported))?;
+    let imp = pick(bytes, options.name).ok_or_else(|| EngineError::Unreadable(unreadable(options.name)))?;
     Ok((imp.import(bytes, options)?, imp))
+}
+
+/// Why a file named `name` that no importer takes can't be opened: a closed format's, or none.
+pub fn unreadable(name: &str) -> Unreadable {
+    closed_format(name).map_or(Unreadable::NotSupported, |c| Unreadable::ClosedFormat(c.tool))
 }
 
 /// Every extension the Open dialog and drag and drop take, in [`REGISTRY`]'s order.
@@ -93,7 +104,7 @@ pub fn image_extensions() -> Vec<&'static str> {
     IMAGES.extensions().to_vec()
 }
 
-/// The formats Home names, in order: ".scrim, .fig, .sketch, .svg".
+/// The formats Home names, in order: ".scrim, .fig, .sketch, .penpot, .free, .svg".
 pub fn listed() -> Vec<&'static str> {
     REGISTRY.iter().filter_map(|i| i.listed()).collect()
 }
@@ -107,6 +118,10 @@ pub enum Unreadable {
     OldScrimDamaged(String),
     /// No importer recognises it.
     NotSupported,
+    /// A closed format (Affinity, Adobe XD): Scrim can't read it, and never tries.
+    ClosedFormat(&'static str),
+    /// A file from another tool, in a version of its format newer than Scrim reads.
+    NewerVersion { tool: &'static str, version: u32 },
 }
 
 impl std::fmt::Display for Unreadable {
@@ -119,6 +134,12 @@ impl std::fmt::Display for Unreadable {
             ),
             Unreadable::OldScrimDamaged(why) => {
                 write!(f, "This .scrim file is from the earlier Scrim app, and it is damaged ({why}). Nothing was changed.")
+            }
+            Unreadable::NewerVersion { tool, version } => {
+                write!(f, "This {tool} file uses version {version} of its format, newer than Scrim can import. Nothing was changed.")
+            }
+            Unreadable::ClosedFormat(tool) => {
+                write!(f, "{tool} files use a closed format, so Scrim can't read them. In {tool}, export the design as SVG, then open the SVG here.")
             }
             Unreadable::NotSupported => {
                 write!(f, "Scrim can't open this file: it isn't a Scrim document, an image, or a file from another design tool Scrim imports.")

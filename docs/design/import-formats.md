@@ -13,6 +13,8 @@ Three Adobe help pages (helpx.adobe.com) refused a direct fetch on the check dat
 
 ## Summary
 
+Since Fix AH (1 Nov 2026), Scrim reads Penpot `.penpot` (from the documentation, which is incomplete: see below) and Lunacy `.free`, and explains Affinity and Adobe XD files instead of opening them.
+
 | Tool | Documented format or export | Licence/terms | Effort | Recommendation |
 |---|---|---|---|---|
 | Paper (paper.design) | No documented file format. Exports PNG, JPG, WebP, AVIF, PDF, video, and SVG for SVG nodes only. A local MCP server returns JSX and computed CSS | ToS §4(iv) bars "benchmarking or the creation of a competing service". Whether a competing tool may read a user's file over MCP: unknown | Small for the SVG route (SVG nodes only). Large for PDF (needs a PDF importer). Medium for an MCP bridge | **Later**, through PDF import. No MCP bridge without Paper's written OK |
@@ -212,6 +214,133 @@ For context: Sketch (`.sketch`) import is being implemented now from the officia
 5. **PSD layered import (later).** The format is documented for third parties. Layers would come in as images in groups, with text and shapes where the spec allows. It matters less for UI work.
 
 Not planned: native Affinity and XD files (no public format, and the terms bar reverse engineering); Framer (no file to read, and the terms bar competing use); a Canva API importer (barred by Developer Terms §5(a)(iv) and §5(a)(viii)); a Paper MCP bridge (unless Paper agrees in writing).
+
+## Built in Fix AH (1 Nov 2026)
+
+### Penpot `.penpot` (`crates/format/src/penpot/`)
+
+**The spec used:** Penpot's official documentation only, checked 1 November 2026:
+- [Penpot file format (.penpot)](https://help.penpot.app/technical-guide/developer/data-model/penpot-file-format/), the technical guide's format page. It describes format v3 as current; its examples carry `"version": 1` and `generatedBy` `penpot/2.12.0` (`penpot/2.12.0-RC1-99-g40c27591f` in one example).
+- [Data model](https://help.penpot.app/technical-guide/developer/data-model/), the overview.
+- [The .penpot file format](https://help.penpot.app/user-guide/export-import/penpot-file-format/), the user guide.
+
+**Licence position:** Penpot's code is MPL-2.0. Scrim's reader was written from the documentation pages above. No Penpot source file (the Clojure schemas the format page points to, or tests) was read, copied or translated, so no file of Scrim's is MPL-2.0 (MPL-2.0 §3.3). The fixtures were built by Scrim's own tests: `crates/format/tests/fixtures/penpot/README.md`, MIT OR Apache-2.0.
+
+**The documentation is incomplete, so much of a real file is reported rather than imported.** The format page names the shape attributes, but leaves several undescribed:
+- the inner structure of strokes, shadows, blur, text content and its `positionData`, and layout (flex and grid);
+- how instances link (`componentId`, `shapeRef`, `touched`), what `transform` means, and the order of child lists.
+
+Following "never guess", each of these is a warning with its layer's path.
+
+**What maps:**
+- **From the manifest:** a `type` that isn't `penpot/export-files` is refused as not a Penpot file, and a `version` above 1 is refused as newer than Scrim reads.
+- **Pages,** with their backgrounds.
+- **Layers:**
+  - boards → clipping frames;
+  - groups;
+  - rectangles with `r1`–`r4`;
+  - circles → ellipses;
+  - paths whose `content` is SVG path data → vectors;
+  - boolean groups (union, difference, intersection, exclude);
+  - images from `objects/` → image fills.
+- **Fills:** solid and linear-gradient fills in the documented colour form.
+- **Layer attributes:** opacity, hidden, blocked → locked, blend mode.
+- **Components:** the layer a component's `mainInstanceId` names becomes a component.
+- **Library colours** → paint styles.
+- **Home's preview:** the export's first board thumbnail.
+
+**Readings it makes** (listed in the module header as readings, not facts):
+- coordinates are page coordinates;
+- `shapes` lists run bottom to top;
+- a shape fill is the documented colour object;
+- a path `content` string is SVG path data;
+- `r1`–`r4` run clockwise from the top left;
+- a non-identity `transform` is reported, not applied.
+
+**Reported, never dropped in silence:**
+- **Left out:** text layers (their content structure isn't documented), strokes, shadows, blur, layout, interactions, exports, grids, tokens and typographies, svg-raw layers, other files in a multi-file export.
+- **Approximated:**
+  - instances, imported as plain layers;
+  - rotation, imported upright;
+  - radial gradients;
+  - a layer listed twice.
+
+**Not checked against a file Penpot made:** none was downloaded. A real export may use field forms the documentation doesn't show (fill keys other than `color`, for example), and those come through as warnings by design.
+
+### Lunacy: a FREE (`.free`) reader was built (`crates/format/src/free/`)
+
+**The decision: build it.**
+- Lunacy's own documentation says "The default file format in Lunacy is .free". A `.sketch` save is a second route, and it can't carry what FREE adds over Sketch. FREE's README lists Sketch's drawbacks it fixes ("No support for nested artboards (frames)"), and documents:
+  - auto layout (`AutoLayout`: direction, spacing, padding, alignment, wrap; `StretchWidth`/`StretchHeight`, `AbsolutePos`, min and max sizes);
+  - overrides of any value;
+  - component states and slots;
+  - variables;
+  - glass blur.
+- Scrim's model has nested frames, auto layout and glass, so a Lunacy file read as `.sketch` would lose things Scrim can keep.
+- `.sketch` files saved by Lunacy keep going through the Sketch importer. No real Lunacy-made file was available to check them against: none was downloaded.
+
+**The spec used:**
+- The README of [icons8/free](https://github.com/icons8/free) at commit `9b2fc846453f1917216a8d8202e2f31d48996115` (4 October 2026), which documents format version 11, and the repository's `llms.txt` at the same commit. MIT, © 2023 Icons8.
+- The repository's C# types were not copied or translated. Two of them (`Thickness.cs`, `Vertex.cs`) were read to settle two points the README leaves open: what two thickness values mean, and which curve modes carry which handles. The module header says so.
+
+**Telling FREE from Sketch:** both are zips of JSON. A FREE file:
+- has no Sketch marks (`_class`, Sketch's `meta.json` keys);
+- has a FREE-only mark: `preview.webp`, or `_t` layer types.
+
+FREE is claimed surer than Sketch, and the Scrim-document sniffer now needs both `pages` and `nodes`. A FREE `document.json` has `pages` alone, which the sniffer from Fix AG took for a Scrim document; a registry test caught it.
+
+**What maps:**
+- pages and guides;
+- nested frames, components, groups, sections and boolean shapes;
+- rectangles, ovals, polygons, stars, triangles and paths;
+- text with inline runs;
+- solid, gradient and image fills; borders; shadows; blurs, including glass;
+- masks, constraints, exports;
+- **auto layout** and child sizing;
+- instances with overrides;
+- shared-library components.
+
+**Reported:**
+- variables, prototyping, layout grids;
+- component properties and states (states and slots come in as frames);
+- shared styles (their values are kept, the link isn't);
+- SVG `pathData`;
+- fields the spec doesn't list;
+- a format version above 11, which is refused.
+
+### Closed formats: a short dialog instead of an open (`crates/engine/src/importers/closed.rs`)
+
+- **One list, in the engine:** Affinity (`.af`, `.afdesign`, `.afphoto`, `.afpub`) and Adobe XD (`.xd`), the tools this note marks "not" that have a file to drop.
+- **Paper, Framer and Canva** keep designs online, with no file of their own, so nothing names them.
+- **Such a file is never opened,** whatever it holds. Open, Open recent, Import, a drop on Home or on the canvas, and a file named at launch all give a short dialog, in English and Spanish:
+  > Affinity files use a closed format, so Scrim can't read them. In Affinity, export the design as SVG, then open the SVG here.
+- **It says SVG, not PDF:** Scrim reads SVG and doesn't read PDF.
+- **MCP gets the same sentence** as an error.
+
+### Home's previews for other tools' files (`crates/format/src/thumbnail.rs`)
+
+- A Sketch file's `previews/preview.png`, a FREE file's `preview.webp`, and a Penpot export's first board thumbnail show on Home's card.
+- They are read in the background like the others, and again only after the file changes (the reader keys on its modification time).
+- A file without one keeps the placeholder.
+- The committed Sketch sample now carries a `previews/preview.png`, as real Sketch files do.
+
+### Live check (1 Nov 2026)
+
+A real window: the debug app with a scratch `HOME` and `SCRIM_SETTINGS_DIR`, MCP on 7690 and control on 7979. Each file was opened the way Finder, or a double-click on Linux or Windows, opens it: the app started with the file. The system pointer was never moved. The script, its output and the captures are in `import-formats/` (`live.py`, `live-output.txt`, `captures.png`).
+- **The Penpot sample** opened as a new document. Its report, in light and dark, read "3 left out · 1 approximated · 1 for information", each note with its layer, and MCP `open_file` returned the same 5 warnings.
+- **The Sketch sample** gave 3 left out.
+- **The FREE sample** gave 3 left out, its auto layout imported.
+- **A dummy `logo.afdesign`** showed the closed-format dialog. Nothing opened, and Home stayed.
+- **Home** showed the previews the Penpot, Sketch and FREE samples carry, and "Open .scrim, .fig, .sketch, .penpot, .free, .svg or images" in full.
+- **Every source kept its bytes;** no panics.
+
+**Two things the check found, both fixed:**
+- **The report's list cut its fifth note mid-line** at the bottom of its scroll area, with no sign of more. It now has room for five or so notes before scrolling (`import_report.rs`).
+- **A FREE note read "1 variable binding … were not imported".** It now agrees with the number.
+
+Nothing else in the report needed changing: the text reads in both themes, and Copy report gives one line per note.
+
+**Not checked live:** a file made by Penpot or Lunacy itself, since none was downloaded. The samples were built by Scrim's tests from the documentation.
 
 ## Unknowns (as of 1 Nov 2026)
 

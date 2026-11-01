@@ -758,5 +758,5 @@ fn dropping_an_unsupported_file_on_the_home_screen_opens_nothing() {
     drop_file(&mut u, &path);
     assert!(u.app.session.docs.is_empty());
     assert!(u.app.ui.home);
-    assert_eq!(u.app.ui.toast.as_ref().map(|t| t.0.as_str()), Some("Drop a .scrim, .fig, .sketch, .svg or image file."));
+    assert_eq!(u.app.ui.toast.as_ref().map(|t| t.0.as_str()), Some("Drop a .scrim, .fig, .sketch, .penpot, .free, .svg or image file."));
 }

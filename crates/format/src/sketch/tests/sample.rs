@@ -60,7 +60,13 @@ pub fn sample() -> Vec<u8> {
             text(202, "Button label", frame(20.0, 16.0, 160.0, 24.0), "Get started", vec![(0, 11, attrs("Inter-SemiBold", 18.0, white(), 2))]),
         ],
     );
-    sketch(&[page(1, "Poster", vec![poster]), page(2, "Symbols", vec![button])], json!({}), &[("images/photo.png", &photo())])
+    // Sketch keeps a picture of the document in `previews/preview.png` (Home shows it, Fix AH4).
+    let preview = png(30, 40, |_, y| [255, (160 + y * 2) as u8, 90, 255]);
+    sketch(
+        &[page(1, "Poster", vec![poster]), page(2, "Symbols", vec![button])],
+        json!({}),
+        &[("images/photo.png", &photo()), ("previews/preview.png", &preview)],
+    )
 }
 
 #[test]

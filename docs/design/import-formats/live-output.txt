@@ -1,0 +1,46 @@
+penpot (light): tabs ['Test file'] | counts {'approximated': 1, 'dropped': 3, 'info': 1} | 5 warnings
+    [dropped] Poster / Poster / Card: Shadows weren't imported: the documentation doesn't describe a shadow's structure.
+    [dropped] Poster / Poster / Headline: The text layer was not imported: the documentation doesn't describe the structure of text content.
+    [dropped] Poster / Poster / Badge / Pill: Strokes weren't imported: the documentation doesn't describe a stroke's structure.
+    [approximated] Poster / Poster / Call to action: An instance of “Button” was imported as plain layers: the documentation doesn't describe how instances link.
+    [info] : 1 layer inside instances links to their component's layers (shapeRef, touched); the links weren't kept.
+   shot penpot-report-light.png
+  MCP open_file: isError False | 5 warnings
+  quit 0
+penpot (dark): tabs ['Test file'] | counts {'approximated': 1, 'dropped': 3, 'info': 1} | 5 warnings
+    [dropped] Poster / Poster / Card: Shadows weren't imported: the documentation doesn't describe a shadow's structure.
+    [dropped] Poster / Poster / Headline: The text layer was not imported: the documentation doesn't describe the structure of text content.
+    [dropped] Poster / Poster / Badge / Pill: Strokes weren't imported: the documentation doesn't describe a stroke's structure.
+    [approximated] Poster / Poster / Call to action: An instance of “Button” was imported as plain layers: the documentation doesn't describe how instances link.
+    [info] : 1 layer inside instances links to their component's layers (shapeRef, touched); the links weren't kept.
+   shot penpot-report-dark.png
+  quit 0
+sketch (light): tabs ['sample'] | counts {'approximated': 0, 'dropped': 3, 'info': 0} | 3 warnings
+    [dropped] Poster / Poster / Call to action: The prototype link was not imported.
+    [dropped] Poster / Poster / Tap area: Hotspots (prototype click areas) were not imported.
+    [dropped] Poster / Poster / Hologram: Layers of type “hologram” are not supported and were not imported.
+   shot sketch-report-light.png
+  MCP open_file: isError False | 3 warnings
+  quit 0
+free (light): tabs ['sample'] | counts {'approximated': 0, 'dropped': 3, 'info': 0} | 3 warnings
+    [dropped] Poster / Poster art / Hero: 1 variable binding on the layer was not imported; the layer keeps its current value.
+    [dropped] Poster / Poster art / Call to action: The layer's prototype interactions were not imported.
+    [dropped] Poster / Poster art / Note arrow: Connectors (annotation lines between layers) were not imported.
+   shot free-report-light.png
+  MCP open_file: isError False | 3 warnings
+  quit 0
+free (dark): tabs ['sample'] | counts {'approximated': 0, 'dropped': 3, 'info': 0} | 3 warnings
+    [dropped] Poster / Poster art / Hero: 1 variable binding on the layer was not imported; the layer keeps its current value.
+    [dropped] Poster / Poster art / Call to action: The layer's prototype interactions were not imported.
+    [dropped] Poster / Poster art / Note arrow: Connectors (annotation lines between layers) were not imported.
+   shot free-report-dark.png
+  quit 0
+closed format: tabs [] | home True
+   shot closed-format-dialog.png
+  quit 0
+Home recents: [('sample.penpot', 'sample', 'picture'), ('sample.sketch', 'sample', 'picture'), ('sample.free', 'sample', 'picture')]
+   shot home-previews.png
+  quit 0
+sources unchanged: {'penpot': True, 'sketch': True, 'free': True, 'closed': True}
+log errors: []
+captures in <scratch>

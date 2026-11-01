@@ -15,6 +15,7 @@ Two pages, written to the published Sketch file format (JSON Schema of
   - "Headline": a text layer with two runs (Inter Black and Inter Regular, two colours);
   - "Badge": a group of a rounded rectangle and a text layer;
   - "Photo": a bitmap layer showing `images/photo.png` (an 8 × 8 PNG colour ramp);
+  - `previews/preview.png`: the document's preview picture (a 30 × 40 PNG gradient, added in Fix AH4), which Home shows on the file's card;
   - "Call to action": an instance of the "Button" symbol with a text override, and a prototype
     link;
   - things the import can't bring across, so its report has entries: a hotspot ("Tap area"), the

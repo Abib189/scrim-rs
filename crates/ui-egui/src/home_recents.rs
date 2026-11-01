@@ -324,6 +324,9 @@ pub struct Recents {
     /// the window gets the focus back.
     checked: f64,
     focused: bool,
+    /// Tests: how many pictures were asked of the reader.
+    #[cfg(test)]
+    pub(crate) previews_asked: usize,
 }
 
 /// How often the dates of the recent files in view are read again (seconds).
@@ -498,6 +501,10 @@ impl Recents {
         {
             loader.submit(Job::Preview(path.to_string(), stat.modified));
             k.wanted = Some(stat.modified);
+            #[cfg(test)]
+            {
+                self.previews_asked += 1;
+            }
         }
         let r = k.shown.as_ref()?;
         Some((r.page, r.texture.clone(), (((time - r.arrived) / FADE_SECS) as f32).clamp(0.0, 1.0)))

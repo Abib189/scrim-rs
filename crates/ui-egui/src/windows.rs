@@ -172,6 +172,14 @@ pub fn error_text(e: &figcraft_engine::EngineError) -> String {
                 Unreadable::OldScrimDamaged(why) => {
                     trf("This .scrim file is from the earlier Scrim app, and it is damaged ({why}). Nothing was changed.", &[("why", why)])
                 }
+                Unreadable::ClosedFormat(tool) => trf(
+                    "{tool} files use a closed format, so Scrim can't read them. In {tool}, export the design as SVG, then open the SVG here.",
+                    &[("tool", tool)],
+                ),
+                Unreadable::NewerVersion { tool, version } => trf(
+                    "This {tool} file uses version {version} of its format, newer than Scrim can import. Nothing was changed.",
+                    &[("tool", tool), ("version", version)],
+                ),
                 Unreadable::NotSupported => {
                     tr("Scrim can't open this file: it isn't a Scrim document, an image, or a file from another design tool Scrim imports.")
                         .to_string()

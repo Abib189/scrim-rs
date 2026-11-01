@@ -63,6 +63,8 @@ pub enum FileKind {
     Svg,
     /// A raster image (`.png`, `.jpg`, `.webp`, …).
     Image,
+    /// Another tool's design file that carries a preview: Sketch, Penpot, Lunacy's FREE (Fix AH4).
+    Design,
     Other,
 }
 
@@ -74,6 +76,7 @@ impl FileKind {
             "fig" => FileKind::Fig,
             "svg" => FileKind::Svg,
             "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" => FileKind::Image,
+            "sketch" | "penpot" | "free" => FileKind::Design,
             _ => FileKind::Other,
         }
     }
@@ -98,8 +101,26 @@ pub fn file_thumbnail(path: &Path, fit: u32) -> Option<Thumbnail> {
             }
             decode_thumbnail(&bytes, fit)
         }
-        FileKind::Svg | FileKind::Other => None,
+        FileKind::Svg | FileKind::Design | FileKind::Other => None,
     }
+}
+
+/// Largest Penpot file read whole for its thumbnail (its preview sits behind its manifest); a
+/// larger one shows the placeholder.
+const MAX_PENPOT_PREVIEW_FILE: u64 = 128 * 1024 * 1024;
+
+/// The encoded preview another tool's design file carries (Fix AH4): Sketch's
+/// `previews/preview.png`, FREE's `preview.webp`, a Penpot export's board thumbnail.
+pub fn design_preview(path: &Path) -> Option<Vec<u8>> {
+    let ext = path.extension().map(|e| e.to_string_lossy().to_ascii_lowercase()).unwrap_or_default();
+    let file = std::fs::File::open(path).ok()?;
+    if ext == "penpot" {
+        let mut bytes = Vec::new();
+        file.take(MAX_PENPOT_PREVIEW_FILE.saturating_add(1)).read_to_end(&mut bytes).ok()?;
+        return (bytes.len() as u64 <= MAX_PENPOT_PREVIEW_FILE).then(|| crate::penpot::preview(&bytes)).flatten();
+    }
+    let mut z = zip::ZipArchive::new(std::io::BufReader::new(file)).ok()?;
+    ["previews/preview.png", "preview.webp", "preview.png"].iter().find_map(|m| crate::read_member(&mut z, m, MAX_THUMBNAIL_BYTES).ok())
 }
 
 /// How a file looks on the home screen: the colour of its first page (straight RGBA, 0 to 1) and
@@ -120,6 +141,7 @@ pub fn file_preview(path: &Path, fit: u32) -> Preview {
             archive_preview(std::io::BufReader::new(file), fit)
         }
         FileKind::Image => Preview { page: None, picture: file_thumbnail(path, fit) },
+        FileKind::Design => Preview { page: None, picture: design_preview(path).and_then(|b| decode_thumbnail(&b, fit)) },
         FileKind::Svg | FileKind::Other => Preview::default(),
     }
 }

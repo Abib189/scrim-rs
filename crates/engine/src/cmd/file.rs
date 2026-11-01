@@ -30,7 +30,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "file.open",
             "Open",
-            "{path | data (base64) + name (names it; opens as a new unsaved document), variables? (REST: the local variables JSON as an object, JSON text or a path; default `<name>.variables.json` or `variables.json` next to the file)}  the format comes from the file's contents, never its name: a Scrim document (.scrim, or .figcraft, opened and never written: Save asks for a .scrim), or an import as a new unsaved document (.fig best effort, .sketch, REST API file JSON, the earlier Scrim's JSON .scrim, .svg, images); an import returns `warnings` [{severity: dropped|approximated|info, path, message}], a Scrim document its `repairs`; a file opened anew returns `summary` {name, pages, layers, images} (one that was already open just returns its `index`)",
+            "{path | data (base64) + name (names it; opens as a new unsaved document), variables? (REST: the local variables JSON as an object, JSON text or a path; default `<name>.variables.json` or `variables.json` next to the file)}  the format comes from the file's contents, never its name: a Scrim document (.scrim, or .figcraft, opened and never written: Save asks for a .scrim), or an import as a new unsaved document (.fig best effort, .sketch, .penpot, .free, REST API file JSON, the earlier Scrim's JSON .scrim, .svg, images; Affinity and Adobe XD files are refused as closed formats); an import returns `warnings` [{severity: dropped|approximated|info, path, message}], a Scrim document its `repairs`; a file opened anew returns `summary` {name, pages, layers, images} (one that was already open just returns its `index`)",
             false,
             open
         ),
@@ -1271,7 +1271,7 @@ fn import(s: &mut Session, p: &Value) -> Result<Value> {
             }
             Ok(out)
         }
-        None => Err(EngineError::Unreadable(crate::importers::Unreadable::NotSupported)),
+        None => Err(EngineError::Unreadable(crate::importers::unreadable(&name))),
         Some(_) => {
             let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
             super::create::place_image(s, &json!({"data": b64, "x": x.unwrap_or(center.0), "y": y.unwrap_or(center.1), "name": file_stem(&name)}))

@@ -45,13 +45,14 @@ pub fn is_zip(bytes: &[u8]) -> bool {
 }
 
 /// The keys of a Scrim document: `format` naming it, or `pages` and `nodes` with no other tool's
-/// marks (Sketch's `_class`, the REST API's `document`, the old Scrim's `rootIds`).
+/// marks (Sketch's `_class`, the REST API's `document`, the old Scrim's `rootIds`). Both keys: a
+/// FREE file's `document.json` has `pages` alone (Fix AH).
 fn native_keys(keys: &[(String, Option<String>)]) -> bool {
     let has = |k: &str| keys.iter().any(|(key, _)| key == k);
     let format = keys.iter().find(|(k, _)| k == "format").and_then(|(_, v)| v.as_deref());
     match format {
         Some(f) => f == crate::FORMAT,
-        None => has("pages") && !has("_class") && !has("document") && !has("rootIds"),
+        None => has("pages") && has("nodes") && !has("_class") && !has("document") && !has("rootIds"),
     }
 }
 

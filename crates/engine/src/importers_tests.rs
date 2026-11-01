@@ -185,7 +185,7 @@ fn the_extension_lists_and_homes_text_come_from_the_registry() {
     }
     assert_eq!(exts.first(), Some(&"scrim"), "Scrim's own format first");
     assert!(exts.contains(&"figcraft") && exts.contains(&"sketch") && exts.contains(&"fig"));
-    assert_eq!(listed(), [".scrim", ".fig", ".sketch", ".svg"]);
+    assert_eq!(listed(), [".scrim", ".fig", ".sketch", ".penpot", ".free", ".svg"]);
     // Only Scrim documents are native.
     assert_eq!(REGISTRY.iter().filter(|i| i.native()).map(|i| i.id()).collect::<Vec<_>>(), ["scrim"]);
     // Ids are unique.
@@ -204,4 +204,96 @@ fn sniffing_never_guesses_from_the_name() {
     assert!(pick(b"", "x.png").is_none());
     assert_eq!(pick(b"<svg xmlns='http://www.w3.org/2000/svg'/>", "x.txt").map(|i| i.id()), Some("svg"));
     assert_eq!(pick(b"fig-kiwi\x0f\0\0\0", "x.dat").map(|i| i.id()), Some("fig"));
+}
+
+/// Fix AH3: an Affinity or Adobe XD file is refused by its name, never opened or read as anything
+/// else, through Open, Import and the recent files; the list is one place (`CLOSED`).
+#[test]
+fn closed_formats_are_refused_and_never_opened() {
+    let d = dir("closed");
+    for (file, tool) in
+        [("logo.afdesign", "Affinity"), ("photo.AFPHOTO", "Affinity"), ("book.afpub", "Affinity"), ("new.af", "Affinity"), ("app.xd", "Adobe XD")]
+    {
+        let path = p(&d, file);
+        // Even bytes another importer would take (a Scrim document) aren't opened under that name.
+        std::fs::write(&path, scrim_bytes()).unwrap();
+        let before = std::fs::read(&path).unwrap();
+        let mut s = Session::empty();
+        assert_eq!(unreadable(s.execute("file.open", &json!({"path": path}))), Unreadable::ClosedFormat(tool), "{file}");
+        s.prefs.recent_files = vec![path.clone()];
+        assert_eq!(unreadable(s.execute("file.openRecent", &json!({"path": path}))), Unreadable::ClosedFormat(tool));
+        assert!(s.docs.is_empty(), "{file}: nothing opened");
+        let mut with_doc = Session::new();
+        let layers = with_doc.doc().unwrap().nodes().count();
+        assert_eq!(unreadable(with_doc.execute("file.import", &json!({"path": path}))), Unreadable::ClosedFormat(tool));
+        assert_eq!(with_doc.doc().unwrap().nodes().count(), layers, "nothing imported");
+        assert_eq!(std::fs::read(&path).unwrap(), before);
+        assert!(pick(&before, file).is_none());
+    }
+    // One list: every extension maps to its tool, and none is something Scrim reads.
+    for c in super::CLOSED {
+        for e in c.extensions {
+            assert_eq!(super::closed_format(&format!("x.{e}")).map(|c| c.tool), Some(c.tool));
+            assert!(!open_extensions().contains(e), "{e} is not offered by the Open dialog");
+        }
+    }
+    assert!(super::closed_format("x.sketch").is_none() && super::closed_format("x").is_none());
+    std::fs::remove_dir_all(&d).ok();
+}
+
+const PENPOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../format/tests/fixtures/penpot/sample.penpot");
+const SKETCH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../format/tests/fixtures/sketch/sample.sketch");
+
+/// Fix AH1 through the registry: a Penpot export opens by its contents (renamed `.txt` too) as a new
+/// unsaved document with its warnings; other zips aren't claimed by it; a newer format version or
+/// garbage is refused, and the source is never written.
+#[test]
+fn penpot_exports_open_by_their_contents_with_warnings() {
+    let d = dir("penpot");
+    let renamed = p(&d, "poster.txt");
+    std::fs::copy(PENPOT, &renamed).unwrap();
+    let before = std::fs::read(&renamed).unwrap();
+    let mut s = Session::empty();
+    let r = s.execute("file.open", &json!({"path": renamed})).unwrap();
+    assert_eq!(s.ds().unwrap().path, None, "an import has no file of its own");
+    let warnings = r["warnings"].as_array().unwrap();
+    assert!(!warnings.is_empty() && warnings.iter().all(|w| w["severity"].is_string() && w["path"].is_string()), "{r}");
+    assert!(warnings.iter().any(|w| w["message"].as_str().is_some_and(|m| m.contains("instance"))), "{r}");
+    assert_eq!(std::fs::read(&renamed).unwrap(), before);
+    // Not claimed: a Sketch file, a Scrim document, garbage.
+    let sketch = std::fs::read(SKETCH).unwrap();
+    assert_eq!(pick(&sketch, "x.penpot").map(|i| i.id()), Some("sketch"));
+    assert_eq!(pick(&scrim_bytes(), "x.penpot").map(|i| i.id()), Some("scrim"));
+    assert!(pick(b"PK\x03\x04 not a zip", "x.penpot").is_none());
+    std::fs::write(p(&d, "junk.penpot"), b"junk").unwrap();
+    assert_eq!(unreadable(s.execute("file.open", &json!({"path": p(&d, "junk.penpot")}))), Unreadable::NotSupported);
+    // A newer manifest version: refused, saying so.
+    let newer = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../format/tests/fixtures/penpot/newer.penpot")).unwrap();
+    std::fs::write(p(&d, "newer.penpot"), newer).unwrap();
+    assert_eq!(unreadable(s.execute("file.open", &json!({"path": p(&d, "newer.penpot")}))), Unreadable::NewerVersion { tool: "Penpot", version: 9 });
+    assert_eq!(s.docs.len(), 1, "only the good file opened");
+    std::fs::remove_dir_all(&d).ok();
+}
+
+const FREE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../format/tests/fixtures/free/sample.free");
+
+/// Fix AH2 through the registry: Lunacy's FREE file opens by its contents with warnings, and FREE
+/// and Sketch files (both zips of JSON) each go to their own importer.
+#[test]
+fn free_and_sketch_files_go_to_their_own_importers() {
+    let free = std::fs::read(FREE).unwrap();
+    let sketch = std::fs::read(SKETCH).unwrap();
+    assert_eq!(pick(&free, "x.sketch").map(|i| i.id()), Some("free"), "whatever its name");
+    assert_eq!(pick(&sketch, "x.free").map(|i| i.id()), Some("sketch"));
+    let d = dir("free");
+    let renamed = p(&d, "poster.txt");
+    std::fs::write(&renamed, &free).unwrap();
+    let mut s = Session::empty();
+    let r = s.execute("file.open", &json!({"path": renamed})).unwrap();
+    assert_eq!(s.ds().unwrap().path, None);
+    assert!(r["warnings"].as_array().is_some_and(|w| !w.is_empty()), "{r}");
+    // Its auto layout comes across (what FREE adds over Sketch).
+    assert!(s.doc().unwrap().nodes().any(|n| n.layout.is_some()), "an auto layout frame");
+    assert_eq!(std::fs::read(&renamed).unwrap(), free);
+    std::fs::remove_dir_all(&d).ok();
 }

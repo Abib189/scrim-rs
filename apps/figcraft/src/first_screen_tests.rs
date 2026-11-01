@@ -58,6 +58,23 @@ fn the_last_file_opened_at_launch_gives_its_result() {
     let (opened, last) = open_files_with_results(&mut s, &[example(), sample.to_string_lossy().into_owned()]);
     assert_eq!(opened.len(), 2);
     let (params, result) = last.expect("the Sketch file's result");
+    let result = result.expect("it opens");
     assert!(params["path"].as_str().is_some_and(|p| p.ends_with("sample.sketch")));
     assert!(result["warnings"].as_array().is_some_and(|w| !w.is_empty()), "{result}");
+}
+
+/// Fix AH3: a closed-format file named at launch hands back why it can't open (the window shows
+/// the dialog), and nothing opens.
+#[test]
+fn a_closed_format_named_at_launch_hands_back_its_refusal() {
+    let dir = std::env::temp_dir().join(format!("scrim-launch-closed-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("logo.afdesign");
+    std::fs::write(&file, b"closed").unwrap();
+    let mut s = Session::empty();
+    let (opened, last) = open_files_with_results(&mut s, &[file.to_string_lossy().into_owned()]);
+    assert!(opened.is_empty());
+    let err = last.unwrap().1.unwrap_err();
+    assert!(matches!(err, figcraft_engine::EngineError::Unreadable(figcraft_engine::importers::Unreadable::ClosedFormat("Affinity"))), "{err:?}");
+    std::fs::remove_dir_all(&dir).ok();
 }

@@ -264,7 +264,7 @@ pub fn tool_definitions() -> Vec<Value> {
         tool(
             "open_file",
             "Open file",
-            "Open a file as the active document. The format comes from the file's contents, not its name. A Scrim document (.scrim; .figcraft files open too and are never written: saving one asks for a .scrim) opens with its path. Imports open as a new unsaved document and never change the source: .fig (best effort), .sketch, REST API file JSON, the earlier Scrim's JSON .scrim, .svg (becomes vectors) and images (an image layer). Returns `opened` (an import's `warnings`: [{severity: dropped|approximated|info, path: the layer, message}]) and the document's summary.",
+            "Open a file as the active document. The format comes from the file's contents, not its name. A Scrim document (.scrim; .figcraft files open too and are never written: saving one asks for a .scrim) opens with its path. Imports open as a new unsaved document and never change the source: .fig (best effort), .sketch, .penpot, Lunacy's .free, REST API file JSON, the earlier Scrim's JSON .scrim, .svg (becomes vectors) and images (an image layer). Affinity and Adobe XD files are refused: their format is closed (export SVG from them). Returns `opened` (an import's `warnings`: [{severity: dropped|approximated|info, path: the layer, message}]) and the document's summary.",
             obj(
                 json!({
                     "path": string("File path"),

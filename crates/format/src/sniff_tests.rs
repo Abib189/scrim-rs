@@ -42,6 +42,10 @@ fn the_earlier_scrim_and_other_tools_are_not_scrim_documents() {
     assert_eq!(kind(&zip(&[("document.json", br#"{"_class": "document", "pages": []}"#), ("meta.json", b"{}")])), Kind::Other);
     assert_eq!(kind(&zip(&[("canvas.fig", b"fig-kiwi"), ("document.json", br#"{"format": "figcraft"}"#)])), Kind::Other);
     assert_eq!(kind(&zip(&[("document.json", br#"{"format": "someone-else", "pages": []}"#)])), Kind::Other);
+    // Lunacy's FREE: `pages` without `nodes` (Fix AH), and the committed sample.
+    assert_eq!(kind(&zip(&[("document.json", br#"{"id": "x", "pages": ["a"]}"#), ("meta.json", b"{}")])), Kind::Other);
+    let free = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/free/sample.free")).unwrap();
+    assert_eq!(kind(&free), Kind::Other);
     // REST API file JSON, images, text, garbage, nothing.
     assert_eq!(kind(br#"{"document": {"type": "DOCUMENT"}, "name": "x"}"#), Kind::Other);
     for other in [&b"\x89PNG\r\n\x1a\n"[..], b"<svg/>", b"hello", b"PK\x03\x04 broken", b"", b"{", b"{\"pages\"", b"[1,2]"] {

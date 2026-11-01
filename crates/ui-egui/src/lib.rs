@@ -31,6 +31,7 @@ pub mod dialogs;
 pub mod doc_title;
 pub mod export_panel;
 pub mod field_math;
+pub mod file_kinds;
 pub mod follow_agent;
 pub mod font_preview;
 pub mod frame_labels;
@@ -243,7 +244,7 @@ mod windows_tests;
 
 use std::collections::BTreeSet;
 use std::future::Future;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context as TaskContext, Poll, Wake, Waker};
@@ -494,6 +495,8 @@ pub struct UiState {
     pub pending_open_frames: u8,
     /// The latest successful file import's summary and compatibility notes.
     pub import_report: Option<import_report::Report>,
+    /// A closed format's tool, while its dialog shows (Fix AH3, [`file_kinds`]).
+    pub closed_format: Option<&'static str>,
     /// Files the user opened whose fonts are yet to be checked (by document uid).
     pub font_checks: Vec<u64>,
     pub missing_fonts: Option<missing_fonts::Shown>,
@@ -632,6 +635,7 @@ impl Default for UiState {
             pending_opens: Vec::new(),
             pending_open_frames: 0,
             import_report: None,
+            closed_format: None,
             font_checks: Vec::new(),
             missing_fonts: None,
             screenshot_requests: Vec::new(),
@@ -771,7 +775,7 @@ impl FigApp {
     fn failed(&mut self, id: &str, e: &figcraft_engine::EngineError) {
         let msg = windows::error_text(e);
         log::warn!("{id}: {msg}");
-        self.toast(msg.clone());
+        file_kinds::show_error(self, e, msg.clone());
         self.ui.last_error = Some(msg);
     }
 
@@ -1646,11 +1650,7 @@ impl FigApp {
     }
 }
 
-/// Whether `path` names a file type that opens as a document, any importer's (the extension, in
-/// any case; what it is comes from its contents once read).
-pub(crate) fn opens(path: &Path) -> bool {
-    path.extension().and_then(|e| e.to_str()).is_some_and(|e| figcraft_engine::importers::open_extensions().iter().any(|x| x.eq_ignore_ascii_case(e)))
-}
+pub(crate) use file_kinds::opens;
 
 /// The contents of a dropped file that has no file on disk to read by path.
 #[cfg(not(target_arch = "wasm32"))]

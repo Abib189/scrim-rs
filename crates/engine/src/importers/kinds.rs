@@ -143,10 +143,65 @@ impl Importer for Sketch {
         Some(".sketch")
     }
     fn sniff(&self, bytes: &[u8], _: &str) -> u8 {
-        if figcraft_format::sketch::is_sketch(bytes) { 100 } else { 0 }
+        // FREE files are made to look like Sketch's: a surer claim (FREE's own marks) wins.
+        if figcraft_format::sketch::is_sketch(bytes) { 95 } else { 0 }
     }
     fn import(&self, bytes: &[u8], o: &Options) -> Result<Imported> {
         let (mut doc, warnings) = figcraft_format::sketch::import(bytes, &stem(o.name)).map_err(other)?;
+        crate::cmd::file::link_instances(&mut doc);
+        Ok(Imported { loaded: doc.into(), warnings })
+    }
+}
+
+/// Lunacy's FREE format (`.free`): a zip of JSON like Sketch's, claimed surer than Sketch.
+pub struct Free;
+pub static FREE: Free = Free;
+
+impl Importer for Free {
+    fn id(&self) -> &'static str {
+        "free"
+    }
+    fn extensions(&self) -> &'static [&'static str] {
+        &["free"]
+    }
+    fn listed(&self) -> Option<&'static str> {
+        Some(".free")
+    }
+    fn sniff(&self, bytes: &[u8], _: &str) -> u8 {
+        if figcraft_format::free::is_free(bytes) { 100 } else { 0 }
+    }
+    fn import(&self, bytes: &[u8], o: &Options) -> Result<Imported> {
+        let (mut doc, warnings) = figcraft_format::free::import(bytes, &stem(o.name)).map_err(|e| match e {
+            FormatError::Newer(v) => EngineError::Unreadable(Unreadable::NewerVersion { tool: "Lunacy", version: v }),
+            other_error => other(other_error),
+        })?;
+        crate::cmd::file::link_instances(&mut doc);
+        Ok(Imported { loaded: doc.into(), warnings })
+    }
+}
+
+/// Penpot (`.penpot`, format v3).
+pub struct Penpot;
+pub static PENPOT: Penpot = Penpot;
+
+impl Importer for Penpot {
+    fn id(&self) -> &'static str {
+        "penpot"
+    }
+    fn extensions(&self) -> &'static [&'static str] {
+        &["penpot"]
+    }
+    fn listed(&self) -> Option<&'static str> {
+        Some(".penpot")
+    }
+    fn sniff(&self, bytes: &[u8], _: &str) -> u8 {
+        if figcraft_format::penpot::is_penpot(bytes) { 100 } else { 0 }
+    }
+    fn import(&self, bytes: &[u8], o: &Options) -> Result<Imported> {
+        let (mut doc, warnings) = figcraft_format::penpot::import(bytes, &stem(o.name)).map_err(|e| match e {
+            FormatError::Newer(v) => EngineError::Unreadable(Unreadable::NewerVersion { tool: "Penpot", version: v }),
+            other_error => other(other_error),
+        })?;
         crate::cmd::file::link_instances(&mut doc);
         Ok(Imported { loaded: doc.into(), warnings })
     }

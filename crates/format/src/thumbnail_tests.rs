@@ -176,3 +176,34 @@ fn previews_carry_the_first_pages_colour() {
     let p = file_preview(&image, 640);
     assert!(p.page.is_none() && p.picture.is_some());
 }
+
+/// Fix AH4: other tools' design files show the preview they carry; one without shows nothing (the
+/// placeholder), and a damaged one never panics.
+#[test]
+fn design_files_give_the_preview_they_carry() {
+    use crate::thumbnail::{Preview, design_preview, file_preview};
+    let d = dir("design");
+    let thumb = png(48, 30);
+    let sketch = d.join("a.sketch");
+    std::fs::write(&sketch, zip(&[("document.json", br#"{"_class": "document"}"#), ("meta.json", b"{}"), ("previews/preview.png", &thumb)])).unwrap();
+    assert_eq!(design_preview(&sketch).as_deref(), Some(thumb.as_slice()));
+    let p = file_preview(&sketch, 640).picture.unwrap();
+    assert_eq!((p.width, p.height), (48, 30));
+    assert_eq!(FileKind::of(&sketch), FileKind::Design);
+    // FREE keeps its preview as preview.webp (any picture format decodes by its bytes).
+    let free = d.join("a.free");
+    std::fs::write(&free, zip(&[("document.json", b"{}"), ("preview.webp", &thumb)])).unwrap();
+    assert!(file_preview(&free, 640).picture.is_some());
+    // No preview, or not a zip: the placeholder.
+    let bare = d.join("bare.sketch");
+    std::fs::write(&bare, zip(&[("document.json", br#"{"_class": "document"}"#), ("meta.json", b"{}")])).unwrap();
+    assert_eq!(file_preview(&bare, 640), Preview::default());
+    // A Penpot export: the board thumbnail its manifest's file lists.
+    let penpot = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/penpot/sample.penpot");
+    assert_eq!(FileKind::of(&penpot), FileKind::Design);
+    assert!(file_preview(&penpot, 640).picture.is_some(), "the sample's thumbnail");
+    let junk = d.join("junk.penpot");
+    std::fs::write(&junk, b"not a zip").unwrap();
+    assert_eq!(file_preview(&junk, 640), Preview::default());
+    assert_eq!(file_preview(&d.join("missing.free"), 640), Preview::default());
+}

@@ -29,7 +29,7 @@ The Cargo packages keep FigCraft's names (`figcraft`, `figcraft-cli`…) so upst
 - **Toolchain:** Rust 1.95 or newer, with the `wasm32-unknown-unknown` target and the `rustfmt` and `clippy` components (`cargo xtask ci` needs them all).
 - **Web build:** install [trunk](https://trunkrs.dev/), then run `cargo xtask wasm`.
 - **Fonts:** without the optional `../craft-fonts` checkout, the app falls back to your system fonts.
-- **Files:** Scrim saves `.scrim` files. It opens `.figcraft` files (FigCraft's, and Scrim's before November 2026) as they are and never writes them: saving one makes a `.scrim` beside it. It also imports `.fig`, `.sketch`, Figma REST API JSON, the earlier Scrim's JSON `.scrim`, SVG and images, each with a report of what it couldn't bring across (`docs/design/scrim-format.md`).
+- **Files:** Scrim saves `.scrim` files. It opens `.figcraft` files (FigCraft's, and Scrim's before November 2026) as they are and never writes them: saving one makes a `.scrim` beside it. It also imports `.fig`, `.sketch`, Penpot `.penpot`, Lunacy `.free`, Figma REST API JSON, the earlier Scrim's JSON `.scrim`, SVG and images, each with a report of what it couldn't bring across (`docs/design/scrim-format.md`).
 - **Coming from FigCraft:** on its first start Scrim copies (never moves) FigCraft's settings and recent files.
 - **Contributors and AI agents:** start with [`AGENTS.md`](AGENTS.md).
 

@@ -247,8 +247,10 @@ fn main() -> eframe::Result {
     fig.ui.home = first_screen::starts_on_home(&fig.session);
     // Files named on the command line are the user's too: their missing fonts are listed.
     fig.ui.font_checks = opened;
-    if let Some((params, result)) = last_open {
-        figcraft_ui_egui::import_report::capture(&mut fig, "file.open", &params, &result);
+    match last_open {
+        Some((params, Ok(result))) => figcraft_ui_egui::import_report::capture(&mut fig, "file.open", &params, &result),
+        Some((_, Err(e))) => figcraft_ui_egui::file_kinds::launch_error(&mut fig, &e),
+        None => {}
     }
     fig.note_recovered(recovered.copies);
     if let Some(link) = &args.join {
