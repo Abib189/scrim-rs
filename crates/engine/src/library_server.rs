@@ -173,7 +173,7 @@ impl Session {
                 (l.path.clone(), LibraryReq::Fetch { have, usage: Some(usage(doc, &l.id)) })
             })
             .collect();
-        if let (false, Some(net)) = (jobs.is_empty(), self.live.link()) {
+        if let (false, None, Some(net)) = (jobs.is_empty(), crate::plugins::refuse_network(), self.live.link()) {
             net.library_background(jobs);
         }
     }
