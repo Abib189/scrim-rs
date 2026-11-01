@@ -516,6 +516,8 @@ fn draw_layer(ctx: &Ctx, pix: &mut Pixmap, n: &Node, parent_xf: Affine, depth: u
     let (lx, ly) = (x0 as i32, y0 as i32);
     let lw = w.min(16_384.0) as u32;
     let lh = h.min(16_384.0) as u32;
+    // Nested layers hold their pixmaps while the ones inside them draw: within one budget.
+    let Some(_held) = crate::layer_budget::Held::take(lw, lh, 1) else { return };
     let Some(mut layer) = Pixmap::new(lw, lh) else { return };
     let lxf = Affine::translate((-f64::from(lx), -f64::from(ly))) * xf;
     let shape = node_outline(ctx.doc, n);
@@ -785,6 +787,8 @@ fn draw_children(ctx: &Ctx, pix: &mut Pixmap, n: &Node, xf: Affine, depth: usize
 
 fn draw_masked(ctx: &Ctx, pix: &mut Pixmap, mask_id: NodeId, content: &[NodeId], xf: Affine, depth: usize) {
     let (w, h) = (pix.width(), pix.height());
+    // The mask (and its own layer) and the content, within the layers' budget.
+    let Some(_held) = crate::layer_budget::Held::take(w, h, 3) else { return };
     let Some(mut mask_px) = Pixmap::new(w, h) else { return };
     let mask_type = ctx.doc.node(mask_id).map(|m| m.mask_type).unwrap_or_default();
     // Draw the mask node as if it weren't a mask (a vector mask: its outline, fully opaque).
@@ -830,6 +834,7 @@ fn draw_children_clipped(ctx: &Ctx, pix: &mut Pixmap, n: &Node, xf: Affine, dept
     let dev = device_rect(xf, n.local_rect());
     let Some(ir) = int_rect(dev, (pw, ph)) else { return };
     let (lx, ly) = (ir.x(), ir.y());
+    let Some(_held) = crate::layer_budget::Held::take(ir.width(), ir.height(), 1) else { return };
     // The layer starts as what lies under it and goes back in its place through the clip:
     // clipping cuts the children off without isolating them, so their blend modes reach the
     // layers behind the frame.

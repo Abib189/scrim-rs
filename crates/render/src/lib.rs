@@ -15,6 +15,7 @@ pub mod glass;
 pub mod grain;
 pub mod image_profile;
 pub mod images;
+mod layer_budget;
 pub mod lod;
 pub mod paint;
 pub mod pattern;
@@ -459,6 +460,8 @@ mod image_budget_tests;
 mod image_profile_tests;
 #[cfg(test)]
 mod jpeg_guard_tests;
+#[cfg(test)]
+mod layer_budget_tests;
 #[cfg(test)]
 mod lod_tests;
 #[cfg(test)]
