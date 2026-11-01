@@ -16,7 +16,7 @@ fn dir(name: &str) -> PathBuf {
     d
 }
 
-/// A `.figcraft` file storing the name `stored`, written at `dir/file`.
+/// A `.scrim` file storing the name `stored`, written at `dir/file`.
 fn saved(dir: &Path, file: &str, stored: &str) -> String {
     let mut s = Session::with_document(Document::new(stored));
     s.execute("shape.rectangle", &json!({"x": 0, "y": 0, "width": 10, "height": 10})).unwrap();
@@ -31,18 +31,18 @@ fn stored_in(path: &str) -> Option<String> {
 
 #[test]
 fn the_rule() {
-    assert_eq!(resolve("Poster", Some("/x/zeichen-26.figcraft"), 1), DocName::Named("Poster".into()));
+    assert_eq!(resolve("Poster", Some("/x/zeichen-26.scrim"), 1), DocName::Named("Poster".into()));
     for placeholder in [UNTITLED, "", "   "] {
         assert_eq!(explicit(placeholder), None);
-        assert_eq!(resolve(placeholder, Some("/x/zeichen-26.figcraft"), 1), DocName::Named("zeichen-26".into()));
+        assert_eq!(resolve(placeholder, Some("/x/zeichen-26.scrim"), 1), DocName::Named("zeichen-26".into()));
         assert_eq!(resolve(placeholder, None, 1).english(), "Untitled");
         assert_eq!(resolve(placeholder, None, 3).english(), "Untitled 3");
     }
     // Only the placeholder itself is "not set".
-    assert_eq!(resolve("Untitled 2", Some("/x/a.figcraft"), 1), DocName::Named("Untitled 2".into()));
-    assert_eq!(resolve("untitled", Some("/x/a.figcraft"), 1), DocName::Named("untitled".into()));
-    assert_eq!(resolve("archive.tar", Some("/x/b.v2.figcraft"), 1), DocName::Named("archive.tar".into()));
-    assert_eq!(resolve(UNTITLED, Some("/x/b.v2.figcraft"), 1), DocName::Named("b.v2".into()));
+    assert_eq!(resolve("Untitled 2", Some("/x/a.scrim"), 1), DocName::Named("Untitled 2".into()));
+    assert_eq!(resolve("untitled", Some("/x/a.scrim"), 1), DocName::Named("untitled".into()));
+    assert_eq!(resolve("archive.tar", Some("/x/b.v2.scrim"), 1), DocName::Named("archive.tar".into()));
+    assert_eq!(resolve(UNTITLED, Some("/x/b.v2.scrim"), 1), DocName::Named("b.v2".into()));
 }
 
 /// The reported case: a file an agent made with `file.new` and saved without naming, opened from
@@ -51,7 +51,7 @@ fn the_rule() {
 #[test]
 fn a_file_saved_with_the_placeholder_goes_by_its_file_name() {
     let d = dir("placeholder");
-    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+    let path = saved(&d, "zeichen-26.scrim", UNTITLED);
     let before = std::fs::read(&path).unwrap();
     let mut s = Session::empty();
     let r = s.execute("file.open", &json!({"path": path})).unwrap();
@@ -72,7 +72,7 @@ fn a_file_saved_with_the_placeholder_goes_by_its_file_name() {
 #[test]
 fn a_name_someone_gave_wins_over_the_file_name() {
     let d = dir("explicit");
-    let path = saved(&d, "zeichen-26.figcraft", "Poster");
+    let path = saved(&d, "zeichen-26.scrim", "Poster");
     let mut s = Session::empty();
     let r = s.execute("file.open", &json!({"path": path})).unwrap();
     assert_eq!(r["summary"]["name"], "Poster");
@@ -105,7 +105,7 @@ fn save_as_names_an_unsaved_document_after_its_file_without_writing_the_name() {
     let mut s = Session::new();
     s.execute("file.new", &json!({})).unwrap();
     assert_eq!(s.ds().unwrap().display_name(), "Untitled 2");
-    let path = d.join("Spring poster.figcraft").to_string_lossy().into_owned();
+    let path = d.join("Spring poster.scrim").to_string_lossy().into_owned();
     s.execute("file.saveAs", &json!({"path": path})).unwrap();
     assert_eq!(s.ds().unwrap().display_name(), "Spring poster", "at once, without reopening");
     assert_eq!(crate::inspect::document(&s, 1, false)["name"], "Spring poster");
@@ -113,7 +113,7 @@ fn save_as_names_an_unsaved_document_after_its_file_without_writing_the_name() {
     // The first untitled tab keeps its own number.
     assert_eq!(s.docs[0].display_name(), "Untitled");
     // Saved again under another name, it follows that file.
-    let other = d.join("Poster v2.figcraft").to_string_lossy().into_owned();
+    let other = d.join("Poster v2.scrim").to_string_lossy().into_owned();
     s.execute("file.saveAs", &json!({"path": other})).unwrap();
     assert_eq!(s.ds().unwrap().display_name(), "Poster v2");
     std::fs::remove_dir_all(&d).ok();
@@ -122,7 +122,7 @@ fn save_as_names_an_unsaved_document_after_its_file_without_writing_the_name() {
 #[test]
 fn rename_sets_the_name_and_leaves_the_file_on_disk_alone() {
     let d = dir("rename");
-    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+    let path = saved(&d, "zeichen-26.scrim", UNTITLED);
     let before = std::fs::read(&path).unwrap();
     let mut s = Session::empty();
     s.execute("file.open", &json!({"path": path})).unwrap();
@@ -131,7 +131,7 @@ fn rename_sets_the_name_and_leaves_the_file_on_disk_alone() {
     assert_eq!(s.ds().unwrap().path.as_deref(), Some(path.as_str()), "same file");
     assert_eq!(std::fs::read(&path).unwrap(), before, "the file isn't touched until it's saved");
     let files: Vec<_> = std::fs::read_dir(&d).unwrap().map(|e| e.unwrap().file_name()).collect();
-    assert_eq!(files, ["zeichen-26.figcraft"], "no file renamed or added");
+    assert_eq!(files, ["zeichen-26.scrim"], "no file renamed or added");
     // Saved, the file stores the name (and keeps its file name).
     s.execute("file.save", &json!({})).unwrap();
     assert_eq!(stored_in(&path).as_deref(), Some("Festival poster"));
@@ -144,7 +144,7 @@ fn rename_sets_the_name_and_leaves_the_file_on_disk_alone() {
 #[test]
 fn copies_are_named_after_the_name_shown() {
     let d = dir("copies");
-    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+    let path = saved(&d, "zeichen-26.scrim", UNTITLED);
     let mut s = Session::empty();
     s.execute("file.open", &json!({"path": path})).unwrap();
     s.execute("file.duplicate", &json!({})).unwrap();
@@ -155,8 +155,8 @@ fn copies_are_named_after_the_name_shown() {
 #[test]
 fn the_recent_files_list_names_files_as_they_are_shown() {
     let d = dir("recents");
-    let plain = saved(&d, "zeichen-26.figcraft", UNTITLED);
-    let named = saved(&d, "x1.figcraft", "Poster");
+    let plain = saved(&d, "zeichen-26.scrim", UNTITLED);
+    let named = saved(&d, "x1.scrim", "Poster");
     let svg = d.join("logo.svg").to_string_lossy().into_owned();
     std::fs::write(&svg, r#"<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>"#).unwrap();
     let mut s = Session::empty();

@@ -72,7 +72,7 @@ fn log(u: &Ui) -> Vec<(String, String)> {
 fn saved_file(tag: usize) -> (std::path::PathBuf, String) {
     let dir = std::env::temp_dir().join(format!("scrim-s4-{tag}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("poster.figcraft");
+    let path = dir.join("poster.scrim");
     let mut s = figcraft_engine::Session::new();
     s.execute("frame.create", &json!({"x": 0, "y": 0, "width": 800, "height": 600, "name": "Poster"})).unwrap();
     s.execute("file.saveAs", &json!({"path": path.to_string_lossy()})).unwrap();

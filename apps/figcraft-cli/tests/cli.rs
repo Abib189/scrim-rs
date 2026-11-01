@@ -20,7 +20,7 @@ fn bad_arguments_exit_2_without_panicking() {
         &[][..],
         &["bogus"],
         &["export"],
-        &["export", "x.figcraft"],
+        &["export", "x.scrim"],
         &["info", "--nope"],
         &["render", "a", "-o"],
         &["perf", "--shapes", "lots"],
@@ -36,7 +36,7 @@ fn bad_arguments_exit_2_without_panicking() {
         assert!(err.contains("USAGE"), "{args:?}");
         assert!(!err.contains("panicked"));
     }
-    let out = bin().args(["info", "/no/such/file.figcraft"]).output().unwrap();
+    let out = bin().args(["info", "/no/such/file.scrim"]).output().unwrap();
     assert_eq!(out.status.code(), Some(1));
 }
 
@@ -45,7 +45,7 @@ fn run_export_info_convert() {
     let d = tmp("run");
     let script = d.join("s.jsonl");
     std::fs::write(&script, "{\"command\":\"frame.create\",\"params\":{\"x\":0,\"y\":0,\"width\":100,\"height\":50,\"name\":\"A\",\"props\":{\"fill\":\"#ff0000\"}}}\n{\"command\":\"frame.create\",\"params\":{\"x\":200,\"y\":0,\"width\":30,\"height\":30,\"name\":\"B\"}}\n").unwrap();
-    let file = d.join("doc.figcraft");
+    let file = d.join("doc.scrim");
     let out = bin().arg("run").arg(&script).arg("--out").arg(&file).output().unwrap();
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
     let lines: Vec<serde_json::Value> = String::from_utf8_lossy(&out.stdout).lines().map(|l| serde_json::from_str(l).unwrap()).collect();
@@ -92,7 +92,7 @@ fn run_takes_the_documented_gradient_shorthand() {
             {"command":"node.set","params":{"ids":[2],"fills":[{"type":"linearGradient","stops":["#ff0000","#0000ff"],"from":[0,0.5],"to":[1,0.5]}]}}]"##,
     )
     .unwrap();
-    let file = d.join("g.figcraft");
+    let file = d.join("g.scrim");
     let out = bin().arg("run").arg(&script).arg("--out").arg(&file).output().unwrap();
     assert!(out.status.success(), "{}{}", String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
     let json = d.join("g.json");
@@ -148,10 +148,10 @@ fn mcp_over_stdio_confined_to_automation_roots() {
         };
         writeln!(stdin, r#"{{"jsonrpc":"2.0","id":1,"method":"initialize","params":{{"protocolVersion":"2025-06-18"}}}}"#).unwrap();
         writeln!(stdin, "{}", call(2, "create_node", serde_json::json!({"type": "ellipse"}))).unwrap();
-        writeln!(stdin, "{}", call(3, "save_file", serde_json::json!({"path": p("outside/a.figcraft")}))).unwrap();
-        writeln!(stdin, "{}", call(4, "save_file", serde_json::json!({"path": p("out/a.figcraft")}))).unwrap();
-        writeln!(stdin, "{}", call(5, "open_file", serde_json::json!({"path": p("outside/a.figcraft")}))).unwrap();
-        writeln!(stdin, "{}", call(6, "open_file", serde_json::json!({"path": p("out/a.figcraft")}))).unwrap();
+        writeln!(stdin, "{}", call(3, "save_file", serde_json::json!({"path": p("outside/a.scrim")}))).unwrap();
+        writeln!(stdin, "{}", call(4, "save_file", serde_json::json!({"path": p("out/a.scrim")}))).unwrap();
+        writeln!(stdin, "{}", call(5, "open_file", serde_json::json!({"path": p("outside/a.scrim")}))).unwrap();
+        writeln!(stdin, "{}", call(6, "open_file", serde_json::json!({"path": p("out/a.scrim")}))).unwrap();
     }
     drop(child.stdin.take());
     let out = child.wait_with_output().unwrap();
@@ -162,7 +162,7 @@ fn mcp_over_stdio_confined_to_automation_roots() {
     let error = |i: usize| lines[i]["result"]["isError"] == true;
     assert!(!error(1) && error(2) && !error(3) && error(4) && !error(5), "{lines:?}");
     assert!(lines[2]["result"]["content"][0]["text"].as_str().unwrap().contains("automation path rejected"));
-    assert!(d.join("out/a.figcraft").is_file() && !d.join("outside/a.figcraft").exists());
+    assert!(d.join("out/a.scrim").is_file() && !d.join("outside/a.scrim").exists());
     let _ = std::fs::remove_dir_all(&d);
 }
 

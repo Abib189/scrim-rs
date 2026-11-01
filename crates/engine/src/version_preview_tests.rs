@@ -78,7 +78,7 @@ fn restore_from_a_preview_is_one_undo_step() {
 fn preview_keeps_the_unsaved_state_and_saving_saves_the_document() {
     let dir = std::env::temp_dir().join(format!("figcraft-vpreview-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("preview.figcraft").to_string_lossy().to_string();
+    let path = dir.join("preview.scrim").to_string_lossy().to_string();
     let (mut s, _) = setup();
     let three = count(&s);
     s.execute("file.save", &json!({"path": path})).unwrap();

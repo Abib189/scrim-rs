@@ -90,8 +90,12 @@
               Icon="FigcraftIcon.exe" IconIndex="0" />
         </File>
 
-        <!-- .figcraft: Scrim's own format; Scrim is its default app. -->
+        <!-- .scrim: Scrim's own format, and .figcraft, FigCraft's (opened, saved as .scrim; Fix AG):
+             Scrim is the default app for both. -->
         <ProgId Id="Scrim.Document" Description="Scrim Document" Icon="FigcraftExe" IconIndex="0">
+          <Extension Id="scrim" ContentType="application/x-scrim">
+            <Verb Id="open" Command="Open" TargetFile="FigcraftExe" Argument="&quot;%1&quot;" />
+          </Extension>
           <Extension Id="figcraft" ContentType="application/x-figcraft">
             <Verb Id="open" Command="Open" TargetFile="FigcraftExe" Argument="&quot;%1&quot;" />
           </Extension>
@@ -107,6 +111,7 @@
         <!-- "Open with" app list and the Run dialog (Win+R "figcraft"). -->
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe" Name="FriendlyAppName" Value="Scrim" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\shell\open\command" Value="&quot;[#FigcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".scrim" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".figcraft" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".svg" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".png" Value="" Type="string" />

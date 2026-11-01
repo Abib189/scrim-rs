@@ -26,7 +26,7 @@ fn imported_svg_is_editable_centred_and_reports_what_it_left_out() {
     assert_eq!((o.x, o.y), (80.0, 40.0), "centred on the point");
     let card = doc.subtree(id).into_iter().filter_map(|i| doc.node(i)).find(|n| n.name == "Card").unwrap();
     assert_eq!((card.kind.type_name(), card.corners.radii[0]), ("RECTANGLE", 4.0));
-    assert!(r["warnings"][0].as_str().is_some_and(|w| w.contains("noise")), "{r}");
+    assert!(r["warnings"][0]["message"].as_str().is_some_and(|w| w.contains("noise")), "{r}");
     // Top-left at the point without `center`; one undo takes it away.
     let r = s.execute("file.import", &json!({"data": data(SVG), "name": "x.svg", "x": 100, "y": 50})).unwrap();
     let id2 = id_of(&r["id"]).unwrap();

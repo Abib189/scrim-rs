@@ -264,7 +264,7 @@ pub fn tool_definitions() -> Vec<Value> {
         tool(
             "open_file",
             "Open file",
-            "Open a .figcraft or .json document (Scrim or REST API file JSON), a .fig file (best effort, with `warnings` for what wasn't imported), an .svg (becomes vectors) or an image (becomes an image layer) as the active document. Returns the new document's summary.",
+            "Open a file as the active document. The format comes from the file's contents, not its name. A Scrim document (.scrim; .figcraft files open too and are never written: saving one asks for a .scrim) opens with its path. Imports open as a new unsaved document and never change the source: .fig (best effort), .sketch, REST API file JSON, the earlier Scrim's JSON .scrim, .svg (becomes vectors) and images (an image layer). Returns `opened` (an import's `warnings`: [{severity: dropped|approximated|info, path: the layer, message}]) and the document's summary.",
             obj(
                 json!({
                     "path": string("File path"),
@@ -277,8 +277,8 @@ pub fn tool_definitions() -> Vec<Value> {
         tool(
             "save_file",
             "Save file",
-            "Save the active document as a .figcraft file. `path` is required the first time (an untitled document has no path); later saves reuse it. A `path` ending in .fig writes an experimental .fig export copy instead and leaves the document's own path and unsaved changes alone.",
-            obj(json!({"path": string("Output .figcraft path, or a .fig path for an experimental export copy")}), &[]),
+            "Save the active document as a .scrim file. `path` is required the first time (an untitled or imported document has no path, and one opened from a .figcraft file is never written over: pass a .scrim path); later saves reuse it. A `path` ending in .fig writes an experimental .fig export copy instead and leaves the document's own path and unsaved changes alone.",
+            obj(json!({"path": string("Output .scrim path, or a .fig path for an experimental export copy")}), &[]),
             false,
         ),
         tool("undo", "Undo", "Undo the last change (one command, batch or gesture). Returns {undone: bool}.", empty(), false),
@@ -577,7 +577,7 @@ pub fn no_document() -> ToolResult {
     let v = json!({
         "error": "no_document",
         "message": "No document is open in Scrim: the window is showing the Home screen.",
-        "howToOpen": "Open a file with open_file {\"path\": \"/path/to/design.figcraft\"} (also .fig, .json or .svg), or make a blank one with run_command {\"command\": \"file.new\"}.",
+        "howToOpen": "Open a file with open_file {\"path\": \"/path/to/design.scrim\"} (also .figcraft, .fig, .sketch, .json, .svg or an image), or make a blank one with run_command {\"command\": \"file.new\"}.",
     });
     ToolResult::error(serde_json::to_string_pretty(&v).unwrap_or_else(|_| v.to_string()))
 }

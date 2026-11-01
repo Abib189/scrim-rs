@@ -177,7 +177,7 @@ fn agent_method(u: &mut Ui, method: &str, params: Value) -> Value {
 fn the_open_file_tool_mid_flight_doesnt_pause_following() {
     let dir = std::env::temp_dir().join(format!("scrim-r3b-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("saved.figcraft");
+    let path = dir.join("saved.scrim");
     let mut s = figcraft_engine::Session::new();
     s.execute("frame.create", &json!({"x": 2000, "y": 2000, "width": 300, "height": 300, "name": "Saved"})).unwrap();
     s.execute("file.saveAs", &json!({"path": path.to_string_lossy()})).unwrap();

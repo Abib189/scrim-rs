@@ -138,7 +138,7 @@ fn resizing_overrides_survive_save_and_reopen() {
     ex(&mut s, "node.set", json!({"id": idot, "props": {"width": 40}}));
     let native = figcraft_format::save_bytes(s.doc().unwrap(), None).unwrap();
     let (fig, _) = figcraft_format::fig::export(s.doc().unwrap(), None).unwrap();
-    for (bytes, name) in [(native, "field.figcraft"), (fig, "field.fig")] {
+    for (bytes, name) in [(native, "field.scrim"), (fig, "field.fig")] {
         let mut s = Session::new();
         open(&mut s, &bytes, name);
         let i = instance(&s);

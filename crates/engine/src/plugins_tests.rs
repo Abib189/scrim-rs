@@ -159,12 +159,12 @@ fn files_dialogs_history_and_plugins_are_off_limits() {
     let a = rect(&mut s, 0.0);
     ex(&mut s, "select.set", json!({"ids": [a]}));
     let dir = std::env::temp_dir().join(format!("figcraft-plugin-deny-{}", std::process::id()));
-    let target = dir.join("stolen.figcraft").to_string_lossy().into_owned();
+    let target = dir.join("stolen.scrim").to_string_lossy().into_owned();
     let refused = [
         ("file.saveAs", json!({"path": target})),
         ("file.open", json!({"path": "C:/Windows/win.ini"})),
         ("image.place", json!({"path": "secret.png"})),
-        ("library.add", json!({"path": "lib.figcraft"})),
+        ("library.add", json!({"path": "lib.scrim"})),
         ("plugin.run", json!({"id": "org.test.deny"})),
         ("plugin.remove", json!({"id": "org.test.deny"})),
         ("edit.undo", json!({})),
@@ -174,7 +174,7 @@ fn files_dialogs_history_and_plugins_are_off_limits() {
         ("codeConnect.import", json!({"path": "/etc/passwd"})),
         ("component.playground", json!({"id": a, "path": target})),
         ("variable.import", json!({"variables": "/etc/passwd"})),
-        ("collab.recoverFile", json!({"path": "copy.figcraft", "file": "x", "session": 1, "client": 1, "seq": 0})),
+        ("collab.recoverFile", json!({"path": "copy.scrim", "file": "x", "session": 1, "client": 1, "seq": 0})),
         ("window.new", json!({"path": "C:/Windows/win.ini"})),
         ("doc.switch", json!({"index": 0})),
         ("pref.keepTool", json!({})),

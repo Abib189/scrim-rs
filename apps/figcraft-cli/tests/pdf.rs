@@ -28,7 +28,7 @@ fn pdf_export_one_page_per_frame() {
         .join("\n"),
     )
     .unwrap();
-    let file = d.join("doc.figcraft");
+    let file = d.join("doc.scrim");
     let out = bin().arg("run").arg(&script).arg("--out").arg(&file).output().unwrap();
     assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
 

@@ -5,10 +5,10 @@ use super::*;
 #[test]
 fn links_archives_and_junk() {
     assert!(is_server_link("figcraft://join?host=h:1&file=f&token=t") && is_server_link(" WS://h:1/?file=f&token=t"));
-    assert!(!is_server_link("C:/kits/ui.figcraft") && !is_server_link("/srv/ws://x"));
+    assert!(!is_server_link("C:/kits/ui.scrim") && !is_server_link("/srv/ws://x"));
     assert_eq!(shown_path("figcraft://join?host=h:1&file=f&token=secret&x=1"), "figcraft://join?host=h:1&file=f&token=…&x=1");
     assert_eq!(shown_path("ws://h:1/?file=f&token=secret"), "ws://h:1/?file=f&token=…");
-    assert_eq!(shown_path("/kits/token=ui.figcraft"), "/kits/token=ui.figcraft", "files are shown as they are");
+    assert_eq!(shown_path("/kits/token=ui.scrim"), "/kits/token=ui.scrim", "files are shown as they are");
 
     let mut s = Session::new();
     let f = s.execute("frame.create", &serde_json::json!({"x": 0, "y": 0, "width": 10, "height": 10, "name": "Chip"})).unwrap();

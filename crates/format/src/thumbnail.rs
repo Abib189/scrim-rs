@@ -70,7 +70,7 @@ impl FileKind {
     pub fn of(path: &Path) -> FileKind {
         let ext = path.extension().map(|e| e.to_string_lossy().to_ascii_lowercase()).unwrap_or_default();
         match ext.as_str() {
-            "figcraft" => FileKind::FigCraft,
+            "scrim" | "figcraft" => FileKind::FigCraft,
             "fig" => FileKind::Fig,
             "svg" => FileKind::Svg,
             "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" => FileKind::Image,

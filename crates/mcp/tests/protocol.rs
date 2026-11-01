@@ -75,7 +75,7 @@ fn tools_call_happy_and_error_paths() {
     assert!(c.err("batch", json!({"commands": [{"command": 3}]})).contains("step 0"));
     assert!(c.err("pointer", json!({"x": 1})).contains("`y`"));
     assert!(c.err("type_text", json!({"text": "hi"})).contains("not editing text"));
-    assert!(c.err("open_file", json!({"path": "/definitely/not/here.figcraft"})).contains("here.figcraft"));
+    assert!(c.err("open_file", json!({"path": "/definitely/not/here.scrim"})).contains("here.scrim"));
     // Protocol-level errors.
     let r = c.rpc("tools/call", json!({"name": "no_such_tool", "arguments": {}}));
     assert_eq!(r["error"]["code"], -32602);

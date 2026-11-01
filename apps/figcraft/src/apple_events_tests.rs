@@ -14,17 +14,17 @@ fn documents_from_finder_open_and_leave_the_home_screen() {
     let dir = std::env::temp_dir().join(format!("figcraft-apple-events-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    let file = dir.join("BLA-001.figcraft");
+    let file = dir.join("BLA-001.scrim");
     let mut s = Session::new();
     s.execute("file.saveAs", &json!({"path": file.to_string_lossy()})).unwrap();
 
     let mut app = FigApp::new(Session::empty(), Box::new(NoServices));
     app.ui.home = true;
     // A file that can't be read is reported and doesn't keep the others from opening.
-    open_documents(&mut app, vec![dir.join("Missing.figcraft"), file.clone()]);
+    open_documents(&mut app, vec![dir.join("Missing.scrim"), file.clone()]);
     let paths: Vec<_> = app.session.docs.iter().map(|d| d.path.clone().map(PathBuf::from)).collect();
     assert_eq!(paths, [Some(file)]);
     assert!(!app.ui.home, "the opened document shows");
-    assert!(app.ui.last_error.as_deref().is_some_and(|e| e.contains("Missing.figcraft")), "{:?}", app.ui.last_error);
+    assert!(app.ui.last_error.as_deref().is_some_and(|e| e.contains("Missing.scrim")), "{:?}", app.ui.last_error);
     let _ = std::fs::remove_dir_all(&dir);
 }

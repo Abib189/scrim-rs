@@ -79,7 +79,7 @@ fn rest_slot_content_survives_main_edits_moves_and_saving() {
     let bytes = figcraft_format::save_bytes(s.doc().unwrap(), None).unwrap();
     let data = base64::engine::general_purpose::STANDARD.encode(bytes);
     let mut again = Session::new();
-    ex(&mut again, "file.open", json!({"data": data, "name": "slots.figcraft"}));
+    ex(&mut again, "file.open", json!({"data": data, "name": "slots.scrim"}));
     healthy(&again);
     let (slot, names) = slot_content(&again);
     assert_eq!(names, want);

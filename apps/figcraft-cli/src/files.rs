@@ -94,7 +94,11 @@ fn encode(doc: &Document, pix: &figcraft_render::Pixmap, e: &str) -> CliResult<V
 pub fn write_doc(doc: &Document, page: NodeId, out: &str) -> CliResult<()> {
     let e = ext(out);
     let bytes = match e.as_str() {
+        // Scrim writes .scrim (Fix AG); .figcraft files are read, never written.
         "figcraft" => {
+            return Err(CliError::Failed(format!("{out}: Scrim writes .scrim files, and reads .figcraft without writing it: use a .scrim name")));
+        }
+        "scrim" => {
             let thumb = figcraft_engine::cmd::file::thumbnail(doc);
             figcraft_format::save_bytes(doc, thumb.as_deref()).map_err(|e| CliError::Failed(e.to_string()))?
         }
@@ -370,7 +374,7 @@ pub fn run_script(script: &str, input: Option<&str>, out: Option<&str>) -> CliRe
     }
     if let Some(out) = out {
         let ds = s.ds().map_err(|e| CliError::Failed(e.to_string()))?;
-        if ext(out) == "figcraft" {
+        if ext(out) == "scrim" {
             // Through the engine, so the version history is kept.
             write(out, &figcraft_engine::cmd::file::file_bytes(ds).map_err(|e| CliError::Failed(e.to_string()))?)?;
         } else {
@@ -468,7 +472,7 @@ mod tests {
             ]"#,
         )
         .unwrap();
-        let out = dir.join("out.figcraft");
+        let out = dir.join("out.scrim");
         run_script(script.to_str().unwrap(), None, Some(out.to_str().unwrap())).unwrap();
 
         let mut s = Session::empty();
@@ -496,7 +500,7 @@ mod tests {
         std::fs::write(&input, figcraft_engine::cmd::file::file_bytes(s.ds().unwrap()).unwrap()).unwrap();
         let script = dir.join("script.json");
         std::fs::write(&script, json!([{"command": "fill.set", "params": {"ids": [r], "color": "#FF0000"}}]).to_string()).unwrap();
-        let out = dir.join("out.figcraft");
+        let out = dir.join("out.scrim");
         let code = run_script(script.to_str().unwrap(), Some(input.to_str().unwrap()), Some(out.to_str().unwrap())).unwrap();
         assert_eq!(code, ExitCode::from(1), "refused");
         assert!(!out.exists(), "nothing written");
@@ -516,7 +520,7 @@ mod tests {
             ]"#,
         )
         .unwrap();
-        let out = dir.join("out.figcraft");
+        let out = dir.join("out.scrim");
         // The failure is the script's, not the call's: the CLI reports it and exits non-zero.
         run_script(script.to_str().unwrap(), None, Some(out.to_str().unwrap())).unwrap();
         assert!(!out.exists(), "a script that failed writes nothing");

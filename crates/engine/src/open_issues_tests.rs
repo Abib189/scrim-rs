@@ -24,7 +24,7 @@ fn file(name: &str, damage: bool) -> std::path::PathBuf {
         let at = bytes.windows(PNG.len()).position(|w| w == PNG).unwrap();
         bytes[at + 30] ^= 0xff;
     }
-    let path = dir.join("pics.figcraft");
+    let path = dir.join("pics.scrim");
     std::fs::write(&path, bytes).unwrap();
     path
 }

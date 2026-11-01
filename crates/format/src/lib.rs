@@ -1,4 +1,4 @@
-//! The native `.figcraft` format.
+//! The native `.scrim` format (Fix AG; `.figcraft` before it, the same format, still read).
 //!
 //! A zip archive holding `document.json` (the [`Document`] as JSON, with a `format`/`version`
 //! header; layer fields at their default values are left out and read back as those defaults),
@@ -14,12 +14,18 @@
 //! JSON (the `document.json` alone) also opens. Reading is lenient: structural problems are
 //! repaired (see [`Document::repair`]) and reported, damaged versions and libraries are skipped.
 //!
-//! [`rest`] imports the public REST API file JSON; [`fig`] imports `.fig` files (best effort).
+//! [`sniff`] tells a Scrim document from other files by its contents. [`rest`] imports the public
+//! REST API file JSON; [`fig`] imports `.fig` files (best effort); [`sketch`] imports Sketch files;
+//! [`old_scrim`] imports the earlier TypeScript Scrim's JSON `.scrim` files.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod fig;
+pub mod import_report;
 pub mod library;
+pub mod old_scrim;
 pub mod rest;
+pub mod sketch;
+pub mod sniff;
 pub mod stored_name;
 pub mod thumbnail;
 
@@ -35,7 +41,12 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_json::{Value, json};
 use sha2::Digest;
 
-pub const EXTENSION: &str = "figcraft";
+/// What Scrim saves as.
+pub const EXTENSION: &str = "scrim";
+/// What Scrim saved as before Fix AG (FigCraft's): opened, never written.
+pub const LEGACY_EXTENSION: &str = "figcraft";
+/// The format's name in `document.json`, kept from FigCraft so a `.scrim` and a `.figcraft` are
+/// the same format and each opens wherever the other does.
 pub const FORMAT: &str = "figcraft";
 pub const VERSION: u32 = 1;
 /// Largest archive member we read (guards against zip bombs).

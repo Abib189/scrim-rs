@@ -29,7 +29,8 @@ The Cargo packages keep FigCraft's names (`figcraft`, `figcraft-cli`…) so upst
 - **Toolchain:** Rust 1.95 or newer, with the `wasm32-unknown-unknown` target and the `rustfmt` and `clippy` components (`cargo xtask ci` needs them all).
 - **Web build:** install [trunk](https://trunkrs.dev/), then run `cargo xtask wasm`.
 - **Fonts:** without the optional `../craft-fonts` checkout, the app falls back to your system fonts.
-- **Coming from FigCraft:** Scrim opens `.figcraft` files as they are, and on its first start copies (never moves) FigCraft's settings and recent files.
+- **Files:** Scrim saves `.scrim` files. It opens `.figcraft` files (FigCraft's, and Scrim's before November 2026) as they are and never writes them: saving one makes a `.scrim` beside it. It also imports `.fig`, `.sketch`, Figma REST API JSON, the earlier Scrim's JSON `.scrim`, SVG and images, each with a report of what it couldn't bring across (`docs/design/scrim-format.md`).
+- **Coming from FigCraft:** on its first start Scrim copies (never moves) FigCraft's settings and recent files.
 - **Contributors and AI agents:** start with [`AGENTS.md`](AGENTS.md).
 
 ## Built for agents
@@ -45,8 +46,8 @@ claude mcp add --transport http --scope user scrim http://127.0.0.1:7680/mcp
 The endpoint refuses requests from other hosts and from web pages; Settings ▸ MCP can also require a token. **Without the app**, or for stdio-only clients, `scrim mcp` still works, headless or attached (`docs/mcp.md`):
 
 ```sh
-scrim export design.figcraft -o out/          # headless render and export
-scrim run script.json --in design.figcraft    # a script of commands, no window
+scrim export design.scrim -o out/             # headless render and export
+scrim run script.json --in design.scrim       # a script of commands, no window
 scrim commands --json                         # every command and its parameters
 scrim mcp [--attach PORT]                     # MCP over stdio, headless or attached
 claude mcp add scrim -- scrim mcp             # connect Claude Code (docs/mcp.md)

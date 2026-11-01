@@ -1,5 +1,5 @@
 //! Version history: save, list, restore (one undo step), rename, delete, duplicate, persistence in
-//! the `.figcraft` file and bad parameters.
+//! the `.scrim` file and bad parameters.
 
 use serde_json::{Value, json};
 
@@ -144,7 +144,7 @@ fn history_is_capped() {
 fn versions_persist_in_the_file() {
     let dir = std::env::temp_dir().join(format!("figcraft-versions-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("history.figcraft").to_string_lossy().to_string();
+    let path = dir.join("history.scrim").to_string_lossy().to_string();
     let mut s = Session::new();
     rect(&mut s, 0.0);
     let one = count(&s);

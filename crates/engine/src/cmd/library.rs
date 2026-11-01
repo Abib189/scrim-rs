@@ -50,7 +50,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "library.add",
             "Add library",
-            "{path (.figcraft file published as a library, or a share link of a file on a server: a view link is enough)}",
+            "{path (.scrim or .figcraft file published as a library, or a share link of a file on a server: a view link is enough)}",
             true,
             add
         ),

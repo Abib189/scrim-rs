@@ -14,7 +14,7 @@ fn pdf_export_with_bleed_marks_and_cmyk() {
     let script = d.join("s.jsonl");
     std::fs::write(&script, r##"{"command":"frame.create","params":{"x":0,"y":0,"width":100,"height":50,"name":"A","props":{"fill":"#ff0000"}}}"##)
         .unwrap();
-    let file = d.join("doc.figcraft");
+    let file = d.join("doc.scrim");
     assert!(bin().arg("run").arg(&script).arg("--out").arg(&file).status().unwrap().success());
 
     let pdf = d.join("print.pdf");

@@ -98,10 +98,10 @@ fn measure(table: &mut Table, col: usize, layers: usize) -> CliResult<()> {
 
     let t = Instant::now();
     let bytes = figcraft_format::save_bytes(&doc, None).map_err(failed)?;
-    table.put(col, "save .figcraft", ms(t));
+    table.put(col, "save .scrim", ms(t));
     let t = Instant::now();
     let (back, _) = figcraft_format::load_bytes(&bytes).map_err(failed)?;
-    table.put(col, "load .figcraft", ms(t));
+    table.put(col, "load .scrim", ms(t));
     drop(back);
 
     // Rendering a 1440×900 viewport as the canvas does: 100% on the first screen, and zoomed out to
@@ -499,7 +499,7 @@ fn measure_components(table: &mut Table, col: usize, instances: usize) -> CliRes
     let run = RUNS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let dir = std::env::temp_dir().join(format!("figcraft-perf-{}-{run}", std::process::id()));
     std::fs::create_dir_all(&dir).map_err(failed)?;
-    let path = dir.join("design-system.figcraft").to_string_lossy().into_owned();
+    let path = dir.join("design-system.scrim").to_string_lossy().into_owned();
     let (lib_doc, lib_ds) = design_system_document(&spec).map_err(failed)?;
     let mut lib_s = Session::with_document(lib_doc);
     table.put(col, "publish the library", timed(&mut lib_s, "library.publish", json!({}), false));

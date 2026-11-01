@@ -118,7 +118,7 @@ fn prototype_panel_shows_colours_custom_sizes_and_responsive() {
 fn brand_library(tag: &str) -> (String, String) {
     let dir = std::env::temp_dir().join(format!("figcraft-libmodes-{}-{tag}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("brand.figcraft").to_string_lossy().into_owned();
+    let path = dir.join("brand.scrim").to_string_lossy().into_owned();
     let mut lib = Session::new();
     let ex = |s: &mut Session, c: &str, p: Value| s.execute(c, &p).unwrap();
     ex(&mut lib, "file.rename", json!({"name": "Brand kit"}));

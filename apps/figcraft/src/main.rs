@@ -200,7 +200,7 @@ fn main() -> eframe::Result {
             c.request_repaint();
         }
     }))));
-    let opened = first_screen::open_files(&mut session, &args.files);
+    let (opened, last_open) = first_screen::open_files_with_results(&mut session, &args.files);
     // FigCraft's settings come over once, as a copy (`migrate`); not into a scratch settings
     // folder (`SCRIM_SETTINGS_DIR`, Fix Q3).
     if let (Some(base), false) = (services::base_dir(), figcraft_engine::settings::settings_dir().1) {
@@ -247,6 +247,9 @@ fn main() -> eframe::Result {
     fig.ui.home = first_screen::starts_on_home(&fig.session);
     // Files named on the command line are the user's too: their missing fonts are listed.
     fig.ui.font_checks = opened;
+    if let Some((params, result)) = last_open {
+        figcraft_ui_egui::import_report::capture(&mut fig, "file.open", &params, &result);
+    }
     fig.note_recovered(recovered.copies);
     if let Some(link) = &args.join {
         figcraft_ui_egui::live::open_invite(&mut fig, link);

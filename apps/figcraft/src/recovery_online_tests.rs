@@ -205,7 +205,7 @@ fn a_copy_ahead_of_the_server_has_its_edits_applied_and_sent() {
     }
     // The copy stays until the outcome is known.
     assert!(r.tick(&next, 0.0).is_some(), "it looks again while the file is on its way");
-    assert_eq!((copies(&left, "figcraft"), copies(&left, "online")), (1, 1));
+    assert_eq!((copies(&left, "scrim"), copies(&left, "online")), (1, 1));
     // The file arrives: the server lacks the ellipse; it goes on top as one edit and is sent.
     let id = arrive(&mut next, &script, &mut server);
     assert_eq!(id, me, "the server gave the id back");
@@ -218,7 +218,7 @@ fn a_copy_ahead_of_the_server_has_its_edits_applied_and_sent() {
     r.tick(&next, 1.0);
     assert!(!left.exists(), "the crashed run's folder is gone");
     let mine = root.join(std::process::id().to_string());
-    assert_eq!((copies(&mine, "figcraft"), copies(&mine, "online")), (1, 1), "covered by this run's own copy");
+    assert_eq!((copies(&mine, "scrim"), copies(&mine, "online")), (1, 1), "covered by this run's own copy");
     drop(r);
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -234,10 +234,10 @@ fn an_online_copy_stays_while_what_it_became_cant_be_copied() {
     arrive(&mut next, &script, &mut server);
     assert!(next.docs[1].is_dirty(), "the copy's edit is on top, not saved anywhere yet");
     // Something is in the way of this run's copy: writing it fails.
-    let mine = root.join(std::process::id().to_string()).join(format!("{}.figcraft", next.docs[1].uid));
+    let mine = root.join(std::process::id().to_string()).join(format!("{}.scrim", next.docs[1].uid));
     std::fs::create_dir_all(&mine).unwrap();
     r.tick(&next, 1.0);
-    assert_eq!((copies(&left, "figcraft"), copies(&left, "online")), (1, 1), "kept: the work is nowhere else on disk");
+    assert_eq!((copies(&left, "scrim"), copies(&left, "online")), (1, 1), "kept: the work is nowhere else on disk");
     // Once it can be written, the old copy goes.
     std::fs::remove_dir(&mine).unwrap();
     next.execute("shape.rectangle", &json!({"x": 50, "y": 0, "width": 4, "height": 4})).unwrap();
@@ -256,7 +256,7 @@ fn a_copy_the_server_already_has_is_discarded() {
     assert!(deliver(&script, &mut server, me));
     let left = crash(&s, &root);
     let (mut next, script, mut r, _) = restart(&s, &root);
-    assert_eq!(copies(&left, "figcraft"), 1);
+    assert_eq!(copies(&left, "scrim"), 1);
     arrive(&mut next, &script, &mut server);
     assert_eq!((next.docs.len(), layers(&next.docs[1].doc)), (2, 2), "the file as the server has it");
     assert!(script.lock().unwrap().sent.iter().all(|m| !matches!(m, ClientMsg::Changes { .. })), "nothing to send");
@@ -298,7 +298,7 @@ fn a_copy_that_cant_be_merged_opens_beside_the_file() {
     assert!(script.lock().unwrap().sent.iter().all(|m| !matches!(m, ClientMsg::Changes { .. })), "nothing is forced onto the server");
     r.tick(&next, 1.0);
     assert!(!left.exists());
-    assert_eq!(copies(&root.join(std::process::id().to_string()), "figcraft"), 1, "the recovered tab has this run's copy");
+    assert_eq!(copies(&root.join(std::process::id().to_string()), "scrim"), 1, "the recovered tab has this run's copy");
     drop(r);
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -312,7 +312,7 @@ fn a_copy_whose_server_cant_be_reached_opens_as_any_other() {
     let left = crash(&s, &root);
     let (mut next, script, mut r, _) = restart(&s, &root);
     r.tick(&next, 0.0);
-    assert_eq!(copies(&left, "figcraft"), 1, "kept while the join is on its way");
+    assert_eq!(copies(&left, "scrim"), 1, "kept while the join is on its way");
     script.lock().unwrap().events.push(Event::Status(Status::Failed { reason: "Couldn't reach the server (timed out)".into() }));
     next.live_poll();
     let ds = next.docs.last().unwrap();
@@ -322,7 +322,7 @@ fn a_copy_whose_server_cant_be_reached_opens_as_any_other() {
     assert_eq!(next.prefs.online_files.len(), 1, "the record stays: the file is still yours on the server");
     r.tick(&next, 1.0);
     assert!(!left.exists());
-    assert_eq!(copies(&root.join(std::process::id().to_string()), "figcraft"), 1);
+    assert_eq!(copies(&root.join(std::process::id().to_string()), "scrim"), 1);
     drop(r);
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -367,12 +367,12 @@ fn the_note_follows_its_copy_and_goes_when_the_file_leaves_its_session() {
     let mut r = Recovery::start(&root).unwrap();
     r.write(&s, true);
     let dir = root.join(std::process::id().to_string());
-    assert_eq!((copies(&dir, "figcraft"), copies(&dir, "online")), (1, 1));
+    assert_eq!((copies(&dir, "scrim"), copies(&dir, "online")), (1, 1));
     // Left: the copy is an ordinary one from the next write on.
     s.execute("collab.leave", &json!({})).unwrap();
     s.execute("shape.rectangle", &json!({"x": 20, "y": 0, "width": 10, "height": 10})).unwrap();
     r.write(&s, true);
-    assert_eq!((copies(&dir, "figcraft"), copies(&dir, "online")), (1, 0));
+    assert_eq!((copies(&dir, "scrim"), copies(&dir, "online")), (1, 0));
     r.finish();
     assert!(std::fs::read_dir(&root).unwrap().next().is_none());
     let _ = std::fs::remove_dir_all(&root);

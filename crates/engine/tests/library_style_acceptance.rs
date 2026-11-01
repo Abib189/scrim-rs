@@ -33,7 +33,7 @@ fn accepted_library_paint_reaches_linked_layer() {
     let fixture = Fixture(std::env::temp_dir().join(format!("figcraft-style-accept-{}", std::process::id())));
     let _ = std::fs::remove_dir_all(&fixture.0);
     std::fs::create_dir(&fixture.0).unwrap();
-    let path = fixture.0.join("library.figcraft");
+    let path = fixture.0.join("library.scrim");
     let mut publisher = Session::new();
     run(&mut publisher, "style.create", json!({"type":"paint","name":"Brand","value":"#0000ff"}));
     let publication = run(&mut publisher, "library.publish", json!({}));

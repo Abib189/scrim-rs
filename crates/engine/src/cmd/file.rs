@@ -5,6 +5,7 @@ use std::sync::Arc;
 use base64::Engine as _;
 use figcraft_doc::*;
 use figcraft_format::Version;
+use figcraft_format::import_report::ImportWarning;
 use serde_json::{Value, json};
 
 use super::{CommandSpec, ok};
@@ -29,7 +30,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "file.open",
             "Open",
-            "{path | data (base64) + name (tells the format; opens as a new unsaved document), variables? (REST: the local variables JSON as an object, JSON text or a path; default `<name>.variables.json` or `variables.json` next to the file)} (.figcraft, .json: Scrim or REST API file JSON, .fig (best effort), .svg, .png, .jpg …); REST and .fig imports return `warnings`; a file opened anew returns `summary` {name, pages, layers, images} (one that was already open just returns its `index`)",
+            "{path | data (base64) + name (names it; opens as a new unsaved document), variables? (REST: the local variables JSON as an object, JSON text or a path; default `<name>.variables.json` or `variables.json` next to the file)}  the format comes from the file's contents, never its name: a Scrim document (.scrim, or .figcraft, opened and never written: Save asks for a .scrim), or an import as a new unsaved document (.fig best effort, .sketch, REST API file JSON, the earlier Scrim's JSON .scrim, .svg, images); an import returns `warnings` [{severity: dropped|approximated|info, path, message}], a Scrim document its `repairs`; a file opened anew returns `summary` {name, pages, layers, images} (one that was already open just returns its `index`)",
             false,
             open
         ),
@@ -50,7 +51,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "file.saveAs",
             "Save as",
-            "{path} (no extension adds .figcraft); a .fig path writes an experimental export copy of the shown document with `warnings`, keeping the native path, unsaved changes and version preview",
+            "{path} (.scrim is added to any other name; .figcraft and .json paths are refused: those files are only read); a .fig path writes an experimental export copy of the shown document with `warnings`, keeping the native path, unsaved changes and version preview",
             false,
             save_as
         ),
@@ -85,7 +86,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "file.import",
             "Import",
-            "{path | data (base64) + name, x?, y?, center? (SVG: centre it on x, y), variables? (REST: the local variables JSON as an object, JSON text or a path)}  SVG becomes an editable frame (shapes, text, gradients, masks, effects; with `warnings` for what it left out), images become image layers, .figcraft, REST API file JSON and .fig pages are appended with their variables and flows (REST and .fig: with `warnings`; those return `summary` {name, pages, layers, images} of the file read)",
+            "{path | data (base64) + name, x?, y?, center? (SVG: centre it on x, y), variables? (REST: the local variables JSON as an object, JSON text or a path)}  picked by the file's contents: SVG becomes an editable frame (shapes, text, gradients, masks, effects), images become image layers, the pages of a Scrim document (.scrim, .figcraft), .fig, .sketch, REST API file JSON or the earlier Scrim's .scrim are appended with their variables and flows, with `summary` {name, pages, layers, images} of the file read; imports return `warnings` [{severity, path, message}]",
             true,
             import
         ),
@@ -123,7 +124,7 @@ pub fn specs() -> Vec<CommandSpec> {
         }),
         spec!("file.revert", "Revert to saved", "{}  leave the live session first, if any", false, |s, _| {
             let path = s.ds()?.path.clone().ok_or_else(|| EngineError::Disabled("file.revert".into(), "the file was never saved".into()))?;
-            let (loaded, _) = load_path(&path, None)?;
+            let loaded = load_path(&path, None)?.0.loaded;
             let i = s.active;
             let uid = s.ds()?.uid;
             if let Some(slot) = s.docs.get_mut(i) {
@@ -457,6 +458,11 @@ pub(crate) fn write(path: &str, _bytes: &[u8]) -> Result<()> {
     Err(EngineError::Other(format!("{path}: no file system in the browser")))
 }
 
+/// Whether Scrim writes the file at `path` in place: only a `.scrim` (Fix AG).
+pub fn saves_in_place(path: &str) -> bool {
+    ext(path) == figcraft_format::EXTENSION
+}
+
 fn ext(path: &str) -> String {
     std::path::Path::new(path).extension().and_then(|e| e.to_str()).unwrap_or("").to_ascii_lowercase()
 }
@@ -470,66 +476,39 @@ fn import_summary(doc: &Document, name: String) -> Value {
     json!({"name": name, "pages": doc.pages.len(), "layers": doc.nodes().filter(|n| !n.is_page()).count(), "images": doc.images.len()})
 }
 
-/// Load a document from any supported file (REST API file JSON images come from an `images`
-/// folder next to the file).
+/// Load a document from any file Scrim reads (REST API file JSON images come from an `images`
+/// folder next to the file), with its notes: a Scrim document's repairs, else the import warnings.
 pub fn load(path: &str) -> Result<(Document, Vec<String>)> {
-    load_path(path, None).map(|(l, _)| (l.doc, l.issues))
+    load_path(path, None).map(|(i, _)| notes(i))
 }
 
 pub fn load_bytes(bytes: &[u8], name_hint: &str) -> Result<(Document, Vec<String>)> {
-    load_with(bytes, name_hint, None, &figcraft_format::rest::no_images).map(|(l, _)| (l.doc, l.issues))
+    load_with(bytes, name_hint, None, &figcraft_format::rest::no_images).map(|(i, _)| notes(i))
 }
 
-/// [`load`] with the version history, also telling whether the file was REST API file JSON. A REST
+fn notes(i: crate::importers::Imported) -> (Document, Vec<String>) {
+    let warnings = i.warnings.iter().map(|w| if w.path.is_empty() { w.message.clone() } else { format!("{}: {}", w.path, w.message) });
+    (i.loaded.doc, i.loaded.issues.into_iter().chain(warnings).collect())
+}
+
+/// [`load`] with the version history, also telling whether the file is a Scrim document. A REST
 /// import reads its variables from `variables`, else from a variables JSON next to the file.
-pub fn load_path(path: &str, variables: Option<&Value>) -> Result<(figcraft_format::Loaded, bool)> {
+pub fn load_path(path: &str, variables: Option<&Value>) -> Result<(crate::importers::Imported, bool)> {
     let bytes = read(path)?;
     let sibling = if variables.is_none() { sibling_variables(path) } else { None };
     load_with(&bytes, path, variables.or(sibling.as_ref()), &rest_images(path))
 }
 
-/// Load from bytes. Returns the document with its notes (repairs of a native file, or import
-/// warnings) and version history, and whether it was imported from REST API file JSON or a `.fig`
-/// file (such a file is never saved over). `variables`: the local variables JSON for a REST API file JSON.
+/// Load from bytes with the importer their contents call for ([`crate::importers`], never by the
+/// name), telling whether it is a Scrim document (only that is opened with its path).
 fn load_with(
     bytes: &[u8],
     name_hint: &str,
     variables: Option<&Value>,
     images: figcraft_format::rest::ImageResolver,
-) -> Result<(figcraft_format::Loaded, bool)> {
-    match ext(name_hint).as_str() {
-        "svg" => {
-            let mut doc = Document::new(file_stem(name_hint));
-            let page = doc.first_page().ok_or(EngineError::NoDocument)?;
-            let notes = figcraft_svg::import_svg_with_notes(&mut doc, bytes, page, 0.0, 0.0, &file_stem(name_hint))
-                .map_err(|e| EngineError::Other(e.to_string()))?
-                .notes;
-            Ok((figcraft_format::Loaded { issues: notes, ..doc.into() }, false))
-        }
-        "png" | "jpg" | "jpeg" | "gif" | "webp" | "bmp" | "tif" | "tiff" => {
-            let mut doc = Document::new(file_stem(name_hint));
-            let page = doc.first_page().ok_or(EngineError::NoDocument)?;
-            let (hash, w, h) = figcraft_format::add_image(&mut doc, bytes.to_vec()).map_err(|e| EngineError::Other(e.to_string()))?;
-            let id = doc.create(page, NodeKind::Rectangle, &file_stem(name_hint), 0.0, 0.0, f64::from(w), f64::from(h))?;
-            doc.get_mut(id)?.fills = vec![figcraft_color::Paint::image(hash, figcraft_color::ImageScaleMode::Fill)];
-            Ok((doc.into(), false))
-        }
-        _ => {
-            if let Some(r) = load_fig(bytes, &file_stem(name_hint)) {
-                return Ok((r?, true));
-            }
-            if let Some(r) = figcraft_format::rest::try_import_with(bytes, variables, images) {
-                let (mut doc, warnings) = r.map_err(|e| EngineError::Other(e.to_string()))?;
-                link_instances(&mut doc);
-                return Ok((figcraft_format::Loaded { issues: warnings, ..doc.into() }, true));
-            }
-            let mut loaded = figcraft_format::load_bytes_with_versions(bytes).map_err(|e| EngineError::Other(e.to_string()))?;
-            if loaded.doc.name.is_empty() {
-                loaded.doc.name = file_stem(name_hint);
-            }
-            Ok((loaded, false))
-        }
-    }
+) -> Result<(crate::importers::Imported, bool)> {
+    let options = crate::importers::Options { name: name_hint, variables, images };
+    crate::importers::load(bytes, &options).map(|(i, importer)| (i, importer.native()))
 }
 
 /// Gives `None` when `bytes` are not a `.fig` file. Then other readers can try.
@@ -543,7 +522,7 @@ pub(crate) fn load_fig(bytes: &[u8], name: &str) -> Option<Result<figcraft_forma
 
 /// Link imported instances to their mains (layer sources, overrides found by comparing values),
 /// innermost first so outer instances settle last.
-fn link_instances(doc: &mut Document) {
+pub(crate) fn link_instances(doc: &mut Document) {
     super::styles::unfold_imported_bound_alpha(doc);
     crate::style_vars::after_load(doc);
     super::styles::apply_paint_bindings_on_load(doc);
@@ -688,10 +667,9 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
         remember(s, &path);
         return Ok(json!({"index": i}));
     }
-    let (loaded, rest) = load_path(&path, variables.as_ref())?;
+    let (imported, native) = load_path(&path, variables.as_ref())?;
     remember(s, &path);
-    let native = !rest && matches!(ext(&path).as_str(), "figcraft" | "json");
-    let warnings = rest || ext(&path) == "svg";
+    let (loaded, warnings) = (imported.loaded, imported.warnings);
     // A native file that lost something (a damaged image, say): the app says so, not only the result.
     if native && !loaded.issues.is_empty() {
         s.message = Some(match loaded.issues.as_slice() {
@@ -701,7 +679,7 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
     }
     super::show_new_doc(s, DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
-    out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
+    out[if native { "repairs" } else { "warnings" }] = if native { json!(loaded.issues) } else { crate::importers::warnings_json(&warnings) };
     Ok(out)
 }
 
@@ -711,11 +689,11 @@ fn open_data(s: &mut Session, data: &str, p: &Value, variables: Option<&Value>) 
     let name = req_string("file.open", p, "name")?;
     let data = data.split_once(',').map_or(data, |(_, b)| b);
     let bytes = base64::engine::general_purpose::STANDARD.decode(data.trim()).map_err(|e| bad("file.open", e.to_string()))?;
-    let (loaded, rest) = load_with(&bytes, &name, variables, &figcraft_format::rest::no_images)?;
-    let warnings = rest || ext(&name) == "svg";
+    let (imported, native) = load_with(&bytes, &name, variables, &figcraft_format::rest::no_images)?;
+    let (loaded, warnings) = (imported.loaded, imported.warnings);
     super::show_new_doc(s, DocState::new(loaded.doc, None).with_versions(loaded.versions).with_branches(loaded.branches));
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
-    out[if warnings { "warnings" } else { "repairs" }] = json!(loaded.issues);
+    out[if native { "repairs" } else { "warnings" }] = if native { json!(loaded.issues) } else { crate::importers::warnings_json(&warnings) };
     Ok(out)
 }
 
@@ -781,6 +759,10 @@ impl FileSnapshot {
     /// as of the snapshot, and edits since stay unsaved. False (nothing written) when the document
     /// was closed, saved, reverted or given another path since: the bytes are out of date.
     pub fn save(self, s: &mut Session, bytes: &[u8]) -> Result<bool> {
+        // Auto-save writes .scrim files only (Fix AG: a .figcraft it opened is never written).
+        if !self.path.as_deref().is_some_and(saves_in_place) {
+            return Ok(false);
+        }
         let Some(ds) = s.docs.iter_mut().find(|d| d.uid == self.uid && d.path == self.path && Arc::ptr_eq(&d.saved_doc, &self.saved)) else {
             return Ok(false);
         };
@@ -829,6 +811,10 @@ fn save_to(s: &mut Session, path: String) -> Result<Value> {
     if ext(&path) == "fig" {
         return export_fig(s, &json!({"path": path}));
     }
+    // Scrim writes .scrim files only: a .figcraft (or anything else) it opened is never written.
+    if !saves_in_place(&path) {
+        return Err(EngineError::Disabled("file.save".into(), format!("Scrim saves .scrim files, and never writes {path}: pass a .scrim path")));
+    }
     let i = crate::branches::file_tab(s);
     let ds = s.docs.get_mut(i).ok_or(EngineError::NoDocument)?;
     let bytes = file_bytes(ds)?;
@@ -847,10 +833,14 @@ fn save(s: &mut Session, p: &Value) -> Result<Value> {
         return save_to(s, path);
     }
     match s.docs.get(crate::branches::file_tab(s)).ok_or(EngineError::NoDocument)?.path.clone() {
-        // Earlier builds wrote native data under a .fig name: never overwrite that file with an export.
-        Some(path) if ext(&path) == "fig" => {
+        // A file opened from a .figcraft (or a .fig name, from earlier builds) is never written: Save
+        // asks for a .scrim next to it, and the document is that file from then on.
+        Some(path) if !saves_in_place(&path) => {
             s.request_ui("dialog.saveAs", json!({}));
-            Err(EngineError::Disabled("file.save".into(), "the saved path ends in .fig: choose Save as or pass `path`".into()))
+            Err(EngineError::Disabled(
+                "file.save".into(),
+                format!("{path} isn't a .scrim file and is never written: choose Save as or pass a .scrim `path`"),
+            ))
         }
         Some(path) => save_to(s, path),
         None => {
@@ -863,8 +853,9 @@ fn save(s: &mut Session, p: &Value) -> Result<Value> {
 fn save_as(s: &mut Session, p: &Value) -> Result<Value> {
     match string(p, "path") {
         Some(mut path) => {
-            if ext(&path).is_empty() {
-                path.push_str(".figcraft");
+            // Any other name gets .scrim added (a .figcraft or .json one is refused by `save_to`).
+            if !matches!(ext(&path).as_str(), "scrim" | "fig" | "figcraft" | "json") {
+                path.push_str(".scrim");
             }
             save_to(s, path)
         }
@@ -1244,8 +1235,8 @@ fn import(s: &mut Session, p: &Value) -> Result<Value> {
     let page = s.page()?;
     let (x, y) = (num(p, "x"), num(p, "y"));
     let center = s.ds().map(|d| (d.view.cx, d.view.cy)).unwrap_or((0.0, 0.0));
-    match ext(&name).as_str() {
-        "svg" => {
+    match crate::importers::pick(&bytes, &name).map(|i| i.id()) {
+        Some("svg") => {
             let doc = s.doc_mut()?;
             let (x, y) = (x.unwrap_or(center.0), y.unwrap_or(center.1));
             let imported =
@@ -1260,27 +1251,28 @@ fn import(s: &mut Session, p: &Value) -> Result<Value> {
             s.set_selection(vec![id]);
             let mut out = json!({"id": id});
             if !imported.notes.is_empty() {
-                out["warnings"] = json!(imported.notes);
+                out["warnings"] = crate::importers::warnings_json(&imported.notes.iter().map(|n| ImportWarning::from_note(n)).collect::<Vec<_>>());
             }
             Ok(out)
         }
-        "figcraft" | "json" | "fig" => {
+        Some(kind) if kind != "image" => {
             let resolver = path.as_deref().map(rest_images);
             let images: figcraft_format::rest::ImageResolver = match &resolver {
                 Some(r) => r,
                 None => &figcraft_format::rest::no_images,
             };
             let sibling = if variables.is_none() { path.as_deref().and_then(sibling_variables) } else { None };
-            let (other, rest) = load_with(&bytes, &name, variables.as_ref().or(sibling.as_ref()), images)?;
-            let summary = import_summary(&other.doc, crate::doc_name::resolve(&other.doc.name, path.as_deref(), 1).english());
-            let pages = append_pages(s.doc_mut()?, &other.doc)?;
+            let (other, native) = load_with(&bytes, &name, variables.as_ref().or(sibling.as_ref()), images)?;
+            let summary = import_summary(&other.loaded.doc, crate::doc_name::resolve(&other.loaded.doc.name, path.as_deref(), 1).english());
+            let pages = append_pages(s.doc_mut()?, &other.loaded.doc)?;
             let mut out = json!({"pages": pages, "summary": summary});
-            if rest {
-                out["warnings"] = json!(other.issues);
+            if !native {
+                out["warnings"] = crate::importers::warnings_json(&other.warnings);
             }
             Ok(out)
         }
-        _ => {
+        None => Err(EngineError::Unreadable(crate::importers::Unreadable::NotSupported)),
+        Some(_) => {
             let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
             super::create::place_image(s, &json!({"data": b64, "x": x.unwrap_or(center.0), "y": y.unwrap_or(center.1), "name": file_stem(&name)}))
         }

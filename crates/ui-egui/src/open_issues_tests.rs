@@ -17,7 +17,7 @@ const PNG: [u8; 67] = [
 fn opening_a_file_with_a_damaged_image_toasts_what_was_lost() {
     let dir = std::env::temp_dir().join(format!("figcraft-ui-open-issues-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("pics.figcraft");
+    let path = dir.join("pics.scrim");
     let mut s = Session::new();
     let data = base64::engine::general_purpose::STANDARD.encode(PNG);
     s.execute("file.import", &json!({"data": data, "name": "dot.png"})).unwrap();

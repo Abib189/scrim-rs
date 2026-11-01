@@ -2,7 +2,7 @@
 
 use figcraft_engine::Session;
 
-use super::{open_files, starts_on_home};
+use super::{open_files_with_results, starts_on_home};
 
 fn example() -> String {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/ridgeline-app.figcraft").to_string_lossy().into_owned()
@@ -13,7 +13,7 @@ fn example() -> String {
 #[test]
 fn with_no_file_the_window_starts_on_home_with_no_document() {
     let mut s = Session::empty();
-    assert!(open_files(&mut s, &[]).is_empty());
+    assert!(open_files_with_results(&mut s, &[]).0.is_empty());
     assert_eq!(s.docs.len(), 0, "no Untitled file");
     assert!(starts_on_home(&s));
 }
@@ -23,7 +23,7 @@ fn with_no_file_the_window_starts_on_home_with_no_document() {
 #[test]
 fn a_named_file_opens_alone() {
     let mut s = Session::empty();
-    let opened = open_files(&mut s, &[example()]);
+    let opened = open_files_with_results(&mut s, &[example()]).0;
     assert_eq!(opened.len(), 1);
     assert_eq!(s.docs.len(), 1);
     assert!(s.docs.iter().all(|d| d.doc.name != "Untitled"), "{:?}", s.docs.iter().map(|d| &d.doc.name).collect::<Vec<_>>());
@@ -34,7 +34,7 @@ fn a_named_file_opens_alone() {
 #[test]
 fn a_file_that_cant_open_leaves_home() {
     let mut s = Session::empty();
-    assert!(open_files(&mut s, &["/nonexistent/scrim-fix-ad.figcraft".to_string()]).is_empty());
+    assert!(open_files_with_results(&mut s, &["/nonexistent/scrim-fix-ad.scrim".to_string()]).0.is_empty());
     assert_eq!(s.docs.len(), 0);
     assert!(starts_on_home(&s));
 }
@@ -45,7 +45,19 @@ fn a_file_that_cant_open_leaves_home() {
 #[test]
 fn a_file_from_finder_after_launch_opens_alone() {
     let mut s = Session::empty();
-    open_files(&mut s, &[]);
+    open_files_with_results(&mut s, &[]);
     s.execute("file.open", &serde_json::json!({"path": example()})).expect("opens");
     assert_eq!(s.docs.len(), 1, "{:?}", s.docs.iter().map(|d| &d.doc.name).collect::<Vec<_>>());
+}
+
+/// Fix AG: the last file named at launch hands back its result, so an import's report can show.
+#[test]
+fn the_last_file_opened_at_launch_gives_its_result() {
+    let sample = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../crates/format/tests/fixtures/sketch/sample.sketch");
+    let mut s = Session::empty();
+    let (opened, last) = open_files_with_results(&mut s, &[example(), sample.to_string_lossy().into_owned()]);
+    assert_eq!(opened.len(), 2);
+    let (params, result) = last.expect("the Sketch file's result");
+    assert!(params["path"].as_str().is_some_and(|p| p.ends_with("sample.sketch")));
+    assert!(result["warnings"].as_array().is_some_and(|w| !w.is_empty()), "{result}");
 }

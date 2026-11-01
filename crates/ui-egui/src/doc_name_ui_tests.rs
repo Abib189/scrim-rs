@@ -24,7 +24,7 @@ fn dir(name: &str) -> PathBuf {
     d
 }
 
-/// A `.figcraft` file storing the name `stored`, at `dir/file`.
+/// A `.scrim` file storing the name `stored`, at `dir/file`.
 fn saved(dir: &Path, file: &str, stored: &str) -> String {
     let mut doc = Document::new(stored);
     let page = doc.first_page().unwrap();
@@ -102,7 +102,7 @@ fn ok(path: &str, want: &str, u: &mut Ui) {
 #[test]
 fn a_file_saved_as_untitled_goes_by_its_file_name_everywhere() {
     let d = dir("placeholder");
-    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+    let path = saved(&d, "zeichen-26.scrim", UNTITLED);
     let before = std::fs::read(&path).unwrap();
     let mut u = window(&[&path]);
     assert_eq!(home_names(&mut u), ["zeichen-26"], "Home's card before opening");
@@ -119,7 +119,7 @@ fn a_file_saved_as_untitled_goes_by_its_file_name_everywhere() {
 #[test]
 fn a_name_someone_gave_shows_everywhere_instead_of_the_file_name() {
     let d = dir("explicit");
-    let path = saved(&d, "x1.figcraft", "Poster");
+    let path = saved(&d, "x1.scrim", "Poster");
     let mut u = window(&[&path]);
     assert_eq!(home_names(&mut u), ["Poster"], "Home's card reads the name from the file");
     u.app.run("file.open", json!({"path": path})).unwrap();
@@ -143,7 +143,7 @@ fn save_as_names_a_new_document_after_its_file_at_once() {
     let d = dir("save-as");
     let mut u = window(&[]);
     u.app.run("file.new", json!({})).unwrap();
-    let path = d.join("Spring poster.figcraft").to_string_lossy().into_owned();
+    let path = d.join("Spring poster.scrim").to_string_lossy().into_owned();
     // What the Save as dialog runs once a name is chosen.
     u.app.run("file.saveAs", json!({"path": path})).unwrap();
     ok(&path, "Spring poster", &mut u);
@@ -154,7 +154,7 @@ fn save_as_names_a_new_document_after_its_file_at_once() {
 #[test]
 fn rename_in_the_panel_names_the_document_and_leaves_the_file_alone() {
     let d = dir("rename");
-    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+    let path = saved(&d, "zeichen-26.scrim", UNTITLED);
     let before = std::fs::read(&path).unwrap();
     let mut u = window(&[&path]);
     u.app.run("file.open", json!({"path": path})).unwrap();
@@ -170,7 +170,7 @@ fn rename_in_the_panel_names_the_document_and_leaves_the_file_alone() {
     assert_eq!(home_names(&mut u), ["Festival poster"], "Home at once, before a save");
     assert_eq!(std::fs::read(&path).unwrap(), before, "the file isn't renamed or written");
     let files: Vec<_> = std::fs::read_dir(&d).unwrap().map(|e| e.unwrap().file_name()).collect();
-    assert_eq!(files, ["zeichen-26.figcraft"]);
+    assert_eq!(files, ["zeichen-26.scrim"]);
     assert_eq!(u.app.session.ds().unwrap().path.as_deref(), Some(path.as_str()));
     std::fs::remove_dir_all(&d).ok();
 }
@@ -179,8 +179,8 @@ fn rename_in_the_panel_names_the_document_and_leaves_the_file_alone() {
 #[test]
 fn home_search_and_sort_by_name_use_the_name_shown() {
     let d = dir("search");
-    let zebra = saved(&d, "aaa.figcraft", "Zebra");
-    let plain = saved(&d, "mmm.figcraft", UNTITLED);
+    let zebra = saved(&d, "aaa.scrim", "Zebra");
+    let plain = saved(&d, "mmm.scrim", UNTITLED);
     let mut u = window(&[&zebra, &plain]);
     Sort { key: SortKey::Name, descending: false }.store(&mut u.app.session.prefs);
     assert_eq!(home_names(&mut u), ["mmm", "Zebra"], "sorted by the names shown (by file name, aaa would come first)");

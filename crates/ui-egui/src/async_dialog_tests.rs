@@ -17,7 +17,7 @@ fn open_dialog_finishes_after_the_async_picker_returns() {
     let dir = std::env::temp_dir().join(format!("figcraft-async-open-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("opened.figcraft");
+    let path = dir.join("opened.scrim");
     let doc = figcraft_doc::Document::new("Opened");
     std::fs::write(&path, figcraft_format::save_bytes(&doc, None).unwrap()).unwrap();
 
@@ -50,7 +50,7 @@ fn two_files(tag: &str) -> (FigApp, PathBuf, PathBuf) {
     let dir = std::env::temp_dir().join(format!("figcraft-async-{tag}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("a.figcraft");
+    let path = dir.join("a.scrim");
     let mut app = FigApp::new(Session::empty(), Box::new(Picks(path.clone())));
     for _ in 0..2 {
         app.session.execute("file.new", &serde_json::json!({})).unwrap();

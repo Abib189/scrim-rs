@@ -34,7 +34,7 @@ fn the_status_round_trips_through_mcp_undo_redo_and_the_file() {
     // Save and open: the same status, Changed kept.
     let dir = std::env::temp_dir().join(format!("figcraft-dev-status-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let file = dir.join("status.figcraft");
+    let file = dir.join("status.scrim");
     c.ok("save_file", json!({"path": file.to_string_lossy()}));
     c.ok("open_file", json!({"path": file.to_string_lossy()}));
     assert_eq!(status(&mut c, &f), (json!("readyForDev"), json!(true)));

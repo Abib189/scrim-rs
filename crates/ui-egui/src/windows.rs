@@ -161,6 +161,23 @@ pub fn request(app: &mut FigApp, kind: &str) {
 pub fn error_text(e: &figcraft_engine::EngineError) -> String {
     match e {
         figcraft_engine::EngineError::NoDocument => tr("No file is open. Open a file, or start a new design file from Home.").to_string(),
+        // A file Scrim can't open, said in the interface language (Fix AG).
+        figcraft_engine::EngineError::Unreadable(u) => {
+            use figcraft_engine::importers::Unreadable;
+            match u {
+                Unreadable::OldScrimNewer(v) => trf(
+                    "This .scrim file is from the earlier Scrim app and uses its file version {v}, newer than this Scrim can import (up to {max}). Nothing was changed.",
+                    &[("v", v), ("max", &figcraft_format::old_scrim::SCHEMA_VERSION)],
+                ),
+                Unreadable::OldScrimDamaged(why) => {
+                    trf("This .scrim file is from the earlier Scrim app, and it is damaged ({why}). Nothing was changed.", &[("why", why)])
+                }
+                Unreadable::NotSupported => {
+                    tr("Scrim can't open this file: it isn't a Scrim document, an image, or a file from another design tool Scrim imports.")
+                        .to_string()
+                }
+            }
+        }
         other => other.to_string(),
     }
 }

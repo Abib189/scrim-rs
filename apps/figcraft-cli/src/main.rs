@@ -39,8 +39,9 @@ Every subcommand takes --no-system-fonts (or set FIGCRAFT_NO_SYSTEM_FONTS=1): te
 fonts built into Scrim, for renders that match on every machine. Otherwise installed fonts are
 indexed the first time text is laid out, as in the app.
 
-Files: .figcraft (native), .json (Scrim or REST API file JSON), .fig (best effort; `info` lists what
-wasn't imported), .svg, .png/.jpg/.webp/.gif/.bmp (open as an image layer). `export` writes one file
+Files: .scrim (native; .figcraft, its earlier name, is read and never written), .json (Scrim or REST
+API file JSON), .fig (best effort; `info` lists what wasn't imported), .sketch, the earlier Scrim's
+JSON .scrim, .svg, .png/.jpg/.webp/.gif/.bmp (an image layer); what a file is comes from its contents. `export` writes one file
 per top-level frame into the <out> directory, or one file when <out> has an image extension or --node
 is given (`fig`, or an <out> ending in .fig: the whole file as .fig, experimental; other apps may
 not open every file); PDFs take print options (a bleed like 3mm or 0.125in,

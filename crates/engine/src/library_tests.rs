@@ -166,7 +166,7 @@ fn publish_manifest_roundtrip() {
 #[test]
 fn add_place_and_update_keep_overrides() {
     let d = dir("flow");
-    let lib_path = path_str(&d.join("kit.figcraft"));
+    let lib_path = path_str(&d.join("kit.scrim"));
     let mut lib = Session::new();
     let k = kit(&mut lib);
     let lid = publish_to(&mut lib, &lib_path);
@@ -270,7 +270,7 @@ fn add_place_and_update_keep_overrides() {
     assert_eq!(chars(&s, node(&s, b).children[0]), "Go");
 
     // Saved and reopened, the document keeps its links, copies and records.
-    let user_path = path_str(&d.join("app.figcraft"));
+    let user_path = path_str(&d.join("app.scrim"));
     ex(&mut s, "file.saveAs", json!({"path": user_path}));
     let mut t = Session::empty();
     ex(&mut t, "file.open", json!({"path": user_path}));
@@ -291,7 +291,7 @@ fn add_place_and_update_keep_overrides() {
 #[test]
 fn library_styles_apply_and_import_with_pages() {
     let d = dir("styles");
-    let lib_path = path_str(&d.join("kit.figcraft"));
+    let lib_path = path_str(&d.join("kit.scrim"));
     let mut lib = Session::new();
     kit(&mut lib);
     let lid = publish_to(&mut lib, &lib_path);
@@ -308,7 +308,7 @@ fn library_styles_apply_and_import_with_pages() {
     assert_eq!(s.doc().unwrap().styles.len(), 1);
     assert!(s.execute("library.applyStyle", &json!({"library": lid, "style": "Nope", "ids": [r]})).is_err());
     let inst = idv(&ex(&mut s, "library.place", json!({"library": lid, "component": "Card", "x": 0, "y": 100})));
-    let path = path_str(&d.join("user.figcraft"));
+    let path = path_str(&d.join("user.scrim"));
     ex(&mut s, "file.saveAs", json!({"path": path}));
 
     // Importing that file's pages into another document brings the copies along.
@@ -338,15 +338,15 @@ fn library_styles_apply_and_import_with_pages() {
 fn bad_library_files_are_errors() {
     let d = dir("bad");
     let mut s = Session::new();
-    let missing = path_str(&d.join("missing.figcraft"));
+    let missing = path_str(&d.join("missing.scrim"));
     assert!(matches!(s.execute("library.add", &json!({"path": missing})), Err(EngineError::Other(_))));
-    let junk = d.join("junk.figcraft");
+    let junk = d.join("junk.scrim");
     std::fs::write(&junk, b"not a zip at all").unwrap();
     assert!(s.execute("library.add", &json!({"path": path_str(&junk)})).is_err());
     std::fs::write(&junk, b"{\"name\": \"json\"}").unwrap();
     assert!(s.execute("library.add", &json!({"path": path_str(&junk)})).is_err());
     // A FigCraft file that was never published.
-    let plain = d.join("plain.figcraft");
+    let plain = d.join("plain.scrim");
     std::fs::write(&plain, figcraft_format::save_bytes(&Document::new("Plain"), None).unwrap()).unwrap();
     let e = s.execute("library.add", &json!({"path": path_str(&plain)})).unwrap_err();
     assert!(e.to_string().contains("no published library"), "{e}");
@@ -355,18 +355,18 @@ fn bad_library_files_are_errors() {
     kit(&mut lib);
     ex(&mut lib, "library.publish", json!({}));
     let good = figcraft_format::save_bytes(lib.doc().unwrap(), None).unwrap();
-    let cut = d.join("cut.figcraft");
+    let cut = d.join("cut.scrim");
     std::fs::write(&cut, &good[..good.len() / 2]).unwrap();
     assert!(s.execute("library.add", &json!({"path": path_str(&cut)})).is_err());
     // Oversized files are refused before they are read.
-    let ok = d.join("ok.figcraft");
+    let ok = d.join("ok.scrim");
     std::fs::write(&ok, &good).unwrap();
     let mut cache = Cache::default();
     let e = cache.load_limited(&path_str(&ok), 16).unwrap_err();
     assert!(e.to_string().contains("too large"), "{e}");
     assert!(cache.load(&path_str(&ok)).is_ok());
     // Its own library can't be added to a file.
-    let own = d.join("own.figcraft");
+    let own = d.join("own.scrim");
     ex(&mut lib, "file.saveAs", json!({"path": path_str(&own)}));
     assert!(lib.execute("library.add", &json!({"path": path_str(&own)})).is_err());
     // Commands naming no library fail cleanly, and nothing was enabled.
@@ -380,7 +380,7 @@ fn bad_library_files_are_errors() {
 #[test]
 fn library_variants_swaps_and_undo() {
     let d = dir("variants");
-    let lib_path = path_str(&d.join("chips.figcraft"));
+    let lib_path = path_str(&d.join("chips.scrim"));
     let mut lib = Session::new();
     let mut variants = Vec::new();
     for (i, color) in ["#ff0000", "#00ff00"].iter().enumerate() {
@@ -423,7 +423,7 @@ fn library_variants_swaps_and_undo() {
 #[test]
 fn library_survives_saving_with_versions() {
     let d = dir("versions");
-    let path = path_str(&d.join("kit.figcraft"));
+    let path = path_str(&d.join("kit.scrim"));
     let mut lib = Session::new();
     kit(&mut lib);
     let r = ex(&mut lib, "library.publish", json!({}));

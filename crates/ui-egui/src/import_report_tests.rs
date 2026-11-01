@@ -11,15 +11,39 @@ fn import_results_with_warnings_become_reports_with_counts() {
     let report = Report::from_result("file.import", &json!({}), &result).unwrap();
     assert_eq!(report.name, "Synthetic design");
     assert_eq!((report.pages, report.layers, report.images), (Some(2), Some(12), Some(3)));
-    assert_eq!(report.notes, ["layers without a type were skipped"]);
+    assert_eq!(report.notes.iter().map(|n| n.message.as_str()).collect::<Vec<_>>(), ["layers without a type were skipped"]);
     assert_eq!(report.note_count, 1);
+}
+
+/// Fix AG: warnings carry a severity and the layer they were on; the report counts them by
+/// severity, lists each with its layer and copies as text.
+#[test]
+fn structured_warnings_are_counted_by_severity_and_copy_as_text() {
+    let result = json!({"warnings": [
+        {"severity": "dropped", "path": "Page 1 / Card / Flow", "message": "a prototype flow was left out"},
+        {"severity": "approximated", "path": "Page 1 / Card", "message": "an angular gradient was imported as a linear one"},
+        {"severity": "dropped", "path": "", "message": "design tokens were left out"},
+        {"severity": "info", "path": "Page 1 / Title", "message": "the font Wavy isn't installed"}], "summary": {"name": "Sample"}});
+    let report = Report::from_result("file.open", &json!({}), &result).unwrap();
+    assert_eq!(report.counts, [2, 1, 1]);
+    assert_eq!(report.count_line(), "2 left out · 1 approximated · 1 for information");
+    assert_eq!((report.notes[0].severity.as_str(), report.notes[0].path.as_str()), ("dropped", "Page 1 / Card / Flow"));
+    let text = report.text();
+    assert!(text.starts_with("Sample\n2 left out"), "{text}");
+    assert!(text.contains("- [Left out] Page 1 / Card / Flow: a prototype flow was left out"), "{text}");
+    assert!(text.contains("- [Left out] design tokens were left out"), "a file-wide note has no layer: {text}");
+    assert_eq!(report.inspect()["counts"], json!({"dropped": 2, "approximated": 1, "info": 1}));
+    assert_eq!(report.inspect()["warnings"][1]["path"], "Page 1 / Card");
+    // The Spanish catalogue has every new string.
+    for key in ["Left out", "Approximated", "For information", "The file", "Copy report", "{n} left out", "{n} approximated", "{n} for information"] {
+        assert!(crate::i18n::own_entry("es", key).is_some(), "{key} in Spanish");
+    }
 }
 
 #[test]
 fn only_import_commands_with_warnings_create_reports() {
-    // A warning-free `.fig` or REST open still has a summary to show.
-    let report = Report::from_result("file.open", &json!({}), &json!({"warnings": [], "summary": {"name": "Local", "pages": 1}})).unwrap();
-    assert!(!report.appended && report.notes.is_empty());
+    // Fix AG: an import without warnings shows nothing.
+    assert!(Report::from_result("file.open", &json!({}), &json!({"warnings": [], "summary": {"name": "Local", "pages": 1}})).is_none());
     // A native file's repairs have their own message; an SVG without notes has no `warnings`.
     assert!(Report::from_result("file.open", &json!({}), &json!({"repairs": ["Repaired parent"]})).is_none());
     assert!(Report::from_result("file.open", &json!({}), &json!({"index": 0})).is_none());
@@ -36,7 +60,8 @@ fn svg_placements_are_not_reported_as_appended_pages() {
     assert!(Report::from_result("file.import", &json!({}), &json!({"id": 7})).is_none());
     let report = Report::from_result("file.import", &json!({}), &json!({"id": 7, "warnings": ["Filter skipped"]})).unwrap();
     assert!(!report.appended);
-    assert!(Report::from_result("file.import", &json!({}), &json!({"pages": [1], "summary": {"pages": 1}, "warnings": []})).unwrap().appended);
+    assert!(Report::from_result("file.import", &json!({}), &json!({"pages": [1], "summary": {"pages": 1}, "warnings": []})).is_none());
+    assert!(Report::from_result("file.import", &json!({}), &json!({"pages": [1], "summary": {"pages": 1}, "warnings": ["x"]})).unwrap().appended);
 }
 
 #[test]
@@ -46,7 +71,7 @@ fn report_retention_is_bounded_and_truncates_only_at_character_boundaries() {
     let report = Report::from_result("file.open", &json!({}), &json!({"warnings": notes})).unwrap();
     assert_eq!(report.note_count, MAX_NOTES + 37);
     assert_eq!(report.notes.len(), MAX_NOTES);
-    assert!(report.notes.iter().all(|note| note.chars().count() == MAX_NOTE_CHARS + 1 && note.ends_with('…')));
+    assert!(report.notes.iter().all(|note| note.message.chars().count() == MAX_NOTE_CHARS + 1 && note.message.ends_with('…')));
 }
 
 #[test]
@@ -91,7 +116,7 @@ fn opening_a_rest_json_file_reports_what_was_skipped() {
     assert!(!report.appended);
     assert_eq!(report.pages, Some(1));
     assert!(report.layers.is_some_and(|n| n >= 1));
-    assert!(report.notes.iter().any(|n| n == "layers without a type were skipped"), "{:?}", report.notes);
+    assert!(report.notes.iter().any(|n| n.message == "layers without a type were skipped"), "{:?}", report.notes);
     assert_eq!(app.inspect()["importReport"]["warningCount"], report.note_count);
 }
 
@@ -197,7 +222,7 @@ fn a_file_opened_from_base64_data_has_a_summary_too() {
     assert_eq!(opened["summary"]["pages"], 1);
     let report = app.ui.import_report.as_ref().expect("a report for the REST import");
     assert_eq!(report.pages, Some(1));
-    assert!(report.notes.iter().any(|n| n == "layers without a type were skipped"), "{:?}", report.notes);
+    assert!(report.notes.iter().any(|n| n.message == "layers without a type were skipped"), "{:?}", report.notes);
     // Shown as a sentence, worked out once when the report opens.
-    assert!(report.shown.iter().any(|n| n == "Layers without a type were skipped"), "{:?}", report.shown);
+    assert!(report.notes.iter().any(|n| n.shown == "Layers without a type were skipped"), "{:?}", report.notes);
 }

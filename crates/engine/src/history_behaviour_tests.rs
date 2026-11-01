@@ -61,7 +61,7 @@ fn versions(s: &mut Session) -> Vec<Value> {
 fn temp_path(name: &str) -> (std::path::PathBuf, String) {
     let dir = std::env::temp_dir().join(format!("figcraft-history-{name}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join(format!("{name}.figcraft")).to_string_lossy().to_string();
+    let path = dir.join(format!("{name}.scrim")).to_string_lossy().to_string();
     (dir, path)
 }
 

@@ -10,7 +10,7 @@ fn saved(name: &str, families: &[&str]) -> String {
     for (i, f) in families.iter().chain(families.first()).enumerate() {
         s.execute("text.create", &json!({"text": "Hamburgefonstiv", "x": 0, "y": 40 * i, "props": {"fontFamily": f}})).unwrap();
     }
-    let path = std::env::temp_dir().join(format!("figcraft-missing-fonts-{name}-{}.figcraft", std::process::id()));
+    let path = std::env::temp_dir().join(format!("figcraft-missing-fonts-{name}-{}.scrim", std::process::id()));
     let path = path.to_string_lossy().into_owned();
     s.execute("file.saveAs", &json!({"path": path})).unwrap();
     path

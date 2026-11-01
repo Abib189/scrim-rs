@@ -133,7 +133,7 @@ These carry Scrim's hard rules into this codebase (`docs/scrim-transfer/decision
    - The person's real settings folder may be read, never written, and only when a task asks.
 
 ## Running and looking at the app
-- `cargo run -p figcraft -- --control <port> [file.figcraft|file.svg|image]`. Pick a free port
+- `cargo run -p figcraft -- --control <port> [file.scrim|file.figcraft|file.sketch|file.svg|image]`. Pick a free port
   (`python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])'`);
   sibling apps use the control channel too.
 - For a live check, start it with `SCRIM_SETTINGS_DIR=<scratch folder> HOME=<scratch folder>` (Scrim's rules 9).

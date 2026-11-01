@@ -105,7 +105,7 @@ fn read_fig(path: &std::path::Path, result: &Value) -> figcraft_doc::Document {
 #[test]
 fn fig_save_as_keeps_native_path_dirty_state_and_history() {
     let mut files = SaveFiles::new();
-    let native = files.path("design.figcraft");
+    let native = files.path("design.scrim");
     let copy = files.path("copy.fig");
     let mut s = Session::new();
     rect(&mut s, "Saved rectangle");
@@ -184,7 +184,7 @@ fn fig_save_commands_accept_uppercase_extension() {
 #[test]
 fn fig_copy_from_branch_exports_active_document_without_saving_main() {
     let mut files = SaveFiles::new();
-    let native = files.path("main.figcraft");
+    let native = files.path("main.scrim");
     let copy = files.path("branch.fig");
     let mut s = Session::new();
     rect(&mut s, "Main rectangle");
@@ -242,7 +242,7 @@ fn fig_copy_write_failure_keeps_save_state() {
 fn save_as_without_extension_stays_native() {
     let mut files = SaveFiles::new();
     let requested = files.dir.join("native");
-    let native = files.path("native.figcraft");
+    let native = files.path("native.scrim");
     let mut s = Session::new();
     rect(&mut s, "Native rectangle");
     let result = s.execute("file.saveAs", &json!({"path": requested.to_string_lossy()})).unwrap();
@@ -258,7 +258,7 @@ fn save_as_without_extension_stays_native() {
 fn fig_copy_of_version_preview_keeps_visible_version_and_save_state() {
     let mut files = SaveFiles::new();
     for (index, command) in ["file.save", "file.saveAs"].into_iter().enumerate() {
-        let native = files.path(&format!("current-{index}.figcraft"));
+        let native = files.path(&format!("current-{index}.scrim"));
         let copy = files.path(&format!("version-{index}.FIG"));
         let mut s = Session::new();
         rect(&mut s, "A");
@@ -291,7 +291,7 @@ fn pending_save_choice_keeps_version_preview() {
         rect(&mut s, "A");
         s.execute("file.saveVersion", &json!({"name": "A only"})).unwrap();
         if native_path {
-            let native = files.path(&format!("saved-{index}.figcraft"));
+            let native = files.path(&format!("saved-{index}.scrim"));
             s.execute("file.save", &json!({"path": native.to_string_lossy()})).unwrap();
         }
         rect(&mut s, "B");
@@ -308,7 +308,7 @@ fn pending_save_choice_keeps_version_preview() {
 fn native_save_from_version_preview_writes_current_document() {
     let mut files = SaveFiles::new();
     for (index, (command, explicit)) in [("file.save", false), ("file.save", true), ("file.saveAs", true)].into_iter().enumerate() {
-        let native = files.path(&format!("native-version-{index}.figcraft"));
+        let native = files.path(&format!("native-version-{index}.scrim"));
         let mut s = Session::new();
         rect(&mut s, "A");
         s.execute("file.saveVersion", &json!({"name": "A only"})).unwrap();
@@ -334,7 +334,7 @@ fn implicit_save_protects_legacy_fig_destination() {
     let mut files = SaveFiles::new();
     for (index, command) in ["file.save", "file.saveAs"].into_iter().enumerate() {
         let legacy = files.path(&format!("legacy-{index}.FIG"));
-        let native = files.path(&format!("corrected-{index}.figcraft"));
+        let native = files.path(&format!("corrected-{index}.scrim"));
         let mut s = Session::new();
         rect(&mut s, "A");
         s.execute("file.saveVersion", &json!({"name": "A only"})).unwrap();

@@ -217,7 +217,7 @@ fn with_conversations() -> (Ui, Shared, String) {
             {"kind": "You", "text": "Make a card"},
             {"kind": "Reply", "text": {"agent": "Claude Code", "text": "The card has a red border."}}
         ]},
-        {"id": "c3", "title": "Landing page", "doc": "/Users/someone/Documents/Scrim/site.figcraft", "doc_name": "site", "updated": 30, "lines": [{"kind": "You", "text": "Landing page"}]}
+        {"id": "c3", "title": "Landing page", "doc": "/Users/someone/Documents/Scrim/site.scrim", "doc_name": "site", "updated": 30, "lines": [{"kind": "You", "text": "Landing page"}]}
     ]);
     script.lock().unwrap().conversations = Some(kept.to_string());
     // Read afresh, as at the app's start.

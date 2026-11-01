@@ -1,0 +1,26 @@
+frames after 1 focus
+saveAs (no extension given): {'bytes': 4213, 'path': '<scratch-home>/Documents/Scrim/Poster.scrim'}
+  .scrim container: ['document.json', 'thumbnail.png'] | format figcraft
+  second save byte-stable: True
+  1 saved: tabs ['Poster'] | path '<scratch-home>/Documents/Scrim/Poster.scrim' | dirty False | import report None 0 warnings
+   shot 1-saved-as-scrim.png
+  MCP open_file .scrim: isError False | name Poster | path True | repairs []
+  2 reopened: tabs ['Poster'] | path '<scratch-home>/Documents/Scrim/Poster.scrim' | dirty False | import report None 0 warnings
+   shot 2-reopened.png
+  MCP open_file .figcraft: isError False | name Festival
+  MCP save_file without a path on it: isError True | command `file.save` is not available right now: <scratch>
+  3 .figcraft opened and edited: tabs ['Festival'] | path '<scratch-home>/Documents/Scrim/Festival.figcraft' | dirty True | import report None 0 warnings
+   shot 3-figcraft-opened.png
+  File > Save asked for: ['[2026-11-01T01:39:33Z INFO  figcraft_ui_egui::dialogs] Save as: suggesting Festival.scrim (beside the file it came from)']
+  .figcraft unchanged: True | files ['Festival.figcraft', 'Poster.scrim']
+  quit 0
+frames after 1 focus
+  4 Sketch import: tabs ['sample'] | path None | dirty False | import report {'approximated': 0, 'dropped': 3, 'info': 0} 3 warnings
+  report: [{"message": "The prototype link was not imported.", "path": "Poster / Poster / Call to action", "severity": "dropped"}, {"message": "Hotspots (prototype click areas) were not imported.", "path": "Poster / Poster / Tap area", "severity": "dropped"}, {"message": "Layers of type \u201chologram\u201d are not supported and were not imported.", "path": "Poster / Poster / Hologram", "severity": "dropped"}]
+   shot 4-sketch-import-report.png
+  MCP open_file .sketch: isError False | 3 warnings, e.g. [{'message': 'The prototype link was not imported.', 'path': 'Poster / Poster / Call to action', 'severity': 'dropped'}, {'message': 'Hotspots (prototype click areas) were not imported.', 'path': 'Poster / Poster / Tap area', 'severity': 'dropped'}]
+  sample unchanged: True
+   shot 5-home-after.png
+log errors: []
+captures in <scratch>/out
+  quit 0

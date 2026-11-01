@@ -1041,13 +1041,8 @@ impl FigApp {
     pub fn save(&mut self) {
         // A branch tab saves its main file.
         let tab = figcraft_engine::branches::file_tab(&self.session);
-        // A path ending in .fig is never saved over silently: a .fig destination is an export copy.
-        let native_path = self
-            .session
-            .docs
-            .get(tab)
-            .and_then(|d| d.path.as_deref())
-            .is_some_and(|path| !Path::new(path).extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("fig")));
+        // Only a .scrim is saved in place; any other asks where its .scrim goes (Fix AG).
+        let native_path = self.session.docs.get(tab).and_then(|d| d.path.as_deref()).is_some_and(figcraft_engine::cmd::file::saves_in_place);
         if native_path {
             if self.run("file.save", json!({})).is_some() {
                 self.toast(i18n::tr("Saved"));
@@ -1060,7 +1055,7 @@ impl FigApp {
     pub fn open_dialog(&mut self) {
         // Opening needs no file in front: it goes ahead even if that file closed meanwhile.
         self.start_dialog(
-            |services| services.pick_open(i18n::tr("Open"), OPEN_EXTENSIONS),
+            |services| services.pick_open(i18n::tr("Open"), &figcraft_engine::importers::open_extensions()),
             false,
             |app, p| {
                 let ps = p.to_string_lossy().to_string();
@@ -1072,13 +1067,9 @@ impl FigApp {
     }
 
     pub fn import_dialog(&mut self, place: bool) {
-        let exts: &[&str] = if place {
-            &["png", "jpg", "jpeg", "webp", "gif", "tif", "tiff"]
-        } else {
-            &["svg", "png", "jpg", "jpeg", "webp", "gif", "tif", "tiff", "figcraft", "fig"]
-        };
+        let exts: Vec<&str> = if place { figcraft_engine::importers::image_extensions() } else { figcraft_engine::importers::open_extensions() };
         let title = if place { i18n::tr("Place image") } else { i18n::tr("Import") };
-        self.pick_open(title, exts, move |app, p| {
+        self.pick_open(title, &exts, move |app, p| {
             let ps = p.to_string_lossy().to_string();
             app.run_user("file.import", json!({"path": ps}));
         });
@@ -1275,7 +1266,9 @@ impl FigApp {
         let on = !cfg!(target_arch = "wasm32") && self.session.prefs.auto_save;
         let saving = &self.ui.auto_saving;
         let due = |d: &&figcraft_engine::DocState| {
-            d.path.is_some() && d.branch_of.is_none() && d.preview.is_none() && d.is_dirty() && !saving.iter().any(|(uid, _)| *uid == d.uid)
+            // Only a .scrim: a file opened from a .figcraft is never written (Fix AG).
+            let scrim = d.path.as_deref().is_some_and(figcraft_engine::cmd::file::saves_in_place);
+            scrim && d.branch_of.is_none() && d.preview.is_none() && d.is_dirty() && !saving.iter().any(|(uid, _)| *uid == d.uid)
         };
         let changes = if on { self.session.docs.iter().filter(due).map(|d| d.revision).reduce(u64::wrapping_add) } else { None };
         match changes {
@@ -1653,12 +1646,10 @@ impl FigApp {
     }
 }
 
-/// The file types File ▸ Open and a drop on the home screen open.
-pub(crate) const OPEN_EXTENSIONS: &[&str] = &["figcraft", "fig", "json", "svg", "png", "jpg", "jpeg", "webp", "gif", "tif", "tiff"];
-
-/// Whether `path` names a file type that opens as a document (the extension, in any case).
+/// Whether `path` names a file type that opens as a document, any importer's (the extension, in
+/// any case; what it is comes from its contents once read).
 pub(crate) fn opens(path: &Path) -> bool {
-    path.extension().and_then(|e| e.to_str()).is_some_and(|e| OPEN_EXTENSIONS.iter().any(|x| x.eq_ignore_ascii_case(e)))
+    path.extension().and_then(|e| e.to_str()).is_some_and(|e| figcraft_engine::importers::open_extensions().iter().any(|x| x.eq_ignore_ascii_case(e)))
 }
 
 /// The contents of a dropped file that has no file on disk to read by path.

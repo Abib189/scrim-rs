@@ -1,6 +1,6 @@
 //! Recovery copies, so a crash, a forced quit or a power cut loses at most a few seconds of work.
 //!
-//! While the app runs, each document with unsaved changes is copied to `Recovery/<pid>/<uid>.figcraft`
+//! While the app runs, each document with unsaved changes is copied to `Recovery/<pid>/<uid>.scrim`
 //! in the config folder, in the background, at most every [`INTERVAL`] seconds, and the copy goes
 //! once the document is saved or closed. The app holds a lock on its folder. At startup, the folders
 //! whose lock is free belong to runs that ended without closing: their copies open again as
@@ -180,7 +180,7 @@ impl Recovery {
     /// Copy every document with unsaved changes; `wait`: before returning (after a panic).
     pub fn write(&mut self, s: &Session, wait: bool) {
         for d in &s.docs {
-            let path = self.dir.join(format!("{}.figcraft", d.uid));
+            let path = self.dir.join(format!("{}.{}", d.uid, figcraft_format::EXTENSION));
             let note = path.with_extension(ONLINE);
             if !needs_copy(s, d) {
                 if let Some(mut w) = self.written.remove(&d.uid) {
@@ -236,7 +236,7 @@ impl Recovery {
             let keep = open.contains(uid);
             if !keep {
                 w.join();
-                let _ = std::fs::remove_file(dir.join(format!("{uid}.figcraft")));
+                let _ = std::fs::remove_file(dir.join(format!("{uid}.{}", figcraft_format::EXTENSION)));
                 let _ = std::fs::remove_file(dir.join(format!("{uid}.{ONLINE}")));
             }
             keep
@@ -356,7 +356,8 @@ pub fn recover_all(root: &Path, s: &mut Session) -> Recovered {
     let mut out = Recovered::default();
     let Ok(entries) = std::fs::read_dir(root) else { return out };
     let mut open = |file: &Path, lock: Option<&Arc<File>>, s: &mut Session| {
-        if file.extension().is_none_or(|e| e != "figcraft") {
+        // .scrim copies, and .figcraft ones left by builds before Fix AG.
+        if file.extension().is_none_or(|e| e != figcraft_format::EXTENSION && e != figcraft_format::LEGACY_EXTENSION) {
             return;
         }
         // One of your online files comes back from its server, its copy kept until then.
@@ -407,7 +408,10 @@ pub fn recover_all(root: &Path, s: &mut Session) -> Recovered {
             }
         }
         // The notes go with their copies (one whose copy stays, stays with it).
-        for f in files.iter().filter(|f| f.extension().is_some_and(|e| e == ONLINE) && !f.with_extension("figcraft").exists()) {
+        for f in files.iter().filter(|f| {
+            f.extension().is_some_and(|e| e == ONLINE)
+                && ![figcraft_format::EXTENSION, figcraft_format::LEGACY_EXTENSION].iter().any(|e| f.with_extension(e).exists())
+        }) {
             let _ = std::fs::remove_file(f);
         }
         // Empty now unless a copy couldn't be read, or is kept (its lock held).

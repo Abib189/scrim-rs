@@ -367,7 +367,7 @@ fn a_hidden_window_answers_at_once() {
     // of the window) is an error at once instead of waiting for the window to show.
     let dir = std::env::temp_dir().join(format!("figcraft-hidden-save-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("hidden.figcraft");
+    let path = dir.join("hidden.scrim");
     let (mut h, _) = document();
     h.settle();
     let (tx, rx) = std::sync::mpsc::channel();
@@ -405,7 +405,7 @@ fn a_hidden_window_answers_at_once() {
 fn auto_save_writes_a_changed_file_then_rests() {
     let dir = std::env::temp_dir().join(format!("figcraft-auto-save-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("auto.figcraft").to_string_lossy().to_string();
+    let path = dir.join("auto.scrim").to_string_lossy().to_string();
     let (mut h, _) = document();
     h.run("file.save", json!({"path": path}));
     h.run("pref.autoSave", json!({"on": true}));

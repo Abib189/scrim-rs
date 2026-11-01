@@ -137,7 +137,7 @@ fn a_view_link_makes_the_file_read_only() {
 }
 
 fn saved_file(s: &mut Session) -> std::path::PathBuf {
-    let path = std::env::temp_dir().join(format!("figcraft-live-revert-{}-{}.figcraft", std::process::id(), s.ds().unwrap().uid));
+    let path = std::env::temp_dir().join(format!("figcraft-live-revert-{}-{}.scrim", std::process::id(), s.ds().unwrap().uid));
     s.execute("file.saveVersion", &json!({"name": "Saved"})).unwrap();
     s.execute("file.save", &json!({"path": path})).unwrap();
     s.execute("file.rename", &json!({"name": "Unsaved"})).unwrap();

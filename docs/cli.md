@@ -40,11 +40,11 @@ prints the tool's result. Exit codes: 1 for an invalid query (its message says w
 supports), 2 for usage, 3 for a file that can't be read (over 200 MB is refused before reading).
 
 ```text
-$ scrim query app.figcraft '//FRAME[@layout="flex"]//TEXT[@style.fontSize > 40]'
+$ scrim query app.scrim '//FRAME[@layout="flex"]//TEXT[@style.fontSize > 40]'
 2 matches
   TEXT      Headline  (14)
   TEXT      Price  (31)
-$ scrim find app.figcraft --type instance --name Button --limit 1
+$ scrim find app.scrim --type instance --name Button --limit 1
 1 of 12 matches (--limit for more)
   INSTANCE  Button / Primary  (58)
 ```
@@ -69,8 +69,8 @@ grey placeholder. `.fig` files are read the same way (best effort, images from t
 `info` lists what wasn't imported as `note:` lines.
 
 ```text
-$ scrim info app.figcraft
-app.figcraft — App (412 nodes, 6 styles, 12 variables, 3 images)
+$ scrim info app.scrim
+app.scrim — App (412 nodes, 6 styles, 12 variables, 3 images)
 page 1 "Screens": 380 nodes, 4 top-level
   2 FRAME "Home" 393.0×852.0
   …
@@ -106,18 +106,19 @@ page 1 "Screens": 380 nodes, 4 top-level
   output intent (no CMYK profile ships with Scrim), so proof against your printer's profile.
 
 ```sh
-scrim export app.figcraft -o exports/ --scale 2
-scrim export app.figcraft -o hero.svg --node "Hero"
-scrim export app.figcraft -o screens.pdf --page "Screens"
-scrim export app.figcraft -o poster.pdf --node "Poster" --bleed 3mm --crop-marks --cmyk
-scrim export app.figcraft -o handoff.fig
+scrim export app.scrim -o exports/ --scale 2
+scrim export app.scrim -o hero.svg --node "Hero"
+scrim export app.scrim -o screens.pdf --page "Screens"
+scrim export app.scrim -o poster.pdf --node "Poster" --bleed 3mm --crop-marks --cmyk
+scrim export app.scrim -o handoff.fig
 ```
 
 ### `convert <in> <out>`
 
-By extension. Inputs: `.figcraft`, `.json` (Scrim or REST API file JSON), `.fig` (best effort), `.svg` (an editable frame: groups,
-shapes, text, gradients, masks and effects; `info` lists what it left out as `note:` lines), `.png/.jpg/.webp/.gif/.tif/.bmp`
-(an image layer). Outputs: `.figcraft`, `.json` (Scrim JSON, pretty-printed), `.svg`,
+Inputs are read by their contents: `.scrim` (and `.figcraft`, its earlier name), `.json` (Scrim or REST API file JSON), `.fig` (best
+effort), `.sketch`, the earlier Scrim's JSON `.scrim`, `.svg` (an editable frame: groups, shapes, text, gradients, masks and effects;
+`info` lists what an import left out as `note:` lines), `.png/.jpg/.webp/.gif/.tif/.bmp` (an image layer). Outputs, by extension:
+`.scrim` (`.figcraft` is refused: Scrim reads it and never writes it), `.json` (Scrim JSON, pretty-printed), `.svg`,
 `.png/.jpg/.webp` (the current page rendered at 1x with its background), `.pdf` (the current page's
 frames, one page each), `.fig` (the whole file, experimental, as `export --format fig`).
 
@@ -178,8 +179,8 @@ them and `file.newFromTemplate` opens one as the document the following steps (a
 
 ```sh
 echo '[{"command": "file.newFromTemplate", "params": {"template": "dashboard"}}]' > start.json
-scrim run start.json --out dashboard.figcraft
-scrim export dashboard.figcraft -o dashboard.png
+scrim run start.json --out dashboard.scrim
+scrim export dashboard.scrim -o dashboard.png
 ```
 
 ### `commands [--json] [--filter TEXT]`

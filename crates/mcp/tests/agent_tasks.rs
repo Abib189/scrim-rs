@@ -233,7 +233,7 @@ fn task_export_png_and_svg() {
     let (w, h) = png_dims(shot["content"][0]["data"].as_str().unwrap());
     assert!(w <= 80 && h <= 80 && w > 0, "{w}x{h}");
     // Save and reopen round-trip.
-    let file = dir.join("banner.figcraft");
+    let file = dir.join("banner.scrim");
     c.ok("save_file", json!({"path": file.to_string_lossy()}));
     let opened = c.ok("open_file", json!({"path": file.to_string_lossy()}));
     assert!(opened["document"]["pages"][0]["children"].to_string().contains("Banner"));

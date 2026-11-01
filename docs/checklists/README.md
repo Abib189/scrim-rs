@@ -19,3 +19,4 @@ The Scrim ports add their own areas (`agent-safety.md`, `fig-import.md`, `query.
 - `follow-agent.md`: Stage I, following an agent's work with the camera, the reveal and the working indicator.
 - `connect-agents.md`: Stage J, connecting any MCP client and naming it.
 - `document-names.md`: Fix AF, one name for a document in every place.
+- `scrim-format.md`: Fix AG, the `.scrim` format, `.figcraft` compatibility and the import registry.

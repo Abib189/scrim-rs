@@ -45,7 +45,7 @@ fn healthy(s: &Session) {
 fn extended_collections_override_follow_updates_and_reset() {
     let d = std::env::temp_dir().join(format!("figcraft-extvars-{}", std::process::id()));
     std::fs::create_dir_all(&d).unwrap();
-    let lib_path = d.join("theme.figcraft").to_string_lossy().into_owned();
+    let lib_path = d.join("theme.scrim").to_string_lossy().into_owned();
     let mut lib = Session::new();
     ex(&mut lib, "variable.createCollection", json!({"name": "Theme", "modes": ["Light", "Dark"]}));
     ex(
@@ -115,7 +115,7 @@ fn extended_collections_override_follow_updates_and_reset() {
     healthy(&s);
 
     // Saved and reopened, it is the same; removing the library keeps what it extends.
-    let user = d.join("app.figcraft").to_string_lossy().into_owned();
+    let user = d.join("app.scrim").to_string_lossy().into_owned();
     ex(&mut s, "file.saveAs", json!({"path": user}));
     let mut t = Session::empty();
     ex(&mut t, "file.open", json!({"path": user}));

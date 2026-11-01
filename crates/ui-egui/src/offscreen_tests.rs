@@ -354,7 +354,7 @@ fn ai_panel_screenshots() {
         o.app.ui.agent_view.chat.store.list = vec![
             conv("c1", "Make the trail cards' titles larger", &here, "Ridgeline", 20),
             conv("c2", "A darker hero image", &here, "Ridgeline", 10),
-            conv("c3", "Landing page sections", "other.figcraft", "Site", 30),
+            conv("c3", "Landing page sections", "other.scrim", "Site", 30),
         ];
         run(&mut o, "chat.open", json!({"id": "c1"}));
         o.app.ui.agent_view.chat.store.open = true;

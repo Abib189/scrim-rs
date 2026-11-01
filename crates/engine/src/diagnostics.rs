@@ -314,6 +314,7 @@ pub fn category(e: &EngineError) -> &'static str {
         EngineError::NoDocument => "no open document",
         EngineError::NoNode(_) => "no such layer",
         EngineError::Other(_) => "failed",
+        EngineError::Unreadable(_) => "unreadable file",
         EngineError::Waiting => "waiting",
         EngineError::Internal { .. } => "internal error",
     }

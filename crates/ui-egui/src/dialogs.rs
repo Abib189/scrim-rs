@@ -649,19 +649,28 @@ fn export_dialog(app: &mut FigApp, ctx: &Context) {
 impl FigApp {
     /// File ▸ Save as: a save dialog for the file of the document shown.
     pub fn save_as_dialog(&mut self) {
-        // The name shown suggests the file's (Fix AF): "Untitled 2" saves as "Untitled 2.figcraft".
+        // The name shown suggests the file's (Fix AF): "Untitled 2" saves as "Untitled 2.scrim". A
+        // file opened from a .figcraft gets a .scrim beside it (Fix AG); the .figcraft stays as it is.
         let Some(name) = crate::doc_title::active(self) else { return };
-        self.pick_save(tr("Save as"), &format!("{name}.figcraft"), &["figcraft", "fig"], |app, mut p| {
+        let beside = self.session.ds().ok().and_then(|d| d.path.clone()).filter(|p| !figcraft_engine::cmd::file::saves_in_place(p));
+        let suggested = match beside.as_deref().map(|p| p.rsplit_once('.').map_or(p, |(stem, _)| stem)) {
+            Some(stem) if std::path::Path::new(stem).parent().is_some_and(|d| !d.as_os_str().is_empty()) => format!("{stem}.scrim"),
+            _ => format!("{name}.scrim"),
+        };
+        // The file name only (a folder can name a person): what a live check reads back.
+        let file = std::path::Path::new(&suggested).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default();
+        log::info!("Save as: suggesting {file} ({})", if file == suggested { "no folder" } else { "beside the file it came from" });
+        self.pick_save(tr("Save as"), &suggested, &["scrim", "fig"], |app, mut p| {
             if p.extension().is_none_or(|e| e.is_empty()) {
-                if !p.set_extension("figcraft") {
-                    app.toast(tr("Use the .figcraft or .fig extension."));
+                if !p.set_extension("scrim") {
+                    app.toast(tr("Use the .scrim or .fig extension."));
                     return;
                 }
                 // This name wasn't confirmed by the system dialog: don't replace an existing file.
                 match p.try_exists() {
                     Ok(false) => {}
                     Ok(true) => {
-                        app.toast(tr("A .figcraft file with this name already exists. Choose its full name to confirm replacement."));
+                        app.toast(tr("A .scrim file with this name already exists. Choose its full name to confirm replacement."));
                         return;
                     }
                     Err(e) => {
@@ -669,8 +678,8 @@ impl FigApp {
                         return;
                     }
                 }
-            } else if !p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("figcraft") || e.eq_ignore_ascii_case("fig")) {
-                app.toast(tr("Use the .figcraft or .fig extension."));
+            } else if !p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("scrim") || e.eq_ignore_ascii_case("fig")) {
+                app.toast(tr("Use the .scrim or .fig extension."));
                 return;
             }
             if let Some(r) = app.run("file.saveAs", json!({"path": p.to_string_lossy()})) {

@@ -997,7 +997,7 @@ fn enabled_libraries(app: &mut FigApp, ui: &mut Ui, w: f32, doc: &Document) {
     let t = Tokens::get(ui.ctx());
     title(ui, w, tr("Libraries in this file"));
     if doc.libraries.enabled.is_empty() {
-        hint(ui, tr("No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link."));
+        hint(ui, tr("No libraries yet. Add a .scrim file that was published as a library, or paste a team library's link."));
     }
     let (mut remove, mut swap) = (None, None);
     let swappable = doc.libraries.enabled.len() > 1;
@@ -1102,7 +1102,7 @@ fn enabled_libraries(app: &mut FigApp, ui: &mut Ui, w: f32, doc: &Document) {
         });
     }
     if add {
-        app.pick_open(tr("Add library"), &["figcraft"], |app, p| {
+        app.pick_open(tr("Add library"), &["scrim", "figcraft"], |app, p| {
             if let Some(r) = app.run(ADD, json!({"path": p.to_string_lossy()})) {
                 added(app, &r);
             }

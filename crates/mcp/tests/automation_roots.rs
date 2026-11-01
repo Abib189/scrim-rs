@@ -54,14 +54,14 @@ fn writes_go_only_into_the_write_root() {
     assert_eq!(call(&mut s, "create_node", json!({"type": "frame", "width": 40, "height": 20}))["isError"], false);
     assert_eq!(call(&mut s, "run_command", json!({"command": "export.add"}))["isError"], false);
     for (tool, args) in [
-        ("save_file", json!({"path": d.p("outside/a.figcraft")})),
-        ("save_file", json!({"path": d.p("out2/a.figcraft")})),
-        ("save_file", json!({"path": d.p("out/../outside/a.figcraft")})),
-        ("save_file", json!({"path": d.p("in/a.figcraft")})),
+        ("save_file", json!({"path": d.p("outside/a.scrim")})),
+        ("save_file", json!({"path": d.p("out2/a.scrim")})),
+        ("save_file", json!({"path": d.p("out/../outside/a.scrim")})),
+        ("save_file", json!({"path": d.p("in/a.scrim")})),
         ("export", json!({"format": "png", "path": d.p("outside/a.png")})),
         ("run_command", json!({"command": "file.export", "params": {"format": "svg", "path": d.p("outside/a.svg")}})),
         ("run_command", json!({"command": "file.exportLayers", "params": {"dir": d.p("outside")}})),
-        ("batch", json!({"commands": [{"command": "file.saveAs", "params": {"path": d.p("outside/b.figcraft")}}]})),
+        ("batch", json!({"commands": [{"command": "file.saveAs", "params": {"path": d.p("outside/b.scrim")}}]})),
     ] {
         let r = call(&mut s, tool, args.clone());
         assert_eq!(r["isError"], true, "{tool} {args}: {r}");
@@ -70,9 +70,9 @@ fn writes_go_only_into_the_write_root() {
     for sub in ["outside", "out2", "in"] {
         assert_eq!(std::fs::read_dir(d.0.join(sub)).unwrap().count(), 0, "nothing written in {sub}");
     }
-    assert_eq!(call(&mut s, "save_file", json!({"path": d.p("out/a.figcraft")}))["isError"], false);
+    assert_eq!(call(&mut s, "save_file", json!({"path": d.p("out/a.scrim")}))["isError"], false);
     assert_eq!(call(&mut s, "export", json!({"format": "png", "path": d.p("out/a.png")}))["isError"], false);
-    assert!(d.0.join("out/a.figcraft").is_file() && d.0.join("out/a.png").is_file());
+    assert!(d.0.join("out/a.scrim").is_file() && d.0.join("out/a.png").is_file());
     // Without a path the bytes come back, written nowhere.
     let r = call(&mut s, "export", json!({"format": "png"}));
     assert_eq!(r["content"][0]["type"], "image", "{r}");
@@ -84,25 +84,25 @@ fn reads_go_only_into_the_read_and_write_roots() {
     // Files made without roots: one in each folder.
     let mut free = Server::headless();
     assert_eq!(call(&mut free, "create_node", json!({"type": "frame", "width": 40, "height": 20, "name": "Made"}))["isError"], false);
-    for f in ["in/a.figcraft", "out/b.figcraft", "outside/c.figcraft"] {
-        assert_eq!(call(&mut free, "export", json!({"format": "svg", "path": d.p(&f.replace(".figcraft", ".svg"))}))["isError"], false);
+    for f in ["in/a.scrim", "out/b.scrim", "outside/c.scrim"] {
+        assert_eq!(call(&mut free, "export", json!({"format": "svg", "path": d.p(&f.replace(".scrim", ".svg"))}))["isError"], false);
         assert_eq!(call(&mut free, "run_command", json!({"command": "file.saveAs", "params": {"path": d.p(f)}}))["isError"], false);
     }
     let mut s = d.server();
     for (tool, args) in [
-        ("open_file", json!({"path": d.p("outside/c.figcraft")})),
-        ("open_file", json!({"path": d.p("in/../outside/c.figcraft")})),
-        ("open_file", json!({"path": d.p("in/a.figcraft"), "variables": d.p("outside/c.svg")})),
+        ("open_file", json!({"path": d.p("outside/c.scrim")})),
+        ("open_file", json!({"path": d.p("in/../outside/c.scrim")})),
+        ("open_file", json!({"path": d.p("in/a.scrim"), "variables": d.p("outside/c.svg")})),
         ("run_command", json!({"command": "file.import", "params": {"path": d.p("outside/c.svg")}})),
         ("run_command", json!({"command": "file.placeImage", "params": {"path": d.p("outside/c.svg")}})),
-        ("run_command", json!({"command": "library.add", "params": {"path": d.p("outside/c.figcraft")}})),
+        ("run_command", json!({"command": "library.add", "params": {"path": d.p("outside/c.scrim")}})),
     ] {
         let r = call(&mut s, tool, args.clone());
         assert_eq!(r["isError"], true, "{tool} {args}: {r}");
         assert!(text(&r).contains("automation path rejected"), "{tool}: {r}");
     }
-    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("in/a.figcraft")}))["isError"], false);
-    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("out/b.figcraft")}))["isError"], false, "a write root may be read");
+    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("in/a.scrim")}))["isError"], false);
+    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("out/b.scrim")}))["isError"], false, "a write root may be read");
     assert_eq!(call(&mut s, "run_command", json!({"command": "file.import", "params": {"path": d.p("in/a.svg")}}))["isError"], false);
 }
 

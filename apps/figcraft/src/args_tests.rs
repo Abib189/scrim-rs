@@ -9,8 +9,8 @@ fn args(a: &[&str]) -> Vec<String> {
 #[test]
 fn files_and_the_control_port() {
     assert_eq!(parse(&args(&[])), Args::default());
-    let a = parse(&args(&["--control", "4242", "a.figcraft", "b.svg"]));
-    assert_eq!(a, Args { control: Some(4242), files: args(&["a.figcraft", "b.svg"]), ..Args::default() });
+    let a = parse(&args(&["--control", "4242", "a.scrim", "b.svg"]));
+    assert_eq!(a, Args { control: Some(4242), files: args(&["a.scrim", "b.svg"]), ..Args::default() });
     // A missing or bad port is ignored, not taken as a file.
     assert_eq!(parse(&args(&["--control"])), Args::default());
     assert_eq!(parse(&args(&["--control", "nope"])).control, None);
@@ -18,10 +18,10 @@ fn files_and_the_control_port() {
 
 #[test]
 fn automation_roots_repeat_and_are_never_files() {
-    let a = parse(&args(&["--automation-read-root", "in", "--automation-write-root=out", "--automation-read-root=more", "a.figcraft"]));
+    let a = parse(&args(&["--automation-read-root", "in", "--automation-write-root=out", "--automation-read-root=more", "a.scrim"]));
     assert_eq!(a.read_roots, args(&["in", "more"]));
     assert_eq!(a.write_roots, args(&["out"]));
-    assert_eq!(a.files, args(&["a.figcraft"]));
+    assert_eq!(a.files, args(&["a.scrim"]));
     // A flag without its folder is kept as an empty one, which startup refuses.
     assert_eq!(parse(&args(&["--automation-write-root"])).write_roots, args(&[""]));
 }
@@ -30,12 +30,12 @@ fn automation_roots_repeat_and_are_never_files() {
 fn unknown_flags_are_refused_never_ignored() {
     // #836: a mistyped root flag (or one an older release lacks) must stop the app, not start it
     // unconfined. Both forms, with and without `=`.
-    let a = parse(&args(&["--automation-write-roots", "out", "--automation-write-dir=out", "--verbose", "a.figcraft"]));
+    let a = parse(&args(&["--automation-write-roots", "out", "--automation-write-dir=out", "--verbose", "a.scrim"]));
     assert_eq!(a.unknown, args(&["--automation-write-roots", "--automation-write-dir=out", "--verbose"]));
     assert!(a.write_roots.is_empty());
     // Single-dash arguments are left as they were (files); after `--` everything is a file.
-    let a = parse(&args(&["--control", "1", "--", "--odd.figcraft", "--automation-write-root=x"]));
-    assert_eq!(a.files, args(&["--odd.figcraft", "--automation-write-root=x"]));
+    let a = parse(&args(&["--control", "1", "--", "--odd.scrim", "--automation-write-root=x"]));
+    assert_eq!(a.files, args(&["--odd.scrim", "--automation-write-root=x"]));
     assert!(a.unknown.is_empty() && a.write_roots.is_empty());
 }
 
@@ -46,8 +46,8 @@ fn invite_links_join_instead_of_opening() {
     assert_eq!(a.join.as_deref(), Some(link));
     assert!(a.files.is_empty(), "a link is never opened as a file");
     // How browsers and shells pass it: any case, a slash after `join`, alongside files.
-    let a = parse(&args(&["design.figcraft", "FIGCRAFT://join/?host=h:1&file=f&token=t"]));
-    assert_eq!(a.files, args(&["design.figcraft"]));
+    let a = parse(&args(&["design.scrim", "FIGCRAFT://join/?host=h:1&file=f&token=t"]));
+    assert_eq!(a.files, args(&["design.scrim"]));
     assert_eq!(a.join.as_deref(), Some("FIGCRAFT://join/?host=h:1&file=f&token=t"));
     assert!(is_invite("figcraft:join") && !is_invite("figcraft.svg") && !is_invite("fig") && !is_invite("ü€figcraft:"));
 }
@@ -55,11 +55,11 @@ fn invite_links_join_instead_of_opening() {
 #[test]
 fn file_urls_are_paths() {
     // What a Linux desktop passes for `%U`.
-    let a = parse(&args(&["file:///home/ada/My%20Designs/a+b.figcraft", "FILE://localhost/tmp/x.svg"]));
-    assert_eq!(a.files, args(&["/home/ada/My Designs/a+b.figcraft", "/tmp/x.svg"]), "spaces decoded, plus signs kept");
+    let a = parse(&args(&["file:///home/ada/My%20Designs/a+b.scrim", "FILE://localhost/tmp/x.svg"]));
+    assert_eq!(a.files, args(&["/home/ada/My Designs/a+b.scrim", "/tmp/x.svg"]), "spaces decoded, plus signs kept");
     assert_eq!(file_url_path("file:///%E2%82%AC.png").as_deref(), Some("/€.png"));
-    let win = file_url_path("file:///C:/Designs/a.figcraft");
-    assert_eq!(win.as_deref(), Some(if cfg!(windows) { "C:/Designs/a.figcraft" } else { "/C:/Designs/a.figcraft" }));
+    let win = file_url_path("file:///C:/Designs/a.scrim");
+    assert_eq!(win.as_deref(), Some(if cfg!(windows) { "C:/Designs/a.scrim" } else { "/C:/Designs/a.scrim" }));
     for bad in ["file://server/share/a.svg", "file:///broken%2", "file:///bad%zz", "file:///%FF", "file:", "fi", "ü€file:///x"] {
         assert_eq!(file_url_path(bad), None, "{bad}");
     }

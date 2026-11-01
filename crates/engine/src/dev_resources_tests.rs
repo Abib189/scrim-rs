@@ -135,7 +135,7 @@ fn links_save_sync_and_show_in_inspect() {
     // Saved and reopened.
     let dir = std::env::temp_dir().join(format!("figcraft-devres-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("f.figcraft").to_string_lossy().into_owned();
+    let path = dir.join("f.scrim").to_string_lossy().into_owned();
     ok(&mut s, "file.saveAs", json!({"path": path}));
     let mut t = Session::empty();
     ok(&mut t, "file.open", json!({"path": path}));

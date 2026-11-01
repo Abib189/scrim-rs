@@ -189,9 +189,8 @@ fn typing_in_the_search_field_filters() {
 fn home_search_finds_known_files_and_opens_an_existing_tab() {
     let mut session = Session::new();
     session.execute("file.rename", &json!({"name": "North Trail"})).unwrap();
-    session.docs[0].path = Some("C:/designs/North Trail.figcraft".into());
-    session.prefs.recent_files =
-        vec!["C:/designs/North Trail.figcraft".into(), "C:/designs/South Trail.figcraft".into(), "C:/designs/Other.figcraft".into()];
+    session.docs[0].path = Some("C:/designs/North Trail.scrim".into());
+    session.prefs.recent_files = vec!["C:/designs/North Trail.scrim".into(), "C:/designs/South Trail.scrim".into(), "C:/designs/Other.scrim".into()];
     session.prefs.online_files.push(OnlineFile {
         server: "wss://share.example/".into(),
         file: "trail".into(),
@@ -226,7 +225,7 @@ fn home_search_finds_known_files_and_opens_an_existing_tab() {
 fn home_search_shows_a_saved_files_preview() {
     let dir = std::env::temp_dir().join(format!("figcraft-home-search-preview-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("Search preview.figcraft");
+    let path = dir.join("Search preview.scrim");
     let image = image::RgbaImage::from_pixel(64, 32, image::Rgba([30, 140, 210, 255]));
     let mut png = Vec::new();
     image.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
@@ -254,7 +253,7 @@ fn home_search_shows_a_saved_files_preview() {
 #[test]
 fn home_search_field_filters_as_typed_and_a_section_click_clears_it() {
     let mut u = first_run();
-    u.app.session.prefs.recent_files = vec!["C:/designs/Glacier.figcraft".into(), "C:/designs/Forest.figcraft".into()];
+    u.app.session.prefs.recent_files = vec!["C:/designs/Glacier.scrim".into(), "C:/designs/Forest.scrim".into()];
     let s = shapes(&mut u);
     click(&mut u, text_center(&s, "Search files and templates"));
     u.frame(vec![Event::Text("glacier".into())]);
@@ -286,7 +285,7 @@ fn a_search_keeps_the_other_recent_files_pictures_and_the_selection() {
     let paths: Vec<String> = ["Alpine", "Basin"]
         .into_iter()
         .map(|name| {
-            let path = dir.join(format!("{name}.figcraft"));
+            let path = dir.join(format!("{name}.scrim"));
             std::fs::write(&path, figcraft_format::save_bytes(&figcraft_doc::Document::new(name), Some(&png)).unwrap()).unwrap();
             path.to_string_lossy().into_owned()
         })
@@ -382,7 +381,7 @@ fn a_first_run_offers_templates_on_recents_and_recent_files_replace_them() {
     assert_eq!(u.app.session.doc().unwrap().name, "Landing page");
     // With a recent file, the list shows in the row's place.
     u.app.ui.home = true;
-    u.app.session.prefs.recent_files = vec!["/tmp/ridgeline.figcraft".into()];
+    u.app.session.prefs.recent_files = vec!["/tmp/ridgeline.scrim".into()];
     let s = settle(&mut u);
     assert!(has_text(&s, "Recent files") && has_text(&s, "ridgeline"));
     assert!(!has_text(&s, "Start from a template") && !has_text(&s, "See all templates"));
@@ -392,8 +391,8 @@ fn a_first_run_offers_templates_on_recents_and_recent_files_replace_them() {
 #[test]
 fn an_open_files_long_name_and_path_share_their_row_without_overlapping() {
     let name = "Quarterly planning: onboarding flow review with annotations and handoff notes";
-    let long = "/Users/alex/Documents/Clients/Northwind Traders/2026 Website relaunch/Design reviews/Week 42/onboarding-flow-review.figcraft";
-    let short = "/tmp/wireframes.figcraft";
+    let long = "/Users/alex/Documents/Clients/Northwind Traders/2026 Website relaunch/Design reviews/Week 42/onboarding-flow-review.scrim";
+    let short = "/tmp/wireframes.scrim";
     let mut s = Session::new();
     s.execute("file.rename", &json!({"name": name})).unwrap();
     s.docs[0].path = Some(long.into());
@@ -409,7 +408,7 @@ fn an_open_files_long_name_and_path_share_their_row_without_overlapping() {
     // One that doesn't: the name, then the end of its path, side by side.
     let all = texts(&s);
     let rect = |(_, p, size): &(String, Pos2, egui::Vec2)| Rect::from_min_size(*p, *size);
-    let detail = all.iter().find(|(t, _, _)| t.ends_with("/onboarding-flow-review.figcraft")).expect("the path");
+    let detail = all.iter().find(|(t, _, _)| t.ends_with("/onboarding-flow-review.scrim")).expect("the path");
     let detail_rect = rect(detail);
     let shown_name =
         all.iter().find(|e| e.0.starts_with('Q') && (rect(e).center().y - detail_rect.center().y).abs() < 2.0).expect("the name on the path's row");
@@ -576,7 +575,7 @@ fn dropping_a_file_without_one_on_disk_opens_it_as_a_new_unsaved_document() {
 #[test]
 fn dropping_a_native_file_on_the_home_screen_opens_it() {
     let dir = Temp::new();
-    let path = dir.path("Dropped.figcraft");
+    let path = dir.path("Dropped.scrim");
     let mut saved = Session::new();
     saved.execute("file.saveAs", &json!({"path": path.to_string_lossy()})).unwrap();
     assert!(path.exists());
@@ -588,7 +587,7 @@ fn dropping_a_native_file_on_the_home_screen_opens_it() {
     assert_eq!(u.app.ui.pending_opens.len(), 1);
     assert!(u.app.session.docs.is_empty(), "nothing opens in the frame of the drop");
     let s = flat(&u.frame_output(vec![]).shapes);
-    assert!(has_text(&s, "Opening as a new file") && has_text(&s, "Opening the file…") && has_text(&s, "Dropped.figcraft"), "the card shows");
+    assert!(has_text(&s, "Opening as a new file") && has_text(&s, "Opening the file…") && has_text(&s, "Dropped.scrim"), "the card shows");
     assert_eq!(u.app.ui.pending_opens.len(), 1);
     assert!(u.app.session.docs.is_empty(), "the card is drawn first");
     assert_eq!(u.app.inspect()["pendingOpens"], 1);
@@ -603,7 +602,7 @@ fn dropping_a_native_file_on_the_home_screen_opens_it() {
 #[test]
 fn dropping_a_native_file_on_canvas_keeps_its_receiving_document_after_tab_switch() {
     let dir = Temp::new();
-    let path = dir.path("Canvas import.figcraft");
+    let path = dir.path("Canvas import.scrim");
     let mut source = Session::new();
     source.execute("file.saveAs", &json!({"path": path.to_string_lossy()})).unwrap();
 
@@ -759,5 +758,5 @@ fn dropping_an_unsupported_file_on_the_home_screen_opens_nothing() {
     drop_file(&mut u, &path);
     assert!(u.app.session.docs.is_empty());
     assert!(u.app.ui.home);
-    assert_eq!(u.app.ui.toast.as_ref().map(|t| t.0.as_str()), Some("Drop a .figcraft, .fig, .json, .svg or image file."));
+    assert_eq!(u.app.ui.toast.as_ref().map(|t| t.0.as_str()), Some("Drop a .scrim, .fig, .sketch, .svg or image file."));
 }

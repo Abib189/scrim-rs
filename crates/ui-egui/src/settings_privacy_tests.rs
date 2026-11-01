@@ -80,7 +80,7 @@ fn a_font_fallback_is_recorded_with_family_names_only() {
     }
     let mut s = Session::new();
     s.execute("text.create", &json!({"text": "PRIVATE TEXT", "x": 0, "y": 0, "props": {"fontFamily": "Scrim Missing Diag"}})).unwrap();
-    let path = std::env::temp_dir().join(format!("scrim-diag-fonts-{}.figcraft", std::process::id()));
+    let path = std::env::temp_dir().join(format!("scrim-diag-fonts-{}.scrim", std::process::id()));
     let path = path.to_string_lossy().into_owned();
     s.execute("file.saveAs", &json!({"path": path})).unwrap();
     let mut u = Ui::new(Session::new());

@@ -3,8 +3,14 @@
      the system database). Installed to /usr/share/mime/packages/ (update-mime-database runs on
      install). -->
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="application/x-figcraft">
+  <mime-type type="application/x-scrim">
     <comment>Scrim document</comment>
+    <icon name="design.scrim.app"/>
+    <glob pattern="*.scrim"/>
+  </mime-type>
+  <!-- FigCraft's format, read by Scrim and saved as .scrim (Fix AG). -->
+  <mime-type type="application/x-figcraft">
+    <comment>FigCraft document</comment>
     <icon name="design.scrim.app"/>
     <glob pattern="*.figcraft"/>
   </mime-type>

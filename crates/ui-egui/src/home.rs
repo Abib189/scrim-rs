@@ -11,7 +11,7 @@ use serde_json::json;
 
 use crate::FigApp;
 use crate::a11y;
-use crate::i18n::{tr, tr_noop};
+use crate::i18n::{tr, tr_noop, trf};
 use crate::icons::{self, Icon};
 use crate::theme::{Tokens, ink, regular, semibold};
 use crate::widgets;
@@ -188,7 +188,7 @@ fn dropped(app: &mut FigApp, ctx: &egui::Context) {
     for f in files {
         let path = f.path().to_path_buf();
         if !crate::opens(&path) {
-            app.toast(tr("Drop a .figcraft, .fig, .json, .svg or image file."));
+            app.toast(trf("Drop a {formats} or image file.", &[("formats", &formats())]));
             continue;
         }
         // `opens` saw an extension, so there is a file name to tell the format by.
@@ -321,7 +321,8 @@ fn subheading(ui: &mut Ui, t: &Tokens, text: &str) {
 
 /// A card with an icon tile, a title and a line under it; true when chosen.
 fn action_card(ui: &mut Ui, t: &Tokens, icon: Icon, title: &str, sub: &str) -> bool {
-    let (r, mut resp) = ui.allocate_exact_size(vec2(260.0, 72.0), Sense::click());
+    // Wide enough for the formats the registry names (Fix AG).
+    let (r, mut resp) = ui.allocate_exact_size(vec2(320.0, 72.0), Sense::click());
     a11y::button(&resp, title);
     // One line each inside the card; a long translation ends with an ellipsis, in full on hover.
     let text_w = r.width() - 72.0;
@@ -343,7 +344,7 @@ fn recents(app: &mut FigApp, ui: &mut Ui, t: &Tokens) {
     let (mut new_file, mut open) = (false, false);
     ui.horizontal(|ui| {
         new_file = action_card(ui, t, Icon::Plus, tr("New design file"), tr("Start from a blank canvas"));
-        open = action_card(ui, t, Icon::Page, tr("Open file"), tr("Open .figcraft, .svg or images"));
+        open = action_card(ui, t, Icon::Page, tr("Open file"), &trf("Open {formats} or images", &[("formats", &formats())]));
     });
     if new_file {
         app.run("file.new", json!({}));
@@ -623,3 +624,12 @@ pub(crate) fn cached_thumbnails(ctx: &egui::Context, dark: bool) -> Vec<&'static
     let thumbs: Thumbs = ctx.data(|d| d.get_temp(Id::new("template_thumbs"))).unwrap_or_default();
     thumbs.0.iter().filter(|((_, d), thumb)| *d == dark && thumb.is_some()).map(|((id, _), _)| *id).collect()
 }
+
+/// The formats Scrim opens by name, from the import registry: ".scrim, .fig, .sketch, .svg".
+pub(crate) fn formats() -> String {
+    figcraft_engine::importers::listed().join(", ")
+}
+
+#[cfg(test)]
+#[path = "scrim_format_ui_tests.rs"]
+mod scrim_format_ui_tests;

@@ -41,6 +41,7 @@ pub mod file_access;
 pub mod fonts;
 pub mod guard;
 pub mod guides;
+pub mod importers;
 pub mod inspect;
 pub mod invite_links;
 pub mod keymap;
@@ -99,6 +100,9 @@ pub enum EngineError {
     NoNode(NodeId),
     #[error("{0}")]
     Other(String),
+    /// A file Scrim can't open, and what it is ([`importers::Unreadable`]).
+    #[error("{0}")]
+    Unreadable(importers::Unreadable),
     /// A command run in the background sent a request to a server and runs again with the answer
     /// ([`background`]); never returned to other callers.
     #[error("waiting for the server")]
@@ -436,18 +440,6 @@ impl DocState {
         };
         st.zoom_to_fit();
         st
-    }
-
-    /// With the version history read from its file.
-    pub fn with_versions(mut self, versions: Vec<figcraft_format::Version>) -> Self {
-        self.versions = versions;
-        self
-    }
-
-    /// With the branches read from its file.
-    pub fn with_branches(mut self, branches: Vec<figcraft_format::Branch>) -> Self {
-        self.branches = branches;
-        self
     }
 
     /// The branches, for editing (the file then has unsaved changes).

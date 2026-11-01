@@ -28,13 +28,13 @@ fn a_fresh_install_has_nothing_to_copy() {
 #[test]
 fn an_upgrade_copies_figcrafts_settings_and_leaves_them_in_place() {
     let base = temp("upgrade");
-    let prefs = r#"{"prefs":{"theme":"dark","recent_files":["/tmp/a.figcraft"]}}"#;
+    let prefs = r#"{"prefs":{"theme":"dark","recent_files":["/tmp/a.scrim"]}}"#;
     write(&base.join(OLD).join("state.json"), prefs);
-    write(&base.join(OLD).join("Recovery/doc-1.figcraft"), "copy");
+    write(&base.join(OLD).join("Recovery/doc-1.scrim"), "copy");
     write(&base.join(OLD).join("Plugins/tidy/figcraft-plugin.json"), "{}");
     assert_eq!(migrate(&base), Migration::Copied { files: 3 });
     assert_eq!(std::fs::read_to_string(base.join(NEW).join("state.json")).unwrap(), prefs);
-    assert!(base.join(NEW).join("Recovery/doc-1.figcraft").exists() && base.join(NEW).join("Plugins/tidy/figcraft-plugin.json").exists());
+    assert!(base.join(NEW).join("Recovery/doc-1.scrim").exists() && base.join(NEW).join("Plugins/tidy/figcraft-plugin.json").exists());
     // FigCraft's directory is untouched, and no temporary copy is left behind.
     assert_eq!(std::fs::read_to_string(base.join(OLD).join("state.json")).unwrap(), prefs);
     let names: Vec<String> = std::fs::read_dir(&base).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();

@@ -1,4 +1,5 @@
-//! Native Save as accepts both file formats; .fig copies preserve native save state.
+//! Native Save as accepts both file formats; .fig copies preserve native save state. Scrim saves
+//! .scrim (Fix AG): a document opened from a .figcraft asks for a .scrim beside it.
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -30,7 +31,7 @@ impl Temp {
     fn new() -> Self {
         static NEXT: AtomicU64 = AtomicU64::new(0);
         let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
-        let path = std::env::temp_dir().join(format!("figcraft-save-as-{}-{stamp}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+        let path = std::env::temp_dir().join(format!("scrim-save-as-{}-{stamp}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
         std::fs::create_dir(&path).unwrap();
         Self(path)
     }
@@ -73,7 +74,7 @@ fn toast(app: &FigApp) -> &str {
 }
 
 fn expected_picker() -> Vec<(String, String, Vec<String>)> {
-    vec![("Save as".into(), "Prototype.figcraft".into(), vec!["figcraft".into(), "fig".into()])]
+    vec![("Save as".into(), "Prototype.scrim".into(), vec!["scrim".into(), "fig".into()])]
 }
 
 #[test]
@@ -111,7 +112,7 @@ fn a_pathless_engine_request_uses_the_same_platform_picker() {
 #[test]
 fn native_paths_and_an_extensionless_default_save_native_files_and_show_the_written_name() {
     let temp = Temp::new();
-    for (chosen, written) in [("native", "native.figcraft"), ("saved.figcraft", "saved.figcraft"), ("upper.FIGCRAFT", "upper.FIGCRAFT")] {
+    for (chosen, written) in [("native", "native.scrim"), ("saved.scrim", "saved.scrim"), ("upper.SCRIM", "upper.SCRIM")] {
         let (mut app, picks) = app(Some(temp.path(chosen)));
         app.save_as_dialog();
         app.poll_dialog(&egui::Context::default());
@@ -134,7 +135,7 @@ fn returned_fig_paths_export_real_copies_without_changing_native_save_state() {
     for name in ["copy.fig", "upper.FIG"] {
         let path = temp.path(name);
         let (mut app, picks) = app(Some(path.clone()));
-        let native = temp.path("working.figcraft").to_string_lossy().into_owned();
+        let native = temp.path("working.scrim").to_string_lossy().into_owned();
         app.session.ds_mut().unwrap().path = Some(native.clone());
         let before = app.session.doc().unwrap().clone();
         app.save_as_dialog();
@@ -170,7 +171,7 @@ fn a_fig_copy_reports_actual_engine_warnings_and_keeps_the_original_content() {
 #[test]
 fn cancelling_the_platform_dialog_preserves_document_selection_path_and_dirty_state() {
     let (mut app, picks) = app(None);
-    app.session.ds_mut().unwrap().path = Some("working.figcraft".into());
+    app.session.ds_mut().unwrap().path = Some("working.scrim".into());
     let before = app.session.doc().unwrap().clone();
     let selection = app.session.ds().unwrap().selection.clone();
     app.save_as_dialog();
@@ -178,7 +179,7 @@ fn cancelling_the_platform_dialog_preserves_document_selection_path_and_dirty_st
     assert_eq!(*picks.lock().unwrap(), expected_picker());
     assert_eq!(app.session.doc().unwrap(), &before);
     assert_eq!(app.session.ds().unwrap().selection, selection);
-    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.figcraft"));
+    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.scrim"));
     assert!(app.session.ds().unwrap().is_dirty());
     assert!(app.ui.toast.is_none());
 }
@@ -197,14 +198,14 @@ fn unsupported_extensions_are_rejected_without_overwriting_the_chosen_file() {
         assert_eq!(app.session.doc().unwrap(), &before);
         assert!(app.session.ds().unwrap().path.is_none());
         assert!(app.session.ds().unwrap().is_dirty());
-        assert_eq!(toast(&app), "Use the .figcraft or .fig extension.");
+        assert_eq!(toast(&app), "Use the .scrim or .fig extension.");
     }
 }
 
 #[test]
 fn adding_the_default_extension_never_overwrites_another_existing_path_without_confirmation() {
     let temp = Temp::new();
-    let path = temp.path("existing.figcraft");
+    let path = temp.path("existing.scrim");
     std::fs::write(&path, b"existing document").unwrap();
     let (mut app, _) = app(Some(temp.path("existing")));
     app.save_as_dialog();
@@ -213,18 +214,18 @@ fn adding_the_default_extension_never_overwrites_another_existing_path_without_c
     assert!(!temp.path("existing").exists());
     assert!(app.session.ds().unwrap().path.is_none());
     assert!(app.session.ds().unwrap().is_dirty());
-    assert_eq!(toast(&app), "A .figcraft file with this name already exists. Choose its full name to confirm replacement.");
+    assert_eq!(toast(&app), "A .scrim file with this name already exists. Choose its full name to confirm replacement.");
 }
 
 #[test]
 fn fig_save_results_report_the_actual_name_and_plural_warning_count_without_marking_native_state_saved() {
     let (mut app, _) = app(None);
     let before = app.session.doc().unwrap().clone();
-    app.session.ds_mut().unwrap().path = Some("working.figcraft".into());
+    app.session.ds_mut().unwrap().path = Some("working.scrim".into());
     file_saved(&mut app, &json!({"format": "fig", "path": "written.fig", "warnings": ["synthetic warning", "another synthetic warning"]}));
     assert_eq!(toast(&app), "Exported written.fig; 2 kinds of content were left out");
     assert_eq!(app.session.doc().unwrap(), &before);
-    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.figcraft"));
+    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.scrim"));
     assert!(app.session.ds().unwrap().is_dirty());
 }
 
@@ -232,7 +233,7 @@ fn fig_save_results_report_the_actual_name_and_plural_warning_count_without_mark
 fn save_with_a_native_path_keeps_using_it_without_a_dialog() {
     let temp = Temp::new();
     let (mut app, picks) = app(None);
-    let path = temp.path("working.figcraft");
+    let path = temp.path("working.scrim");
     app.run("file.saveAs", json!({"path": path})).unwrap();
     app.run("shape.rectangle", json!({"width": 10, "height": 20})).unwrap();
     assert!(app.session.ds().unwrap().is_dirty());
@@ -246,12 +247,12 @@ fn save_with_a_native_path_keeps_using_it_without_a_dialog() {
 #[test]
 fn saving_legacy_fig_paths_keeps_the_success_toast_and_original_source_bytes() {
     for legacy_name in ["legacy.fig", "legacy.FIG"] {
-        for destination in ["corrected.figcraft", "copy.fig"] {
+        for destination in ["corrected.scrim", "copy.fig"] {
             let temp = Temp::new();
             let target = temp.path(destination);
             let legacy = temp.path(legacy_name);
             let (mut app, picks) = app(Some(target.clone()));
-            let original = temp.path("original.figcraft");
+            let original = temp.path("original.scrim");
             app.run("file.saveAs", json!({"path": original})).unwrap();
             std::fs::rename(&original, &legacy).unwrap();
             let legacy_path = legacy.to_string_lossy().into_owned();
@@ -261,13 +262,15 @@ fn saving_legacy_fig_paths_keeps_the_success_toast_and_original_source_bytes() {
             let legacy_bytes = std::fs::read(&legacy).unwrap();
             app.save();
             app.poll_dialog(&egui::Context::default());
-            assert_eq!(*picks.lock().unwrap(), expected_picker());
+            // A .scrim of the same name, beside the file it came from (Fix AG).
+            let beside = temp.path("legacy.scrim").to_string_lossy().into_owned();
+            assert_eq!(*picks.lock().unwrap(), vec![("Save as".into(), beside, vec!["scrim".into(), "fig".into()])]);
             assert_eq!(std::fs::read(&legacy).unwrap(), legacy_bytes);
             assert!(target.is_file());
             assert!(app.ui.last_error.is_none());
             assert_eq!(app.session.doc().unwrap(), &before);
-            if destination == "corrected.figcraft" {
-                assert_eq!(toast(&app), "Saved corrected.figcraft");
+            if destination == "corrected.scrim" {
+                assert_eq!(toast(&app), "Saved corrected.scrim");
                 assert_eq!(app.session.ds().unwrap().path.as_deref(), target.to_str());
                 assert!(!app.session.ds().unwrap().is_dirty());
             } else {
@@ -282,7 +285,7 @@ fn saving_legacy_fig_paths_keeps_the_success_toast_and_original_source_bytes() {
 #[test]
 fn failed_writes_surface_the_engine_error_and_keep_the_document_dirty() {
     let temp = Temp::new();
-    for extension in ["figcraft", "fig"] {
+    for extension in ["scrim", "fig"] {
         let path = temp.path(&format!("missing/copy.{extension}"));
         let (mut app, _) = app(Some(path.clone()));
         let before = app.session.doc().unwrap().clone();
@@ -306,7 +309,7 @@ fn an_empty_destination_is_rejected_without_writing_or_changing_save_state() {
     assert_eq!(app.session.doc().unwrap(), &before);
     assert!(app.session.ds().unwrap().path.is_none());
     assert!(app.session.ds().unwrap().is_dirty());
-    assert_eq!(toast(&app), "Use the .figcraft or .fig extension.");
+    assert_eq!(toast(&app), "Use the .scrim or .fig extension.");
 }
 
 #[test]
@@ -317,4 +320,26 @@ fn save_as_with_no_document_never_opens_a_dialog() {
     app.poll_dialog(&egui::Context::default());
     assert!(picks.lock().unwrap().is_empty());
     assert!(app.ui.toast.is_none());
+}
+
+/// Fix AG: Save on a document opened from a .figcraft opens Save as with a .scrim of the same name
+/// in the same folder; the .figcraft is never written, and the document is the .scrim afterwards.
+#[test]
+fn save_on_a_figcraft_document_asks_for_a_scrim_beside_it_and_leaves_the_original() {
+    let temp = Temp::new();
+    let old = temp.path("Brand kit.figcraft");
+    std::fs::write(&old, figcraft_engine::cmd::file::file_bytes(session().ds().unwrap()).unwrap()).unwrap();
+    let before = std::fs::read(&old).unwrap();
+    let chosen = temp.path("Brand kit.scrim");
+    let (mut app, picks) = app(Some(chosen.clone()));
+    app.session = Session::empty();
+    app.run("file.open", json!({"path": old.to_string_lossy()})).unwrap();
+    app.run("shape.rectangle", json!({"width": 10, "height": 10})).unwrap();
+    app.save();
+    app.poll_dialog(&egui::Context::default());
+    let suggested = temp.path("Brand kit.scrim").to_string_lossy().into_owned();
+    assert_eq!(*picks.lock().unwrap(), vec![("Save as".into(), suggested, vec!["scrim".into(), "fig".into()])]);
+    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some(chosen.to_string_lossy().as_ref()), "the document is the .scrim now");
+    assert!(chosen.is_file());
+    assert_eq!(std::fs::read(&old).unwrap(), before, "the .figcraft is untouched");
 }

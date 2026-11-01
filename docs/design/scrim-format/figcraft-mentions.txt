@@ -1,0 +1,634 @@
+# Every mention of .figcraft and the figcraft document type before Fix AG (commit 84c163b)
+# grep -rIn '\.figcraft|"figcraft"|figcraft.document' over the repository (target and .git excluded); 'file:line: text', text cut at 160 characters.
+# The binary and crate names (figcraft, figcraft-*) are not changed and are not listed unless the line also names the extension.
+# Example home folders quoted from test code are shown as /Users/<user> and /home/<user> (the PII scan).
+ATTRIBUTION.md:21:| `examples/*.figcraft` | FigCraft contributors | Synthetic demo documents built through FigCraft's command API; invented copy, shapes and vectors drawn from scratch, no images or em
+README.md:32:- **Coming from FigCraft:** Scrim opens `.figcraft` files as they are, and on its first start copies (never moves) FigCraft's settings and recent files.
+README.md:48:scrim export design.figcraft -o out/          # headless render and export
+README.md:49:scrim run script.json --in design.figcraft    # a script of commands, no window
+CLAUDE.md:136:- `cargo run -p figcraft -- --control <port> [file.figcraft|file.svg|image]`. Pick a free port
+ROADMAP.md:331:| 2026-10-14 | minor | Lost images reported on loading (#207): a `.figcraft` file whose image member is damaged, too large or missing no longer loads in silence; each lost image (up to 
+ROADMAP.md:411:| 2026-10-11 | minor | Branches landed (gap 17): File ▸ Create branch… copies the file into a branch tab that remembers its base; Review and merge shows both sides' changes (layers with
+packaging/check-app-specific.sh:19:    assert manifest["id"] == "design.scrim.app" and manifest["command"] == "figcraft", name
+AGENTS.md:136:- `cargo run -p figcraft -- --control <port> [file.figcraft|file.svg|image]`. Pick a free port
+packaging/macos/Info.plist.in:48:  <!-- The .figcraft format: Scrim keeps FigCraft's file type, so it imports the declaration
+packaging/macos/Info.plist.in:54:      <string>ai.storyteller.figcraft.document</string>
+packaging/macos/Info.plist.in:99:      <array><string>ai.storyteller.figcraft.document</string></array>
+packaging/linux/apprun-test.sh:110:out="$("$APPDIR/AppRun" file.figcraft cli)" || fail "app launch with a later cli argument exited non-zero"
+packaging/linux/apprun-test.sh:111:[ "$out" = "stub: file.figcraft cli" ] || fail "later cli argument hijacked the launch: $out"
+packaging/linux/design.scrim.app.mime.xml:9:    <glob pattern="*.figcraft"/>
+packaging/windows/figcraft.wxs:13:  Scrim the owner of `.figcraft`, and offers it under "Open with" for SVG, PNG and JPEG
+packaging/windows/figcraft.wxs:93:        <!-- .figcraft: Scrim's own format; Scrim is its default app. -->
+packaging/windows/figcraft.wxs:95:          <Extension Id="figcraft" ContentType="application/x-figcraft">
+packaging/windows/figcraft.wxs:107:        <!-- "Open with" app list and the Run dialog (Win+R "figcraft"). -->
+packaging/windows/figcraft.wxs:110:        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\figcraft.exe\SupportedTypes" Name=".figcraft" Value="" Type="string" />
+packaging/linux/flatpak/design.scrim.app.bundle.yml:46:      # .figcraft; the runtime's shared-mime-info already knows SVG, PNG and JPEG.
+packaging/windows/package.ps1:62:$Bins = @('figcraft'); if ($HasCli) { $Bins += @('scrim', 'figcraft-cli') }
+packaging/windows/package.ps1:63:$Pkgs = @('figcraft'); if ($HasCli) { $Pkgs += 'figcraft-cli' }
+crates/plugin/src/widget_tests.rs:86:          (import "figcraft" "widget_render" (func $render (param i32 i32) (result i32)))
+crates/plugin/src/widget_tests.rs:87:          (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/plugin/src/widget_tests.rs:88:          (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/plugin/src/sandbox.rs:42:pub const IMPORT_MODULE: &str = "figcraft";
+crates/plugin/src/tests.rs:33:  (import "figcraft" "call" (func $call (param i32 i32 i32 i32) (result i32)))
+crates/plugin/src/tests.rs:34:  (import "figcraft" "selection" (func $selection (result i32)))
+crates/plugin/src/tests.rs:35:  (import "figcraft" "reply_len" (func $reply_len (result i32)))
+crates/plugin/src/tests.rs:36:  (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/plugin/src/tests.rs:37:  (import "figcraft" "log" (func $log (param i32 i32)))
+crates/plugin/src/tests.rs:38:  (import "figcraft" "notify" (func $notify (param i32 i32)))
+crates/plugin/src/tests.rs:39:  (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/plugin/src/tests.rs:348:        r#"(module (import "figcraft" "call" (func (param i32) (result i32))) (memory (export "memory") 1) (func (export "figcraft_run") (param i32) (result i32) (i32.co
+crates/plugin/src/tests.rs:351:        r#"(module (import "figcraft" "launch_rockets" (func)) (memory (export "memory") 1) (func (export "figcraft_run") (param i32) (result i32) (i32.const 0)))"#,
+crates/plugin/src/v2_tests.rs:43:          (import "figcraft" "reply_len" (func $reply_len (result i32)))
+crates/plugin/src/v2_tests.rs:44:          (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/plugin/src/v2_tests.rs:45:          (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/plugin/src/v2_tests.rs:46:          (import "figcraft" "ui_show" (func $ui_show (param i32 i32) (result i32)))
+crates/plugin/src/v2_tests.rs:47:          (import "figcraft" "ui_close" (func $ui_close))
+crates/plugin/src/v2_tests.rs:48:          (import "figcraft" "setting_get" (func $setting_get (param i32 i32) (result i32)))
+crates/plugin/src/v2_tests.rs:49:          (import "figcraft" "setting_set" (func $setting_set (param i32 i32 i32 i32) (result i32)))
+crates/plugin/src/v2_tests.rs:50:          (import "figcraft" "setting_delete" (func $setting_delete (param i32 i32)))
+crates/mcp/tests/dev_status.rs:37:    let file = dir.join("status.figcraft");
+crates/mcp/tests/dev_status.rs:51:    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+crates/mcp/tests/no_document.rs:18:    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/ridgeline-app.figcraft").to_string_lossy().into_owned()
+crates/mcp/tests/protocol.rs:78:    assert!(c.err("open_file", json!({"path": "/definitely/not/here.figcraft"})).contains("here.figcraft"));
+crates/mcp/tests/agent_tasks.rs:236:    let file = dir.join("banner.figcraft");
+crates/mcp/tests/connect_docs.rs:14:        assert!(cmd.contains("scrim mcp") && !cmd.contains("figcraft"), "{cmd}");
+crates/mcp/tests/automation_roots.rs:57:        ("save_file", json!({"path": d.p("outside/a.figcraft")})),
+crates/mcp/tests/automation_roots.rs:58:        ("save_file", json!({"path": d.p("out2/a.figcraft")})),
+crates/mcp/tests/automation_roots.rs:59:        ("save_file", json!({"path": d.p("out/../outside/a.figcraft")})),
+crates/mcp/tests/automation_roots.rs:60:        ("save_file", json!({"path": d.p("in/a.figcraft")})),
+crates/mcp/tests/automation_roots.rs:64:        ("batch", json!({"commands": [{"command": "file.saveAs", "params": {"path": d.p("outside/b.figcraft")}}]})),
+crates/mcp/tests/automation_roots.rs:73:    assert_eq!(call(&mut s, "save_file", json!({"path": d.p("out/a.figcraft")}))["isError"], false);
+crates/mcp/tests/automation_roots.rs:75:    assert!(d.0.join("out/a.figcraft").is_file() && d.0.join("out/a.png").is_file());
+crates/mcp/tests/automation_roots.rs:87:    for f in ["in/a.figcraft", "out/b.figcraft", "outside/c.figcraft"] {
+crates/mcp/tests/automation_roots.rs:88:        assert_eq!(call(&mut free, "export", json!({"format": "svg", "path": d.p(&f.replace(".figcraft", ".svg"))}))["isError"], false);
+crates/mcp/tests/automation_roots.rs:93:        ("open_file", json!({"path": d.p("outside/c.figcraft")})),
+crates/mcp/tests/automation_roots.rs:94:        ("open_file", json!({"path": d.p("in/../outside/c.figcraft")})),
+crates/mcp/tests/automation_roots.rs:95:        ("open_file", json!({"path": d.p("in/a.figcraft"), "variables": d.p("outside/c.svg")})),
+crates/mcp/tests/automation_roots.rs:98:        ("run_command", json!({"command": "library.add", "params": {"path": d.p("outside/c.figcraft")}})),
+crates/mcp/tests/automation_roots.rs:104:    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("in/a.figcraft")}))["isError"], false);
+crates/mcp/tests/automation_roots.rs:105:    assert_eq!(call(&mut s, "open_file", json!({"path": d.p("out/b.figcraft")}))["isError"], false, "a write root may be read");
+crates/mcp/src/tools.rs:267:            "Open a .figcraft or .json document (Scrim or REST API file JSON), a .fig file (best effort, with `warnings` for what wasn't imported), an .svg (becomes vectors
+crates/mcp/src/tools.rs:280:            "Save the active document as a .figcraft file. `path` is required the first time (an untitled document has no path); later saves reuse it. A `path` ending in .f
+crates/mcp/src/tools.rs:281:            obj(json!({"path": string("Output .figcraft path, or a .fig path for an experimental export copy")}), &[]),
+crates/mcp/src/tools.rs:580:        "howToOpen": "Open a file with open_file {\"path\": \"/path/to/design.figcraft\"} (also .fig, .json or .svg), or make a blank one with run_command {\"command\": \"f
+crates/ui-egui/locales/es-419.toml:67:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Aún no hay bibliotecas. Agrega un archivo .figcraft p
+crates/ui-egui/locales/zh-Hans.toml:22:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "已存在同名的 .figcraft 文件。请选择其完整名称以确认替换。"
+crates/ui-egui/locales/zh-Hans.toml:789:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "还没有库。添加已发布为库的 .figcraft 文件，或粘贴团队库的链接。"
+crates/ui-egui/locales/zh-Hans.toml:856:"Open .figcraft, .svg or images" = "打开 .figcraft、.svg 或图片"
+crates/ui-egui/locales/zh-Hans.toml:1356:"Use the .figcraft or .fig extension." = "请使用 .figcraft 或 .fig 扩展名。"
+crates/ui-egui/locales/fr.toml:20:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Un fichier .figcraft portant ce nom existe déjà. Choisissez son nom 
+crates/ui-egui/locales/fr.toml:416:"Drop a .figcraft, .fig, .json, .svg or image file." = "Déposez un fichier .figcraft, .fig, .json, .svg ou une image."
+crates/ui-egui/locales/fr.toml:833:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Aucune bibliothèque pour l’instant. Ajoutez un fichier .
+crates/ui-egui/locales/fr.toml:906:"Open .figcraft, .svg or images" = "Ouvrez des fichiers .figcraft, .svg ou des images"
+crates/ui-egui/locales/fr.toml:1437:"Use the .figcraft or .fig extension." = "Utilisez l’extension .figcraft ou .fig."
+crates/ui-egui/locales/ko.toml:21:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "이 이름의 .figcraft 파일이 이미 있습니다. 바꾸려면 확장자까지 포함한 전체 이름을 선택하세요."
+crates/ui-egui/locales/ko.toml:788:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "아직 라이브러리가 없음. 라이브러리로 게시된 .figcraft 파일을 추가하거나 팀 라이브러리 링크를
+crates/ui-egui/locales/ko.toml:855:"Open .figcraft, .svg or images" = ".figcraft, .svg 또는 이미지 열기"
+crates/ui-egui/locales/ko.toml:1355:"Use the .figcraft or .fig extension." = ".figcraft 또는 .fig 확장자를 사용하세요."
+crates/ui-egui/locales/pt-BR.toml:19:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Já existe um arquivo .figcraft com este nome. Escolha o nome comp
+crates/ui-egui/locales/pt-BR.toml:787:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Ainda não há bibliotecas. Adicione um arquivo .figcra
+crates/ui-egui/locales/pt-BR.toml:854:"Open .figcraft, .svg or images" = "Abra arquivos .figcraft, .svg ou imagens"
+crates/ui-egui/locales/pt-BR.toml:1354:"Use the .figcraft or .fig extension." = "Use a extensão .figcraft ou .fig."
+crates/ui-egui/locales/cs.toml:16:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Soubor .figcraft s tímto názvem už existuje. Nahrazení potvrdíte výb
+crates/ui-egui/locales/cs.toml:819:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Zatím žádné knihovny. Přidejte soubor .figcraft publikov
+crates/ui-egui/locales/cs.toml:891:"Open .figcraft, .svg or images" = "Otevřít .figcraft, .svg nebo obrázky"
+crates/ui-egui/locales/cs.toml:1410:"Use the .figcraft or .fig extension." = "Použijte příponu .figcraft nebo .fig."
+crates/ui-egui/locales/id.toml:20:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "File .figcraft dengan nama ini sudah ada. Pilih nama lengkapnya untu
+crates/ui-egui/locales/id.toml:823:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Belum ada pustaka. Tambahkan file .figcraft yang dipubli
+crates/ui-egui/locales/id.toml:895:"Open .figcraft, .svg or images" = "Buka .figcraft, .svg, atau gambar"
+crates/ui-egui/locales/id.toml:1414:"Use the .figcraft or .fig extension." = "Gunakan ekstensi .figcraft atau .fig."
+crates/ui-egui/locales/sv.toml:19:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Det finns redan en .figcraft-fil med det här namnet. Välj dess fulls
+crates/ui-egui/locales/sv.toml:413:"Drop a .figcraft, .fig, .json, .svg or image file." = "Släpp en .figcraft-, .fig-, .json- eller .svg-fil eller en bildfil."
+crates/ui-egui/locales/sv.toml:830:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Inga bibliotek än. Lägg till en .figcraft-fil som har pu
+crates/ui-egui/locales/sv.toml:902:"Open .figcraft, .svg or images" = "Öppna .figcraft, .svg eller bilder"
+crates/ui-egui/locales/sv.toml:1430:"Use the .figcraft or .fig extension." = "Använd filändelsen .figcraft eller .fig."
+crates/ui-egui/locales/tr.toml:21:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Bu adda bir .figcraft dosyası zaten var. Değiştirmeyi onaylamak için
+crates/ui-egui/locales/tr.toml:823:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Henüz kitaplık yok. Kitaplık olarak yayımlanmış bir .fig
+crates/ui-egui/locales/tr.toml:895:"Open .figcraft, .svg or images" = ".figcraft, .svg veya görüntü aç"
+crates/ui-egui/locales/tr.toml:1414:"Use the .figcraft or .fig extension." = ".figcraft veya .fig uzantısını kullanın."
+crates/ui-egui/locales/nl.toml:20:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Er bestaat al een .figcraft-bestand met deze naam. Kies de volledige
+crates/ui-egui/locales/nl.toml:419:"Drop a .figcraft, .fig, .json, .svg or image file." = "Laat een .figcraft-, .fig-, .json-, .svg- of afbeeldingsbestand los."
+crates/ui-egui/locales/nl.toml:838:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Nog geen bibliotheken. Voeg een .figcraft-bestand toe da
+crates/ui-egui/locales/nl.toml:911:"Open .figcraft, .svg or images" = "Open .figcraft, .svg of afbeeldingen"
+crates/ui-egui/locales/nl.toml:1445:"Use the .figcraft or .fig extension." = "Gebruik de extensie .figcraft of .fig."
+crates/ui-egui/locales/ja.toml:22:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "この名前の .figcraft ファイルは既に存在します。置き換えるには、拡張子まで含む名前を選択。"
+crates/ui-egui/locales/ja.toml:828:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "ライブラリはまだない。ライブラリとして公開された .figcraft ファイルを追加するか、チームライブラリのリ
+crates/ui-egui/locales/ja.toml:900:"Open .figcraft, .svg or images" = ".figcraft、.svg、画像を開く"
+crates/ui-egui/locales/ja.toml:1423:"Use the .figcraft or .fig extension." = "拡張子は .figcraft または .fig を使用。"
+crates/ui-egui/locales/es.toml:330:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Ya existe un archivo .figcraft con este nombre. Elige su nombre com
+crates/ui-egui/locales/es.toml:728:"Drop a .figcraft, .fig, .json, .svg or image file." = "Suelta un archivo .figcraft, .fig, .json, .svg o de imagen."
+crates/ui-egui/locales/es.toml:1149:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Aún no hay bibliotecas. Añade un archivo .figcraft publ
+crates/ui-egui/locales/es.toml:1223:"Open .figcraft, .svg or images" = "Abre archivos .figcraft, .svg o imágenes"
+crates/ui-egui/locales/es.toml:1757:"Use the .figcraft or .fig extension." = "Usa la extensión .figcraft o .fig."
+crates/ui-egui/locales/ru.toml:18:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Файл .figcraft с таким именем уже существует. Чтобы подтвердить заме
+crates/ui-egui/locales/ru.toml:821:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Библиотек пока нет. Добавьте файл .figcraft, опубликован
+crates/ui-egui/locales/ru.toml:894:"Open .figcraft, .svg or images" = "Открыть .figcraft, .svg или изображения"
+crates/ui-egui/locales/ru.toml:1416:"Use the .figcraft or .fig extension." = "Используйте расширение .figcraft или .fig."
+crates/ui-egui/locales/en.toml:327:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "A .figcraft file with this name already exists. Choose its full nam
+crates/ui-egui/locales/en.toml:727:"Drop a .figcraft, .fig, .json, .svg or image file." = "Drop a .figcraft, .fig, .json, .svg or image file."
+crates/ui-egui/locales/en.toml:1148:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "No libraries yet. Add a .figcraft file that was publish
+crates/ui-egui/locales/en.toml:1222:"Open .figcraft, .svg or images" = "Open .figcraft, .svg or images"
+crates/ui-egui/locales/en.toml:1756:"Use the .figcraft or .fig extension." = "Use the .figcraft or .fig extension."
+crates/ui-egui/locales/fi.toml:20:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Tämänniminen .figcraft-tiedosto on jo olemassa. Vahvista korvaaminen
+crates/ui-egui/locales/fi.toml:419:"Drop a .figcraft, .fig, .json, .svg or image file." = "Pudota .figcraft-, .fig-, .json-, .svg- tai kuvatiedosto."
+crates/ui-egui/locales/fi.toml:838:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Ei vielä kirjastoja. Lisää kirjastona julkaistu .figcraf
+crates/ui-egui/locales/fi.toml:911:"Open .figcraft, .svg or images" = "Avaa .figcraft-, .svg- tai kuvatiedostoja"
+crates/ui-egui/locales/fi.toml:1445:"Use the .figcraft or .fig extension." = "Käytä .figcraft- tai .fig-tiedostopäätettä."
+crates/ui-egui/tests/recent_file_names.rs:12:    session.prefs.recent_files = vec![path.into(), "Q3 report.figcraft".into()];
+crates/ui-egui/tests/recent_file_names.rs:53:        for (path, prefix, full) in [("Q3  report.figcraft", "Q3", "Q3  report"), ("Notes  A.figcraft", "Notes", "Notes  A")] {
+crates/ui-egui/tests/recent_file_names.rs:60:        let (label, shortcut, _) = row(view, "Q3  report.figcraft", "Q3 report", "");
+crates/ui-egui/locales/de.toml:20:"A .figcraft file with this name already exists. Choose its full name to confirm replacement." = "Eine .figcraft-Datei mit diesem Namen existiert bereits. Wählen Sie 
+crates/ui-egui/locales/de.toml:398:"Drop a .figcraft, .fig, .json, .svg or image file." = "Legen Sie eine .figcraft-, .fig-, .json-, .svg- oder Bilddatei ab."
+crates/ui-egui/locales/de.toml:792:"No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link." = "Noch keine Bibliotheken. Fügen Sie eine als Bibliothek v
+crates/ui-egui/locales/de.toml:859:"Open .figcraft, .svg or images" = "Öffnen Sie .figcraft-, .svg- oder Bilddateien"
+crates/ui-egui/locales/de.toml:1364:"Use the .figcraft or .fig extension." = "Verwenden Sie die Dateiendung .figcraft oder .fig."
+crates/ui-egui/src/ai_panel_tests.rs:220:        {"id": "c3", "title": "Landing page", "doc": "/Users/<user>/Documents/Scrim/site.figcraft", "doc_name": "site", "updated": 30, "lines": [{"kind": "You
+crates/ui-egui/src/follow_pause_cause_tests.rs:75:    let path = dir.join("poster.figcraft");
+crates/ui-egui/src/home_start_tests.rs:48:    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/ridgeline-app.figcraft");
+crates/ui-egui/src/assets_panel.rs:1000:        hint(ui, tr("No libraries yet. Add a .figcraft file that was published as a library, or paste a team library's link."));
+crates/ui-egui/src/assets_panel.rs:1105:        app.pick_open(tr("Add library"), &["figcraft"], |app, p| {
+crates/ui-egui/src/canvas_labels_ui_tests.rs:21:    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+crates/ui-egui/src/home.rs:191:            app.toast(tr("Drop a .figcraft, .fig, .json, .svg or image file."));
+crates/ui-egui/src/home.rs:346:        open = action_card(ui, t, Icon::Page, tr("Open file"), tr("Open .figcraft, .svg or images"));
+crates/ui-egui/src/home_recents_tests.rs:85:            shown("/a/Alpha.figcraft", Some(100), Some(30)),
+crates/ui-egui/src/home_recents_tests.rs:86:            shown("/b/gone.figcraft", None, None),
+crates/ui-egui/src/home_recents_tests.rs:144:/// A folder of recent files: `pic.figcraft` (a picture on a dark page, edited 3 hours ago),
+crates/ui-egui/src/home_recents_tests.rs:145:/// `empty.figcraft` (nothing on a light grey page, edited 2 days ago), `art.fig` (a picture, edited
+crates/ui-egui/src/home_recents_tests.rs:146:/// just now), `icon.svg`, and `gone.figcraft` (missing).
+crates/ui-egui/src/home_recents_tests.rs:168:        write("pic.figcraft", figcraft_format::save_bytes(&doc(0.1), Some(&png(64, 32))).unwrap(), 3 * HOUR + 60),
+crates/ui-egui/src/home_recents_tests.rs:169:        write("empty.figcraft", figcraft_format::save_bytes(&doc(0.9), None).unwrap(), 2 * DAY + 60),
+crates/ui-egui/src/home_recents_tests.rs:172:        dir.join("gone.figcraft").to_string_lossy().into_owned(),
+crates/ui-egui/src/home_recents_tests.rs:300:        let p = dir.join(format!("more{i}.figcraft"));
+crates/ui-egui/src/home_recents_tests.rs:315:    // A to Z: art.fig, empty.figcraft, gone.figcraft (missing: nothing to read) on the first row.
+crates/ui-egui/src/lib.rs:1078:            &["svg", "png", "jpg", "jpeg", "webp", "gif", "tif", "tiff", "figcraft", "fig"]
+crates/ui-egui/src/lib.rs:1657:pub(crate) const OPEN_EXTENSIONS: &[&str] = &["figcraft", "fig", "json", "svg", "png", "jpg", "jpeg", "webp", "gif", "tif", "tiff"];
+crates/ui-egui/src/reveal_tests.rs:199:    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+crates/ui-egui/src/proto_responsive_tests.rs:121:    let path = dir.join("brand.figcraft").to_string_lossy().into_owned();
+crates/ui-egui/src/present_tail_tests.rs:134:          (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/ui-egui/src/present_tail_tests.rs:135:          (import "figcraft" "widget_render" (func $render (param i32 i32) (result i32)))
+crates/ui-egui/src/async_dialog_tests.rs:20:    let path = dir.join("opened.figcraft");
+crates/ui-egui/src/async_dialog_tests.rs:53:    let path = dir.join("a.figcraft");
+crates/ui-egui/src/working_indicator_tests.rs:102:    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+crates/ui-egui/src/follow_moves_tests.rs:180:    let path = dir.join("saved.figcraft");
+crates/ui-egui/src/offscreen_tests.rs:8://!   offscreen -- --ignored` writes screenshots of `examples/ridgeline-app.figcraft` there. `before`
+crates/ui-egui/src/offscreen_tests.rs:189:    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ridgeline-app.figcraft");
+crates/ui-egui/src/offscreen_tests.rs:357:            conv("c3", "Landing page sections", "other.figcraft", "Site", 30),
+crates/ui-egui/src/desktop_flow_tests.rs:235:    let text = json!({"mcpServers": {"figcraft": {"command": "figcraft-cli", "args": ["mcp"]}, "other": {"command": "x"}}}).to_string();
+crates/ui-egui/src/desktop_flow_tests.rs:247:    assert!(v["mcpServers"].get("figcraft").is_none() && v["mcpServers"]["other"]["command"] == "x");
+crates/ui-egui/src/settings_privacy_tests.rs:83:    let path = std::env::temp_dir().join(format!("scrim-diag-fonts-{}.figcraft", std::process::id()));
+crates/ui-egui/src/perf_tests.rs:178:    let spec = figcraft_engine::synthetic_ds::DsSpec { icons, ..figcraft_engine::synthetic_ds::DsSpec::FULL };
+crates/ui-egui/src/control_roots_tests.rs:66:        let e = handle(&mut app, "engine.execute", json!({"command": cmd, "params": {"path": p("outside/a.figcraft")}})).unwrap_err();
+crates/ui-egui/src/control_roots_tests.rs:68:        let e = handle(&mut app, "engine.execute", json!({"command": cmd, "params": {"path": p("out/../outside/b.figcraft")}})).unwrap_err();
+crates/ui-egui/src/control_roots_tests.rs:72:    handle(&mut app, "engine.execute", json!({"command": "file.saveAs", "params": {"path": p("out/in.figcraft")}})).unwrap();
+crates/ui-egui/src/control_roots_tests.rs:73:    assert!(d.0.join("out/in.figcraft").is_file());
+crates/ui-egui/src/doc_name_ui_tests.rs:27:/// A `.figcraft` file storing the name `stored`, at `dir/file`.
+crates/ui-egui/src/doc_name_ui_tests.rs:105:    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/ui-egui/src/doc_name_ui_tests.rs:122:    let path = saved(&d, "x1.figcraft", "Poster");
+crates/ui-egui/src/doc_name_ui_tests.rs:146:    let path = d.join("Spring poster.figcraft").to_string_lossy().into_owned();
+crates/ui-egui/src/doc_name_ui_tests.rs:157:    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/ui-egui/src/doc_name_ui_tests.rs:173:    assert_eq!(files, ["zeichen-26.figcraft"]);
+crates/ui-egui/src/doc_name_ui_tests.rs:182:    let zebra = saved(&d, "aaa.figcraft", "Zebra");
+crates/ui-egui/src/doc_name_ui_tests.rs:183:    let plain = saved(&d, "mmm.figcraft", UNTITLED);
+crates/ui-egui/src/dialogs.rs:652:        // The name shown suggests the file's (Fix AF): "Untitled 2" saves as "Untitled 2.figcraft".
+crates/ui-egui/src/dialogs.rs:654:        self.pick_save(tr("Save as"), &format!("{name}.figcraft"), &["figcraft", "fig"], |app, mut p| {
+crates/ui-egui/src/dialogs.rs:656:                if !p.set_extension("figcraft") {
+crates/ui-egui/src/dialogs.rs:657:                    app.toast(tr("Use the .figcraft or .fig extension."));
+crates/ui-egui/src/dialogs.rs:664:                        app.toast(tr("A .figcraft file with this name already exists. Choose its full name to confirm replacement."));
+crates/ui-egui/src/dialogs.rs:672:            } else if !p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("figcraft") || e.eq_ignore_ascii_case("fig")) {
+crates/ui-egui/src/dialogs.rs:673:                app.toast(tr("Use the .figcraft or .fig extension."));
+crates/ui-egui/src/open_issues_tests.rs:20:    let path = dir.join("pics.figcraft");
+crates/ui-egui/src/agent_clients_ui_tests.rs:259:        &json!({"mcp": {"figcraft": {"type": "remote", "url": "http://127.0.0.1:4848/mcp"}, "a": {"type": "local", "command": ["x"]}}}).to_string(),
+crates/ui-egui/src/agent_clients_ui_tests.rs:266:    assert!(v["mcp"].get("figcraft").is_none() && v["mcp"]["a"]["command"] == json!(["x"]), "{v}");
+crates/ui-egui/src/save_as_tests.rs:76:    vec![("Save as".into(), "Prototype.figcraft".into(), vec!["figcraft".into(), "fig".into()])]
+crates/ui-egui/src/save_as_tests.rs:114:    for (chosen, written) in [("native", "native.figcraft"), ("saved.figcraft", "saved.figcraft"), ("upper.FIGCRAFT", "upper.FIGCRAFT")] {
+crates/ui-egui/src/save_as_tests.rs:137:        let native = temp.path("working.figcraft").to_string_lossy().into_owned();
+crates/ui-egui/src/save_as_tests.rs:173:    app.session.ds_mut().unwrap().path = Some("working.figcraft".into());
+crates/ui-egui/src/save_as_tests.rs:181:    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.figcraft"));
+crates/ui-egui/src/save_as_tests.rs:200:        assert_eq!(toast(&app), "Use the .figcraft or .fig extension.");
+crates/ui-egui/src/save_as_tests.rs:207:    let path = temp.path("existing.figcraft");
+crates/ui-egui/src/save_as_tests.rs:216:    assert_eq!(toast(&app), "A .figcraft file with this name already exists. Choose its full name to confirm replacement.");
+crates/ui-egui/src/save_as_tests.rs:223:    app.session.ds_mut().unwrap().path = Some("working.figcraft".into());
+crates/ui-egui/src/save_as_tests.rs:227:    assert_eq!(app.session.ds().unwrap().path.as_deref(), Some("working.figcraft"));
+crates/ui-egui/src/save_as_tests.rs:235:    let path = temp.path("working.figcraft");
+crates/ui-egui/src/save_as_tests.rs:249:        for destination in ["corrected.figcraft", "copy.fig"] {
+crates/ui-egui/src/save_as_tests.rs:254:            let original = temp.path("original.figcraft");
+crates/ui-egui/src/save_as_tests.rs:269:            if destination == "corrected.figcraft" {
+crates/ui-egui/src/save_as_tests.rs:270:                assert_eq!(toast(&app), "Saved corrected.figcraft");
+crates/ui-egui/src/save_as_tests.rs:285:    for extension in ["figcraft", "fig"] {
+crates/ui-egui/src/save_as_tests.rs:309:    assert_eq!(toast(&app), "Use the .figcraft or .fig extension.");
+crates/ui-egui/src/connect_flow.rs:152:            run(app, strings(&["mcp", "get", "figcraft"]), Waiting::GetOld(scrim));
+crates/ui-egui/src/connect_flow.rs:363:            let mut args = strings(&["mcp", "remove", "figcraft"]);
+crates/ui-egui/src/idle_tests.rs:370:    let path = dir.join("hidden.figcraft");
+crates/ui-egui/src/idle_tests.rs:408:    let path = dir.join("auto.figcraft").to_string_lossy().to_string();
+crates/collab-net/src/invite.rs:155:        let (server, query) = if scheme.eq_ignore_ascii_case("figcraft") {
+crates/ui-egui/src/connect_flow_tests.rs:127:        vec![(claude.clone(), args(&["mcp", "get", "scrim"])), (claude.clone(), args(&["mcp", "get", "figcraft"])), (claude.clone(), add_args())],
+crates/ui-egui/src/connect_flow_tests.rs:137:    assert_eq!(script.lock().unwrap().ran.last(), Some(&(claude, args(&["mcp", "remove", "figcraft", "--scope", "local"]))));
+crates/ui-egui/src/home_tests.rs:192:    session.docs[0].path = Some("C:/designs/North Trail.figcraft".into());
+crates/ui-egui/src/home_tests.rs:194:        vec!["C:/designs/North Trail.figcraft".into(), "C:/designs/South Trail.figcraft".into(), "C:/designs/Other.figcraft".into()];
+crates/ui-egui/src/home_tests.rs:229:    let path = dir.join("Search preview.figcraft");
+crates/ui-egui/src/home_tests.rs:257:    u.app.session.prefs.recent_files = vec!["C:/designs/Glacier.figcraft".into(), "C:/designs/Forest.figcraft".into()];
+crates/ui-egui/src/home_tests.rs:289:            let path = dir.join(format!("{name}.figcraft"));
+crates/ui-egui/src/home_tests.rs:385:    u.app.session.prefs.recent_files = vec!["/tmp/ridgeline.figcraft".into()];
+crates/ui-egui/src/home_tests.rs:395:    let long = "/Users/<user>/Documents/Clients/Northwind Traders/2026 Website relaunch/Design reviews/Week 42/onboarding-flow-review.figcraft";
+crates/ui-egui/src/home_tests.rs:396:    let short = "/tmp/wireframes.figcraft";
+crates/ui-egui/src/home_tests.rs:412:    let detail = all.iter().find(|(t, _, _)| t.ends_with("/onboarding-flow-review.figcraft")).expect("the path");
+crates/ui-egui/src/home_tests.rs:579:    let path = dir.path("Dropped.figcraft");
+crates/ui-egui/src/home_tests.rs:591:    assert!(has_text(&s, "Opening as a new file") && has_text(&s, "Opening the file…") && has_text(&s, "Dropped.figcraft"), "the card shows");
+crates/ui-egui/src/home_tests.rs:606:    let path = dir.path("Canvas import.figcraft");
+crates/ui-egui/src/home_tests.rs:762:    assert_eq!(u.app.ui.toast.as_ref().map(|t| t.0.as_str()), Some("Drop a .figcraft, .fig, .json, .svg or image file."));
+crates/ui-egui/src/plugin_panel_tests.rs:31:          (import "figcraft" "call" (func $call (param i32 i32 i32 i32) (result i32)))
+crates/ui-egui/src/plugin_panel_tests.rs:32:          (import "figcraft" "ui_show" (func $ui_show (param i32 i32) (result i32)))
+crates/ui-egui/src/missing_fonts_tests.rs:13:    let path = std::env::temp_dir().join(format!("figcraft-missing-fonts-{name}-{}.figcraft", std::process::id()));
+crates/format/src/staging_tests.rs:29:    let path = d.join("a.figcraft");
+crates/format/src/staging_tests.rs:32:    let old = d.join("a.figcraft.tmp");
+crates/format/src/staging_tests.rs:45:    let path = d.join("a.figcraft");
+crates/format/src/staging_tests.rs:48:    let old = d.join("a.figcraft.tmp");
+crates/format/src/staging_tests.rs:61:    let path = d.join("a.figcraft");
+crates/format/src/staging_tests.rs:91:    let taken = d.join("folder.figcraft");
+crates/format/src/staging_tests.rs:98:    assert!(write_file_atomic(&d.join("no").join("such.figcraft"), b"payload").is_err());
+crates/format/src/staging_tests.rs:106:        let dest = ro.join("keep.figcraft");
+crates/format/src/library.rs:1://! A published library inside a `.figcraft` archive.
+crates/format/src/library.rs:101:/// Read the published library of a `.figcraft` file (only its library entries are read): `None`
+crates/format/src/stored_name.rs:15:/// The document name stored in the file at `path`: `name` in a `.figcraft` file's `document.json`
+crates/format/src/stored_name.rs:21:    if !matches!(ext.as_str(), "figcraft" | "fig" | "json") {
+crates/collab/src/message.rs:475:    /// Keep `archive` (a `.figcraft` archive holding the published library) as the file's library.
+crates/collab/src/message.rs:490:    /// The library (a `.figcraft` archive holding it) at `version`.
+crates/format/src/thumbnail.rs:1://! The picture a saved file carries of itself: `thumbnail.png` inside a `.figcraft` or `.fig` zip
+crates/format/src/thumbnail.rs:29:/// The bytes of `thumbnail.png` in a zip archive (`.figcraft`, `.fig`); `None` when it isn't a zip,
+crates/format/src/thumbnail.rs:58:    /// `.figcraft`
+crates/format/src/thumbnail.rs:73:            "figcraft" => FileKind::FigCraft,
+crates/format/src/thumbnail.rs:83:/// `.figcraft` or `.fig` file carries, or an image file itself (up to [`MAX_IMAGE_FILE_BYTES`]).
+crates/format/src/thumbnail.rs:127:/// The [`Preview`] of a `.figcraft` or `.fig` archive: `thumbnail.png`, and the first page's colour
+crates/format/src/thumbnail.rs:128:/// from `document.json` (`.figcraft`) or `meta.json` (`.fig`).
+crates/format/src/thumbnail.rs:140:/// The first page's background in a `.figcraft` `document.json`.
+crates/format/Cargo.toml:6:description = "FigCraft native file format (.figcraft: zip of document.json + images), image import helpers, REST API file JSON import and .fig import"
+crates/format/src/version_tests.rs:1://! The version history in `.figcraft` files: round trips, files without versions, damaged entries.
+crates/format/src/library_tests.rs:1://! Published libraries inside `.figcraft` archives.
+crates/format/src/stored_name_tests.rs:1://! Reading the name a file stores without opening it (Fix AF): `.figcraft` archives and bare JSON,
+crates/format/src/stored_name_tests.rs:26:    let d = dir("figcraft");
+crates/format/src/stored_name_tests.rs:28:        let p = file(&d, "a.figcraft", &crate::save_bytes(&Document::new(name), None).unwrap());
+crates/format/src/stored_name_tests.rs:39:    assert_eq!(stored_name(&file(&d, "big.figcraft", &bytes)).as_deref(), Some("Big"));
+crates/format/src/stored_name_tests.rs:48:    assert_eq!(stored_name(&file(&d, "kit.figcraft", &scrim)).as_deref(), Some("Kit"), "a bare JSON .figcraft");
+crates/format/src/stored_name_tests.rs:78:    assert_eq!(stored_name(&d.join("missing.figcraft")), None);
+crates/format/src/stored_name_tests.rs:81:    assert_eq!(stored_name(&file(&d, "junk.figcraft", b"PK\x03\x04 not really")), None);
+crates/format/src/large_tests.rs:174:    let old = r#"{"format":"figcraft","version":1,"imageIndex":[],"name":"Old","pages":[1],"next_id":3,"current_page":1,
+crates/format/src/branch_tests.rs:1://! Branches in `.figcraft` files: round trips, files from before branches, damaged entries.
+crates/format/src/lib.rs:1://! The native `.figcraft` format.
+crates/format/src/lib.rs:38:pub const EXTENSION: &str = "figcraft";
+crates/format/src/lib.rs:39:pub const FORMAT: &str = "figcraft";
+crates/format/src/lib.rs:362:/// Write a `.figcraft` archive to bytes.
+crates/format/src/lib.rs:367:/// Write a `.figcraft` archive with a version history (oldest first) to bytes.
+crates/format/src/lib.rs:372:/// Write a `.figcraft` archive with a version history (oldest first) and branches to bytes.
+crates/format/src/lib.rs:448:/// Read a `.figcraft` archive (or bare JSON) from bytes. Returns the document and any repairs made.
+crates/format/src/lib.rs:480:/// Read a `.figcraft` archive (or bare JSON) with its version history.
+crates/format/src/thumbnail_tests.rs:1://! Reading the picture a saved file carries: from `.figcraft` and `.fig` archives and image files,
+crates/format/src/thumbnail_tests.rs:45:    let path = dir("figcraft").join("a.figcraft");
+crates/format/src/thumbnail_tests.rs:108:    assert_eq!(file_thumbnail(&d.join("gone.figcraft"), 640), None);
+crates/format/src/thumbnail_tests.rs:109:    // A `.figcraft` that is plain JSON, and one that is junk.
+crates/format/src/thumbnail_tests.rs:110:    let json = d.join("plain.figcraft");
+crates/format/src/thumbnail_tests.rs:117:    let folder = d.join("folder.figcraft");
+crates/format/src/thumbnail_tests.rs:121:        ["a.figcraft", "a.FIG", "a.svg", "a.jpeg", "a.webp", "a.txt", "noext"].iter().map(|p| FileKind::of(std::path::Path::new(p))).collect();
+crates/format/src/thumbnail_tests.rs:139:    // `.figcraft`: the first page's background from document.json.
+crates/format/src/thumbnail_tests.rs:169:    assert_eq!(file_preview(std::path::Path::new("/nonexistent/x.figcraft"), 640), Preview::default());
+crates/format/src/fig/export.rs:2201:pub(super) const STASH: (&str, &str) = ("figcraft", "stroke");
+crates/format/src/fig/assets_tests.rs:736:    assert_eq!((kept["pluginID"].as_str(), kept["key"].as_str()), (Some("figcraft"), Some("stroke")));
+crates/engine/tests/library_style_acceptance.rs:36:    let path = fixture.0.join("library.figcraft");
+crates/engine/src/plugin_panels_tests.rs:67:              (import "figcraft" "call" (func $call (param i32 i32 i32 i32) (result i32)))
+crates/engine/src/plugin_panels_tests.rs:68:              (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/engine/src/plugin_panels_tests.rs:69:              (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/engine/src/plugin_panels_tests.rs:70:              (import "figcraft" "ui_show" (func $ui_show (param i32 i32) (result i32)))
+crates/engine/src/plugin_panels_tests.rs:71:              (import "figcraft" "ui_close" (func $ui_close))
+crates/engine/src/plugin_panels_tests.rs:72:              (import "figcraft" "setting_get" (func $setting_get (param i32 i32) (result i32)))
+crates/engine/src/plugin_panels_tests.rs:73:              (import "figcraft" "setting_set" (func $setting_set (param i32 i32 i32 i32) (result i32)))
+crates/engine/src/library_server.rs:5://! snapshot, with per-asset versions), carried as a small `.figcraft` archive holding only it. Its
+crates/engine/src/library_server.rs:46:/// `lib` as the archive a server keeps: a `.figcraft` file holding only the library.
+crates/engine/src/library_tests.rs:169:    let lib_path = path_str(&d.join("kit.figcraft"));
+crates/engine/src/library_tests.rs:273:    let user_path = path_str(&d.join("app.figcraft"));
+crates/engine/src/library_tests.rs:294:    let lib_path = path_str(&d.join("kit.figcraft"));
+crates/engine/src/library_tests.rs:311:    let path = path_str(&d.join("user.figcraft"));
+crates/engine/src/library_tests.rs:341:    let missing = path_str(&d.join("missing.figcraft"));
+crates/engine/src/library_tests.rs:343:    let junk = d.join("junk.figcraft");
+crates/engine/src/library_tests.rs:349:    let plain = d.join("plain.figcraft");
+crates/engine/src/library_tests.rs:358:    let cut = d.join("cut.figcraft");
+crates/engine/src/library_tests.rs:362:    let ok = d.join("ok.figcraft");
+crates/engine/src/library_tests.rs:369:    let own = d.join("own.figcraft");
+crates/engine/src/library_tests.rs:383:    let lib_path = path_str(&d.join("chips.figcraft"));
+crates/engine/src/library_tests.rs:426:    let path = path_str(&d.join("kit.figcraft"));
+crates/engine/src/instance_resizing_tests.rs:141:    for (bytes, name) in [(native, "field.figcraft"), (fig, "field.fig")] {
+crates/engine/src/branch_tests.rs:158:    let path = dir.join("file.figcraft").to_string_lossy().to_string();
+crates/engine/src/history_behaviour_tests.rs:64:    let path = dir.join(format!("{name}.figcraft")).to_string_lossy().to_string();
+crates/engine/src/widgets_tests.rs:61:              (import "figcraft" "call" (func $call (param i32 i32 i32 i32) (result i32)))
+crates/engine/src/widgets_tests.rs:62:              (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/engine/src/widgets_tests.rs:63:              (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/engine/src/widgets_tests.rs:64:              (import "figcraft" "widget_render" (func $render (param i32 i32) (result i32)))
+crates/engine/src/version_tests.rs:2://! the `.figcraft` file and bad parameters.
+crates/engine/src/version_tests.rs:132:    for i in 0..figcraft_format::MAX_VERSIONS {
+crates/engine/src/version_tests.rs:147:    let path = dir.join("history.figcraft").to_string_lossy().to_string();
+crates/engine/src/components_scale_tests.rs:471:    let path = dir.join("ds.figcraft").to_string_lossy().into_owned();
+crates/engine/src/components_scale_tests.rs:522:    let path = dir.join("ds.figcraft").to_string_lossy().into_owned();
+crates/engine/src/components_scale_tests.rs:733:    let path = dir.join("ds.figcraft").to_string_lossy().into_owned();
+crates/engine/src/theme_pages_tests.rs:112:    let path = dir.join("pages.figcraft");
+crates/engine/src/theme_pages_tests.rs:155:    let path = dir.join("light.figcraft");
+crates/engine/src/doc_name_tests.rs:19:/// A `.figcraft` file storing the name `stored`, written at `dir/file`.
+crates/engine/src/doc_name_tests.rs:34:    assert_eq!(resolve("Poster", Some("/x/zeichen-26.figcraft"), 1), DocName::Named("Poster".into()));
+crates/engine/src/doc_name_tests.rs:37:        assert_eq!(resolve(placeholder, Some("/x/zeichen-26.figcraft"), 1), DocName::Named("zeichen-26".into()));
+crates/engine/src/doc_name_tests.rs:42:    assert_eq!(resolve("Untitled 2", Some("/x/a.figcraft"), 1), DocName::Named("Untitled 2".into()));
+crates/engine/src/doc_name_tests.rs:43:    assert_eq!(resolve("untitled", Some("/x/a.figcraft"), 1), DocName::Named("untitled".into()));
+crates/engine/src/doc_name_tests.rs:44:    assert_eq!(resolve("archive.tar", Some("/x/b.v2.figcraft"), 1), DocName::Named("archive.tar".into()));
+crates/engine/src/doc_name_tests.rs:45:    assert_eq!(resolve(UNTITLED, Some("/x/b.v2.figcraft"), 1), DocName::Named("b.v2".into()));
+crates/engine/src/doc_name_tests.rs:54:    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/engine/src/doc_name_tests.rs:75:    let path = saved(&d, "zeichen-26.figcraft", "Poster");
+crates/engine/src/doc_name_tests.rs:108:    let path = d.join("Spring poster.figcraft").to_string_lossy().into_owned();
+crates/engine/src/doc_name_tests.rs:116:    let other = d.join("Poster v2.figcraft").to_string_lossy().into_owned();
+crates/engine/src/doc_name_tests.rs:125:    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/engine/src/doc_name_tests.rs:134:    assert_eq!(files, ["zeichen-26.figcraft"], "no file renamed or added");
+crates/engine/src/doc_name_tests.rs:147:    let path = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/engine/src/doc_name_tests.rs:158:    let plain = saved(&d, "zeichen-26.figcraft", UNTITLED);
+crates/engine/src/doc_name_tests.rs:159:    let named = saved(&d, "x1.figcraft", "Poster");
+crates/engine/src/library_variables_tests.rs:128:    let lib_path = path_str(&d.join("theme.figcraft"));
+crates/engine/src/library_variables_tests.rs:226:    let user_path = path_str(&d.join("app.figcraft"));
+crates/engine/src/library_variables_tests.rs:250:    let lib_path = path_str(&d.join("kit.figcraft"));
+crates/engine/src/library_variables_tests.rs:295:    let user_path = path_str(&d.join("user.figcraft"));
+crates/engine/src/library_variables_tests.rs:321:    let path = path_str(&d.join("lib.figcraft"));
+crates/engine/src/dev_resources_tests.rs:138:    let path = dir.join("f.figcraft").to_string_lossy().into_owned();
+crates/engine/src/lib.rs:365:    /// The file's version history, oldest first (saved in the `.figcraft` file; not undoable).
+crates/engine/src/lib.rs:367:    /// The file's branches (saved in the `.figcraft` file; not undoable).
+crates/engine/src/plugins_tests.rs:49:          (import "figcraft" "call" (func $call (param i32 i32 i32 i32) (result i32)))
+crates/engine/src/plugins_tests.rs:50:          (import "figcraft" "selection" (func $selection (result i32)))
+crates/engine/src/plugins_tests.rs:51:          (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/engine/src/plugins_tests.rs:52:          (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/engine/src/plugins_tests.rs:53:          (import "figcraft" "notify" (func $notify (param i32 i32)))
+crates/engine/src/plugins_tests.rs:54:          (import "figcraft" "log" (func $log (param i32 i32)))
+crates/engine/src/plugins_tests.rs:162:    let target = dir.join("stolen.figcraft").to_string_lossy().into_owned();
+crates/engine/src/plugins_tests.rs:167:        ("library.add", json!({"path": "lib.figcraft"})),
+crates/engine/src/plugins_tests.rs:177:        ("collab.recoverFile", json!({"path": "copy.figcraft", "file": "x", "session": 1, "client": 1, "seq": 0})),
+crates/engine/src/plugins_tests.rs:256:          (import "figcraft" "reply_read" (func $reply_read (param i32 i32) (result i32)))
+crates/engine/src/plugins_tests.rs:257:          (import "figcraft" "set_output" (func $set_output (param i32 i32)))
+crates/engine/src/plugins_tests.rs:258:          (import "figcraft" "notify" (func $notify (param i32 i32)))
+crates/engine/src/library_swap_tests.rs:64:    let (pa, pb) = (dir.0.join("a.figcraft").to_string_lossy().into_owned(), dir.0.join("b.figcraft").to_string_lossy().into_owned());
+crates/engine/src/menu_gaps_tests.rs:14:    let a = dir.join("a.figcraft").to_string_lossy().to_string();
+crates/engine/src/menu_gaps_tests.rs:15:    let b = dir.join("b.figcraft").to_string_lossy().to_string();
+crates/engine/src/menu_gaps_tests.rs:40:    s.prefs.recent_files = vec!["/tmp/a.figcraft".into(), "/tmp/b.fig".into(), "/tmp/c.svg".into()];
+crates/engine/src/menu_gaps_tests.rs:42:    assert_eq!(s.prefs.recent_files, vec!["/tmp/a.figcraft".to_string(), "/tmp/c.svg".to_string()]);
+crates/engine/src/menu_gaps_tests.rs:56:        let p = dir.join(format!("{i}.figcraft")).to_string_lossy().to_string();
+crates/engine/src/menu_gaps_tests.rs:60:    assert!(s.prefs.recent_files[0].ends_with(&format!("{}.figcraft", MAX_RECENT + 2)));
+crates/engine/src/live_access_tests.rs:140:    let path = std::env::temp_dir().join(format!("figcraft-live-revert-{}-{}.figcraft", std::process::id(), s.ds().unwrap().uid));
+crates/engine/src/library_path_tests.rs:11:        r"\\attacker.example\share\lib.figcraft",
+crates/engine/src/library_path_tests.rs:12:        "//attacker.example/share/lib.figcraft",
+crates/engine/src/library_path_tests.rs:13:        "file://attacker.example/share/lib.figcraft",
+crates/engine/src/library_path_tests.rs:14:        r"\\?\UNC\attacker.example\share\lib.figcraft",
+crates/engine/src/library_path_tests.rs:16:        "https://attacker.example/lib.figcraft",
+crates/engine/src/library_path_tests.rs:27:    let missing = std::env::temp_dir().join("figcraft-no-such-library.figcraft");
+crates/engine/src/text_motion_tests.rs:61:    let path = dir.join("1.figcraft");
+crates/engine/src/text_motion_tests.rs:70:    assert!(s.execute("file.recover", &json!({"path": dir.join("missing.figcraft").to_string_lossy()})).is_err());
+crates/engine/src/file_access_tests.rs:226:    let bait = f.p("outside/bait.figcraft");
+crates/engine/src/file_access_tests.rs:230:    std::fs::copy(&bait, f.0.join("outside/readable/ok.figcraft")).unwrap();
+crates/engine/src/file_access_tests.rs:242:        assert!(s.execute("file.open", &json!({"path": f.p("outside/readable/ok.figcraft")})).is_ok(), "read roots may be read");
+crates/engine/src/file_access_tests.rs:244:        assert!(s.execute("file.saveAs", &json!({"path": f.p("root/ok.figcraft")})).is_ok());
+crates/engine/src/file_access_tests.rs:264:    s.execute("file.saveAs", &json!({"path": f.p("outside/bait.figcraft")})).unwrap();
+crates/engine/src/file_access_tests.rs:273:    for (cmd, bait) in [("file.open", "bait.figcraft"), ("file.import", "bait.svg")] {
+crates/engine/src/file_access_tests.rs:281:    for bait in ["bait.figcraft", "bait.svg", "bait.png", "new.figcraft", "new.png"] {
+crates/engine/src/file_access_tests.rs:302:    let (bait, gone, ok) = (f.p("outside/bait.figcraft"), f.p("outside/gone.figcraft"), f.p("root/ok.figcraft"));
+crates/engine/src/rest_slot_tests.rs:82:    ex(&mut again, "file.open", json!({"data": data, "name": "slots.figcraft"}));
+crates/engine/src/extended_chain_tests.rs:68:    let path = d.join("core.figcraft").to_string_lossy().into_owned();
+crates/engine/src/extended_chain_tests.rs:100:    let core_path = d.join("core.figcraft").to_string_lossy().into_owned();
+crates/engine/src/extended_chain_tests.rs:101:    let brand_path = d.join("brand.figcraft").to_string_lossy().into_owned();
+crates/engine/src/extended_chain_tests.rs:151:    let user = d.join("product.figcraft").to_string_lossy().into_owned();
+crates/engine/src/save_format_tests.rs:108:    let native = files.path("design.figcraft");
+crates/engine/src/save_format_tests.rs:187:    let native = files.path("main.figcraft");
+crates/engine/src/save_format_tests.rs:245:    let native = files.path("native.figcraft");
+crates/engine/src/save_format_tests.rs:261:        let native = files.path(&format!("current-{index}.figcraft"));
+crates/engine/src/save_format_tests.rs:294:            let native = files.path(&format!("saved-{index}.figcraft"));
+crates/engine/src/save_format_tests.rs:311:        let native = files.path(&format!("native-version-{index}.figcraft"));
+crates/engine/src/save_format_tests.rs:337:        let native = files.path(&format!("corrected-{index}.figcraft"));
+crates/engine/src/variables_io_tests.rs:48:    let lib_path = d.join("theme.figcraft").to_string_lossy().into_owned();
+crates/engine/src/variables_io_tests.rs:118:    let user = d.join("app.figcraft").to_string_lossy().into_owned();
+crates/engine/src/branch_versions_tests.rs:67:    let path = dir.join("file.figcraft").to_string_lossy().to_string();
+crates/engine/src/tests.rs:623:    s.execute("edit.findReplace", &json!({"find": "figcraft", "replace": "FigCraft", "layerNames": true})).unwrap();
+crates/engine/src/huge_stroke_tests.rs:21:        let path = std::env::temp_dir().join(format!("figcraft-huge-stroke-{}-{weight}.figcraft", std::process::id()));
+crates/engine/src/variable_tests.rs:55:    let (loaded, _) = crate::cmd::file::load_bytes(&native, "bindings.figcraft").unwrap();
+crates/engine/src/library_server_tests.rs:8:    assert!(!is_server_link("C:/kits/ui.figcraft") && !is_server_link("/srv/ws://x"));
+crates/engine/src/library_server_tests.rs:11:    assert_eq!(shown_path("/kits/token=ui.figcraft"), "/kits/token=ui.figcraft", "files are shown as they are");
+crates/engine/src/fig_export_assets_tests.rs:129:    for p in files.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|x| x == "figcraft")) {
+crates/engine/src/open_issues_tests.rs:27:    let path = dir.join("pics.figcraft");
+crates/engine/src/version_preview_tests.rs:81:    let path = dir.join("preview.figcraft").to_string_lossy().to_string();
+crates/engine/src/autosave_tests.rs:60:    let path = dir.join("auto.figcraft").to_string_lossy().to_string();
+crates/engine/src/autosave_tests.rs:81:    let path = dir.join("auto.figcraft").to_string_lossy().to_string();
+crates/engine/src/autosave_tests.rs:101:    let path = dir.join("snap.figcraft").to_string_lossy().to_string();
+crates/engine/src/cmd/claude_desktop.rs:38:pub const OLD_KEYS: [&str; 2] = ["figcraft", "figcraft-app"];
+crates/engine/src/cmd/library.rs:53:            "{path (.figcraft file published as a library, or a share link of a file on a server: a view link is enough)}",
+crates/engine/src/cmd/agent_clients.rs:38:pub const OLD_KEYS: [&str; 2] = ["figcraft", "figcraft-app"];
+crates/engine/src/cmd/agent_clients_tests.rs:147:    assert_eq!(super::cli_remove(&cli("codex"), "figcraft").unwrap(), ["mcp", "remove", "figcraft"]);
+crates/engine/src/cmd/agent_clients_tests.rs:199:    assert_eq!(old, ["figcraft"]);
+crates/engine/src/cmd/agent_clients_tests.rs:200:    let t = changed(&f, Some(before), &Change::Remove("figcraft".into())).unwrap();
+crates/engine/src/cmd/agent_clients_tests.rs:201:    assert!(t.contains("\"github\": {\"command\": \"gh\"}") && !t.contains("figcraft"), "{t}");
+crates/engine/src/cmd/claude_desktop_tests.rs:94:    let old = json!({"mcpServers": {"figcraft": {"command": "figcraft-cli", "args": ["mcp"]}, "figcraft-app": {}}}).to_string();
+crates/engine/src/cmd/claude_desktop_tests.rs:95:    assert_eq!(inspect(Some(&old), &w).old, vec!["figcraft".to_string(), "figcraft-app".to_string()]);
+crates/engine/src/cmd/claude_desktop_tests.rs:168:    let base = json!({"a": {"command": "a"}, "figcraft": {"command": "f"}, "z": {"command": "z"}});
+crates/engine/src/cmd/claude_desktop_tests.rs:169:    for keys in [vec!["figcraft", "a", "z"], vec!["a", "figcraft", "z"], vec!["a", "z", "figcraft"], vec!["figcraft"]] {
+crates/engine/src/cmd/claude_desktop_tests.rs:172:        let out = changed(Some(&text), &Change::Remove("figcraft".into())).unwrap();
+crates/engine/src/cmd/claude_desktop_tests.rs:174:        assert!(v["mcpServers"].get("figcraft").is_none() && v["keep"] == true, "{keys:?}:\n{out}");
+crates/engine/src/cmd/file.rs:32:            "{path | data (base64) + name (tells the format; opens as a new unsaved document), variables? (REST: the local variables JSON as an object, JSON text or a 
+crates/engine/src/cmd/file.rs:53:            "{path} (no extension adds .figcraft); a .fig path writes an experimental export copy of the shown document with `warnings`, keeping the native path, unsav
+crates/engine/src/cmd/file.rs:88:            "{path | data (base64) + name, x?, y?, center? (SVG: centre it on x, y), variables? (REST: the local variables JSON as an object, JSON text or a path)}  SV
+crates/engine/src/cmd/file.rs:693:    let native = !rest && matches!(ext(&path).as_str(), "figcraft" | "json");
+crates/engine/src/cmd/file.rs:737:/// The `.figcraft` file for a document: content, thumbnail and version history.
+crates/engine/src/cmd/file.rs:867:                path.push_str(".figcraft");
+crates/engine/src/cmd/file.rs:1267:        "figcraft" | "json" | "fig" => {
+crates/engine/src/cmd/file.rs:1504:        let r = s.execute("file.open", &json!({"data": data, "name": "Dropped.figcraft"})).unwrap();
+plugins/sdk/src/lib.rs:226:        #[link(wasm_import_module = "figcraft")]
+plugins/examples/swatch-grid/figcraft-plugin.json:2:  "id": "org.figcraft.examples.swatch-grid",
+docs/architecture.md:26:| L3 | `figcraft-format` | ~5.2k | Native `.figcraft` (zip of `document.json` + images; streamed JSON), local library files, versions, REST API file JSON import (`rest/`) |
+docs/architecture.md:67:`.figcraft` is the native format (atomic saves, autosave checkpoints; the desktop app keeps
+docs/mcp.md:420:| `open_file {path, variables?}` / `save_file {path?}` | Open `.figcraft`, `.json` (Scrim JSON or REST API file JSON with its variables, see below), `.fig` (best effort, see below), `.
+docs/mcp.md:724:A `.figcraft` file can be published as a library and used from other files (library files here;
+docs/mcp.md:1074:Named snapshots of the document, kept in the `.figcraft` file (they persist once the file is saved;
+docs/mcp.md:1099:Branches are kept in the main `.figcraft` file (saving either tab saves the main file with its
+docs/mcp.md:1360:{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"run_command","arguments":{"command":"plugin.run","params":{"id":"org.figcraft.examples.swatch-grid","command":"panel"}}
+docs/mcp.md:1361:{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"run_command","arguments":{"command":"plugin.event","params":{"id":"org.figcraft.examples.swatch-grid","control":"palett
+docs/mcp.md:1362:{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"run_command","arguments":{"command":"plugin.event","params":{"id":"org.figcraft.examples.swatch-grid","control":"genera
+docs/mcp.md:1373:{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"run_command","arguments":{"command":"widget.insert","params":{"plugin":"org.figcraft.examples.counter"}}}}
+docs/mcp.md:1389:{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"run_command","arguments":{"command":"plugin.directory.install","params":{"id":"org.figcraft.examples.swatch-grid","conf
+docs/mcp.md:1480:  `.figcraft` file only while there is a change; resolving the change, marking it again, another
+plugins/examples/tidy-names/figcraft-plugin.json:2:  "id": "org.figcraft.examples.tidy-names",
+docs/gaps.md:78:  `.figcraft` path. Layers copied from another design app paste (`edit.pasteDesignLayers`, and
+docs/gaps.md:484:| 2026-10-11 | minor | Branches landed (gap 17): File ▸ Create branch… copies the file into a branch tab that remembers its base; Review and merge shows both sides' changes (layers wi
+docs/releasing.md:20:| Native document | `.figcraft`, MIME `application/x-figcraft`, UTI `ai.storyteller.figcraft.document` (kept so files stay exchangeable with FigCraft; macOS imports the declaratio
+docs/releasing.md:135:`.figcraft`, "Open with" for SVG/PNG/JPEG, App Paths, setup wizard with art drawn from the app
+docs/releasing.md:149:shared-mime-info file for `.figcraft`) and builds every format from it: `.tar.gz`; `.deb` and
+docs/file-format-parity.md:23:| `.figcraft` (ours: zip of `document.json` + images, versions inside) | — | yes | yes | streamed JSON, 50k layers save ~0.09 s / load ~0.16 s (`cargo xtask bench`); old 
+docs/file-format-parity.md:24:| Local library files | team libraries in the cloud | yes (enable a `.figcraft` as a library) | yes (publish) | per-asset versions, updates with overrides kept | see [col
+docs/file-format-parity.md:59:| `.fig` ("Save local copy") | yes | **experimental** | the whole file, also as a copy from File ▸ Save as… (the document keeps its `.figcraft` path and unsaved state); s
+docs/file-format-parity.md:66:copy: the document keeps its `.figcraft` path, unsaved changes and version preview, and a file an
+docs/cli.md:43:$ scrim query app.figcraft '//FRAME[@layout="flex"]//TEXT[@style.fontSize > 40]'
+docs/cli.md:47:$ scrim find app.figcraft --type instance --name Button --limit 1
+docs/cli.md:72:$ scrim info app.figcraft
+docs/cli.md:73:app.figcraft — App (412 nodes, 6 styles, 12 variables, 3 images)
+docs/cli.md:109:scrim export app.figcraft -o exports/ --scale 2
+docs/cli.md:110:scrim export app.figcraft -o hero.svg --node "Hero"
+docs/cli.md:111:scrim export app.figcraft -o screens.pdf --page "Screens"
+docs/cli.md:112:scrim export app.figcraft -o poster.pdf --node "Poster" --bleed 3mm --crop-marks --cmyk
+docs/cli.md:113:scrim export app.figcraft -o handoff.fig
+docs/cli.md:118:By extension. Inputs: `.figcraft`, `.json` (Scrim or REST API file JSON), `.fig` (best effort), `.svg` (an editable frame: groups,
+docs/cli.md:120:(an image layer). Outputs: `.figcraft`, `.json` (Scrim JSON, pretty-printed), `.svg`,
+docs/cli.md:181:scrim run start.json --out dashboard.figcraft
+docs/cli.md:182:scrim export dashboard.figcraft -o dashboard.png
+docs/hardware-parity.md:33:| `.figcraft` at 50k layers: save / load | ~0.09 s / ~0.16 s | n/a |
+plugins/examples/counter/figcraft-plugin.json:2:  "id": "org.figcraft.examples.counter",
+docs/roadmap.md:26:platform) with work saved to `.figcraft` and reopened. Evidence is the repo's tests and the
+docs/roadmap.md:31:| Design screens: frames, shapes, vectors, text, auto layout, styles; save, reopen, export assets | yes | tools and panels in `crates/engine` and `crates/ui-egui`; `.figcraft` round
+docs/roadmap.md:81:| 2026-10-14 | minor | Lost images reported on loading (#207): a `.figcraft` file whose image member is damaged, too large or missing no longer loads in silence; each lost image (up
+docs/roadmap.md:117:| 2026-10-11 | minor | Branches landed (gap 17): File ▸ Create branch… copies the file into a branch tab that remembers its base; Review and merge shows both sides' changes (layers
+docs/server.md:323:<data>/files/<id>/library-<version>.bin  its team library, when one was published (a .figcraft
+docs/collaboration-parity.md:20:| Version history: named versions, autosave checkpoints, view before restore, restore, duplicate | yes (cloud) | **done**, saved in the `.figcraft` file: restoring keep
+docs/collaboration-parity.md:21:| Branching and merging | yes (paid plans) | **done, local**: branches saved in the `.figcraft` file, each opened in its own tab; Review and merge shows both sides' cha
+docs/collaboration-parity.md:42:| 2026-10-11 | minor | Branches landed (gap 17): File ▸ Create branch… copies the file into a branch tab that remembers its base; Review and merge shows both sides' cha
+docs/target-app-parity.md:151:| Create, open, save and reopen a file; pages | 10 | 85% | home screen, `.figcraft` round trips, Open recent |
+docs/target-app-parity.md:430:   `.figcraft` path. SVG import is editable and
+docs/target-app-parity.md:478:   landed (named versions saved in the `.figcraft` file; restore, rename, duplicate, delete; panel;
+docs/target-app-parity.md:531:   renders in ~8 ms instead of ~50 ms. `.figcraft` at 50k layers saves in ~0.09 s instead of ~1 s
+docs/target-app-parity.md:610:  copy/paste (internal + SVG/text), file new/open/save/import/export (native `.figcraft`, SVG
+docs/target-app-parity.md:704:| 2026-10-11 | minor | Branches landed (gap 17): File ▸ Create branch… copies the file into a branch tab that remembers its base; Review and merge shows both sides' chang
+docs/control-protocol.md:7:cargo run -p figcraft -- --control 7979 [file.figcraft|file.svg|image]
+docs/FORK.md:33:- **Kept on purpose:** the crate names `figcraft-*`, the `.figcraft` extension and its type identifiers, the plugin API's module name, and the app binary's name (see `docs/design/rebra
+docs/collab-protocol.md:25:Goal: several people edit the same `.figcraft` file at the same time and see each other's edits,
+docs/collab-protocol.md:247:| `Library {ready {access} \| library {version, archive} \| unchanged {version} \| empty \| published {version} \| usage [{usage, updated}] \| failed {reason}}` | A library
+docs/collab-protocol.md:736:  per-asset versions) travels as a small `.figcraft` archive holding only it. The server reads it
+docs/plugins.md:108:{"command": "plugin.run", "params": {"id": "org.figcraft.examples.tidy-names", "command": "tidy", "params": {"case": "Title Case"}}}
+docs/plugins.md:110:{"command": "plugin.run", "params": {"id": "org.figcraft.examples.swatch-grid", "command": "panel"}}
+docs/plugins.md:111:{"command": "plugin.event", "params": {"id": "org.figcraft.examples.swatch-grid", "control": "palette", "value": "Ocean"}}
+docs/plugins.md:112:{"command": "plugin.event", "params": {"id": "org.figcraft.examples.swatch-grid", "control": "generate"}}
+docs/plugins.md:113:{"command": "plugin.close", "params": {"id": "org.figcraft.examples.swatch-grid"}}
+docs/plugins.md:115:{"command": "widget.insert", "params": {"plugin": "org.figcraft.examples.counter", "x": 0, "y": 0}}
+docs/plugins.md:120:`scrim run script.jsonl --in design.figcraft --out tidy.figcraft` runs that headless; over
+docs/plugins.md:196:  "id": "org.figcraft.examples.swatch-grid",
+docs/scrim-transfer/decisions-architecture.md:81:- **Verdict:** ADAPT. The document holds a reference (`scrim-asset:<sha256>.<ext>` in Scrim), never image bytes. A file saved for sharing carries the i
+docs/design/doc-name.md:58:- `crates/format/src/stored_name_tests.rs` (4 tests): reading the stored name from `.figcraft` (zip and bare JSON), JSON, `.fig`; nothing for other kinds or damaged files.
+docs/scrim-transfer/cases/fig-import.json:43:  "figcraft": "FigCraft refuses these zips (\"Invalid checksum\"; docs/research/figcraft-spike.md §3). A port that verifies CRCs must either accept CRC 0 f
+docs/design/pii-scan.md:17:| `docs/design/rebrand/before/home-dark.png` | Home's recent file showed its full path in the person's home folder | It reads `/Users/<user>/scrim-rs/examples/ridgeline-app.
+docs/design/follow-agent.md:310:- **Not reproduced: the open-file pause itself.** Opening a file (an SVG, and a saved `.figcraft` by its path followed by `document.inspect`, as the `open_file` tool do
+docs/design/panel-redesign.md:9:Screenshots are in `panel-redesign/before/`, taken from the packaged app at 9d7fdc6 on `examples/ridgeline-app.figcraft`, 1440 × 900, the right panel 240 px wide. Each 
+docs/design/panel-redesign.md:144:   - keyframed properties on layers, in the document format (a format version step, with `.figcraft` files from before it still opening);
+docs/design/rebrand.md:11:| `figcraft` | 5,282 | 841 | crate and module paths (`figcraft_engine::…`, `figcraft-*` package names), the `.figcraft` extension, packaging file names |
+docs/design/rebrand.md:15:| `storyteller` (any case) | 49 | 21 | the app id `ai.storyteller.figcraft` (window app id, packaging, icon file names, UTIs), maintainer and contact addresses |
+docs/design/rebrand.md:23:| 2 | **App and package identity** | the window app id; `packaging/macos/Info.plist.in` (`CFBundleIdentifier`, `CFBundleName`, the bundle `FigCraft.app`); Linux `.desktop`, m
+docs/design/rebrand.md:28:| 6 | **The file extension and format identifiers** | `.figcraft`, `format::EXTENSION` / `FORMAT` = `figcraft`, the MIME type `application/x-figcraft`, the document UTI `ai.s
+docs/design/rebrand.md:31:| 9 | **Icons and brand assets** | `assets/app-icon/` (FigCraft's chameleon: `figcraft*.png`, `.svg`, `.ico`, `hicolor/…/ai.storyteller.figcraft.*`); `xtask icon`; the window
+docs/design/rebrand.md:32:| 10 | **Tests and fixtures** | tests asserting the old strings; fixture files (`examples/*.figcraft`, `docs/scrim-transfer/fixtures/`), test sample paths (`FIGCRAFT_FIG_SAMP
+docs/design/rebrand.md:62:- Started from the DMG's copy with a temporary home, it opened `examples/ridgeline-app.figcraft` (window title "Ridgeline app – Scrim"; `rebrand/a6/ridgeline-packaged.png`). 
+docs/design/rebrand.md:99:| `.figcraft`, `application/x-figcraft`, the UTI `ai.storyteller.figcraft.document` (`Info.plist.in`, `docs/releasing.md`) | The file format | Group 6: every existing file ke
+docs/design/rebrand.md:109:| `assets/app-icon/README.md`, `figcraft*.png`, `hicolor/…/ai.storyteller.figcraft.*` | FigCraft's icon files, still in the repository under their licence | Group 9: not shi
+docs/design/settings-and-connect.md:82:10. **The `.figcraft` extension:**
+docs/design/settings-and-connect.md:83:    - **Allowed:** the rebrand test matches "FigCraft" case-sensitively, so the lowercase extension (and the Open file card's "Open .figcraft, .svg or images") p
+docs/design/settings-and-connect.md:85:    - **Renaming it is a later decision.** It needs a compatibility importer for `.figcraft`, a new UTI and MIME type, and the file associations of both.
+docs/design/macos-bundle.md:29:**Launch Services:** opening the bundle registers it, like any app, as the handler for `.figcraft` files and `figcraft://` links (its `Info.plist` says so). A copy made 
+docs/design/canvas-badges.md:3:Two collisions in the owner's capture: the Ridgeline app (`examples/ridgeline-app.figcraft`), dark theme, 22% zoom.
+docs/design/option-drag/live.py:9:APP = os.path.join(os.environ.get('CARGO_TARGET_DIR', 'target'), 'debug', 'figcraft')
+docs/design/doc-name/live.py:11:APP = os.path.join(os.environ.get('CARGO_TARGET_DIR', 'target'), 'debug', 'figcraft')
+docs/design/doc-name/live.py:84:poster = os.path.join(docs, 'zeichen-26.figcraft')
+docs/design/doc-name/live.py:113:renamed = os.path.join(docs, 'Festival poster.figcraft')
+docs/design/doc-name/live.py:129:print('   files on disk:', files, '| Festival poster.figcraft untouched until saved:', digest(renamed) == after_save)
+docs/checklists/document-names.md:7:| A file saved with the name "Untitled" goes by its file name | Open `zeichen-26.figcraft` whose stored name is "Untitled": Home's card, the tab, the left panel's h
+docs/scrim-ports/settings/README.md:5:- **01–11:** a scratch HOME (so the owner's settings were untouched), 1920 × 1050 points at 1× (the menu bar takes the rest of the 1080), light theme, a copy of `
+docs/scrim-ports/chat/README.md:37:Drawn by the offscreen renderer (`offscreen_tests.rs` › `chat_screenshots`, the software rasteriser kept for a locked screen). That is the window's own drawing fille
+docs/scrim-ports/follow-agent/s4/s4.py:24:saved = os.path.join(home, 'Documents', 'Scrim', 'poster.figcraft')
+docs/scrim-ports/follow-setting/w6live.py:26:state = json.load(open(os.path.join(REPO, 'apps', 'figcraft', 'tests', 'fixtures', 'settings', 'state-v8-fix-t.json')))
+docs/scrim-ports/canvas-badges/README.md:3:Real window captures (`ui.screenshot`, the window's own pixels; this display is 1×, 1440 × 900 points) of `examples/ridgeline-app.figcraft`.
+docs/scrim-ports/canvas-badges/README.md:89:No code under `crates/doc`, `crates/format`, `crates/engine` or `crates/mcp` changed in Stage E, so the `.figcraft` format is unchanged.
+docs/scrim-ports/follow-setting/repro.py:21:FIX = os.path.join(HERE, '..', '..', '..', 'apps', 'figcraft', 'tests', 'fixtures', 'settings')
+docs/scrim-ports/follow-setting/v5live.py:22:state = json.load(open(os.path.join(REPO, 'apps', 'figcraft', 'tests', 'fixtures', 'settings', 'state-v7-before-fix-t.json')))
+docs/scrim-ports/connect-agents/tool-use.md:18:- **The record:** Claude Desktop, 21 Oct 2026, roughly 00:12 to 12:44 local time, first-hand by the agent in the chat: used Scrim's tools through the `sc
+docs/scrim-ports/accent/README.md:6:- **The same conditions:** both were taken by the same script, from a fresh copy of `examples/ridgeline-app.figcraft` and a scratch HOME, with the pointer parked ov
+docs/scrim-ports/field-edges/s2.py:3:9; MCP on 7690, never 7680), opens examples/ridgeline-app.figcraft, and captures with `ui.screenshot`:
+docs/scrim-ports/field-edges/s2.py:18:doc = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '../../../examples/ridgeline-app.figcraft')
+xtask/src/bundle_macos_tests.rs:10:    let p = info_plist(&template(), "0.7.0-rc.1", "abc1234", "figcraft", "11.0").expect("the template has what is replaced");
+xtask/src/bundle_macos_tests.rs:29:    let p = info_plist(&template(), "0.7.0", "x", "figcraft", "12.3").expect("replaced");
+xtask/src/bundle_macos_tests.rs:35:    assert!(info_plist("<plist><dict></dict></plist>", "0.7.0", "x", "figcraft", "11.0").is_none());
+xtask/src/bundle_macos_tests.rs:41:    let p = info_plist(&template(), "0.7.0", "abc1234", "figcraft", "11.0").expect("replaced");
+xtask/src/bundle_macos.rs:111:    if !run(cargo.args(["build", "--release", "--locked", "-p", "figcraft"]).env("MACOSX_DEPLOYMENT_TARGET", &min).env("FIGCRAFT_BUILD_SHA", &sha)) {
+xtask/src/bundle_macos.rs:123:    let exe = macos.join("figcraft");
+xtask/src/bundle_macos.rs:133:    let Some(plist) = info_plist(&template, &version, &sha, "figcraft", &min) else {
+assets/app-icon/README.md:35:- `hicolor/<size>/apps/ai.storyteller.figcraft.png` (16–512) and `hicolor/scalable/...svg`:
+apps/figcraft-cli/tests/pdf_print.rs:17:    let file = d.join("doc.figcraft");
+apps/figcraft-server/src/store.rs:13://! <data>/files/<id>/library-<version>.bin  its team library, when one was published (a `.figcraft`
+apps/figcraft-cli/src/perf.rs:101:    table.put(col, "save .figcraft", ms(t));
+apps/figcraft-cli/src/perf.rs:104:    table.put(col, "load .figcraft", ms(t));
+apps/figcraft-cli/src/perf.rs:502:    let path = dir.join("design-system.figcraft").to_string_lossy().into_owned();
+apps/figcraft/Cargo.toml:2:name = "figcraft"
+apps/figcraft/Cargo.toml:8:default-run = "figcraft"
+apps/figcraft/Cargo.toml:35:# Finder double-clicks, Open With, Dock drops and `open -a FigCraft file.figcraft` arrive as a
+apps/figcraft-cli/tests/pdf.rs:31:    let file = d.join("doc.figcraft");
+apps/figcraft-cli/src/args.rs:114:        let a = Args::parse(&v(&["in.figcraft", "-o", "out", "--scale=2", "--json"]), &["o", "scale"], &["json"]).unwrap();
+apps/figcraft-cli/src/args.rs:115:        assert_eq!(a.positional, ["in.figcraft"]);
+apps/figcraft-cli/tests/export_depth.rs:22:    let input = dir.join("deep.figcraft");
+apps/figcraft-cli/tests/fonts.rs:53:    let (script, file) = (d.join("make.json"), d.join("doc.figcraft"));
+apps/figcraft-cli/tests/cli.rs:23:        &["export", "x.figcraft"],
+apps/figcraft-cli/tests/cli.rs:39:    let out = bin().args(["info", "/no/such/file.figcraft"]).output().unwrap();
+apps/figcraft-cli/tests/cli.rs:48:    let file = d.join("doc.figcraft");
+apps/figcraft-cli/tests/cli.rs:95:    let file = d.join("g.figcraft");
+apps/figcraft-cli/tests/cli.rs:151:        writeln!(stdin, "{}", call(3, "save_file", serde_json::json!({"path": p("outside/a.figcraft")}))).unwrap();
+apps/figcraft-cli/tests/cli.rs:152:        writeln!(stdin, "{}", call(4, "save_file", serde_json::json!({"path": p("out/a.figcraft")}))).unwrap();
+apps/figcraft-cli/tests/cli.rs:153:        writeln!(stdin, "{}", call(5, "open_file", serde_json::json!({"path": p("outside/a.figcraft")}))).unwrap();
+apps/figcraft-cli/tests/cli.rs:154:        writeln!(stdin, "{}", call(6, "open_file", serde_json::json!({"path": p("out/a.figcraft")}))).unwrap();
+apps/figcraft-cli/tests/cli.rs:165:    assert!(d.join("out/a.figcraft").is_file() && !d.join("outside/a.figcraft").exists());
+apps/figcraft/src/recovery.rs:3://! While the app runs, each document with unsaved changes is copied to `Recovery/<pid>/<uid>.figcraft`
+apps/figcraft/src/recovery.rs:183:            let path = self.dir.join(format!("{}.figcraft", d.uid));
+apps/figcraft/src/recovery.rs:239:                let _ = std::fs::remove_file(dir.join(format!("{uid}.figcraft")));
+apps/figcraft/src/recovery.rs:359:        if file.extension().is_none_or(|e| e != "figcraft") {
+apps/figcraft/src/recovery.rs:410:        for f in files.iter().filter(|f| f.extension().is_some_and(|e| e == ONLINE) && !f.with_extension("figcraft").exists()) {
+apps/figcraft-cli/src/files.rs:97:        "figcraft" => {
+apps/figcraft-cli/src/files.rs:373:        if ext(out) == "figcraft" {
+apps/figcraft-cli/src/files.rs:471:        let out = dir.join("out.figcraft");
+apps/figcraft-cli/src/files.rs:495:        let input = dir.join("locked.figcraft");
+apps/figcraft-cli/src/files.rs:499:        let out = dir.join("out.figcraft");
+apps/figcraft-cli/src/files.rs:519:        let out = dir.join("out.figcraft");
+apps/figcraft/src/recovery_tests.rs:49:        |d: &std::path::Path| std::fs::read_dir(d).unwrap().flatten().filter(|f| f.path().extension().is_some_and(|e| e == "figcraft")).count();
+apps/figcraft/src/recovery_tests.rs:78:    std::fs::read_dir(d).map_or(0, |d| d.flatten().filter(|f| f.path().extension().is_some_and(|e| e == "figcraft")).count())
+apps/figcraft/src/recovery_tests.rs:111:    let mine = root.join(std::process::id().to_string()).join(format!("{}.figcraft", next.docs[0].uid));
+apps/figcraft/src/recovery_tests.rs:264:    let file = std::fs::read_dir(dir).unwrap().flatten().map(|f| f.path()).find(|f| f.extension().is_some_and(|e| e == "figcraft")).unwrap();
+apps/figcraft/src/recovery_tests.rs:310:    let copy = dir.join(format!("{uid}.figcraft"));
+apps/figcraft/src/recovery_tests.rs:319:    let copy = dir.join(format!("{uid}.figcraft"));
+apps/figcraft/src/recovery_tests.rs:334:    let copy = dir.join(format!("{uid}.figcraft"));
+apps/figcraft/src/recovery_tests.rs:341:/// The files named `*.figcraft` in the run folder under `root`.
+apps/figcraft/src/recovery_tests.rs:344:    std::fs::read_dir(dir).unwrap().flatten().filter(|f| f.path().extension().is_some_and(|e| e == "figcraft")).count()
+apps/figcraft/src/recovery_tests.rs:350:    let blocker = dir.join(format!("{}.figcraft", s.docs[0].uid));
+apps/figcraft-cli/src/main.rs:42:Files: .figcraft (native), .json (Scrim or REST API file JSON), .fig (best effort; `info` lists what
+apps/figcraft/src/first_screen_tests.rs:8:    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/ridgeline-app.figcraft").to_string_lossy().into_owned()
+apps/figcraft/src/first_screen_tests.rs:37:    assert!(open_files(&mut s, &["/nonexistent/scrim-fix-ad.figcraft".to_string()]).is_empty());
+apps/figcraft/src/apple_events_tests.rs:17:    let file = dir.join("BLA-001.figcraft");
+apps/figcraft/src/apple_events_tests.rs:24:    open_documents(&mut app, vec![dir.join("Missing.figcraft"), file.clone()]);
+apps/figcraft/src/apple_events_tests.rs:28:    assert!(app.ui.last_error.as_deref().is_some_and(|e| e.contains("Missing.figcraft")), "{:?}", app.ui.last_error);
+apps/figcraft/src/recovery_online_tests.rs:208:    assert_eq!((copies(&left, "figcraft"), copies(&left, "online")), (1, 1));
+apps/figcraft/src/recovery_online_tests.rs:221:    assert_eq!((copies(&mine, "figcraft"), copies(&mine, "online")), (1, 1), "covered by this run's own copy");
+apps/figcraft/src/recovery_online_tests.rs:237:    let mine = root.join(std::process::id().to_string()).join(format!("{}.figcraft", next.docs[1].uid));
+apps/figcraft/src/recovery_online_tests.rs:240:    assert_eq!((copies(&left, "figcraft"), copies(&left, "online")), (1, 1), "kept: the work is nowhere else on disk");
+apps/figcraft/src/recovery_online_tests.rs:259:    assert_eq!(copies(&left, "figcraft"), 1);
+apps/figcraft/src/recovery_online_tests.rs:301:    assert_eq!(copies(&root.join(std::process::id().to_string()), "figcraft"), 1, "the recovered tab has this run's copy");
+apps/figcraft/src/recovery_online_tests.rs:315:    assert_eq!(copies(&left, "figcraft"), 1, "kept while the join is on its way");
+apps/figcraft/src/recovery_online_tests.rs:325:    assert_eq!(copies(&root.join(std::process::id().to_string()), "figcraft"), 1);
+apps/figcraft/src/recovery_online_tests.rs:370:    assert_eq!((copies(&dir, "figcraft"), copies(&dir, "online")), (1, 1));
+apps/figcraft/src/recovery_online_tests.rs:375:    assert_eq!((copies(&dir, "figcraft"), copies(&dir, "online")), (1, 0));
+apps/figcraft/src/args_tests.rs:12:    let a = parse(&args(&["--control", "4242", "a.figcraft", "b.svg"]));
+apps/figcraft/src/args_tests.rs:13:    assert_eq!(a, Args { control: Some(4242), files: args(&["a.figcraft", "b.svg"]), ..Args::default() });
+apps/figcraft/src/args_tests.rs:21:    let a = parse(&args(&["--automation-read-root", "in", "--automation-write-root=out", "--automation-read-root=more", "a.figcraft"]));
+apps/figcraft/src/args_tests.rs:24:    assert_eq!(a.files, args(&["a.figcraft"]));
+apps/figcraft/src/args_tests.rs:33:    let a = parse(&args(&["--automation-write-roots", "out", "--automation-write-dir=out", "--verbose", "a.figcraft"]));
+apps/figcraft/src/args_tests.rs:37:    let a = parse(&args(&["--control", "1", "--", "--odd.figcraft", "--automation-write-root=x"]));
+apps/figcraft/src/args_tests.rs:38:    assert_eq!(a.files, args(&["--odd.figcraft", "--automation-write-root=x"]));
+apps/figcraft/src/args_tests.rs:49:    let a = parse(&args(&["design.figcraft", "FIGCRAFT://join/?host=h:1&file=f&token=t"]));
+apps/figcraft/src/args_tests.rs:50:    assert_eq!(a.files, args(&["design.figcraft"]));
+apps/figcraft/src/args_tests.rs:58:    let a = parse(&args(&["file:///home/<user>/My%20Designs/a+b.figcraft", "FILE://localhost/tmp/x.svg"]));
+apps/figcraft/src/args_tests.rs:59:    assert_eq!(a.files, args(&["/home/<user>/My Designs/a+b.figcraft", "/tmp/x.svg"]), "spaces decoded, plus signs kept");
+apps/figcraft/src/args_tests.rs:61:    let win = file_url_path("file:///C:/Designs/a.figcraft");
+apps/figcraft/src/args_tests.rs:62:    assert_eq!(win.as_deref(), Some(if cfg!(windows) { "C:/Designs/a.figcraft" } else { "/C:/Designs/a.figcraft" }));
+apps/figcraft/src/migrate_tests.rs:31:    let prefs = r#"{"prefs":{"theme":"dark","recent_files":["/tmp/a.figcraft"]}}"#;
+apps/figcraft/src/migrate_tests.rs:33:    write(&base.join(OLD).join("Recovery/doc-1.figcraft"), "copy");
+apps/figcraft/src/migrate_tests.rs:37:    assert!(base.join(NEW).join("Recovery/doc-1.figcraft").exists() && base.join(NEW).join("Plugins/tidy/figcraft-plugin.json").exists());
+apps/figcraft/src/migrate_tests.rs:50:    write(&base.join(OLD).join("state.json"), "figcraft");
+apps/figcraft/src/migrate_tests.rs:54:    assert_eq!(std::fs::read_to_string(base.join(OLD).join("state.json")).unwrap(), "figcraft");
+apps/figcraft/src/apple_events.rs:3://! Finder double-clicks, Open With, drops on the Dock icon and `open -a FigCraft file.figcraft`
+apps/figcraft/src/services.rs:296:    if exts == ["figcraft", "fig"] {
+apps/figcraft/src/services.rs:297:        vec![("Scrim (.figcraft)", &exts[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &exts[1..])]
+apps/figcraft/src/services.rs:481:        let extensions = ["figcraft", "fig"];
+apps/figcraft/src/services.rs:484:            vec![("Scrim (.figcraft)", &extensions[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &extensions[1..])]
+apps/figcraft/src/services.rs:490:        for extensions in [&["figcraft"][..], &["fig"][..], &["png"][..], &["png", "jpg", "webp"][..], &[][..]] {

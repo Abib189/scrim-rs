@@ -64,7 +64,7 @@ fn versions_saved_on_a_branch_are_the_branchs_own() {
 fn branch_versions_save_with_the_file_and_survive_merging() {
     let dir = std::env::temp_dir().join(format!("figcraft-branch-versions-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("file.figcraft").to_string_lossy().to_string();
+    let path = dir.join("file.scrim").to_string_lossy().to_string();
     let (mut s, id, r) = branched();
     ok(&mut s, "node.set", json!({"id": r, "props": {"name": "On the branch"}}));
     ok(&mut s, "file.saveVersion", json!({"name": "Branch v1"}));

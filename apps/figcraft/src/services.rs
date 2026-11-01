@@ -293,8 +293,8 @@ fn read_clipboard<T>(c: &mut arboard::Clipboard, read: fn(&mut arboard::Clipboar
 
 /// Native Save as filters; other callers keep their existing combined filter.
 fn save_filters<'a>(exts: &'a [&'a str]) -> Vec<(&'static str, &'a [&'a str])> {
-    if exts == ["figcraft", "fig"] {
-        vec![("Scrim (.figcraft)", &exts[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &exts[1..])]
+    if exts == ["scrim", "fig"] {
+        vec![("Scrim (.scrim)", &exts[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &exts[1..])]
     } else {
         vec![("File", exts)]
     }
@@ -354,7 +354,12 @@ impl Services for Desktop {
         picked(dialog(title).add_filter("Supported files", exts).pick_file())
     }
     fn pick_save(&mut self, title: &str, name: &str, exts: &[&str]) -> DialogFuture {
-        let mut dialog = dialog(title).set_file_name(name);
+        // A suggested full path (a .scrim beside the .figcraft it replaces) opens in its folder.
+        let path = std::path::Path::new(name);
+        let mut dialog = match (path.parent().filter(|d| path.is_absolute() && d.is_dir()), path.file_name()) {
+            (Some(dir), Some(file)) => dialog(title).set_directory(dir).set_file_name(file.to_string_lossy()),
+            _ => dialog(title).set_file_name(name),
+        };
         for (label, extensions) in save_filters(exts) {
             dialog = dialog.add_filter(label, extensions);
         }
@@ -478,16 +483,16 @@ mod save_filter_tests {
 
     #[test]
     fn native_and_fig_save_filters_are_separate_with_native_first() {
-        let extensions = ["figcraft", "fig"];
+        let extensions = ["scrim", "fig"];
         assert_eq!(
             save_filters(&extensions),
-            vec![("Scrim (.figcraft)", &extensions[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &extensions[1..])]
+            vec![("Scrim (.scrim)", &extensions[..1]), (figcraft_ui_egui::i18n::tr(".fig (experimental)"), &extensions[1..])]
         );
     }
 
     #[test]
     fn other_save_filters_keep_one_combined_group() {
-        for extensions in [&["figcraft"][..], &["fig"][..], &["png"][..], &["png", "jpg", "webp"][..], &[][..]] {
+        for extensions in [&["scrim"][..], &["figcraft", "fig"][..], &["fig"][..], &["png"][..], &["png", "jpg", "webp"][..], &[][..]] {
             assert_eq!(save_filters(extensions), vec![("File", extensions)]);
         }
     }

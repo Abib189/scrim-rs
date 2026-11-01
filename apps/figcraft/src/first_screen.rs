@@ -4,17 +4,22 @@
 //! "restore the last session" setting, and none is added: Home is the default.
 
 use figcraft_engine::Session;
-use serde_json::json;
+use serde_json::{Value, json};
 
 /// Open the files named on the command line, in order. One that can't open is logged and
-/// skipped, and nothing takes its place. Returns the ids of the documents now open.
-pub fn open_files(session: &mut Session, files: &[String]) -> Vec<u64> {
+/// skipped, and nothing takes its place. Returns the ids of the documents now open, and the last
+/// file's `file.open` parameters and result, so its import report shows once the window is up (Fix
+/// AG: a file opened at launch is one the person opened).
+pub fn open_files_with_results(session: &mut Session, files: &[String]) -> (Vec<u64>, Option<(Value, Value)>) {
+    let mut last = None;
     for f in files {
-        if let Err(e) = session.execute("file.open", &json!({"path": f})) {
-            log::error!("{f}: {e}");
+        let params = json!({"path": f});
+        match session.execute("file.open", &params) {
+            Ok(r) => last = Some((params, r)),
+            Err(e) => log::error!("{f}: {e}"),
         }
     }
-    session.docs.iter().map(|d| d.uid).collect()
+    (session.docs.iter().map(|d| d.uid).collect(), last)
 }
 
 /// Whether the window starts on Home: when it has no document to show.

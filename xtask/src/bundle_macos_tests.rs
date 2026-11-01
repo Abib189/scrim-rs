@@ -35,6 +35,32 @@ fn a_template_without_what_is_replaced_is_refused() {
     assert!(info_plist("<plist><dict></dict></plist>", "0.7.0", "x", "figcraft", "11.0").is_none());
 }
 
+/// Fix AG: the built plist, read back by `plutil` as JSON, declares `.scrim` (an exported UTI, a
+/// document type Scrim edits and owns) and still opens `.scrim`.
+#[cfg(target_os = "macos")]
+#[test]
+fn the_written_plist_declares_the_scrim_document_type_and_keeps_figcraft() {
+    let p = info_plist(&template(), "0.7.0", "abc1234", "figcraft", "11.0").expect("replaced");
+    let path = std::env::temp_dir().join(format!("scrim-bundle-uti-{}.plist", std::process::id()));
+    std::fs::write(&path, p).expect("written");
+    let out = std::process::Command::new("plutil").args(["-convert", "json", "-o", "-"]).arg(&path).output().expect("plutil runs");
+    let _ = std::fs::remove_file(&path);
+    let plist: serde_json::Value = serde_json::from_slice(&out.stdout).expect("plutil gives JSON");
+    let exported = &plist["UTExportedTypeDeclarations"][0];
+    assert_eq!(exported["UTTypeIdentifier"], "design.scrim.document");
+    assert_eq!(exported["UTTypeConformsTo"], serde_json::json!(["public.data", "public.content"]));
+    assert_eq!(exported["UTTypeTagSpecification"]["public.filename-extension"], serde_json::json!(["scrim"]));
+    let types = plist["CFBundleDocumentTypes"].as_array().expect("document types");
+    let of = |uti: &str| types.iter().find(|t| t["LSItemContentTypes"].as_array().is_some_and(|a| a.iter().any(|u| u == uti))).cloned();
+    let scrim = of("design.scrim.document").expect("a .scrim document type");
+    assert_eq!(
+        (scrim["CFBundleTypeRole"].as_str(), scrim["LSHandlerRank"].as_str(), scrim["CFBundleTypeIconFile"].as_str()),
+        (Some("Editor"), Some("Owner"), Some("Scrim"))
+    );
+    assert_eq!(plist["UTImportedTypeDeclarations"][0]["UTTypeIdentifier"], "ai.storyteller.figcraft.document");
+    assert!(of("ai.storyteller.figcraft.document").is_some(), ".figcraft still opens");
+}
+
 #[cfg(target_os = "macos")]
 #[test]
 fn the_written_plist_passes_plutil() {

@@ -50,7 +50,7 @@ fn headless_runs_resolve_installed_families_unless_opted_out() {
 fn info_lists_the_fonts_a_file_uses_that_are_missing() {
     let d = std::env::temp_dir().join(format!("figcraft-cli-missing-{}", std::process::id()));
     std::fs::create_dir_all(&d).unwrap();
-    let (script, file) = (d.join("make.json"), d.join("doc.figcraft"));
+    let (script, file) = (d.join("make.json"), d.join("doc.scrim"));
     let text =
         |family: &str| json!({"command": "text.create", "params": {"text": "Hamburgefonstiv", "x": 0, "y": 0, "props": {"fontFamily": family}}});
     std::fs::write(&script, json!([text("FigCraft Missing CLI"), text("FigCraft Missing CLI")]).to_string()).unwrap();

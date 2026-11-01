@@ -109,7 +109,7 @@ fn an_added_page_takes_the_current_pages_colour() {
 fn added_page_colours_survive_save_and_reopen() {
     let dir = std::env::temp_dir().join(format!("figcraft-added-pages-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("pages.figcraft");
+    let path = dir.join("pages.scrim");
     let mut s = Session::new();
     ex(&mut s, "page.setBackground", json!({"color": "#336699"}));
     ex(&mut s, "page.add", json!({}));
@@ -152,7 +152,7 @@ fn the_file_the_app_opened_with_takes_the_theme_once_it_is_known() {
 fn opened_files_keep_their_page_colour() {
     let dir = std::env::temp_dir().join(format!("figcraft-theme-pages-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("light.figcraft");
+    let path = dir.join("light.scrim");
     let mut s = Session::new();
     ex(&mut s, "file.saveAs", json!({"path": path.to_string_lossy()}));
     let mut s = Session::empty();
