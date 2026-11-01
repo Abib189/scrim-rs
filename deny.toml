@@ -1,0 +1,24 @@
+# cargo-deny's advisory check for Scrim (`cargo deny --all-features check advisories`). Every
+# exception names one advisory and why it doesn't apply here; review them when a dependency moves.
+# docs/design/upstream-sync.md › Ported from upstream (Fix AI-1).
+
+[graph]
+all-features = true
+
+[advisories]
+ignore = [
+    # zip 2.x: these three are about ZipArchive::extract and ZipStreamReader::extract, which
+    # Scrim never calls (no `.extract(` or `ZipStreamReader` anywhere in crates/, apps/, xtask/ or
+    # plugins/): every archive is read member by member, with size and ratio caps. The fix needs
+    # zip 9, a major version; 2.6.1, the newest semver-compatible release, isn't patched either.
+    { id = "RUSTSEC-2026-0367", reason = "extract() only (SUID/SGID bits); Scrim reads members itself and never extracts" },
+    { id = "RUSTSEC-2026-0368", reason = "extract() only (symlink targets); Scrim reads members itself and never extracts" },
+    { id = "RUSTSEC-2026-0369", reason = "extract() only (permissions through symlinks); Scrim reads members itself and never extracts" },
+    # Unmaintained, not vulnerable, and only pulled in by other crates; no maintained release to
+    # move to yet.
+    { id = "RUSTSEC-2026-0206", reason = "rustybuzz: unmaintained, used only through krilla (PDF export); no replacement release" },
+    { id = "RUSTSEC-2026-0192", reason = "ttf-parser: unmaintained, used only through krilla (PDF export); no replacement release" },
+    { id = "RUSTSEC-2026-0370", reason = "zvariant: unmaintained, used only through zbus (the Linux portal); no replacement release" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names: unmaintained, used only through zbus (the Linux portal); no replacement release" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive: unmaintained, used only through zbus (the Linux portal); no replacement release" },
+]
