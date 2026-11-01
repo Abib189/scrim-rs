@@ -156,6 +156,14 @@ pub(crate) fn sync(s: &mut Session) {
     }
 }
 
+/// What a recovery copy of `d` holds (Fix AI LW-5, upstream FigCraft 019058ff): the document
+/// itself, never a version or live text preview shown in its place (a crash during a preview must
+/// bring back the work, not the version), its version history, and its branches as they are now
+/// ([`current`]).
+pub fn recovery_copy(s: &Session, d: &DocState) -> (Arc<Document>, Vec<figcraft_format::Version>, Vec<Branch>) {
+    (d.document_itself().clone(), d.versions.clone(), current(s, d.uid))
+}
+
 /// The branches of the file in tab `uid` as saving it now would write them: [`sync`] only puts a
 /// branch tab's latest edits in before the next command.
 pub fn current(s: &Session, uid: u64) -> Vec<Branch> {

@@ -389,3 +389,31 @@ fn a_background_copy_that_failed_is_tried_again_without_another_edit() {
     r.finish();
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// Fix AI LW-5 (upstream FigCraft 019058ff): a crash while an earlier version is shown brings back
+/// the document you were working on, not the version shown in its place; leaving the preview and
+/// restoring a version work as before.
+#[test]
+fn a_crash_during_a_version_preview_recovers_the_working_document() {
+    let root = root("preview");
+    let mut s = edited();
+    s.execute("file.saveVersion", &json!({"name": "One rectangle"})).unwrap();
+    s.execute("shape.rectangle", &json!({"x": 20, "y": 0, "width": 10, "height": 10})).unwrap();
+    let rects = |s: &Session| s.doc().unwrap().node(s.doc().unwrap().pages[0]).map(|p| p.children.len());
+    assert_eq!(rects(&s), Some(2));
+    s.execute("version.preview", &json!({"index": 0})).unwrap();
+    assert_eq!(rects(&s), Some(1), "the version is shown");
+    let mut r = Recovery::start(&root).unwrap();
+    r.write(&s, true);
+    // It ends without closing.
+    drop(r);
+    let mut next = Session::empty();
+    assert_eq!(recover(&root, &mut next), 1);
+    assert_eq!(rects(&next), Some(2), "the working document came back, not the version shown");
+    // Leaving the preview and restoring a version still work.
+    s.execute("version.exitPreview", &json!({})).unwrap();
+    assert_eq!(rects(&s), Some(2));
+    s.execute("version.restore", &json!({"index": 0})).unwrap();
+    assert_eq!(rects(&s), Some(1));
+    let _ = std::fs::remove_dir_all(&root);
+}

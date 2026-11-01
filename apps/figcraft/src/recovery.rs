@@ -203,8 +203,7 @@ impl Recovery {
             if entry.done.as_ref() == Some(&stamp) || entry.flight.is_some() {
                 continue;
             }
-            let doc = d.doc.clone();
-            let (versions, branches) = (d.versions.clone(), figcraft_engine::branches::current(s, d.uid));
+            let (doc, versions, branches) = figcraft_engine::branches::recovery_copy(s, d);
             // Which online file it is and what of the server's this very copy has (a line each:
             // the server, the file's id, then the session, client id and last change), while it
             // is one. Written after the copy, never before: a note must not promise more of the
