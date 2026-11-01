@@ -3,6 +3,13 @@
 use super::*;
 
 impl FigApp {
+    /// Say that `n` documents left unsaved by a crash were opened again from recovery copies.
+    pub fn note_recovered(&mut self, n: usize) {
+        if n > 0 {
+            self.toast(i18n::trn("Recovered {n} unsaved files after the app quit unexpectedly: save them to keep them", n, &[]));
+        }
+    }
+
     /// Act on UI requests queued by commands (dialogs, panels).
     pub fn handle_ui_requests(&mut self) {
         layers_restore::check(self);
@@ -129,6 +136,15 @@ impl FigApp {
                 "dialog.plugins" => self.ui.plugins_window = true,
                 "dialog.cursorChat" => live::open_chat(self),
                 "window.new" | "window.focus" | "window.fullscreen" => self.window_requests.push(r),
+                "notice.numbersReset" => {
+                    let name = r.data.get("name").and_then(Value::as_str).unwrap_or_default().to_string();
+                    let n = r.data.get("count").and_then(Value::as_u64).unwrap_or(0) as usize;
+                    self.toast(i18n::trn(
+                        "{name}: {n} numbers saved as null by an earlier version were reset to their defaults. The file itself wasn't changed.",
+                        n,
+                        &[("name", &name)],
+                    ));
+                }
                 other => windows::request(self, other),
             }
         }

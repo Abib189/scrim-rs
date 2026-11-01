@@ -18,6 +18,7 @@ pub mod booleans;
 pub mod branches;
 pub mod catalog;
 mod clipboard;
+mod command_checks;
 pub mod settings;
 pub use settings::UiRequest;
 pub mod cmd;
@@ -109,6 +110,10 @@ pub enum EngineError {
     /// ([`background`]); never returned to other callers.
     #[error("waiting for the server")]
     Waiting,
+    /// The command would leave layer `layer` with a number that isn't finite (NaN or infinity),
+    /// which a file can't hold: refused and rolled back (Fix AI LW-2).
+    #[error("`{cmd}` was refused: \"{layer}\" would get a number that isn't finite (too large, or not a number)")]
+    NotFinite { cmd: String, layer: String },
     /// A bug: the command panicked. The document was rolled back.
     #[error("internal error in `{cmd}`: {msg} (the document was left as it was before; please report this bug)")]
     Internal { cmd: String, msg: String },
@@ -785,33 +790,6 @@ impl Session {
             return Ok(());
         }
         Err(EngineError::Disabled(id.to_string(), PREVIEW_READ_ONLY.into()))
-    }
-
-    /// A layer's position and size stay finite: infinity and NaN are written as `null`, so a file
-    /// holding them saves but can't be reopened. Refuse such an edit (it is rolled back).
-    fn check_finite_geometry(&self, id: &str, before: &Option<(Arc<Document>, Vec<NodeId>, NodeId, u64)>) -> Result<()> {
-        let Some((bdoc, _, _, uid)) = before else { return Ok(()) };
-        let Some(ds) = self.docs.iter().find(|d| d.uid == *uid) else { return Ok(()) };
-        if Arc::ptr_eq(&ds.doc, bdoc) {
-            return Ok(());
-        }
-        let broken = |n: &Node| !(n.transform.as_coeffs().iter().all(|c| c.is_finite()) && n.width.is_finite() && n.height.is_finite());
-        let untouched = |n: &Node| bdoc.node_arc(n.id).zip(ds.doc.node_arc(n.id)).is_some_and(|(a, b)| Arc::ptr_eq(a, b));
-        match ds.doc.nodes().find(|n| broken(n) && !untouched(n)) {
-            Some(n) => Err(bad(id, format!("\"{}\" would get a position or size beyond the number range", n.name))),
-            None => Ok(()),
-        }
-    }
-
-    /// A live session's document you may only view (or that is on its way to a server) is
-    /// read-only: refuse an edit (it is rolled back).
-    fn check_live_access(&self, id: &str, before: &Option<(Arc<Document>, Vec<NodeId>, NodeId, u64)>) -> Result<()> {
-        let Some((bdoc, _, _, uid)) = before else { return Ok(()) };
-        let Some(ds) = self.docs.iter().find(|d| d.uid == *uid) else { return Ok(()) };
-        match self.live_read_only(*uid) {
-            Some(why) if !Arc::ptr_eq(&ds.doc, bdoc) => Err(EngineError::Disabled(id.to_string(), why.into())),
-            _ => Ok(()),
-        }
     }
 
     /// Instances can't gain, lose or reorder layers, nor move, resize or re-constrain the layers in
@@ -1501,6 +1479,8 @@ mod menu_gaps_tests;
 mod nested_override_tests;
 #[cfg(test)]
 mod node_set_refusals_tests;
+#[cfg(test)]
+mod non_finite_tests;
 #[cfg(test)]
 mod online_tests;
 #[cfg(test)]

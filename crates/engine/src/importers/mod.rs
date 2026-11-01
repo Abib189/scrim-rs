@@ -80,7 +80,38 @@ pub fn pick(bytes: &[u8], name: &str) -> Option<&'static dyn Importer> {
 /// Read `bytes` with the importer [`pick`] chooses.
 pub fn load(bytes: &[u8], options: &Options) -> Result<(Imported, &'static dyn Importer)> {
     let imp = pick(bytes, options.name).ok_or_else(|| EngineError::Unreadable(unreadable(options.name, bytes)))?;
-    Ok((imp.import(bytes, options)?, imp))
+    let mut imported = imp.import(bytes, options)?;
+    // A Scrim document resets the numbers it saved as `null` while it is read (its `issues`).
+    if !imp.native() {
+        let reset = reset_non_finite(&mut imported.loaded.doc);
+        if reset > 0 {
+            let what = if reset == 1 { "1 number".to_string() } else { format!("{reset} numbers") };
+            imported.warnings.push(ImportWarning::new(
+                figcraft_format::import_report::Severity::Approximated,
+                "",
+                format!("{what} that weren't finite (too large, or not a number) came in as their defaults"),
+            ));
+        }
+    }
+    Ok((imported, imp))
+}
+
+/// Reset every number on `doc`'s layers that isn't finite (NaN or infinity) to its property's
+/// default, or 0 where the layer must have one (Fix AI LW-2): a file can't hold such numbers, so
+/// an import never brings them in. How many were reset.
+pub fn reset_non_finite(doc: &mut figcraft_doc::Document) -> usize {
+    let broken: Vec<figcraft_doc::NodeId> = doc.nodes().filter(|n| !figcraft_doc::all_finite(*n)).map(|n| n.id).collect();
+    let mut count = 0;
+    for id in broken {
+        // Written as JSON, each such number is `null`, which the file reader resets.
+        let Some(mut v) = doc.node(id).and_then(|n| serde_json::to_value(n).ok()) else { continue };
+        let reset = figcraft_format::null_numbers::repair_node(&mut v);
+        if let (Ok(fixed), Some(slot)) = (serde_json::from_value::<figcraft_doc::Node>(v), doc.node_mut(id)) {
+            *slot = fixed;
+            count += reset;
+        }
+    }
+    count
 }
 
 /// Why a file named `name`, holding `bytes`, that no importer takes can't be opened: a closed

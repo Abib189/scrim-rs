@@ -20,10 +20,12 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod fig;
+mod finite;
 pub mod free;
 pub mod import_report;
 pub mod jpeg;
 pub mod library;
+pub mod null_numbers;
 pub mod old_scrim;
 pub mod penpot;
 pub mod rest;
@@ -210,11 +212,14 @@ pub struct Loaded {
     pub issues: Vec<String>,
     pub versions: Vec<Version>,
     pub branches: Vec<Branch>,
+    /// Numbers the file saved as `null` (NaN or infinity, by an earlier build) and that were reset
+    /// to their defaults when it opened ([`null_numbers`]); `issues` notes them once.
+    pub repaired_numbers: usize,
 }
 
 impl From<Document> for Loaded {
     fn from(doc: Document) -> Self {
-        Self { doc, issues: Vec::new(), versions: Vec::new(), branches: Vec::new() }
+        Self { doc, issues: Vec::new(), versions: Vec::new(), branches: Vec::new(), repaired_numbers: 0 }
     }
 }
 
@@ -278,19 +283,21 @@ fn image_index<S: Serializer>(images: &&BTreeMap<String, ImageData>, s: S) -> Re
     s.collect_seq(images.iter().map(|(hash, i)| Entry { hash, width: i.width, height: i.height }))
 }
 
-/// Serialize the document (without images) to the JSON value stored in `document.json`.
+/// Serialize the document (without images) to the JSON value stored in `document.json`. A NaN or
+/// infinite number is written as `0` ([`finite`]).
 pub fn to_json(doc: &Document) -> Result<Value, FormatError> {
-    serde_json::to_value(DocumentJson::new(doc)).map_err(io_err)
+    DocumentJson::new(doc).serialize(finite::Finite(serde_json::value::Serializer)).map_err(io_err)
 }
 
-/// Write the document (without images) as `document.json` content to `w`.
+/// Write the document (without images) as `document.json` content to `w`. A NaN or infinite
+/// number is written as `0` ([`finite`]).
 pub fn write_json(doc: &Document, w: impl Write) -> Result<(), FormatError> {
-    serde_json::to_writer(w, &DocumentJson::new(doc)).map_err(io_err)
+    DocumentJson::new(doc).serialize(finite::Finite(&mut serde_json::Serializer::new(w))).map_err(io_err)
 }
 
 /// Parse `document.json` content.
 pub fn from_json(text: &str) -> Result<(Document, Vec<String>), FormatError> {
-    parse_json(text).map(|(doc, issues, _)| (doc, issues))
+    parse_json(text).map(|p| (p.doc, p.issues))
 }
 
 /// The image hashes a `document.json` lists in its `imageIndex` (`None` without one).
@@ -335,10 +342,20 @@ impl<'de> Deserialize<'de> for Header {
     }
 }
 
+/// A parsed `document.json`.
+struct Parsed {
+    doc: Document,
+    issues: Vec<String>,
+    images: ImageIndex,
+    /// Numbers saved as `null` and reset ([`null_numbers`]).
+    repaired_numbers: usize,
+}
+
 /// Parse `document.json` content; also returns its [`ImageIndex`]. The header is checked first
 /// (a newer file is refused before its document is read), then the document is deserialized
-/// straight from the text.
-fn parse_json(text: &str) -> Result<(Document, Vec<String>, ImageIndex), FormatError> {
+/// straight from the text. A file an earlier build saved with `null` for a NaN or infinite number
+/// is read again with those reset ([`null_numbers`]), and that is noted once.
+fn parse_json(text: &str) -> Result<Parsed, FormatError> {
     let corrupt = |e: serde_json::Error| FormatError::Corrupt(e.to_string());
     let header: Header = serde_json::from_str(text).map_err(corrupt)?;
     if let Some(ver) = header.version
@@ -346,12 +363,23 @@ fn parse_json(text: &str) -> Result<(Document, Vec<String>, ImageIndex), FormatE
     {
         return Err(FormatError::Newer(u32::try_from(ver).unwrap_or(u32::MAX)));
     }
-    let mut doc: Document = serde_json::from_str(text).map_err(corrupt)?;
-    let issues = doc.validate();
+    let (mut doc, repaired_numbers) = match serde_json::from_str::<Document>(text) {
+        Ok(doc) => (doc, 0),
+        Err(e) if null_numbers::is_null_error(&e) => {
+            let mut v: Value = serde_json::from_str(text).map_err(corrupt)?;
+            let n = null_numbers::repair(&mut v).map_err(FormatError::Corrupt)?;
+            (Document::deserialize(&v).map_err(|_| corrupt(e))?, n)
+        }
+        Err(e) => return Err(corrupt(e)),
+    };
+    let mut issues = doc.validate();
     if !issues.is_empty() {
         doc.repair();
     }
-    Ok((doc, issues, header.images))
+    if repaired_numbers > 0 {
+        issues.insert(0, null_numbers::note(repaired_numbers));
+    }
+    Ok(Parsed { doc, issues, images: header.images, repaired_numbers })
 }
 
 pub(crate) fn io_err(e: impl std::fmt::Display) -> FormatError {
@@ -522,15 +550,15 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
     let trimmed = bytes.iter().position(|b| !b.is_ascii_whitespace()).and_then(|i| bytes.get(i));
     if trimmed == Some(&b'{') {
         let text = std::str::from_utf8(bytes).map_err(|e| FormatError::Corrupt(e.to_string()))?;
-        let (doc, issues) = from_json(text)?;
-        return Ok(Loaded { issues, ..Loaded::from(doc) });
+        let p = parse_json(text)?;
+        return Ok(Loaded { issues: p.issues, repaired_numbers: p.repaired_numbers, ..Loaded::from(p.doc) });
     }
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(e.to_string()))?;
     zip_limits::check(&mut z, bytes.len() as u64)?;
     let packed = z.by_name("document.json").map(|f| f.compressed_size()).unwrap_or(0);
     let limit = document_limit(packed, bytes.len() as u64);
     let text = String::from_utf8(read_member(&mut z, "document.json", limit)?).map_err(|e| FormatError::Corrupt(e.to_string()))?;
-    let (mut doc, mut issues, own_images) = parse_json(&text)?;
+    let Parsed { mut doc, mut issues, images: own_images, repaired_numbers } = parse_json(&text)?;
     let (images, unread) = read_images(&mut z, own_images.as_ref(), budget)?;
     report_lost_images(&mut issues, &unread, own_images.as_ref(), &images);
     match library::read(&mut z, &images, u64::MAX) {
@@ -550,7 +578,7 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
         .filter(|h| own_images.as_ref().is_some_and(|o| !o.contains(*h)))
         .collect();
     doc.images = images.into_iter().filter(|(h, _)| !history_only.contains(h)).collect();
-    Ok(Loaded { doc, issues, versions, branches })
+    Ok(Loaded { doc, issues, versions, branches, repaired_numbers })
 }
 
 /// Images that couldn't be read, with why.
@@ -816,6 +844,8 @@ mod image_tests;
 mod jpeg_tests;
 #[cfg(test)]
 mod large_tests;
+#[cfg(test)]
+mod null_numbers_tests;
 #[cfg(test)]
 mod page_guides_tests;
 #[cfg(test)]

@@ -11,6 +11,12 @@ pub fn get<'a>(p: &'a Value, key: &str) -> Option<&'a Value> {
     p.get(key).filter(|v| !v.is_null())
 }
 
+/// The number in a percent string (`"120%"`), if it is finite: `"NaN%"`, `"inf%"` or `"1e999%"`
+/// would put a number on a layer that a file can't hold (Fix AI LW-2, upstream FigCraft 2d1fabda).
+pub fn percent(s: &str) -> Option<f64> {
+    s.trim().trim_end_matches('%').trim().parse().ok().filter(|v: &f64| v.is_finite())
+}
+
 pub fn f64_of(v: &Value) -> Option<f64> {
     match v {
         Value::Number(n) => n.as_f64().filter(|f| f.is_finite()),

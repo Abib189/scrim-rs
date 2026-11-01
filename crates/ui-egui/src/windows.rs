@@ -187,6 +187,10 @@ pub fn error_text(e: &figcraft_engine::EngineError) -> String {
                 Unreadable::Unpack(why) => unpack_text(why),
             }
         }
+        figcraft_engine::EngineError::NotFinite { layer, .. } => trf(
+            "“{layer}” would get a number that isn't finite (too large, or not a number), which a file can't hold, so the change wasn't made.",
+            &[("layer", layer)],
+        ),
         other => other.to_string(),
     }
 }

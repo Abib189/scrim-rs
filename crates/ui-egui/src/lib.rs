@@ -171,6 +171,8 @@ mod live_tests;
 #[cfg(test)]
 mod live_text_tests;
 #[cfg(test)]
+mod lost_work_ui_tests;
+#[cfg(test)]
 mod menu_aim_tests;
 #[cfg(test)]
 mod menu_input_tests;
@@ -864,13 +866,6 @@ impl FigApp {
 
     pub fn toast(&mut self, msg: impl Into<String>) {
         self.ui.toast = Some((msg.into(), ToastClock::Raised));
-    }
-
-    /// Say that `n` documents left unsaved by a crash were opened again from recovery copies.
-    pub fn note_recovered(&mut self, n: usize) {
-        if n > 0 {
-            self.toast(i18n::trn("Recovered {n} unsaved files after the app quit unexpectedly: save them to keep them", n, &[]));
-        }
     }
 
     /// Set the widths asked for this window's side panels (within their limits); the main

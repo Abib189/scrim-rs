@@ -311,6 +311,7 @@ pub fn category(e: &EngineError) -> &'static str {
         EngineError::UnknownCommand(_) => "unknown command",
         EngineError::Disabled(..) => "not available now",
         EngineError::BadParams { .. } => "invalid parameters",
+        EngineError::NotFinite { .. } => "number not finite",
         EngineError::NoDocument => "no open document",
         EngineError::NoNode(_) => "no such layer",
         EngineError::Other(_) => "failed",

@@ -670,12 +670,8 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
     let (imported, native) = load_path(&path, variables.as_ref())?;
     remember(s, &path);
     let (loaded, warnings) = (imported.loaded, imported.warnings);
-    // A native file that lost something (a damaged image, say): the app says so, not only the result.
-    if native && !loaded.issues.is_empty() {
-        s.message = Some(match loaded.issues.as_slice() {
-            [one] => format!("{}: {one}", file_stem(&path)),
-            more => format!("{}: {} problems were repaired or left out while opening it, e.g. {}", file_stem(&path), more.len(), more[0]),
-        });
+    if native {
+        open_notes::say(s, &file_stem(&path), &loaded);
     }
     super::show_new_doc(s, DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
@@ -1375,6 +1371,8 @@ fn cycle_doc(s: &mut Session, dir: i64) -> Result<Value> {
     s.active = (s.active as i64 + dir).rem_euclid(n) as usize;
     Ok(json!({"index": s.active}))
 }
+
+mod open_notes;
 
 #[cfg(test)]
 mod rest_import_tests;

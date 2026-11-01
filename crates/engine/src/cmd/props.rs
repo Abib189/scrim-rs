@@ -100,7 +100,7 @@ pub(crate) fn sizing(v: &Value) -> Option<Sizing> {
 pub(crate) fn line_height(v: &Value) -> Option<LineHeight> {
     match v {
         Value::String(s) if s.eq_ignore_ascii_case("auto") => Some(LineHeight::Auto),
-        Value::String(s) if s.trim().ends_with('%') => s.trim().trim_end_matches('%').trim().parse().ok().map(LineHeight::Percent),
+        Value::String(s) if s.trim().ends_with('%') => crate::params::percent(s).map(LineHeight::Percent),
         Value::Object(_) => serde_json::from_value(v.clone()).ok(),
         other => f64_of(other).map(LineHeight::Pixels),
     }
@@ -108,7 +108,7 @@ pub(crate) fn line_height(v: &Value) -> Option<LineHeight> {
 
 pub(crate) fn letter_spacing(v: &Value) -> Option<LetterSpacing> {
     match v {
-        Value::String(s) if s.trim().ends_with('%') => s.trim().trim_end_matches('%').trim().parse().ok().map(LetterSpacing::Percent),
+        Value::String(s) if s.trim().ends_with('%') => crate::params::percent(s).map(LetterSpacing::Percent),
         Value::Object(_) => serde_json::from_value(v.clone()).ok(),
         other => f64_of(other).map(LetterSpacing::Pixels),
     }
