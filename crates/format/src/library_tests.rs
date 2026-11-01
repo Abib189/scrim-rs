@@ -116,7 +116,9 @@ fn oversized_members_are_refused() {
     let (d, _, _) = published();
     let good = save_bytes(&d, None).unwrap();
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(&good)).unwrap();
-    assert!(read_member(&mut z, MANIFEST, 4).is_err_and(|e| e.to_string().contains("too large")));
+    assert!(
+        read_member(&mut z, MANIFEST, 4).is_err_and(|e| matches!(e, crate::FormatError::Unpack(crate::zip_limits::Unpack::Member { limit: 4, .. })))
+    );
     assert!(read_member(&mut z, MANIFEST, MAX_MANIFEST).is_ok());
     assert!(read_member(&mut z, "library/none.json", MAX_MANIFEST).is_err());
     assert!(is_valid_library_id("a1_B-2") && !is_valid_library_id("") && !is_valid_library_id("a/b") && !is_valid_library_id(&"x".repeat(65)));

@@ -79,13 +79,18 @@ pub fn pick(bytes: &[u8], name: &str) -> Option<&'static dyn Importer> {
 
 /// Read `bytes` with the importer [`pick`] chooses.
 pub fn load(bytes: &[u8], options: &Options) -> Result<(Imported, &'static dyn Importer)> {
-    let imp = pick(bytes, options.name).ok_or_else(|| EngineError::Unreadable(unreadable(options.name)))?;
+    let imp = pick(bytes, options.name).ok_or_else(|| EngineError::Unreadable(unreadable(options.name, bytes)))?;
     Ok((imp.import(bytes, options)?, imp))
 }
 
-/// Why a file named `name` that no importer takes can't be opened: a closed format's, or none.
-pub fn unreadable(name: &str) -> Unreadable {
-    closed_format(name).map_or(Unreadable::NotSupported, |c| Unreadable::ClosedFormat(c.tool))
+/// Why a file named `name`, holding `bytes`, that no importer takes can't be opened: a closed
+/// format's; a zip that would unpack too far (Fix AI-3: each importer's check refuses such a zip,
+/// so none recognises it); or neither.
+pub fn unreadable(name: &str, bytes: &[u8]) -> Unreadable {
+    if let Some(c) = closed_format(name) {
+        return Unreadable::ClosedFormat(c.tool);
+    }
+    figcraft_format::zip_limits::refusal(bytes).map_or(Unreadable::NotSupported, Unreadable::Unpack)
 }
 
 /// Every extension the Open dialog and drag and drop take, in [`REGISTRY`]'s order.
@@ -122,6 +127,9 @@ pub enum Unreadable {
     ClosedFormat(&'static str),
     /// A file from another tool, in a version of its format newer than Scrim reads.
     NewerVersion { tool: &'static str, version: u32 },
+    /// An archive that would unpack to far more than it holds, or has too many parts (a zip
+    /// bomb, or a damaged file): refused before it fills memory (Fix AI-3).
+    Unpack(figcraft_format::zip_limits::Unpack),
 }
 
 impl std::fmt::Display for Unreadable {
@@ -144,6 +152,7 @@ impl std::fmt::Display for Unreadable {
             Unreadable::NotSupported => {
                 write!(f, "Scrim can't open this file: it isn't a Scrim document, an image, or a file from another design tool Scrim imports.")
             }
+            Unreadable::Unpack(u) => write!(f, "Scrim didn't open this file: {u}. Nothing was changed."),
         }
     }
 }

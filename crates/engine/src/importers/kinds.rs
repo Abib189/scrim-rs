@@ -16,7 +16,10 @@ fn stem(name: &str) -> String {
 }
 
 fn other(e: FormatError) -> EngineError {
-    EngineError::Other(e.to_string())
+    match e {
+        FormatError::Unpack(u) => EngineError::Unreadable(Unreadable::Unpack(u)),
+        e => EngineError::Other(e.to_string()),
+    }
 }
 
 /// A document from another tool: its notes as warnings.
@@ -72,6 +75,7 @@ impl Importer for OldScrim {
             EngineError::Unreadable(match e {
                 FormatError::Newer(v) => Unreadable::OldScrimNewer(v),
                 FormatError::Corrupt(why) | FormatError::Io(why) => Unreadable::OldScrimDamaged(why),
+                FormatError::Unpack(u) => Unreadable::Unpack(u),
             })
         })?;
         settle(&mut doc);

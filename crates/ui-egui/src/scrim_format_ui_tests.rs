@@ -139,3 +139,26 @@ fn home_shows_a_sketch_files_preview_and_reads_it_again_only_when_it_changes() {
     assert_eq!(u.app.ui.home_view.recents.previews_asked, asked + 1, "the changed file only");
     std::fs::remove_dir_all(&d).ok();
 }
+
+/// Fix AI-3: a zip bomb is refused with a reason a person can read, in English and Spanish.
+#[test]
+fn a_file_that_would_unpack_too_far_says_so_in_english_and_spanish() {
+    use figcraft_format::zip_limits::{MAX_ENTRIES, MAX_RATIO, Unpack};
+    let text = |u: Unpack| crate::windows::error_text(&figcraft_engine::EngineError::Unreadable(Unreadable::Unpack(u)));
+    assert!(
+        text(Unpack::Ratio { member: "document.json".into() })
+            .contains(&format!("its part “document.json” would unpack to more than {MAX_RATIO} times its size"))
+    );
+    assert!(text(Unpack::Entries { count: 70_000 }).contains(&format!("it has 70000 parts, more than the {MAX_ENTRIES} Scrim will unpack")));
+    assert!(text(Unpack::Member { member: "canvas.fig".into(), limit: 256 << 20 }).contains("would unpack to more than 256 MB"));
+    assert!(text(Unpack::Total { limit: 8 << 30 }).contains("more than 8 GB in all"));
+    for key in [
+        "Scrim didn't open this file: it has {count} parts, more than the {max} Scrim will unpack. It may be damaged, or built to fill memory. Nothing was changed.",
+        "Scrim didn't open this file: its part “{member}” would unpack to more than {ratio} times its size, which no design file does. It may be damaged, or built to fill memory. Nothing was changed.",
+        "Scrim didn't open this file: its part “{member}” would unpack to more than {size}. Nothing was changed.",
+        "Scrim didn't open this file: it would unpack to more than {size} in all. Nothing was changed.",
+    ] {
+        assert!(crate::i18n::own_entry("en", key).is_some(), "{key} in English");
+        assert!(crate::i18n::own_entry("es", key).is_some(), "{key} in Spanish");
+    }
+}

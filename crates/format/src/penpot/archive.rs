@@ -25,7 +25,8 @@ pub(super) struct Archive<'a> {
 
 impl<'a> Archive<'a> {
     pub(super) fn open(bytes: &'a [u8]) -> Result<Self, FormatError> {
-        let zip = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(format!("not a Penpot file: {e}")))?;
+        let mut zip = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(format!("not a Penpot file: {e}")))?;
+        crate::zip_limits::check(&mut zip, bytes.len() as u64)?;
         let mut objects = BTreeMap::new();
         for name in zip.file_names() {
             let Some(rest) = name.strip_prefix("objects/") else { continue };
@@ -99,5 +100,6 @@ pub(super) fn message(e: &FormatError) -> String {
     match e {
         FormatError::Corrupt(m) | FormatError::Io(m) => m.clone(),
         FormatError::Newer(v) => format!("format version {v}"),
+        FormatError::Unpack(u) => u.to_string(),
     }
 }

@@ -96,7 +96,8 @@ pub fn is_sketch(bytes: &[u8]) -> bool {
 /// The Sketch document `bytes` as a new document, with what couldn't be brought across. `name`:
 /// the document name when the file doesn't carry one.
 pub fn import(bytes: &[u8], name: &str) -> Result<(Document, Vec<ImportWarning>), FormatError> {
-    let z = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(format!("not a Sketch file: {e}")))?;
+    let mut z = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(format!("not a Sketch file: {e}")))?;
+    crate::zip_limits::check(&mut z, bytes.len() as u64)?;
     let mut archive = Archive { zip: z, json_left: JSON_BUDGET, images: 0, image_bytes: 0 };
     let document = archive.json("document.json")?;
     if text(&document, "_class") != Some("document") {
@@ -170,6 +171,7 @@ impl Archive<'_> {
         let data = crate::read_member(&mut self.zip, name, limit).map_err(|e| match e {
             FormatError::Corrupt(m) | FormatError::Io(m) => m,
             FormatError::Newer(_) => "unreadable".into(),
+            FormatError::Unpack(u) => u.to_string(),
         })?;
         self.images += 1;
         self.image_bytes = self.image_bytes.saturating_add(data.len() as u64);

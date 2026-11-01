@@ -297,3 +297,50 @@ fn free_and_sketch_files_go_to_their_own_importers() {
     assert_eq!(std::fs::read(&renamed).unwrap(), free);
     std::fs::remove_dir_all(&d).ok();
 }
+
+/// Fix AI-3: a small zip bomb under any name Scrim opens (`.scrim`, `.figcraft`, `.fig`, Sketch,
+/// Penpot, FREE) is refused as one, through Open and Import, before it fills memory; nothing is
+/// opened or imported and nothing hangs. Each bomb is built here: 40 MiB of spaces deflated to
+/// about 40 KB.
+#[test]
+fn a_small_zip_bomb_is_refused_as_one_whatever_its_name() {
+    use std::io::Write;
+    let bomb = |member: &str| {
+        let mut buf = std::io::Cursor::new(Vec::new());
+        let mut w = zip::ZipWriter::new(&mut buf);
+        let opts = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+        w.start_file(member, opts).unwrap();
+        w.write_all(&vec![b' '; 40 << 20]).unwrap();
+        w.start_file("meta.json", opts).unwrap();
+        w.write_all(b"{}").unwrap();
+        w.finish().unwrap();
+        buf.into_inner()
+    };
+    let d = dir("zip-bomb");
+    for (file, member) in [
+        ("bomb.scrim", "document.json"),
+        ("bomb.figcraft", "document.json"),
+        ("bomb.sketch", "document.json"),
+        ("bomb.free", "document.json"),
+        ("bomb.penpot", "manifest.json"),
+    ] {
+        let path = p(&d, file);
+        std::fs::write(&path, bomb(member)).unwrap();
+        let mut s = Session::empty();
+        let got = unreadable(s.execute("file.open", &json!({"path": path})));
+        assert!(matches!(&got, Unreadable::Unpack(_)), "{file}: {got:?}");
+        assert!(got.to_string().contains("would unpack to more than"), "{file}: {got}");
+        assert!(s.docs.is_empty(), "{file}: nothing opened");
+        let mut with_doc = Session::new();
+        let layers = with_doc.doc().unwrap().nodes().count();
+        let got = unreadable(with_doc.execute("file.import", &json!({"path": path})));
+        assert!(matches!(got, Unreadable::Unpack(_)), "{file}: {got:?}");
+        assert_eq!(with_doc.doc().unwrap().nodes().count(), layers, "{file}: nothing imported");
+    }
+    // A `.fig` bomb: its canvas would unpack a thousandfold.
+    let path = p(&d, "bomb.fig");
+    std::fs::write(&path, bomb("canvas.fig")).unwrap();
+    let mut s = Session::empty();
+    assert!(s.execute("file.open", &json!({"path": path})).is_err());
+    assert!(s.docs.is_empty());
+}

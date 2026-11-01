@@ -342,6 +342,34 @@ Nothing else in the report needed changing: the text reads in both themes, and C
 
 **Not checked live:** a file made by Penpot or Lunacy itself, since none was downloaded. The samples were built by Scrim's tests from the documentation.
 
+## Archive limits (Fix AI-3, 1 Nov 2026)
+
+Every zip Scrim opens is read under the limits in `crates/format/src/zip_limits.rs`: the `.scrim` and
+`.figcraft` file, `.fig`, Sketch, Penpot and FREE. A small file built to unpack into gigabytes (a
+zip bomb) is refused before it fills memory, with a reason, in English and Spanish.
+
+- **Parts.** An archive may have at most 50,000 members.
+- **Ratio.** Past its first 16 MiB, a member may unpack to at most 250 times what it packs to.
+  - Deflate packs honest JSON ten to fifty times, and pictures hardly at all; a bomb packs about a
+    thousand times.
+  - The ratio is checked against what the archive says before reading, and against the bytes
+    actually read, so a lying header can't get past it.
+- **Size.** Each member has its reader's own cap.
+  - An archive may say it unpacks to at most 250 times its own size (from 64 MiB, up to 8 GiB).
+  - The readers' running budgets bound what they read in all. `.fig` images now have one:
+    4 GiB, and no more than 250 times the file.
+- **What happens.**
+  - A member past a limit refuses the whole file ("Scrim didn't open this file: its part … would
+    unpack to more than …"). That includes an image inside a `.scrim`.
+  - In the Sketch, Penpot and FREE importers, an image past a limit is left out with a warning,
+    like any unreadable image.
+  - A file no importer recognises because its sniff hit a bomb is still reported as one: the engine
+    reads the archive's directory.
+
+The tests build their bombs themselves (40 MiB of spaces deflated to about 40 KB):
+`crates/format/src/zip_bomb_tests.rs`, `crates/engine/src/importers_tests.rs` and the UI's
+`scrim_format_ui_tests.rs`.
+
 ## Unknowns (as of 1 Nov 2026)
 
 - Paper: the native file format, and whether a competing tool may read a user's open file through Paper's MCP server.

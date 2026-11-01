@@ -34,4 +34,6 @@ web-time = "1.1.0"
 
 [dev-dependencies]
 wat = { workspace = true }
+# Zip bombs built in the importer tests (Fix AI-3).
+zip = { workspace = true }
 image = { workspace = true }

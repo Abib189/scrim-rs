@@ -219,12 +219,18 @@ struct Archive<'b> {
     file_name: Option<String>,
     /// `images/<hash>` members (or nothing for a bare canvas).
     zip: Option<zip::ZipArchive<std::io::Cursor<&'b [u8]>>>,
+    /// What the images may still unpack to together: [`MAX_IMAGES_TOTAL`], and no more than
+    /// [`crate::zip_limits::MAX_RATIO`] times the file (members can share packed bytes).
+    images_left: std::cell::Cell<u64>,
 }
+
+/// Most the `images/` members of one `.fig` may unpack to together.
+const MAX_IMAGES_TOTAL: u64 = 4 << 30;
 
 impl<'b> Archive<'b> {
     fn open(bytes: &'b [u8]) -> Result<Self, FormatError> {
         if bytes.starts_with(b"fig-") {
-            return Ok(Archive { canvas: bytes.to_vec(), file_name: None, zip: None });
+            return Ok(Archive { canvas: bytes.to_vec(), file_name: None, zip: None, images_left: std::cell::Cell::new(0) });
         }
         let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| corrupt(e.to_string()))?;
         // Every entry is checked, wanted or not, before any is read (Scrim's rules; nothing here
@@ -232,6 +238,7 @@ impl<'b> Archive<'b> {
         if z.len() > MAX_ENTRIES {
             return Err(corrupt(format!("the archive has {} entries — over the {MAX_ENTRIES} limit", z.len())));
         }
+        crate::zip_limits::check(&mut z, bytes.len() as u64)?;
         if let Some(bad) = z.file_names().find(|n| !safe_entry_name(n)) {
             let shown: String = bad.chars().take(80).collect();
             return Err(corrupt(format!("the archive has an entry with an unsafe path ({shown:?}) — refused")));
@@ -241,7 +248,8 @@ impl<'b> Archive<'b> {
             .ok()
             .and_then(|m| serde_json::from_slice::<serde_json::Value>(&m).ok())
             .and_then(|m| m.get("file_name").and_then(serde_json::Value::as_str).map(str::to_string));
-        Ok(Archive { canvas, file_name, zip: Some(z) })
+        let images_left = std::cell::Cell::new(MAX_IMAGES_TOTAL.min((bytes.len() as u64).saturating_mul(crate::zip_limits::MAX_RATIO)));
+        Ok(Archive { canvas, file_name, zip: Some(z), images_left })
     }
 
     /// Bytes of image `hash` (lowercase hex) from `images/`.
@@ -251,7 +259,10 @@ impl<'b> Archive<'b> {
         }
         // A clone shares the parsed directory and the bytes; the resolver only has shared access.
         let mut z = self.zip.clone()?;
-        crate::read_member(&mut z, &format!("images/{hash}"), MAX_IMAGE).ok()
+        let left = self.images_left.get();
+        let data = crate::read_member(&mut z, &format!("images/{hash}"), MAX_IMAGE.min(left)).ok()?;
+        self.images_left.set(left.saturating_sub(data.len() as u64));
+        Some(data)
     }
 }
 

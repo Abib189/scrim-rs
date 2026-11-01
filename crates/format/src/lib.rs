@@ -31,6 +31,7 @@ pub mod sketch;
 pub mod sniff;
 pub mod stored_name;
 pub mod thumbnail;
+pub mod zip_limits;
 
 pub use library::{is_valid_library_id, read_library, read_library_within};
 
@@ -84,6 +85,9 @@ pub enum FormatError {
     Io(String),
     Corrupt(String),
     Newer(u32),
+    /// An archive that would unpack to far more than it holds, or has too many parts
+    /// ([`zip_limits`]).
+    Unpack(zip_limits::Unpack),
 }
 
 impl std::fmt::Display for FormatError {
@@ -92,6 +96,7 @@ impl std::fmt::Display for FormatError {
             FormatError::Io(e) => write!(f, "{e}"),
             FormatError::Corrupt(e) => write!(f, "not a valid Scrim file: {e}"),
             FormatError::Newer(v) => write!(f, "this file was saved by a newer Scrim (format version {v})"),
+            FormatError::Unpack(u) => write!(f, "Scrim didn't open this file: {u}"),
         }
     }
 }
@@ -470,17 +475,27 @@ pub fn load_bytes(bytes: &[u8]) -> Result<(Document, Vec<String>), FormatError> 
     load_bytes_with_versions(bytes).map(|l| (l.doc, l.issues))
 }
 
-/// Read archive member `name`, refusing members larger than `limit` bytes.
+/// Read archive member `name`, refusing one larger than `limit` bytes, or that unpacks to more
+/// than [`zip_limits::MAX_RATIO`] times its packed size ([`zip_limits`]): checked against what
+/// the archive says first, then against the bytes read, so nothing past the limits is kept.
 pub(crate) fn read_member<R: Read + Seek>(z: &mut zip::ZipArchive<R>, name: &str, limit: u64) -> Result<Vec<u8>, FormatError> {
+    use zip_limits::Unpack;
     let f = z.by_name(name).map_err(|e| FormatError::Corrupt(format!("{name}: {e}")))?;
-    let too_large = || FormatError::Corrupt(format!("{name} is too large"));
+    let member = || clip(name, 120);
+    let too_large = || FormatError::Unpack(Unpack::Member { member: member(), limit });
+    let past_ratio = || FormatError::Unpack(Unpack::Ratio { member: member() });
+    let ratio = zip_limits::ratio_limit(f.compressed_size());
     if f.size() > limit {
         return Err(too_large());
     }
+    if f.size() > ratio {
+        return Err(past_ratio());
+    }
+    let cap = limit.min(ratio);
     let mut data = Vec::new();
-    f.take(limit.saturating_add(1)).read_to_end(&mut data).map_err(|e| FormatError::Corrupt(format!("{name}: {e}")))?;
-    if data.len() as u64 > limit {
-        return Err(too_large());
+    f.take(cap.saturating_add(1)).read_to_end(&mut data).map_err(|e| FormatError::Corrupt(format!("{name}: {e}")))?;
+    if data.len() as u64 > cap {
+        return Err(if ratio < limit { past_ratio() } else { too_large() });
     }
     Ok(data)
 }
@@ -511,11 +526,12 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
         return Ok(Loaded { issues, ..Loaded::from(doc) });
     }
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(e.to_string()))?;
+    zip_limits::check(&mut z, bytes.len() as u64)?;
     let packed = z.by_name("document.json").map(|f| f.compressed_size()).unwrap_or(0);
     let limit = document_limit(packed, bytes.len() as u64);
     let text = String::from_utf8(read_member(&mut z, "document.json", limit)?).map_err(|e| FormatError::Corrupt(e.to_string()))?;
     let (mut doc, mut issues, own_images) = parse_json(&text)?;
-    let (images, unread) = read_images(&mut z, own_images.as_ref(), budget);
+    let (images, unread) = read_images(&mut z, own_images.as_ref(), budget)?;
     report_lost_images(&mut issues, &unread, own_images.as_ref(), &images);
     match library::read(&mut z, &images, u64::MAX) {
         Ok(lib) => doc.published = lib.map(Arc::new),
@@ -537,6 +553,9 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
     Ok(Loaded { doc, issues, versions, branches })
 }
 
+/// Images that couldn't be read, with why.
+type Unread = Vec<(String, FormatError)>;
+
 /// The archive's `images/` members by hash, within `budget`, and the ones that couldn't be read
 /// with why. The document's own images (`own`) are read first, so a file past the budget loses
 /// the images only its history uses before its own.
@@ -544,7 +563,7 @@ fn read_images<R: Read + Seek>(
     z: &mut zip::ZipArchive<R>,
     own: Option<&BTreeSet<String>>,
     budget: ImageBudget,
-) -> (BTreeMap<String, ImageData>, Vec<(String, FormatError)>) {
+) -> Result<(BTreeMap<String, ImageData>, Unread), FormatError> {
     let mut hashes: Vec<String> = z.file_names().filter_map(|n| n.strip_prefix("images/")).map(str::to_string).collect();
     hashes.sort_by_key(|h| !own.is_some_and(|o| o.contains(h)));
     let mut images = BTreeMap::new();
@@ -566,10 +585,12 @@ fn read_images<R: Read + Seek>(
                 left = left.saturating_sub(data.len() as u64);
                 images.insert(hash, image_data(data));
             }
+            // A member built to unpack too far refuses the file, as one in its document does.
+            Err(e @ FormatError::Unpack(_)) => return Err(e),
             Err(e) => unread.push((hash, e)),
         }
     }
-    (images, unread)
+    Ok((images, unread))
 }
 
 /// Most lost images reported one by one (the rest as a count).
@@ -590,6 +611,7 @@ fn report_lost_images(
             let why = match e {
                 FormatError::Corrupt(m) | FormatError::Io(m) => m.clone(),
                 FormatError::Newer(v) => format!("format version {v}"),
+                FormatError::Unpack(u) => u.to_string(),
             };
             format!("image {hash} couldn't be read ({why}): it is left out, and saving this file again drops it")
         })
@@ -802,6 +824,8 @@ mod stale_ids_tests;
 mod thumbnail_tests;
 #[cfg(test)]
 mod version_tests;
+#[cfg(test)]
+mod zip_bomb_tests;
 
 #[cfg(test)]
 mod tests {

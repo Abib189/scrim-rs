@@ -184,9 +184,32 @@ pub fn error_text(e: &figcraft_engine::EngineError) -> String {
                     tr("Scrim can't open this file: it isn't a Scrim document, an image, or a file from another design tool Scrim imports.")
                         .to_string()
                 }
+                Unreadable::Unpack(why) => unpack_text(why),
             }
         }
         other => other.to_string(),
+    }
+}
+
+/// Why an archive was refused for unpacking too far (Fix AI-3), in the interface language.
+fn unpack_text(why: &figcraft_format::zip_limits::Unpack) -> String {
+    use figcraft_format::zip_limits::{MAX_ENTRIES, MAX_RATIO, Unpack, size};
+    match why {
+        Unpack::Entries { count } => trf(
+            "Scrim didn't open this file: it has {count} parts, more than the {max} Scrim will unpack. It may be damaged, or built to fill memory. Nothing was changed.",
+            &[("count", count), ("max", &MAX_ENTRIES)],
+        ),
+        Unpack::Ratio { member } => trf(
+            "Scrim didn't open this file: its part “{member}” would unpack to more than {ratio} times its size, which no design file does. It may be damaged, or built to fill memory. Nothing was changed.",
+            &[("member", member), ("ratio", &MAX_RATIO)],
+        ),
+        Unpack::Member { member, limit } => trf(
+            "Scrim didn't open this file: its part “{member}” would unpack to more than {size}. Nothing was changed.",
+            &[("member", member), ("size", &size(*limit))],
+        ),
+        Unpack::Total { limit } => {
+            trf("Scrim didn't open this file: it would unpack to more than {size} in all. Nothing was changed.", &[("size", &size(*limit))])
+        }
     }
 }
 

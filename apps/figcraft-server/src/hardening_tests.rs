@@ -130,7 +130,7 @@ fn a_zip_bomb_library_is_refused_before_it_unpacks() {
     let bomb = archive(64 << 20, 0);
     assert!(bomb.len() < 1 << 20, "a small archive ({} bytes) that unpacks to 64 MiB", bomb.len());
     let e = store.publish_library(&keyed.id, &bomb).unwrap_err();
-    assert!(e.contains("too large"), "{e}");
+    assert!(e.contains("would unpack to more than"), "{e}");
     assert_eq!(store.publish_library(&keyed.id, &archive(0, 0)).unwrap(), 1, "a real library still goes in");
     drop(store);
     // Open to the public: a file published without the key holds no library at all.

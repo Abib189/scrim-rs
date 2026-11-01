@@ -1271,7 +1271,7 @@ fn import(s: &mut Session, p: &Value) -> Result<Value> {
             }
             Ok(out)
         }
-        None => Err(EngineError::Unreadable(crate::importers::unreadable(&name))),
+        None => Err(EngineError::Unreadable(crate::importers::unreadable(&name, &bytes))),
         Some(_) => {
             let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
             super::create::place_image(s, &json!({"data": b64, "x": x.unwrap_or(center.0), "y": y.unwrap_or(center.1), "name": file_stem(&name)}))
