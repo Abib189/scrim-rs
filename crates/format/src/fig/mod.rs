@@ -23,6 +23,8 @@ mod export_tests;
 #[cfg(test)]
 mod interop_tests;
 pub mod kiwi;
+#[cfg(test)]
+mod kiwi_budget_tests;
 mod map;
 mod network;
 #[cfg(test)]

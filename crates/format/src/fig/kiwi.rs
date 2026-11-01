@@ -11,11 +11,16 @@ use std::fmt;
 /// Deepest struct/message nesting decoded.
 const MAX_DEPTH: usize = 64;
 /// Most values decoded from one message (every scalar, array element and field counts): at least
-/// [`MIN_VALUES`], and one per byte of the file's compressed canvas up to [`MAX_VALUES`], so a
-/// large real file decodes while a small one can't expand into a huge tree, however far its
-/// chunks inflate. 32-bit targets (wasm32) have a 4 GB address space in all, so their ceiling is
+/// [`MIN_VALUES`], and [`VALUES_PER_PACKED_BYTE`] per byte of the file's compressed canvas up to
+/// [`MAX_VALUES`], so a large real file decodes while a small one can't expand into a huge tree,
+/// however far its chunks inflate. 32-bit targets (wasm32) have a 4 GB address space in all, so their ceiling is
 /// lower: past it the file is refused cleanly instead of running out of memory.
 const MIN_VALUES: usize = 20_000_000;
+/// Values allowed per compressed canvas byte (upstream FigCraft 1a454edd). Real files hold up to
+/// 0.75 values per byte without their single scalar fields, and a dense one about 2.4 with them
+/// (now counted, a80df8ed); four leaves room above that, and every file stays within
+/// [`MIN_VALUES`] and [`MAX_VALUES`].
+const VALUES_PER_PACKED_BYTE: usize = 4;
 #[cfg(not(target_pointer_width = "32"))]
 const MAX_VALUES: usize = 128 << 20;
 #[cfg(target_pointer_width = "32")]
@@ -312,7 +317,7 @@ impl Schema {
 
 /// Most values decoded from a file whose compressed canvas is `packed` bytes.
 pub(crate) fn value_budget(packed: usize) -> usize {
-    packed.clamp(MIN_VALUES, MAX_VALUES)
+    packed.saturating_mul(VALUES_PER_PACKED_BYTE).clamp(MIN_VALUES, MAX_VALUES)
 }
 
 struct Decoder<'s, 'b> {
@@ -356,6 +361,11 @@ impl<'s> Decoder<'s, '_> {
                         return Ok(Kv::Object(out));
                     }
                     let f = d.fields.iter().find(|f| f.value == id).ok_or_else(|| KiwiError(format!("message: {} has no field {id}", d.name)))?;
+                    // A single scalar field is a value too (upstream a80df8ed, audit #1057); a
+                    // nested definition spends its own in `def`.
+                    if !matches!(f.ty, Some(Type::Def(_))) {
+                        self.spend(1)?;
+                    }
                     out.push((f.name.as_str(), self.field(f, depth)?));
                 }
             }
