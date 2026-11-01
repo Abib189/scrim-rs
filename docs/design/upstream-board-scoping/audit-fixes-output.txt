@@ -1,0 +1,2 @@
+4e650a1c	M6: preserve FigJam sticky and shape content on import (#1341)	paths=crates/format/src/fig/board_import_tests.rs	lines=12	crates/format/src/fig/board_import_tests.rs:9,crates/format/src/fig/map.rs:2,crates/format/src/fig/tests.rs:1
+{'still-broken': 300, 'n/a': 143, 'unclear': 2, 'fixed': 6}

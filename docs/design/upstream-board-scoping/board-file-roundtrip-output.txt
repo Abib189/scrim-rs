@@ -1,0 +1,5 @@
+top-level keys: Some(["comments", "current_page", "document_colors", "format", "imageIndex", "kind", "name", "next_id", "nodes", "pages", "styles", "variables", "version"])
+sticky marked in JSON: true
+board file has kind=board: true, board item: true
+Scrim opens it: yes; layers 2; issues []
+after Scrim saves it: kind=board kept: false; board item kept: false
