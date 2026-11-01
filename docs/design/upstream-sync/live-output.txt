@@ -1,0 +1,31 @@
+[   1.8s] step 1
+PASS a normal file is edited, saved and reopens with its layers (['Badge', 'Card'])
+   (no capture: the window draws no frames, so captures are skipped)
+   shot None
+[  17.5s] step 2
+PASS a .figcraft opens
+PASS a .sketch opens (13 layers)
+   shot None
+[  18.0s] step 3
+[  18.0s] 3: reopen card
+[  18.0s] 3: reopened
+[  18.0s] 3: copy
+[  18.0s] 3: paste
+[  18.0s] 3: pasted
+PASS copy, paste and duplicate add two layers and keep the others (2 -> 4)
+PASS a file with a stale id counter opens, and a duplicate keeps every layer (2 -> 4)
+[  18.0s] step 4
+PASS a crafted progressive JPEG is refused as an image, not a crash ("invalid parameters for `image.place`: not a valid Scrim file: unsupported image: a progressive JPEG sampled in a way its decoder can't read)
+PASS a document with an embedded PNG and a progressive JPEG reopens (2 layers)
+PASS the reopened PNG draws red and the progressive JPEG draws its grey (exported, no window needed) ([(220, 40, 40), (128, 128, 128)])
+   shot None
+[  18.7s] step 5
+PASS A hosts a local live session (figcraft://join?host=127.0.0.1:47977&file=c6778050ca6e2801&t)
+PASS B joins and gets the file (['Badge', 'Badge', 'Badge', 'Card'])
+PASS A's edit reaches B
+PASS B's edit reaches A
+   peers on A: {"access": "edit", "address": "127.0.0.1:47977", "attempt": null, "available": true, "canHost": true, "chat": "", "code": null, "color": "#0D99FF", "document": 0, "editing": null, "fileName": "Untitle
+   shot None None
+PASS no panics in either log
+
+13 of 13 checks passed; captures in <scratch>

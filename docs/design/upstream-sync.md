@@ -1911,3 +1911,38 @@ Every upstream commit after `a0d1162` and up to `53259cf`, newest first, by grou
 | [`upstream-sync/audit-map.tsv`](upstream-sync/audit-map.tsv) | Upstream's audit issues, their state and severity, and the commits that closed them. |
 | [`upstream-sync/advisories.txt`](upstream-sync/advisories.txt) | The `cargo audit` and `cargo deny` output. |
 | [`upstream-sync/repro-output.txt`](upstream-sync/repro-output.txt) | The five failing reproductions. The tests themselves are described above, not committed. |
+
+## Ported from upstream (Fix AI stage 2a, 1 Nov 2026)
+
+The security items from the audit above, ported by hand against Scrim's own code. Each commit names the upstream commits it ports (MIT OR Apache-2.0, as Scrim). A test was written first and failed on Scrim's code, except where the last column says why it couldn't.
+
+| Item | Upstream commit(s) | Scrim commit | Test that failed first |
+|---|---|---|---|
+| AI-1 dependencies (rustls, rustls-webpki, webpki-roots, clipboard-win, tokio; `deny.toml`) | the versions `35da7b7c`, `8ae2e206` came with | `993a2f07` | `cargo audit` (9 vulnerabilities) and `cargo deny check advisories` (failed); after, both pass |
+| Doc model: copying and the structure check move out of `doc/src/lib.rs` (no behaviour change) | – | `4ab8e6bc` | – |
+| AI-2c ENG-3 (#1064): a stale id counter made copies overwrite layers | `8aa456b1`, `46b02d44` | `7f6bff96` | `doc` `copy_tests` (3) and `format` `stale_ids_tests` |
+| AI-2b PLG-1 (#1055): a read-only plugin could upload the document | `b57c6778` | `ca3de58a` | `engine` `plugins_tests::a_plugin_never_uploads_the_document_or_reaches_a_server` (the plugin-call network guard's test is new API, so it couldn't run before) |
+| AI-2d ENG-1 (#1056): document library paths stat'ed off this computer (UNC) | `b3e65c89` | `98b6800e` | `engine` `library_path_tests` cache test (the string-level path table is new API) |
+| AI-2a COL-1 (#1054): anyone in a session could take over another's client id | `10702311` | `75e6d992` | The stage 1 reproduction (`upstream-sync/repro-output.txt`); `collab` `resume_tests` use the new field, so they couldn't compile before. Compatible both ways with upstream FigCraft 53259cf, checked against its own `collab` crate |
+| AI-2e: a crafted progressive JPEG panicked the decoder | `9aac391e`, `0971d096` | `5eb8290d` | `format` `jpeg_tests` and `render` `jpeg_guard_tests` (the real zune-jpeg panic, from a file built in the test) |
+| RND-1 (#1060): dash patterns too fine for their path | `494387a6`, `2baeff34` | `715adc65` | `pathops` `dash_limit_tests` (2.5M and 5M path elements) |
+| FMT-2 (#1058) and ENG-2 (#1062): `validate`'s report; render-bounds recursion | `c857f8d0`, `4da6a11b` | `2662fed9` | `doc` `bounds_tests` (4,999 issues; a stack overflow abort) |
+| FMT-1 (#1057): single scalar fields skipped the `.fig` value budget | `a80df8ed`, `1a454edd` | `d0f4de39` | `format` `fig::kiwi_budget_tests` |
+| FMT-3 (#1059): `.fig` embedded images copied once per hash | `3009d19f` | `1996254c` | Couldn't fail first: the extra copies weren't observable from outside the import. `fig::embedded_copies_tests` tests the new function |
+| COL-2 (#1063): a refused batch's fixes were quadratic | `08173cc5` | `664b587d` | `collab` `refused_fixes_tests` (45,150 creates for 300 layers) |
+| RND-2 (#1061): nested isolated layers had no memory total | `96eed159` (the budget; its mask-area part, a performance change, isn't ported) | `c80162b9` | Couldn't fail first: it needs the budget's measuring hook, and the old behaviour shows only past 2 GiB of real allocation. `render` `layer_budget_tests` |
+| AI-3: zip limits in every archive reader (Scrim's own) | – | `621606ef` | `format` `zip_bomb_tests` (7 of 8 failed: the importers read the whole 40 MiB bomb); `engine` `importers_tests` and the UI's en/es text test are new API |
+| AI-4: the server installer and the Flatpak manifest | `cb796655` (its `curl --proto '=https'` part, for the installer) | `a31eb88a` | `xtask` `packaging_tests` (no network permission; `REPO` named upstream) |
+
+**Deliberately unchanged (AI-5).** The local control channel (`apps/figcraft/src/control_server.rs`, upstream's open #1072) has no authentication still. It starts only with `--control` or `FIGCRAFT_CONTROL_PORT`, and the live checks depend on it.
+
+**Live check.** [`upstream-sync/live.py`](upstream-sync/live.py) and [`upstream-sync/live-output.txt`](upstream-sync/live-output.txt): 13 of 13 checks passed, on scratch apps (HOME and settings, MCP on 7690 and 7691). They cover:
+- a file edited, saved and reopened;
+- `.scrim`, `.figcraft` and `.sketch` files opened;
+- copy, paste and duplicate, also in a stale-counter file;
+- an embedded PNG and a progressive JPEG reopened and drawn, checked by export;
+- a crafted JPEG refused;
+- a local live session hosted by one app and joined by a second, with edits both ways;
+- no panics.
+
+No window captures were taken: the windows drew no frames (macOS doesn't draw a window it hides), so `ui.screenshot` never answered.
