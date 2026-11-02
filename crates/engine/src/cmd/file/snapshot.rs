@@ -84,6 +84,11 @@ impl FileSnapshot {
             }
             return Ok(false);
         }
+        // A FigCraft board is written only by a Save the person chose (Fix AI C-1).
+        if ds.on_disk.as_ref().is_some_and(|d| d.board().is_some()) {
+            ds.auto_save_paused = true;
+            return Ok(false);
+        }
         write(path, bytes)?;
         ds.note_on_disk(on_disk::stat(path), bytes);
         // The history or branches may have changed since: then they still count as unsaved.

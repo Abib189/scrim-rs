@@ -19,6 +19,7 @@
 //! [`old_scrim`] imports the earlier TypeScript Scrim's JSON `.scrim` files.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+mod board_marks;
 pub mod carry;
 pub mod fig;
 mod finite;
@@ -36,6 +37,7 @@ pub mod stored_name;
 pub mod thumbnail;
 pub mod zip_limits;
 
+pub use board_marks::BoardMarks;
 pub use library::{is_valid_library_id, read_library, read_library_within};
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -219,11 +221,21 @@ pub struct Loaded {
     /// Images the file holds that weren't loaded, past what Scrim reads from one file: a save
     /// copies them across ([`carry`]).
     pub images_past_budget: BTreeSet<String>,
+    /// Upstream FigCraft's board marks, when the file is one of its boards ([`board_marks`]).
+    pub board: Option<BoardMarks>,
 }
 
 impl From<Document> for Loaded {
     fn from(doc: Document) -> Self {
-        Self { doc, issues: Vec::new(), versions: Vec::new(), branches: Vec::new(), repaired_numbers: 0, images_past_budget: BTreeSet::new() }
+        Self {
+            doc,
+            issues: Vec::new(),
+            versions: Vec::new(),
+            branches: Vec::new(),
+            repaired_numbers: 0,
+            images_past_budget: BTreeSet::new(),
+            board: None,
+        }
     }
 }
 
@@ -313,6 +325,8 @@ type ImageIndex = Option<BTreeSet<String>>;
 struct Header {
     version: Option<u64>,
     images: ImageIndex,
+    /// `kind: "board"` (an upstream FigCraft board).
+    board: bool,
 }
 
 impl<'de> Deserialize<'de> for Header {
@@ -328,6 +342,7 @@ impl<'de> Deserialize<'de> for Header {
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "version" => h.version = map.next_value::<Value>()?.as_u64(),
+                        "kind" => h.board = map.next_value::<Value>()?.as_str() == Some("board"),
                         "imageIndex" => {
                             h.images = map
                                 .next_value::<Value>()?
@@ -353,6 +368,7 @@ struct Parsed {
     images: ImageIndex,
     /// Numbers saved as `null` and reset ([`null_numbers`]).
     repaired_numbers: usize,
+    board: Option<BoardMarks>,
 }
 
 /// Parse `document.json` content; also returns its [`ImageIndex`]. The header is checked first
@@ -383,7 +399,8 @@ fn parse_json(text: &str) -> Result<Parsed, FormatError> {
     if repaired_numbers > 0 {
         issues.insert(0, null_numbers::note(repaired_numbers));
     }
-    Ok(Parsed { doc, issues, images: header.images, repaired_numbers })
+    let board = board_marks::find(text, header.board);
+    Ok(Parsed { doc, issues, images: header.images, repaired_numbers, board })
 }
 
 pub(crate) fn io_err(e: impl std::fmt::Display) -> FormatError {
@@ -585,14 +602,14 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
     if trimmed == Some(&b'{') {
         let text = std::str::from_utf8(bytes).map_err(|e| FormatError::Corrupt(e.to_string()))?;
         let p = parse_json(text)?;
-        return Ok(Loaded { issues: p.issues, repaired_numbers: p.repaired_numbers, ..Loaded::from(p.doc) });
+        return Ok(Loaded { issues: p.issues, repaired_numbers: p.repaired_numbers, board: p.board, ..Loaded::from(p.doc) });
     }
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| FormatError::Corrupt(e.to_string()))?;
     zip_limits::check(&mut z, bytes.len() as u64)?;
     let packed = z.by_name("document.json").map(|f| f.compressed_size()).unwrap_or(0);
     let limit = document_limit(packed, bytes.len() as u64);
     let text = String::from_utf8(read_member(&mut z, "document.json", limit)?).map_err(|e| FormatError::Corrupt(e.to_string()))?;
-    let Parsed { mut doc, mut issues, images: own_images, repaired_numbers } = parse_json(&text)?;
+    let Parsed { mut doc, mut issues, images: own_images, repaired_numbers, board } = parse_json(&text)?;
     let ImagesRead { images, unread, past_budget } = read_images(&mut z, own_images.as_ref(), budget)?;
     report_lost_images(&mut issues, &unread, own_images.as_ref(), &images, &past_budget);
     match library::read(&mut z, &images, u64::MAX) {
@@ -612,7 +629,7 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
         .filter(|h| own_images.as_ref().is_some_and(|o| !o.contains(*h)))
         .collect();
     doc.images = images.into_iter().filter(|(h, _)| !history_only.contains(h)).collect();
-    Ok(Loaded { doc, issues, versions, branches, repaired_numbers, images_past_budget: past_budget })
+    Ok(Loaded { doc, issues, versions, branches, repaired_numbers, images_past_budget: past_budget, board })
 }
 
 /// Images that couldn't be read, with why.

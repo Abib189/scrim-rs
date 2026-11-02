@@ -164,6 +164,14 @@ impl FigApp {
                         &[("name", &name)],
                     ));
                 }
+                "dialog.boardFile" | "dialog.saveBoard" => {
+                    let name = r.data.get("name").and_then(Value::as_str).unwrap_or_default().to_string();
+                    self.ui.board_file = Some(if r.kind == "dialog.boardFile" {
+                        crate::board_file::Shown::Opened(name)
+                    } else {
+                        crate::board_file::Shown::Saving(name)
+                    });
+                }
                 "dialog.saveConflict" => {
                     self.ui.save_conflict = Some(r.data.get("name").and_then(Value::as_str).unwrap_or_default().to_string());
                 }

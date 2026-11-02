@@ -286,7 +286,7 @@ pub fn tool_definitions() -> Vec<Value> {
             "Save the active document as a .scrim file. `path` is required the first time (an untitled or imported document has no path, and one opened from a .figcraft file is never written over: pass a .scrim path); later saves reuse it. A `path` ending in .fig writes an experimental .fig export copy instead and leaves the document's own path and unsaved changes alone.",
             obj(
                 json!({"path": string("Output .scrim path, or a .fig path for an experimental export copy"),
-                       "force": boolean("Overwrite another app's changes")}),
+                       "force": boolean("Overwrite another app's changes, or a FigCraft board's features")}),
                 &[],
             ),
             false,
@@ -900,8 +900,19 @@ fn save_file(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolResult, 
         });
         return Ok(ToolResult::error(conflict.to_string()));
     }
+    // A FigCraft board opened as a design (Fix AI C-1): saving over it loses its board features.
+    if !force && own && status["boardFile"] == true {
+        let board = json!({
+            "error": "boardFile",
+            "path": status["path"],
+            "message": "This file is a FigCraft board, opened as a design; saving over it removes its board features (connectors that follow, stickies that fit).",
+            "resolve": {"saveCopy": "call save_file with a new .scrim path to keep the board file", "saveAnyway": "call save_file again with force: true"}
+        });
+        return Ok(ToolResult::error(board.to_string()));
+    }
     if force {
         params["overwrite"] = json!(true);
+        params["dropBoard"] = json!(true);
     }
     exec(b, "file.save", params).map(|v| ToolResult::json(&v))
 }

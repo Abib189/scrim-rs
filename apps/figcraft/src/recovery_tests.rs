@@ -454,3 +454,30 @@ fn an_edit_is_copied_after_the_interval_with_no_frame_after_it() {
     r.finish();
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// Fix AI C-1: a FigCraft board file with unsaved edits is copied like any file, into the settings
+/// folder; the board file itself is never written, and a recovered copy has no path to save over.
+#[test]
+fn recovery_copies_of_a_board_file_never_write_it() {
+    let root = root("board");
+    let files = root.with_extension("files");
+    let _ = std::fs::remove_dir_all(&files);
+    std::fs::create_dir_all(&files).unwrap();
+    let mut v = figcraft_format::to_json(edited().doc().unwrap()).unwrap();
+    v["kind"] = json!("board");
+    let board = files.join("Plan.scrim");
+    std::fs::write(&board, v.to_string()).unwrap();
+    let bytes = std::fs::read(&board).unwrap();
+    let mut s = Session::empty();
+    s.execute("file.open", &json!({"path": board.to_string_lossy()})).unwrap();
+    s.execute("shape.rectangle", &json!({"x": 20, "y": 0, "width": 10, "height": 10})).unwrap();
+    let mut r = Recovery::start(&root).unwrap();
+    r.write(&s, true);
+    assert_eq!(rectangles(&copy(&root).doc), 2, "the copy has the edit");
+    assert_eq!(std::fs::read(&board).unwrap(), bytes, "the board file is untouched");
+    let next = crash_and_recover(r, &root);
+    assert!(next.docs.first().unwrap().path.is_none(), "a recovered copy saves only where the person says");
+    assert_eq!(std::fs::read(&board).unwrap(), bytes);
+    let _ = std::fs::remove_dir_all(&root);
+    let _ = std::fs::remove_dir_all(&files);
+}

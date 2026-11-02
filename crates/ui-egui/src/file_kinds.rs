@@ -28,6 +28,8 @@ pub(crate) fn show_error(app: &mut FigApp, e: &figcraft_engine::EngineError, msg
         figcraft_engine::EngineError::Unreadable(figcraft_engine::importers::Unreadable::ClosedFormat(tool)) => app.ui.closed_format = Some(tool),
         // The "File changed on disk" question says it (Fix AI LW-4).
         figcraft_engine::EngineError::FileChangedOnDisk(_) => {}
+        // So does the "Save over a FigCraft board?" question this save just raised (Fix AI C-1).
+        figcraft_engine::EngineError::Disabled(..) if matches!(app.ui.board_file, Some(crate::board_file::Shown::Saving(_))) => {}
         _ => app.toast(msg),
     }
 }
