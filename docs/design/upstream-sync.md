@@ -1967,3 +1967,38 @@ The bugs that lost or corrupted a person's work (port list 4.1 to 4.5), ported b
 - **LW-4:** the window offers three choices instead of an error, and MCP returns a structured `fileChangedOnDisk` error with `force`.
 
 **Live check.** [`upstream-sync/live-2b.py`](upstream-sync/live-2b.py) and [`upstream-sync/live-2b-output.txt`](upstream-sync/live-2b-output.txt): 10 of 10 checks passed on a scratch app (scratch HOME and settings, MCP on 7690, control 7979). Input went through the window's own control channel; port 7680 and the system pointer weren't used. The final run's capture, [`live-2b-save-conflict.png`](upstream-sync/live-2b-save-conflict.png), shows the "File changed on disk" question with its three choices and no raw error behind it, and LW-3's note from the step before ("5 that weren't loaded … were copied over"). Runs whose window drew no frames skipped the capture after one limited attempt.
+
+## Ported from upstream (Fix AI stage 2c, 2 Nov 2026)
+
+The daily-use fixes (port list group c and items picked from it), ported by hand against Scrim's own code. A test was written first and failed on Scrim's code unless the last column says otherwise.
+
+| Item | Upstream commit(s) | Scrim commit | Test that failed first |
+|---|---|---|---|
+| C-7: flaky tests made deterministic | – (Scrim's own) | `1b008fbf` | Under 8 and 16 busy loops, 20 runs each: `ui-egui` `repaints_per_second_stay_at_most_two_once_settled` 18/20 and 16/20 before, 20/20 after; `engine` `live_tests::join_order` (the first file in front). The toast, collab-net live-session and MCP restart tests passed 20/20 before too, so they couldn't fail first |
+| C-3: a live session dropped someone alone who moves the pointer, every 45 s | `6b73c590` | `59fc8842` | `collab-net` `driver_tests::a_lone_participant_moving_the_pointer_stays_connected` (6 drops in 90 s on the fake clock). The wire is unchanged: Ping, Presence and Pong read the same in Scrim's `collab` crate and upstream head's (`53259cf5`) both ways ([`c3-wire.rs`](upstream-sync/c3-wire.rs), [output](upstream-sync/c3-wire.txt)) |
+| C-5: recovery copies needed the window to draw | – (Scrim's own; the 2b live check found it) | `321a1309` | `figcraft` `recovery_tests::an_edit_is_copied_after_the_interval_with_no_frame_after_it` (never copied). The writer's fake-clock tests are of new code |
+| C-4: MCP replies had no size limit | `b1f0eafb`, `1aa1d61b` | `1f5e3c66` | `mcp` `tests/reply_cap.rs` (3 of 5: 1,122,072 bytes against a 40,000-byte limit; 821,333 against 30,000). The `export` backstop test is of new behaviour; small replies are the backend's answer byte for byte |
+| C-1: a FigCraft board file was silently stripped by the next save | (boards: `8167f13a`; nothing ported from it) | `df82a7d3` | `engine` `board_file_tests` (4 of 6: no notice, Save and Save-as onto it wrote, auto-save wrote); `mcp` `tests/board_file.rs` (both). Save as a copy and Save anyway passed before (every save already dropped the marks), the format probe's "not a board" case couldn't fail, and the UI and recovery tests are of new dialogs or guard a rule |
+| C-1 follow-up: a board file opened at launch showed its notice only at the first command | – | `17cb97ae` | `figcraft` `first_screen_tests::what_a_file_opened_at_launch_says_shows_when_the_window_comes_up` (no notice); found by the live check |
+| C-2: Quit and Cmd+Q never asked about unsaved changes | `73398ced`, `0e508fd3`, `83dac86b` | `93be5b1c` | `ui-egui` `quit_tests` (3 of 9 run on the old tree, all failing: no `app.quit` command). The answer tests use the new question; the menu and Apple-event tests are of new code. Real Cmd+Q and native menu clicks can't be sent from a test |
+| C-6: two performance fixes | `646ac60b`, `a3d70d4c` | `a29e9397` | `engine` `command_checks_tests` (one rename among 20,000 layers looked at 20,001 layers; now at most 4) and `render` `a_moved_layer_renders_where_its_effects_paint_and_no_further` (122,844 pixels rendered for 63,510 it can paint) |
+
+**C-6, not ported, and why.** Each needs more than this stage proves, or isn't Scrim's to fix here:
+- `27920c5e` (normalise only around a drag), `99440fa9` (shift what a drag worked out at its start), `db725dc7` and `5247f73f` (Design panel and overlay caches for a large selection), `38a4fecc` (hover hit-tests once per move, plus a separate auto-layout change): large, or several changes at once, in `engine/src/lib.rs`, `ui-egui/src/canvas.rs` and `ui-egui/src/lib.rs`, which are frozen; each needs code moved out first. Deferred.
+- `6acbd913` (text reads only the fallback fonts it draws with), `e32f8f2e` (large images draw from a smaller copy), `79d436a4` (a preview for cold zooms), `e37e0bc2` (glass shape cache), `adb1b430` (faster export blur): medium to large, and their gain shows only as time, which this machine can't measure reliably. Deferred.
+- `6d8b0e68`, `f24a8312`: the browser build only. `0f85c229`: the server's store, a frozen file.
+
+**Decisions to overrule.**
+- **C-1's words:** the window says "a board" and never "FigCraft": the rebrand rule (`i18n_brand_tests`) allows the old name only in the attribution line. Agents' messages (MCP, the engine's refusal) do name FigCraft.
+- **C-1, .figcraft boards:** a board saved as `.figcraft` (upstream's own extension) was never written by Scrim anyway (Fix AG), so Save asks for a `.scrim` as before; the three choices show for a board file named `.scrim`.
+- **C-1, agents:** an agent's `open_file` shows no notice (agents' calls open no dialogs); its `save_file` gets the structured error.
+- **C-2:** Quit asks about every window's files at once; closing a window asks about its own. ⌘Q is the system's: it belongs to the app menu's Quit Scrim, and no window shortcut binds it. If the menu can't be installed, ⌘Q does nothing (logged) rather than quit unasked.
+- **C-2, logout:** the question waits; macOS ends the logout after its own limit and names Scrim. Nothing is lost, and recovery copies cover the files.
+- **C-4:** a reply over the limit from any other tool is withheld whole with a `truncated` object (JSON cut at a byte count isn't JSON); `isError` is kept as it was, since a write that ran still ran.
+
+**Found, not fixed.**
+- A live-session host whose window draws no frames (covered or minimised) applies what guests send only once it draws again; the session stays connected meanwhile. It is older than this stage (the pre-C-3 guest behaves the same). An agent reading a covered host's document over the control channel or MCP sees it without the guests' latest edits.
+- `apps/figcraft/src/main.rs` gates `mod agent_runs;` to macOS but not `mod apple_events;`, which uses a macOS-only crate: a Linux build of the app may not compile. Not checked here.
+- The control channel's "No buffer space available" tests (ENOBUFS): a system-wide network-buffer shortage that std's sockets can't avoid without a new dependency (socket buffer sizes need `socket2`).
+
+**Live check.** [`upstream-sync/live-2c.py`](upstream-sync/live-2c.py) and [`upstream-sync/live-2c-output.txt`](upstream-sync/live-2c-output.txt): 13 of 13 checks passed on two scratch apps (scratch HOME and settings each, MCP on 7690 and 7691, controls 7979 and 7980). Input went through each window's own control channel, hiding the window through `NSRunningApplication` (no Accessibility, no keystrokes); port 7680 and the system pointer weren't used. [`live-2c-board-notice.png`](upstream-sync/live-2c-board-notice.png) is the notice as it shows on launch. The quit question's capture was skipped: the window drew no frames by then.

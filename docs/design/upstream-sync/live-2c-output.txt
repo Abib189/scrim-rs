@@ -1,0 +1,27 @@
+[   0.0s] making the files
+[   3.3s] C-1: a board file opened at launch
+PASS C-1 a board file shows the notice when it opens ({'kind': 'opened', 'name': 'Plan'})
+PASS C-1 opening it leaves its bytes unchanged
+   shot /var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-ai-2c-zx8d5q4d/c1-notice.png
+PASS C-1 Save (Cmd+S) shows the three choices and writes nothing ({'kind': 'saving', 'name': 'Plan'})
+PASS C-1 Save a copy writes a .scrim design and leaves the board file
+[   7.2s] C-1: a design file opened at launch
+PASS C-1 a design file shows no notice (None)
+[   9.5s] C-3: B alone moves its pointer for 70 s
+PASS C-3 B joins A's live session (live)
+PASS C-3 after 70 s in which only B moved its pointer, B is still connected and never reconnected (statuses seen ['live'], 329 moves)
+PASS C-3 and B's edit then reaches A (A was covered: True)
+[  81.2s] C-5: an edit while the window is hidden
+   hide: ok
+PASS C-5 with the window hidden (drawing no frames), an edit is copied after the interval (hidden=True copies=1)
+   unhide: ok
+[  97.3s] C-4: inspect_document on 20,000 layers
+PASS C-4 inspect_document on a 20,000-layer document is under 8 MiB with the truncated marker (1180 bytes on the wire; marker {"bytes": 565, "depth": 0, "hint": "get_node({id, depth}) reads one subtree at a time, within the same limit: a layer with more children than fit answers with a window of them and the offset to ask for next", "maxBytes":)
+[  97.9s] C-2: Quit with unsaved changes, then with none
+   (no capture: the window draws no frames, so captures are skipped)
+   shot None
+PASS C-2 File > Quit Scrim with unsaved changes asks: the app stays
+PASS C-2 File > Quit Scrim with nothing unsaved quits without asking
+PASS no panic in either app log
+
+13/13 passed in 107 s; scratch: /var/folders/rj/wy8y53ws7cbcv70v52779x9c0000gn/T/scrim-fix-ai-2c-zx8d5q4d

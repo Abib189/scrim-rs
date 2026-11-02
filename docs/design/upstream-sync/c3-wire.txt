@@ -1,0 +1,6 @@
+# c3-wire.rs at Scrim 59fc8842 against upstream FigCraft 53259cf5: each message encoded by one crate and decoded by the other
+scrim -> upstream ping: true
+scrim -> upstream presence: true
+upstream -> scrim pong: true
+scrim -> upstream pong: true
+upstream -> scrim ping: true
