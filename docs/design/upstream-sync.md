@@ -1946,3 +1946,24 @@ The security items from the audit above, ported by hand against Scrim's own code
 - no panics.
 
 No window captures were taken: the windows drew no frames (macOS doesn't draw a window it hides), so `ui.screenshot` never answered.
+
+## Ported from upstream (Fix AI stage 2b, 2 Nov 2026)
+
+The bugs that lost or corrupted a person's work (port list 4.1 to 4.5), ported by hand against Scrim's own code. Each item also opens files the bug already damaged: they are repaired as they are read, and opening never writes the file. A test was written first and failed on Scrim's code unless the last column says otherwise.
+
+| Item | Upstream commit(s) | Scrim commit | Test that failed first |
+|---|---|---|---|
+| LW-1 (4.1): page ruler guides lost on reopen, and the next save wouldn't open | `652bf35b` | `0fb59327` | `doc` `guides_tests` (2 of 4) and `format` `page_guides_tests` (both: the guide lost; "duplicate field `guides`") |
+| Room in three frozen files (no behaviour change) | – | `d6d97d3b` | – |
+| LW-2 (4.2): a NaN or infinite number saved as `null`, and the file wouldn't open | `8c08035b` (replaces `503b6d60`), `2d1fabda` | `5b3d5100` | `format` `null_numbers_tests` (2 of 3), `engine` `non_finite_tests` (2 of 3; the import guard's test is new API), `mcp` `tests/non_finite.rs` (both) |
+| LW-5 (4.5): a crash during a version preview recovered the version, not the work | `019058ff` | `0e4526bb` | `figcraft` `recovery_tests::a_crash_during_a_version_preview_recovers_the_working_document` (1 layer recovered, not 2) |
+| LW-3 (4.3): a save deleted the images past the budget | `c305e23a` (+ `03f4e6e0`, `df8edc6b`) | `2f3309ef` | `engine` `images_left_in_file_tests` (both: saving over the file kept 1 of 3 images); the UI notice's test is a new request |
+| LW-4 (4.4): Save overwrote changes another app made to the file | `a648700f` + `0d7d9ebd` | `f86c623f` | `engine` `save_disk_changes_tests` (2 of 6: a plain save and auto-save wrote over the other app's file; the other 4 passed before too). The UI and MCP tests are of a new dialog and a new error, so they weren't run before |
+| LW-4 follow-up: the refused save's raw message also showed as a toast behind the question | – | `0852c214` | `ui-egui` `lost_work_ui_tests` (the toast assertion, seen in the live check's capture) |
+
+**Where Scrim goes further than upstream.**
+- **LW-2:** files saved with `null` numbers open again, with each such value reset to its property's default, or to 0 where the layer must have a number; upstream only stopped writing them. Imports reset non-finite numbers too.
+- **LW-3:** a save keeps the images it couldn't load by copying them from the file it last read or wrote; upstream refuses the save.
+- **LW-4:** the window offers three choices instead of an error, and MCP returns a structured `fileChangedOnDisk` error with `force`.
+
+**Live check.** [`upstream-sync/live-2b.py`](upstream-sync/live-2b.py) and [`upstream-sync/live-2b-output.txt`](upstream-sync/live-2b-output.txt): 10 of 10 checks passed on a scratch app (scratch HOME and settings, MCP on 7690, control 7979). Input went through the window's own control channel; port 7680 and the system pointer weren't used. The final run's capture, [`live-2b-save-conflict.png`](upstream-sync/live-2b-save-conflict.png), shows the "File changed on disk" question with its three choices and no raw error behind it, and LW-3's note from the step before ("5 that weren't loaded … were copied over"). Runs whose window drew no frames skipped the capture after one limited attempt.

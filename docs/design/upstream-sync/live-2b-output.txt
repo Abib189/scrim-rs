@@ -1,0 +1,18 @@
+[   3.6s] LW-1: ruler guides survive save and reopen
+PASS LW-1 guides are there after save, close and reopen, and a second save opens ([{'vertical': True, 'offset': 120.0}, {'vertical': False, 'offset': 64.0}, {'vertical': True, 'offset': 300.0}])
+PASS LW-1 a file with the page guides key twice opens unchanged on disk and saves a valid file ([{'vertical': False, 'offset': 64.0}, {'vertical': True, 'offset': 120.0}])
+[   4.4s] LW-2: a file with null numbers opens
+PASS LW-2 a file with null numbers opens with one note, unchanged on disk (["2 numbers saved as null (not a number, by an earlier build) were reset to their defaults; the file itself wasn't changed"])
+[   4.5s] LW-3: 20,005 images, past the 20,000-image budget
+PASS LW-3 saving a file past the image budget keeps every image (20005 images in the saved file; )
+[   5.5s] LW-4: Save after another process changed the file
+PASS LW-4 Cmd+S shows the three choices and Escape cancels, the file untouched (asked='Shared' after=None)
+PASS LW-4 Overwrite (file.save overwrite) replaces their changes (['Mine', 'Unsaved'])
+PASS LW-4 Reload from disk (file.revert) brings their file in
+PASS LW-4 Save as a copy (file.saveAs) never asks and leaves their file
+PASS LW-4 auto-save leaves a file another process changed alone
+[  13.0s] LW-5: kill the app during a version preview
+[  21.8s] recovery copy written: True
+PASS LW-5 the next start recovers the working document, not the version shown (recovered [['Version one', 'Working']])
+capture: live-2b-save-conflict.png (kept beside this file)
+10/10 passed
