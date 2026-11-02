@@ -32,6 +32,10 @@ pub struct Window {
     size: Vec2,
 }
 
+#[path = "quit.rs"]
+pub mod quit;
+pub use quit::CloseAnswer;
+
 #[cfg(test)]
 impl Window {
     /// The title bar this window opened with (Fix S3: a secondary window keeps the main one's, and
@@ -64,6 +68,8 @@ pub struct Windows {
     /// Windows to close (their files close with them), at the main window's next frame.
     closing: Vec<u64>,
     last_id: u64,
+    /// Where a quit stands (Fix AI C-2).
+    pub(crate) quit: quit::Quit,
 }
 
 impl Windows {
@@ -154,6 +160,10 @@ pub fn request(app: &mut FigApp, kind: &str) {
     if kind == "doc.shown" {
         app.ui.home = false;
     }
+    // `app.quit`: the main window acts on it ([`quit::poll`]).
+    if kind == "dialog.quit" {
+        app.windows.quit.asked = true;
+    }
 }
 
 /// What a command's failure says to the person (Fix AD): with no file open, in the interface
@@ -224,7 +234,7 @@ impl FigApp {
     }
 
     /// Files in this window with unsaved changes (a branch tab's edits live on in its file).
-    fn unsaved(&self) -> Vec<String> {
+    pub(crate) fn unsaved(&self) -> Vec<String> {
         self.session.docs.iter().filter(|d| self.shows(d.uid) && d.is_dirty() && d.branch_of.is_none()).map(crate::doc_title::of).collect()
     }
 }
@@ -386,6 +396,10 @@ pub fn list(app: &FigApp) -> Value {
 /// windows are open it takes over one of them. The desktop app calls it from the main window's
 /// `logic` (which runs even while the window is minimised); other windows call it themselves.
 pub fn on_close_request(app: &mut FigApp, ctx: &Context) {
+    // Quit (Fix AI C-2) is the main window's to act on.
+    if app.windows.current == 0 {
+        quit::poll(app, ctx);
+    }
     if app.ui.quit || !ctx.input(|i| i.viewport().close_requested()) {
         return;
     }
@@ -406,35 +420,70 @@ pub(crate) fn request_close(app: &mut FigApp, ctx: &Context) {
     }
 }
 
-fn close_current(app: &mut FigApp, ctx: &Context) {
-    app.windows.closing.push(app.windows.current);
+pub(crate) fn close_current(app: &mut FigApp, ctx: &Context) {
+    // Once only (upstream 0e508fd3): a second close of the same window before [`begin`] runs (two
+    // quits while the main window is hidden, when only the app's logic runs) would act on the
+    // window that took its place, without asking about that window's files.
+    if !app.windows.closing.contains(&app.windows.current) {
+        app.windows.closing.push(app.windows.current);
+    }
     ctx.request_repaint_of(ViewportId::ROOT);
 }
 
-/// The unsaved-changes question when a window closes.
+/// The unsaved-changes question when a window closes or the app quits: Don't Save, Cancel, Save
+/// (upstream 83dac86b; [`quit`] acts on the answer).
 pub(crate) fn confirm_close(app: &mut FigApp, ctx: &Context) {
-    if !app.ui.confirm_close {
+    if quit::after_save_as(app, ctx) {
         return;
     }
-    let names = app.unsaved();
+    if !app.ui.confirm_close {
+        // Escape or another way of closing it: a quit it was for is off.
+        if app.windows.current == 0 {
+            app.windows.quit.question = false;
+        }
+        return;
+    }
+    let quitting = app.windows.quit.question;
+    let names = quit::names(app);
     if names.is_empty() {
-        app.ui.confirm_close = false;
+        // Saved meanwhile: nothing to lose.
+        quit::answer(app, ctx, CloseAnswer::DontSave);
         return;
     }
     let t = crate::theme::Tokens::get(ctx);
-    let (mut open, mut discard, mut cancel) = (true, false, false);
+    let mut open = true;
+    let mut answer = None;
+    let names = names.join(", ");
+    let text = if quitting {
+        trf("Unsaved changes in {names}. Save them before quitting?", &[("names", &names)])
+    } else {
+        trf("Unsaved changes in {names}. Save them before closing?", &[("names", &names)])
+    };
     crate::dialogs::window(tr("Unsaved changes"), ctx).order(egui::Order::Foreground).open(&mut open).show(ctx, |ui| {
         ui.set_width(340.0);
-        crate::widgets::label(ui, &trf("Unsaved changes in {names}. Close the window and lose them?", &[("names", &names.join(", "))]), t.text);
+        crate::widgets::label(ui, &text, t.text);
         ui.add_space(12.0);
         ui.horizontal(|ui| {
-            discard = crate::widgets::button(ui, tr("Close without saving"), true, true).clicked();
-            cancel = crate::widgets::button(ui, tr("Cancel"), false, true).clicked();
+            if crate::widgets::button(ui, tr("Don't Save"), false, true).clicked() {
+                answer = Some(CloseAnswer::DontSave);
+            }
+            if crate::widgets::button(ui, tr("Cancel"), false, true).clicked() {
+                answer = Some(CloseAnswer::Cancel);
+            }
+            if crate::widgets::button(ui, tr("Save"), true, true).clicked() {
+                answer = Some(CloseAnswer::Save);
+            }
         });
     });
-    app.ui.confirm_close = open && !discard && !cancel;
-    if discard {
-        close_current(app, ctx);
+    // Enter answers Save, which loses nothing.
+    if answer.is_none() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Enter)) {
+        answer = Some(CloseAnswer::Save);
+    }
+    if !open {
+        answer = Some(CloseAnswer::Cancel);
+    }
+    if let Some(a) = answer {
+        quit::answer(app, ctx, a);
     }
 }
 
@@ -618,3 +667,7 @@ fn draw(app: &mut FigApp, id: u64, ui: &mut egui::Ui) {
 #[cfg(test)]
 #[path = "home_start_tests.rs"]
 mod home_start_tests;
+
+#[cfg(test)]
+#[path = "quit_tests.rs"]
+mod quit_tests;

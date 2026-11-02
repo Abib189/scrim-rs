@@ -50,6 +50,8 @@ pub static MENU: &[MenuItem] = &[
     m!("File", "Revert to saved", "file.revert"),
     m!("File", "Close tab", "file.close"),
     m!("File", "Open recent", "file.openRecent"),
+    m!("File", SEP, ""),
+    m!("File", "Quit Scrim", "app.quit"),
     // Edit
     m!("Edit", "Undo", "edit.undo"),
     m!("Edit", "Redo", "edit.redo"),

@@ -38,13 +38,20 @@ impl AppleEvents {
 }
 
 /// Open the documents and act on the quit requests that arrived since the last frame.
-pub fn poll(inbox: &Inbox, fig: &mut FigApp, ctx: &egui::Context) {
+pub fn poll(inbox: &Inbox, fig: &mut FigApp) {
     for e in inbox.drain() {
         match e {
             Event::Open(paths) => open_documents(fig, paths),
-            Event::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+            Event::Quit => quit(fig),
         }
     }
+}
+
+/// The Dock's Quit, logging out or restarting: the `app.quit` command, as the app menu's Quit is
+/// (Fix AI C-2), which asks first when a file has unsaved changes. During a logout macOS waits for
+/// the answer up to its own limit, then cancels the logout and names Scrim.
+pub fn quit(fig: &mut FigApp) {
+    fig.run("app.quit", json!({}));
 }
 
 /// Open `paths` as File › Open does; a file that fails shows its error and the others still open.

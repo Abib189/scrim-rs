@@ -17,6 +17,8 @@
 
 #[cfg(target_os = "macos")]
 mod agent_runs;
+#[cfg(target_os = "macos")]
+mod app_menu;
 mod app_nap;
 mod apple_events;
 mod args;
@@ -32,6 +34,8 @@ mod recovery;
 mod services;
 mod startup;
 
+#[cfg(all(test, target_os = "macos"))]
+mod app_menu_tests;
 #[cfg(all(test, target_os = "macos"))]
 mod apple_events_tests;
 #[cfg(test)]
@@ -71,6 +75,9 @@ struct App {
     /// Documents and quit requests from Finder, the Dock and Open With.
     #[cfg(target_os = "macos")]
     apple_events: fmv_macos_events::Inbox,
+    /// The app menu, whose Quit asks first (Fix AI C-2); `None`: it couldn't be installed.
+    #[cfg(target_os = "macos")]
+    app_menu: Option<app_menu::AppMenu>,
 }
 
 impl eframe::App for App {
@@ -87,7 +94,11 @@ impl eframe::App for App {
             // The working state between frames: a hidden window's grace periods end on time (R3a).
             figcraft_ui_egui::follow_agent::working_log::logic(fig, ctx);
             #[cfg(target_os = "macos")]
-            apple_events::poll(&self.apple_events, fig, ctx);
+            apple_events::poll(&self.apple_events, fig);
+            #[cfg(target_os = "macos")]
+            if let Some(m) = &self.app_menu {
+                m.poll(fig);
+            }
             // Closing the window asks about unsaved changes (and keeps the app running while other
             // windows are open).
             figcraft_ui_egui::windows::on_close_request(fig, ctx);
@@ -280,6 +291,14 @@ fn main() -> eframe::Result {
     }
     let mut options = eframe::NativeOptions { viewport, renderer: eframe::Renderer::Wgpu, ..Default::default() };
     graphics::configure(&mut options.wgpu_options);
+    // winit's own app menu quits through `terminate:` without asking (Fix AI C-2): ours replaces it.
+    #[cfg(target_os = "macos")]
+    {
+        use winit::platform::macos::EventLoopBuilderExtMacOS as _;
+        options.event_loop_builder = Some(Box::new(|b| {
+            b.with_default_menu(false);
+        }));
+    }
     figcraft_ui_egui::windows::install(fig);
     #[cfg(target_os = "linux")]
     let linux_display = linux_window::display_socket();
@@ -298,6 +317,10 @@ fn main() -> eframe::Result {
                 let _ = with_app(|fig| fig.ui.title_bar = figcraft_ui_egui::TitleBar::Native);
                 _cc.egui_ctx.send_viewport_cmd(egui::ViewportCommand::Decorations(true));
             }
+            #[cfg(target_os = "macos")]
+            let app_menu = app_menu::AppMenu::install(&_cc.egui_ctx)
+                .map_err(|e| log::warn!("app menu: none installed, so ⌘Q does nothing (File ▸ Quit Scrim and the Dock still quit): {e}"))
+                .ok();
             Ok(Box::new(App {
                 queue,
                 ctx_slot,
@@ -305,6 +328,8 @@ fn main() -> eframe::Result {
                 recovery,
                 #[cfg(target_os = "macos")]
                 apple_events: apple_events.connect(&_cc.egui_ctx),
+                #[cfg(target_os = "macos")]
+                app_menu,
             }))
         }),
     );

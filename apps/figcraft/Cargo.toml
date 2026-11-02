@@ -38,6 +38,13 @@ windows = { version = "0.62", default-features = false, features = ["UI_ViewMana
 # unsafe, which the workspace forbids). Pinned exactly: review the diff before bumping.
 [target.'cfg(target_os = "macos")'.dependencies]
 fmv-macos-events = "=0.1.0"
+# The app menu (Fix AI C-2): winit's default one quits through AppKit's `terminate:` without asking,
+# losing unsaved changes; this one's Quit runs `app.quit`, which asks. muda is the menu crate under
+# upstream's craft-menu (Tauri's; MIT OR Apache-2.0); it adds crossbeam-channel and keyboard-types
+# to the lock, and its objc2 crates are winit's. Pinned exactly: review the diff before bumping.
+muda = { version = "=0.19.3", default-features = false }
+# `with_default_menu(false)`, to turn winit's menu off: the same winit eframe uses.
+winit = { version = "0.30", default-features = false }
 # The activity held while agents work, so App Nap doesn't slow the app (`src/app_nap.rs`). Already
 # in the tree through winit; only safe calls are used.
 objc2 = "0.6"

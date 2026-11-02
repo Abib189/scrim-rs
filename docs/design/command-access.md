@@ -176,10 +176,10 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **view:** `view.get` (Get view)
 - **widget:** `widget.list` (List widgets)
 
-## Write, outside the undo history (299)
+## Write, outside the undo history (300)
 
 - **ai:** `ai.copyConnectCommand`, `ai.selectChange`, `ai.selectFinding`, `ai.undoChange`
-- **app:** `app.actions`, `app.preferences`
+- **app:** `app.actions`, `app.preferences`, `app.quit`
 - **branch:** `branch.archive`, `branch.create`, `branch.merge`, `branch.open`, `branch.updateFromMain`
 - **camera:** `camera.focus-layer`, `camera.follow-agents`
 - **chat:** `chat.add-selection`, `chat.agent`, `chat.allow-agent`, `chat.attach-image`, `chat.cancel`, `chat.clear`, `chat.dismiss-hint`, `chat.forget-agents`, `chat.grace-setting`, `chat.new`, `chat.open`, `chat.scope`, `chat.select-run-layers`, `chat.send`

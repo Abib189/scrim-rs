@@ -204,6 +204,7 @@ pub const WRITE: &[&str] = &[
     "ai.undoChange",
     "app.actions",
     "app.preferences",
+    "app.quit",
     "branch.archive",
     "branch.create",
     "branch.merge",

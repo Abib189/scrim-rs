@@ -457,6 +457,15 @@ pub fn specs() -> Vec<CommandSpec> {
             }
         ),
         spec!("app.preferences", "Preferences", "{}", false, |s, _| ui(s, "dialog.preferences")),
+        // Fix AI C-2: every way to quit (the app menu and ⌘Q, the Dock, logging out, File ▸ Quit)
+        // is this command. A `dialog.` request, so an agent's call asks nothing and quits nothing.
+        spec!(
+            "app.quit",
+            "Quit Scrim",
+            "{}  quit the app; the window asks first when a file has unsaved changes (an agent's call does nothing: only the person quits)",
+            false,
+            |s, _| ui(s, "dialog.quit")
+        ),
         spec!(
             "settings.open",
             "Settings",
