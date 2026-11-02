@@ -27,6 +27,14 @@ pub fn open_files_with_results(session: &mut Session, files: &[String]) -> (Vec<
     (session.docs.iter().map(|d| d.uid).collect(), last)
 }
 
+/// The window is up: what opening the launch files asked it to show (a board file's notice, Fix AI
+/// C-1; reset numbers, LW-2) shows now. The window acts on requests after the commands it runs, and
+/// these came before it existed: left waiting, they would show at the person's first command, or
+/// be dropped by an agent's (whose calls open no dialogs).
+pub fn window_up(fig: &mut figcraft_ui_egui::FigApp) {
+    fig.handle_ui_requests();
+}
+
 /// Whether the window starts on Home: when it has no document to show.
 pub fn starts_on_home(session: &Session) -> bool {
     session.docs.is_empty()

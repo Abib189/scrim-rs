@@ -78,3 +78,25 @@ fn a_closed_format_named_at_launch_hands_back_its_refusal() {
     assert!(matches!(err, figcraft_engine::EngineError::Unreadable(figcraft_engine::importers::Unreadable::ClosedFormat("Affinity"))), "{err:?}");
     std::fs::remove_dir_all(&dir).ok();
 }
+
+/// Fix AI C-1, found by the live check: what opening a file at launch asks the window to show (a
+/// board file's notice, LW-2's note about reset numbers) shows when the window comes up, not at the
+/// person's first command; and an agent's first command can't drop it.
+#[test]
+fn what_a_file_opened_at_launch_says_shows_when_the_window_comes_up() {
+    let d = std::env::temp_dir().join(format!("figcraft-launch-board-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&d);
+    std::fs::create_dir_all(&d).unwrap();
+    let mut s = Session::new();
+    s.execute("shape.rectangle", &serde_json::json!({"width": 10, "height": 10})).unwrap();
+    let mut v = figcraft_format::to_json(s.doc().unwrap()).unwrap();
+    v["kind"] = serde_json::json!("board");
+    let file = d.join("Plan.scrim");
+    std::fs::write(&file, v.to_string()).unwrap();
+    let mut s = Session::empty();
+    open_files_with_results(&mut s, &[file.to_string_lossy().into_owned()]);
+    let mut fig = figcraft_ui_egui::FigApp::new(s, Box::new(figcraft_ui_egui::NoServices));
+    super::window_up(&mut fig);
+    assert_eq!(fig.ui.board_file, Some(figcraft_ui_egui::board_file::Shown::Opened("Plan".into())));
+    let _ = std::fs::remove_dir_all(&d);
+}
