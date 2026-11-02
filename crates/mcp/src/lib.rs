@@ -20,6 +20,7 @@ pub mod discovery;
 mod headless;
 pub mod http;
 mod prompts;
+mod reply_cap;
 mod resources;
 mod server;
 mod tools;

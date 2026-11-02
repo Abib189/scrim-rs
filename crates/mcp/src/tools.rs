@@ -8,6 +8,9 @@ use serde_json::{Map, Value, json};
 
 use crate::backend::{Backend, decode_data, page_children};
 
+/// The `maxBytes` parameter; every tool's reply keeps to it ([`crate::reply_cap`]).
+const MAX_BYTES: &str = "Reply limit in bytes (default 8 MiB)";
+
 /// The result of `tools/call`: MCP content blocks plus the `isError` flag.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ToolResult {
@@ -200,9 +203,9 @@ pub fn tool_definitions() -> Vec<Value> {
         tool(
             "inspect_document",
             "Inspect document",
-            "The active document as JSON: name, path, dirty flag, current page, selection, the current page's layer tree (id, name, type, x/y relative to the parent frame (groups don't count), width, height, absoluteBounds in page coordinates, fills, strokes, effects, cornerRadius, layout, sizing, text properties, component links, overrides, bound variables), other pages summarised, styles, variable count and the undo history. Use it to verify every change.",
+            "The active document as JSON: name, path, dirty flag, current page, selection, the current page's layer tree (id, name, type, x/y relative to the parent frame (groups don't count), width, height, absoluteBounds in page coordinates, fills, strokes, effects, cornerRadius, layout, sizing, text properties, component links, overrides, bound variables), other pages summarised, styles, variable count and the undo history. Use it to verify every change. Too large a tree comes back shallower, marked `truncated`.",
             obj(
-                json!({"depth": int("Tree depth for the current page (default 4)"), "allPages": boolean("Expand every page, not only the current one")}),
+                json!({"depth": int("Tree depth for the current page (default 4)"), "allPages": boolean("Expand every page, not only the current one"), "maxBytes": int(MAX_BYTES)}),
                 &[],
             ),
             true,
@@ -210,8 +213,11 @@ pub fn tool_definitions() -> Vec<Value> {
         tool(
             "get_node",
             "Get layer",
-            "One layer as JSON (same fields as inspect_document) with its children to `depth`.",
-            obj(json!({"id": id_schema("Layer id"), "depth": int("Child depth (default 1)")}), &["id"]),
+            "One layer as JSON (same fields as inspect_document) with its children to `depth`. Too large a subtree comes back shallower or windowed, marked `truncated` with the next `offset`.",
+            obj(
+                json!({"id": id_schema("Layer id"), "depth": int("Child depth (default 1)"), "offset": int("First child (default 0)"), "maxBytes": int(MAX_BYTES)}),
+                &["id"],
+            ),
             true,
         ),
         tool(
@@ -535,6 +541,10 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
     // The stale-write guard travels with every engine.execute this tool makes.
     let mut guarded = Guarded { inner: b, since: a.get("sinceRevision").and_then(Value::as_u64) };
     let b: &mut dyn Backend = &mut guarded;
+    let max = match n_arg(&a, "maxBytes").and_then(crate::reply_cap::max_bytes) {
+        Ok(m) => m,
+        Err(e) => return ToolResult::error(e),
+    };
     let r = match name {
         "finish_working" => {
             let mut p = json!({});
@@ -571,7 +581,10 @@ pub fn call_tool(b: &mut dyn Backend, name: &str, args: &Value) -> ToolResult {
         "inspect_ui" => b.call("ui.inspect", json!({})).map(|v| ToolResult::json(&v)),
         other => Err(format!("unknown tool `{other}` (tools/list has: {})", TOOL_NAMES.join(", "))),
     };
-    r.unwrap_or_else(|e| if e.contains(&figcraft_engine::EngineError::NoDocument.to_string()) { no_document() } else { ToolResult::error(e) })
+    let r =
+        r.unwrap_or_else(|e| if e.contains(&figcraft_engine::EngineError::NoDocument.to_string()) { no_document() } else { ToolResult::error(e) });
+    // These two cut their own replies to fit; every other reply is checked whole.
+    if matches!(name, "inspect_document" | "get_node") { r } else { crate::reply_cap::backstop(name, r, max) }
 }
 
 /// The error for a tool that needs a document when none is open (Fix AD: Scrim starts on its Home
@@ -728,16 +741,16 @@ fn inspect_document(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolR
         Some(Value::Bool(x)) => *x,
         Some(_) => return Err("`allPages` must be a boolean".into()),
     };
-    b.call("document.inspect", json!({"depth": depth, "allPages": all})).map(|v| ToolResult::json(&v))
+    let max = crate::reply_cap::max_bytes(n_arg(a, "maxBytes")?)?;
+    crate::reply_cap::inspect(b, depth, all, max).map(|v| ToolResult::json(&v))
 }
 
 fn get_node(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolResult, String> {
     let id = id_arg(a.get("id").ok_or("`id` is required")?)?;
     let depth = n_arg(a, "depth")?.unwrap_or(1.0).clamp(0.0, 64.0) as u64;
-    let v = b.call("node.get", json!({"id": id, "depth": depth}))?;
-    if v.is_null() {
-        return Err(format!("no such layer {id}"));
-    }
+    let offset = n_arg(a, "offset")?.unwrap_or(0.0).clamp(0.0, f64::from(u32::MAX)) as usize;
+    let max = crate::reply_cap::max_bytes(n_arg(a, "maxBytes")?)?;
+    let v = crate::reply_cap::node(b, id, depth, offset, max)?.ok_or_else(|| format!("no such layer {id}"))?;
     Ok(ToolResult::json(&v))
 }
 

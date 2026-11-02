@@ -7,9 +7,11 @@
 use figcraft_mcp::{FINISH_HINT, Server};
 use serde_json::{Value, json};
 
-/// `tools/list` in characters, measured 21 Oct 2026 after Fix L1 (25 tools). Before Stage I.1 it
-/// was 28,836 (24 tools); after Stage I.1, 30,780.
-const BASELINE_CHARS: usize = 29_554;
+/// `tools/list` in characters, measured 2 Nov 2026 after Fix AI C-4 (25 tools). Before Stage I.1
+/// it was 28,836 (24 tools); after Stage I.1, 30,780; after Fix L1, 29,554. C-4 added 426: the
+/// `maxBytes` and `offset` parameters that let inspect_document and get_node answer a large
+/// document within what a client can read, and one sentence each saying so.
+const BASELINE_CHARS: usize = 30_553;
 
 fn tools_list() -> (String, Vec<Value>) {
     let mut s = Server::headless();

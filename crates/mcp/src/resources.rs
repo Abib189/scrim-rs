@@ -30,16 +30,16 @@ pub fn templates() -> Value {
 
 pub fn read(b: &mut dyn Backend, uri: &str) -> Result<Value, ReadError> {
     if uri == DOC_URI {
-        return b.call("document.inspect", json!({"depth": 8})).map_err(ReadError::Backend);
+        return crate::reply_cap::inspect(b, 8, false, crate::reply_cap::MAX_RESPONSE).map_err(ReadError::Backend);
     }
     if uri == COMMANDS_URI {
         return b.call("engine.commands", json!({})).map_err(ReadError::Backend);
     }
     if let Some(id) = uri.strip_prefix("figcraft://node/") {
         let Some(id) = figcraft_engine::params::id_of(&Value::String(id.to_string())) else { return Err(ReadError::NotFound(uri.into())) };
-        return match b.call("node.get", json!({"id": id.0, "depth": 2})) {
-            Ok(Value::Null) => Err(ReadError::NotFound(uri.into())),
-            Ok(v) => Ok(v),
+        return match crate::reply_cap::node(b, id.0, 2, 0, crate::reply_cap::MAX_RESPONSE) {
+            Ok(None) => Err(ReadError::NotFound(uri.into())),
+            Ok(Some(v)) => Ok(v),
             Err(e) if e.contains("no such node") => Err(ReadError::NotFound(uri.into())),
             Err(e) => Err(ReadError::Backend(e)),
         };
