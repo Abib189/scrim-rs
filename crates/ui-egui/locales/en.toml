@@ -13,6 +13,7 @@ name = "English"
 "Describe a change in the AI tab" = "Describe a change in the AI tab"
 "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys."
 "Stop a run after" = "Stop a run after"
+"{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file." = { one = "{name} was saved with every image: one that wasn't loaded (together they pass what Scrim reads from one file) was copied over from the file.", other = "{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file." }
 "{name}: {n} numbers saved as null by an earlier version were reset to their defaults. The file itself wasn't changed." = { one = "{name}: a number saved as null by an earlier version was reset to its default. The file itself wasn't changed.", other = "{name}: {n} numbers saved as null by an earlier version were reset to their defaults. The file itself wasn't changed." }
 "{n} min (default)" = "{n} min (default)"
 "{n} min" = "{n} min"

@@ -19,6 +19,7 @@
 //! [`old_scrim`] imports the earlier TypeScript Scrim's JSON `.scrim` files.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+pub mod carry;
 pub mod fig;
 mod finite;
 pub mod free;
@@ -215,11 +216,14 @@ pub struct Loaded {
     /// Numbers the file saved as `null` (NaN or infinity, by an earlier build) and that were reset
     /// to their defaults when it opened ([`null_numbers`]); `issues` notes them once.
     pub repaired_numbers: usize,
+    /// Images the file holds that weren't loaded, past what Scrim reads from one file: a save
+    /// copies them across ([`carry`]).
+    pub images_past_budget: BTreeSet<String>,
 }
 
 impl From<Document> for Loaded {
     fn from(doc: Document) -> Self {
-        Self { doc, issues: Vec::new(), versions: Vec::new(), branches: Vec::new(), repaired_numbers: 0 }
+        Self { doc, issues: Vec::new(), versions: Vec::new(), branches: Vec::new(), repaired_numbers: 0, images_past_budget: BTreeSet::new() }
     }
 }
 
@@ -429,6 +433,18 @@ pub fn save_bytes_with_history(
     versions: &[Version],
     branches: &[Branch],
 ) -> Result<Vec<u8>, FormatError> {
+    save_bytes_keeping(doc, thumbnail_png, versions, branches, None)
+}
+
+/// [`save_bytes_with_history`] that also copies the images `left` in the document's file (not
+/// loaded) into the archive, so the save keeps them ([`carry`]).
+pub fn save_bytes_keeping(
+    doc: &Document,
+    thumbnail_png: Option<&[u8]>,
+    versions: &[Version],
+    branches: &[Branch],
+    left: Option<&carry::LeftInFile>,
+) -> Result<Vec<u8>, FormatError> {
     let mut buf = std::io::Cursor::new(Vec::new());
     {
         let mut z = zip::ZipWriter::new(&mut buf);
@@ -441,6 +457,9 @@ pub fn save_bytes_with_history(
             if written.insert(hash) {
                 put(&mut z, &format!("images/{hash}"), stored, &img.bytes)?;
             }
+        }
+        if let Some(left) = left {
+            carry::put(&mut z, left, &written)?;
         }
         if let Some(t) = thumbnail_png {
             put(&mut z, "thumbnail.png", stored, t)?;
@@ -540,9 +559,24 @@ pub(crate) struct ImageBudget {
     pub bytes: u64,
 }
 
+thread_local! {
+    /// A smaller image budget for tests on this thread ([`with_image_budget`]).
+    static TEST_BUDGET: std::cell::Cell<Option<ImageBudget>> = const { std::cell::Cell::new(None) };
+}
+
+/// Run `f` with files on this thread read within `images` images and `bytes` bytes of them, so a
+/// test can open a file past the budget without gigabytes of images.
+#[doc(hidden)]
+pub fn with_image_budget<R>(images: usize, bytes: u64, f: impl FnOnce() -> R) -> R {
+    let was = TEST_BUDGET.replace(Some(ImageBudget { images, bytes }));
+    let r = f();
+    TEST_BUDGET.set(was);
+    r
+}
+
 /// Read a `.figcraft` archive (or bare JSON) with its version history.
 pub fn load_bytes_with_versions(bytes: &[u8]) -> Result<Loaded, FormatError> {
-    load_within(bytes, IMAGE_BUDGET)
+    load_within(bytes, TEST_BUDGET.get().unwrap_or(IMAGE_BUDGET))
 }
 
 /// [`load_bytes_with_versions`] reading at most `budget` of images.
@@ -559,8 +593,8 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
     let limit = document_limit(packed, bytes.len() as u64);
     let text = String::from_utf8(read_member(&mut z, "document.json", limit)?).map_err(|e| FormatError::Corrupt(e.to_string()))?;
     let Parsed { mut doc, mut issues, images: own_images, repaired_numbers } = parse_json(&text)?;
-    let (images, unread) = read_images(&mut z, own_images.as_ref(), budget)?;
-    report_lost_images(&mut issues, &unread, own_images.as_ref(), &images);
+    let ImagesRead { images, unread, past_budget } = read_images(&mut z, own_images.as_ref(), budget)?;
+    report_lost_images(&mut issues, &unread, own_images.as_ref(), &images, &past_budget);
     match library::read(&mut z, &images, u64::MAX) {
         Ok(lib) => doc.published = lib.map(Arc::new),
         Err(e) => issues.push(format!("the published library was skipped: {e}")),
@@ -578,34 +612,39 @@ pub(crate) fn load_within(bytes: &[u8], budget: ImageBudget) -> Result<Loaded, F
         .filter(|h| own_images.as_ref().is_some_and(|o| !o.contains(*h)))
         .collect();
     doc.images = images.into_iter().filter(|(h, _)| !history_only.contains(h)).collect();
-    Ok(Loaded { doc, issues, versions, branches, repaired_numbers })
+    Ok(Loaded { doc, issues, versions, branches, repaired_numbers, images_past_budget: past_budget })
 }
 
 /// Images that couldn't be read, with why.
 type Unread = Vec<(String, FormatError)>;
 
+/// What [`read_images`] read.
+struct ImagesRead {
+    images: BTreeMap<String, ImageData>,
+    /// Members that couldn't be read (damaged, too large), with why.
+    unread: Unread,
+    /// Members left out because the budget was spent: intact in the file ([`carry`]).
+    past_budget: BTreeSet<String>,
+}
+
 /// The archive's `images/` members by hash, within `budget`, and the ones that couldn't be read
 /// with why. The document's own images (`own`) are read first, so a file past the budget loses
 /// the images only its history uses before its own.
-fn read_images<R: Read + Seek>(
-    z: &mut zip::ZipArchive<R>,
-    own: Option<&BTreeSet<String>>,
-    budget: ImageBudget,
-) -> Result<(BTreeMap<String, ImageData>, Unread), FormatError> {
+fn read_images<R: Read + Seek>(z: &mut zip::ZipArchive<R>, own: Option<&BTreeSet<String>>, budget: ImageBudget) -> Result<ImagesRead, FormatError> {
     let mut hashes: Vec<String> = z.file_names().filter_map(|n| n.strip_prefix("images/")).map(str::to_string).collect();
     hashes.sort_by_key(|h| !own.is_some_and(|o| o.contains(h)));
     let mut images = BTreeMap::new();
     let mut unread = Vec::new();
+    let mut past_budget = BTreeSet::new();
     let mut left = budget.bytes;
     for (i, hash) in hashes.into_iter().enumerate() {
         let name = format!("images/{hash}");
         if i >= budget.images {
-            unread.push((hash, FormatError::Corrupt(format!("the file has more than {} images", budget.images))));
+            past_budget.insert(hash);
             continue;
         }
         if z.by_name(&name).is_ok_and(|f| f.size() > left) {
-            let mb = budget.bytes / (1024 * 1024);
-            unread.push((hash, FormatError::Corrupt(format!("the file's images together pass {mb} MB"))));
+            past_budget.insert(hash);
             continue;
         }
         match read_member(z, &name, left.min(MAX_MEMBER)) {
@@ -618,7 +657,7 @@ fn read_images<R: Read + Seek>(
             Err(e) => unread.push((hash, e)),
         }
     }
-    Ok((images, unread))
+    Ok(ImagesRead { images, unread, past_budget })
 }
 
 /// Most lost images reported one by one (the rest as a count).
@@ -632,6 +671,7 @@ fn report_lost_images(
     unread: &[(String, FormatError)],
     listed: Option<&BTreeSet<String>>,
     images: &BTreeMap<String, ImageData>,
+    past_budget: &BTreeSet<String>,
 ) {
     let mut lost: Vec<String> = unread
         .iter()
@@ -645,8 +685,14 @@ fn report_lost_images(
         })
         .collect();
     let unread_hashes: BTreeSet<&str> = unread.iter().map(|(h, _)| h.as_str()).collect();
+    if !past_budget.is_empty() {
+        lost.push(match past_budget.len() {
+            1 => "1 image wasn't loaded: together the file's images pass what Scrim reads from one file; it stays in the file, and saving it keeps it".into(),
+            n => format!("{n} images weren't loaded: together the file's images pass what Scrim reads from one file; they stay in the file, and saving it keeps them"),
+        });
+    }
     for hash in listed.into_iter().flatten() {
-        if !images.contains_key(hash) && !unread_hashes.contains(hash.as_str()) {
+        if !images.contains_key(hash) && !unread_hashes.contains(hash.as_str()) && !past_budget.contains(hash) {
             lost.push(format!("image {hash} is used by the file but its data is missing: it is left out, and saving this file again drops it"));
         }
     }

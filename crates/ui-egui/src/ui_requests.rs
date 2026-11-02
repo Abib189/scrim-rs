@@ -145,6 +145,15 @@ impl FigApp {
                         &[("name", &name)],
                     ));
                 }
+                "notice.imagesKept" => {
+                    let name = r.data.get("name").and_then(Value::as_str).unwrap_or_default().to_string();
+                    let n = r.data.get("count").and_then(Value::as_u64).unwrap_or(0) as usize;
+                    self.toast(i18n::trn(
+                        "{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file.",
+                        n,
+                        &[("name", &name)],
+                    ));
+                }
                 other => windows::request(self, other),
             }
         }

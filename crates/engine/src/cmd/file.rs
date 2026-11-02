@@ -128,7 +128,10 @@ pub fn specs() -> Vec<CommandSpec> {
             let i = s.active;
             let uid = s.ds()?.uid;
             if let Some(slot) = s.docs.get_mut(i) {
-                *slot = DocState::new(loaded.doc, Some(path)).with_versions(loaded.versions).with_branches(loaded.branches);
+                *slot = DocState::new(loaded.doc, Some(path.clone()))
+                    .with_versions(loaded.versions)
+                    .with_branches(loaded.branches)
+                    .with_images_left_in_file(&path, loaded.images_past_budget);
             }
             // Edits on its branch tabs are reverted too.
             crate::branches::close_tabs(s, uid, None);
@@ -673,7 +676,9 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
     if native {
         open_notes::say(s, &file_stem(&path), &loaded);
     }
-    super::show_new_doc(s, DocState::new(loaded.doc, native.then_some(path)).with_versions(loaded.versions).with_branches(loaded.branches));
+    let left = if native { loaded.images_past_budget } else { Default::default() };
+    let ds = DocState::new(loaded.doc, native.then(|| path.clone())).with_versions(loaded.versions).with_branches(loaded.branches);
+    super::show_new_doc(s, ds.with_images_left_in_file(&path, left));
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
     out[if native { "repairs" } else { "warnings" }] = if native { json!(loaded.issues) } else { crate::importers::warnings_json(&warnings) };
     Ok(out)
@@ -691,87 +696,6 @@ fn open_data(s: &mut Session, data: &str, p: &Value, variables: Option<&Value>) 
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
     out[if native { "repairs" } else { "warnings" }] = if native { json!(loaded.issues) } else { crate::importers::warnings_json(&warnings) };
     Ok(out)
-}
-
-/// Thumbnail PNG of the first page's content (for file browsers / the home screen).
-pub fn thumbnail(doc: &Document) -> Option<Vec<u8>> {
-    let page = doc.first_page()?;
-    let b = doc.page_content_bounds(page)?;
-    let scale = (400.0 / b.width().max(b.height()).max(1.0)).min(2.0);
-    let view = figcraft_render::View {
-        origin: (b.x0, b.y0),
-        scale,
-        width: (b.width() * scale).ceil().max(1.0) as u32,
-        height: (b.height() * scale).ceil().max(1.0) as u32,
-    };
-    let pix = figcraft_render::render_view(doc, page, &view, &Default::default())?;
-    figcraft_render::encode_png(&pix).ok()
-}
-
-/// The `.figcraft` file for a document: content, thumbnail and version history.
-pub fn file_bytes(ds: &DocState) -> Result<Vec<u8>> {
-    FileSnapshot::of(ds).encode()
-}
-
-/// A document's file as it is at one moment, so the slow part of saving it (the thumbnail and the
-/// encoding) can run on another thread while editing goes on: [`encode`](Self::encode) there, then
-/// [`save`](Self::save) the bytes back on the session's thread.
-pub struct FileSnapshot {
-    uid: u64,
-    path: Option<String>,
-    revision: u64,
-    doc: Arc<Document>,
-    /// The document as last saved when the snapshot was taken: another save since makes it stale.
-    saved: Arc<Document>,
-    page: NodeId,
-    versions: Vec<Version>,
-    branches: Vec<figcraft_format::Branch>,
-}
-
-impl FileSnapshot {
-    pub fn of(ds: &DocState) -> Self {
-        Self {
-            uid: ds.uid,
-            path: ds.path.clone(),
-            revision: ds.revision,
-            doc: ds.doc.clone(),
-            saved: ds.saved_doc.clone(),
-            page: ds.page,
-            versions: ds.versions.clone(),
-            branches: ds.branches.clone(),
-        }
-    }
-
-    /// The file's bytes: content, thumbnail and version history.
-    pub fn encode(&self) -> Result<Vec<u8>> {
-        let mut doc = (*self.doc).clone();
-        doc.current_page = Some(self.page);
-        let thumb = thumbnail(&doc);
-        figcraft_format::save_bytes_with_history(&doc, thumb.as_deref(), &self.versions, &self.branches)
-            .map_err(|e| EngineError::Other(e.to_string()))
-    }
-
-    /// Write `bytes` (this snapshot's [`encode`](Self::encode)) to the document's file: it is saved
-    /// as of the snapshot, and edits since stay unsaved. False (nothing written) when the document
-    /// was closed, saved, reverted or given another path since: the bytes are out of date.
-    pub fn save(self, s: &mut Session, bytes: &[u8]) -> Result<bool> {
-        // Auto-save writes .scrim files only (Fix AG: a .figcraft it opened is never written).
-        if !self.path.as_deref().is_some_and(saves_in_place) {
-            return Ok(false);
-        }
-        let Some(ds) = s.docs.iter_mut().find(|d| d.uid == self.uid && d.path == self.path && Arc::ptr_eq(&d.saved_doc, &self.saved)) else {
-            return Ok(false);
-        };
-        write(self.path.as_deref().ok_or(EngineError::NoDocument)?, bytes)?;
-        // The history or branches may have changed since: then they still count as unsaved.
-        if ds.revision == self.revision {
-            ds.versions_changed = false;
-        }
-        ds.saved_doc = self.doc;
-        ds.revision += 1;
-        branch_tabs_saved(s, self.uid);
-        Ok(true)
-    }
 }
 
 /// The branch tabs of the file in tab `uid` were saved with it.
@@ -815,12 +739,17 @@ fn save_to(s: &mut Session, path: String) -> Result<Value> {
     let ds = s.docs.get_mut(i).ok_or(EngineError::NoDocument)?;
     let bytes = file_bytes(ds)?;
     write(&path, &bytes)?;
+    // Images the file held that weren't loaded were copied into this one: said so (Fix AI LW-3).
+    let kept = ds.images_left_now_in(&path);
     ds.path = Some(path.clone());
     ds.mark_saved();
     ds.revision += 1;
     let uid = ds.uid;
     branch_tabs_saved(s, uid);
     remember(s, &path);
+    if kept > 0 {
+        s.request_ui("notice.imagesKept", json!({"name": file_stem(&path), "count": kept}));
+    }
     Ok(json!({"path": path, "bytes": bytes.len()}))
 }
 
@@ -1373,6 +1302,9 @@ fn cycle_doc(s: &mut Session, dir: i64) -> Result<Value> {
 }
 
 mod open_notes;
+mod snapshot;
+
+pub use snapshot::{FileSnapshot, file_bytes, thumbnail};
 
 #[cfg(test)]
 mod rest_import_tests;

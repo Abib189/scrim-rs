@@ -63,7 +63,9 @@ fn images_past_the_byte_budget_are_left_out_and_reported() {
     assert_eq!(loaded.doc.images.len(), 2);
     let lost: Vec<&String> = hashes.iter().filter(|h| !loaded.doc.images.contains_key(*h)).collect();
     assert_eq!(lost.len(), 1);
-    assert!(loaded.issues.iter().any(|i| i.contains(lost[0].as_str()) && i.contains("together")), "{:?}", loaded.issues);
+    // Left in the file, which a save copies them from (Fix AI LW-3).
+    assert_eq!(loaded.images_past_budget.iter().collect::<Vec<_>>(), lost);
+    assert!(loaded.issues.iter().any(|i| i.contains("1 image wasn't loaded") && i.contains("saving it keeps it")), "{:?}", loaded.issues);
 }
 
 #[test]
@@ -71,7 +73,8 @@ fn images_past_the_count_budget_are_left_out_and_reported() {
     let (bytes, _, _) = file_with_images(4);
     let loaded = load_within(&bytes, ImageBudget { images: 3, bytes: u64::MAX }).unwrap();
     assert_eq!(loaded.doc.images.len(), 3);
-    assert!(loaded.issues.iter().any(|i| i.contains("more than 3 images")), "{:?}", loaded.issues);
+    assert_eq!(loaded.images_past_budget.len(), 1);
+    assert!(loaded.issues.iter().any(|i| i.contains("1 image wasn't loaded")), "{:?}", loaded.issues);
 }
 
 #[test]

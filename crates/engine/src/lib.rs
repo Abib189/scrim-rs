@@ -403,6 +403,8 @@ pub struct DocState {
     pub(crate) last_duplicate: Option<cmd::edit::Duplicated>,
     /// "Untitled 2" and on: the number shown while the document has no name or file ([`doc_name`]).
     pub untitled: u32,
+    /// Images its file holds that weren't loaded (past the budget): a save copies them (Fix AI LW-3).
+    pub(crate) images_left_in_file: Option<figcraft_format::carry::LeftInFile>,
 }
 
 static NEXT_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
@@ -444,6 +446,7 @@ impl DocState {
             view_from_prefs: false,
             last_duplicate: None,
             untitled: 1,
+            images_left_in_file: None,
         };
         st.zoom_to_fit();
         st
@@ -1435,6 +1438,8 @@ mod html_codegen_tests;
 mod huge_stroke_tests;
 #[cfg(test)]
 mod id_params_behaviour_tests;
+#[cfg(test)]
+mod images_left_in_file_tests;
 #[cfg(test)]
 mod import_export_tests;
 #[cfg(test)]

@@ -43,3 +43,19 @@ fn null_numbers_and_numbers_that_arent_finite_are_explained_in_english_and_spani
     }
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// LW-3: saving a file whose images past the budget weren't loaded says they were kept.
+#[test]
+fn a_save_that_kept_images_left_in_the_file_says_so_in_english_and_spanish() {
+    let mut u = Ui::new(Session::new());
+    u.app.session.request_ui("notice.imagesKept", json!({"name": "Big", "count": 2}));
+    u.app.handle_ui_requests();
+    assert_eq!(
+        u.app.ui.toast.as_ref().map(|t| t.0.as_str()),
+        Some(
+            "Big was saved with every image: 2 that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file."
+        )
+    );
+    let key = "{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file.";
+    assert!(crate::i18n::own_entry("es", key).is_some_and(|t| t.contains("imágenes")));
+}

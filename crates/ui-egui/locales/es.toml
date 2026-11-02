@@ -13,6 +13,7 @@ status = "draft — needs native review"
 "Describe a change in the AI tab" = "Describir un cambio en la pestaña IA"
 "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Ejecuta Claude Code o Codex, ya instalados y con la sesión iniciada, en este lienzo a través del servidor MCP de Scrim. Lo paga el plan de tu agente; Scrim no guarda claves."
 "Stop a run after" = "Detener una ejecución tras"
+"{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file." = { one = "{name} se guardó con todas sus imágenes: una que no se cargó (juntas superan lo que Scrim lee de un archivo) se copió desde el archivo.", other = "{name} se guardó con todas sus imágenes: {n} que no se cargaron (juntas superan lo que Scrim lee de un archivo) se copiaron desde el archivo." }
 "{name}: {n} numbers saved as null by an earlier version were reset to their defaults. The file itself wasn't changed." = { one = "{name}: un número guardado como null por una versión anterior volvió a su valor predeterminado. El archivo no se modificó.", other = "{name}: {n} números guardados como null por una versión anterior volvieron a sus valores predeterminados. El archivo no se modificó." }
 "{n} min (default)" = "{n} min (predeterminado)"
 "{n} min" = "{n} min"
