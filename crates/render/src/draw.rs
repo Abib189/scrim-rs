@@ -418,13 +418,14 @@ pub fn effect_margin(n: &Node) -> f64 {
         .fold(0.0, f64::max)
 }
 
-/// Everything node `id` can paint, in page coordinates: its paint bounds (glyphs of overflowing
-/// text included) grown by its effects' margin. What a change to the node can affect on screen.
+/// Everything node `id` can paint, in page coordinates: its paint bounds, effects and glyphs of
+/// overflowing text included. What a change to the node can affect on screen. Its effects' margin
+/// (what they read from outside, see [`effect_margin`]) isn't added again: drawing the area takes
+/// in what lies that far off, as culling does (Fix AI C-6, upstream a3d70d4c).
 pub fn paint_bounds(doc: &Document, id: NodeId) -> Option<Rect> {
     let n = doc.node(id)?;
-    let m = effect_margin(n).abs();
     let local = local_paint_bounds(doc, n, 0, None);
-    Some(figcraft_geom::transform_rect_bbox(doc.world_transform(id), local).inflate(m, m))
+    Some(figcraft_geom::transform_rect_bbox(doc.world_transform(id), local))
 }
 
 fn needs_layer(n: &Node) -> bool {

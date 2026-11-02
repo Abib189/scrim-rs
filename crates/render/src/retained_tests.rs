@@ -287,3 +287,37 @@ fn overflowing_text_is_drawn_while_its_box_is_out_of_view() {
     let dark = pix.data().as_chunks::<4>().0.iter().filter(|c| c[0] < 128).count();
     assert!(dark > 20, "glyphs drawn: {dark}");
 }
+
+/// Fix AI C-6 (upstream FigCraft a3d70d4c): an edit near effects renders where the layer paints,
+/// its effects' reach counted once. With it counted twice, moving a 120 x 120 rectangle whose
+/// shadow falls 40 rendered about twice the pixels it can change, and edits that would fit a
+/// partial render fell back to full ones.
+#[test]
+fn a_moved_layer_renders_where_its_effects_paint_and_no_further() {
+    fonts();
+    let shadow = |dy: f64, r: f64| Effect {
+        kind: EffectKind::DropShadow(Shadow { color: Color::BLACK, offset: (0.0, dy), radius: r, ..Shadow::default() }),
+        ..Effect::drop_shadow()
+    };
+    let blur = Effect { kind: EffectKind::LayerBlur(figcraft_doc::Blur::uniform(30.0)), ..Effect::layer_blur() };
+    for (why, effects) in [("a shadow falling 40", vec![shadow(40.0, 8.0)]), ("a blur of 30", vec![blur])] {
+        let mut d = Document::new("moved");
+        let p = d.first_page().unwrap();
+        let id = d.create(p, NodeKind::Rectangle, "R", 300.0, 200.0, 120.0, 120.0).unwrap();
+        solid(d.node_mut(id).unwrap(), "3366FF");
+        d.node_mut(id).unwrap().effects = effects;
+        let before = Arc::new(d);
+        let after = edit(&before, |d| d.get_mut(id).unwrap().transform = Affine::translate((315.0, 210.0)));
+        let v = View { origin: (0.0, 0.0), scale: 1.0, width: 1000, height: 800 };
+        let mut r = Retained::default();
+        check(&mut r, &before, p, &v);
+        // Where it painted and where it paints now, a pixel round each for rounding out; a quarter
+        // more, as layers grow by a shadow's reach on every side, not only towards its offset.
+        let area = |doc: &Document| doc.world_render_bounds(id).map_or(0.0, |b| (b.width() + 2.0) * (b.height() + 2.0));
+        let most = (area(&before) + area(&after)) * 1.25;
+        match check(&mut r, &after, p, &v) {
+            Work::Partial { pixels } => assert!(pixels as f64 <= most, "{why}: {pixels} pixels rendered, where it paints is {most}"),
+            w => panic!("{why}: {w:?}"),
+        }
+    }
+}

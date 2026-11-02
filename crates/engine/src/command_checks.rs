@@ -19,7 +19,16 @@ impl Session {
         }
         let broken = |n: &Node| !figcraft_doc::all_finite(n);
         let untouched = |n: &Node| bdoc.node_arc(n.id).zip(ds.doc.node_arc(n.id)).is_some_and(|(a, b)| Arc::ptr_eq(a, b));
-        match ds.doc.nodes().find(|n| !untouched(n) && broken(n)) {
+        let suspect = |n: &&Node| {
+            #[cfg(test)]
+            EXAMINED.with(|c| c.set(c.get() + 1));
+            !untouched(n) && broken(n)
+        };
+        // Only the layers the command added or changed (Fix AI C-6, upstream 646ac60b): the diff
+        // skips what the two versions share, so this costs about the size of the edit, not of the
+        // document.
+        let changed = ds.doc.changed_ids(bdoc, usize::MAX).unwrap_or_default();
+        match changed.iter().filter_map(|i| ds.doc.node(*i)).find(suspect) {
             Some(n) => Err(EngineError::NotFinite { cmd: id.to_string(), layer: n.name.clone() }),
             None => Ok(()),
         }
@@ -36,3 +45,13 @@ impl Session {
         }
     }
 }
+
+#[cfg(test)]
+thread_local! {
+    /// Layers the finite-geometry check looked at (Fix AI C-6's counting test).
+    static EXAMINED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(test)]
+#[path = "command_checks_tests.rs"]
+mod tests;
