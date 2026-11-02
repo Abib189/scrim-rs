@@ -22,3 +22,4 @@ The Scrim ports add their own areas (`agent-safety.md`, `fig-import.md`, `query.
 - `scrim-format.md`: Fix AG, the `.scrim` format, `.figcraft` compatibility and the import registry.
 - `importers.md`: Fix AH, the Penpot and FREE importers, closed formats and Home previews.
 - `lost-work.md`: Fix AI stage 2b, the upstream fixes for bugs that lost or corrupted work.
+- `daily-fixes.md`: Fix AI stage 2c, the board-file notice, daily-annoyance and performance fixes.

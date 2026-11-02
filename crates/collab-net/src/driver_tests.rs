@@ -142,14 +142,67 @@ fn presence_is_throttled_and_quiet_connections_ping() {
     d.tick(due);
     assert_eq!(d.sock.sent.last(), Some(&ClientMsg::Presence(cursor(3.0))));
     let n = d.sock.sent.len();
-    // Quiet: a ping after the keep-alive interval (the host answers, which counts as traffic).
+    // A ping every keep-alive interval from the connection's start, presence or not (the host
+    // answers, which counts as traffic).
     let ping_at = d.deadline().unwrap();
-    assert_eq!(ping_at, due + Duration::from_secs(15));
+    assert_eq!(ping_at, t0 + Duration::from_secs(15));
     d.tick(ping_at - ms(1));
     assert_eq!(d.sock.sent.len(), n, "not yet");
     d.message(&encode(&ServerMsg::Pong), ping_at - ms(1));
     d.tick(ping_at);
     assert_eq!(d.sock.sent.last(), Some(&ClientMsg::Ping));
+}
+
+/// Fix AI C-3 (upstream FigCraft 6b73c590): someone alone in a session who keeps moving the
+/// pointer sends presence all the time, which the host doesn't answer. Pings still go out every
+/// keep-alive interval, and the host's pongs keep the connection: before, each presence put the
+/// next ping off, nothing was heard for the idle timeout (45 s), and the connection dropped.
+#[test]
+fn a_lone_participant_moving_the_pointer_stays_connected() {
+    let t0 = Instant::now();
+    let (mut d, inbox) = start(Script::default(), t0);
+    d.opened(t0);
+    d.message(&welcome(), t0);
+    inbox.drain();
+    let mut answered = 0;
+    // 90 s of pointer moves, ten a second; the host answers each ping at once, and nothing else.
+    for i in 1..=900u32 {
+        let now = t0 + ms(100 * u64::from(i));
+        d.presence(cursor(f64::from(i)), now);
+        while let Some(due) = d.deadline().filter(|t| *t <= now) {
+            d.tick(due);
+        }
+        let pinged = d.sock.sent[answered..].contains(&ClientMsg::Ping);
+        answered = d.sock.sent.len();
+        if pinged {
+            d.message(&encode(&ServerMsg::Pong), now);
+        }
+    }
+    assert!(!d.done());
+    assert_eq!(d.sock.closes, 0, "90 s of moves, answered pings: still connected");
+    assert!(statuses(&inbox.drain()).is_empty());
+    let pings = d.sock.sent.iter().filter(|m| **m == ClientMsg::Ping).count();
+    assert!(pings >= 5, "a ping every 15 s ({pings})");
+}
+
+/// A host that answers nothing is still dropped after the idle timeout, however much presence
+/// goes out to it.
+#[test]
+fn a_dead_connection_is_still_dropped_while_the_pointer_moves() {
+    let t0 = Instant::now();
+    let (mut d, inbox) = start(Script::default(), t0);
+    d.opened(t0);
+    d.message(&welcome(), t0);
+    inbox.drain();
+    for i in 1..=500u32 {
+        let now = t0 + ms(100 * u64::from(i));
+        d.presence(cursor(f64::from(i)), now);
+        while let Some(due) = d.deadline().filter(|t| *t <= now) {
+            d.tick(due);
+        }
+    }
+    assert_eq!(d.sock.closes, 1, "dropped after 45 s of silence");
+    assert_eq!(statuses(&inbox.drain()), vec![Status::Reconnecting { attempt: 1 }]);
 }
 
 #[test]
