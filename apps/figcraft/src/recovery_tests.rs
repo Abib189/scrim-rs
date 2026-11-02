@@ -51,12 +51,12 @@ fn copies_follow_saves_and_a_normal_quit_leaves_nothing() {
     s.ds_mut().unwrap().mark_saved();
     r.write(&s, true);
     assert_eq!(copies(&dir), 0);
-    // Changes pending while the interval runs: it asks to be woken for them.
+    // Changes pending: no frame is asked for them, the writer copies them in real time (Fix AI
+    // C-5), so an idle window can sleep.
     s.execute("shape.rectangle", &json!({"x": 0, "y": 0, "width": 4, "height": 4})).unwrap();
     assert!(r.tick(&s, 0.0).is_none());
-    assert!(r.tick(&s, 1.0).is_none(), "copied at 0 s: nothing new");
     s.execute("shape.rectangle", &json!({"x": 9, "y": 0, "width": 4, "height": 4})).unwrap();
-    assert!(r.tick(&s, 1.0).is_some_and(|w| w > 0.0));
+    assert!(r.tick(&s, 1.0).is_none(), "no frame asked while a copy waits");
     r.finish();
     assert!(!dir.exists(), "a normal quit removes the copies");
     let _ = std::fs::remove_dir_all(&root);
@@ -373,6 +373,8 @@ fn a_background_copy_that_failed_is_tried_again_without_another_edit() {
     let root = root("retry-bg");
     let s = edited();
     let mut r = Recovery::start(&root).unwrap();
+    // Copies are paced per document (Fix AI C-5): a short interval, so the retry comes soon.
+    r.set_interval(0.05);
     let blocker = blocked_copy(&root, &s);
     r.write(&s, false);
     // Let the failing write end before the way is clear again.
@@ -415,5 +417,40 @@ fn a_crash_during_a_version_preview_recovers_the_working_document() {
     assert_eq!(rects(&s), Some(2));
     s.execute("version.restore", &json!({"index": 0})).unwrap();
     assert_eq!(rects(&s), Some(1));
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// The layers on the first page of the copy in `dir`, if there is one.
+fn copied_layers(dir: &std::path::Path) -> Option<usize> {
+    let copy = std::fs::read_dir(dir).ok()?.flatten().map(|f| f.path()).find(|p| p.extension().is_some_and(|e| e == "scrim"))?;
+    let (doc, _) = figcraft_format::load_bytes(&std::fs::read(copy).ok()?).ok()?;
+    doc.node(doc.pages[0]).map(|p| p.children.len())
+}
+
+/// Fix AI C-5: copies don't wait for the window to draw. An edit made in one frame is copied once
+/// the interval has passed in real time, with no frame after it (a hidden or covered window draws
+/// none). Before, the copy was due at the next frame after the interval, which might never come.
+#[test]
+fn an_edit_is_copied_after_the_interval_with_no_frame_after_it() {
+    let root = root("frames");
+    let mut s = edited();
+    let mut r = Recovery::start(&root).unwrap();
+    r.set_interval(0.2);
+    r.tick(&s, 0.0);
+    let dir = std::fs::read_dir(&root).unwrap().flatten().next().unwrap().path();
+    let start = std::time::Instant::now();
+    while copied_layers(&dir) != Some(1) {
+        assert!(start.elapsed() < std::time::Duration::from_secs(5), "the first copy");
+        std::thread::yield_now();
+    }
+    // An edit, in a frame of its own; then no frame at all.
+    s.execute("shape.rectangle", &json!({"x": 20, "y": 0, "width": 4, "height": 4})).unwrap();
+    r.tick(&s, 0.01);
+    let start = std::time::Instant::now();
+    while copied_layers(&dir) != Some(2) {
+        assert!(start.elapsed() < std::time::Duration::from_secs(5), "the edit was never copied: no frame came to copy it");
+        std::thread::yield_now();
+    }
+    r.finish();
     let _ = std::fs::remove_dir_all(&root);
 }

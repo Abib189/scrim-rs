@@ -23,13 +23,16 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, MutexGuard};
-use std::thread::JoinHandle;
 
 use figcraft_engine::{DocState, Session};
 use figcraft_format::{Branch, Version};
 use serde_json::json;
 
-/// Seconds between copies of a document that keeps changing.
+mod writer;
+
+use writer::{Job, Writer};
+
+/// Seconds between copies of a document that keeps changing (real time: [`writer`]).
 pub const INTERVAL: f64 = 10.0;
 
 const LOCK: &str = "lock";
@@ -45,10 +48,10 @@ pub struct Recovery {
     dir: PathBuf,
     /// Held while the app runs: a free lock means the run that wrote the folder is gone.
     _lock: File,
-    /// What was copied of each document, and the write in flight.
+    /// What was copied of each document, and what waits to be.
     written: HashMap<u64, Copy>,
-    /// When (UI clock) the next copies are due.
-    next: f64,
+    /// Writes the copies on a real-time clock, frames or not (Fix AI C-5).
+    writer: Writer,
     /// Copies of online files from earlier runs, kept until their outcome is known.
     waiting: Vec<Waiting>,
 }
@@ -58,30 +61,14 @@ pub struct Recovery {
 struct Copy {
     /// The [`stamp`] whose copy was written.
     done: Option<Vec<u64>>,
-    /// The write in flight: the stamp it copies, and whether it succeeded once it ends.
-    flight: Option<(Vec<u64>, JoinHandle<bool>)>,
+    /// The stamp offered to the writer and not written yet.
+    queued: Option<Vec<u64>>,
 }
 
 impl Copy {
-    /// Take in the result of the write in flight once it ended; a failed one leaves its revision uncopied.
-    fn reap(&mut self) {
-        if self.flight.as_ref().is_some_and(|f| f.1.is_finished()) {
-            self.join();
-        }
-    }
-
-    /// Wait for the write in flight and take in its result.
-    fn join(&mut self) {
-        if let Some((stamp, h)) = self.flight.take()
-            && h.join().unwrap_or(false)
-        {
-            self.done = Some(stamp);
-        }
-    }
-
-    /// Whether `stamp` has neither been copied nor is being copied.
+    /// Whether `stamp` has neither been copied nor waits to be.
     fn pending(&self, stamp: &[u64]) -> bool {
-        self.done.as_deref() != Some(stamp) && self.flight.as_ref().is_none_or(|f| f.0 != stamp)
+        self.done.as_deref() != Some(stamp) && self.queued.as_deref() != Some(stamp)
     }
 }
 
@@ -121,7 +108,8 @@ impl Recovery {
             let dir = root.join(if n == 0 { pid.to_string() } else { format!("{pid}-{n}") });
             std::fs::create_dir_all(&dir).ok()?;
             let lock = lock_folder(&dir).ok()?;
-            Some(Self { dir, _lock: lock, written: HashMap::new(), next: 0.0, waiting: Vec::new() })
+            let writer = Writer::start(std::time::Duration::from_secs_f64(INTERVAL));
+            Some(Self { dir, _lock: lock, written: HashMap::new(), writer, waiting: Vec::new() })
         })
     }
 
@@ -130,28 +118,31 @@ impl Recovery {
         self.waiting.extend(waiting);
     }
 
-    /// Copy the documents that changed since their last copy and drop the copies of documents that
-    /// were saved or closed. Returns how long until it needs to run again (`None`: nothing pending,
-    /// an idle window can sleep).
-    pub fn tick(&mut self, s: &Session, now: f64) -> Option<f64> {
-        self.written.values_mut().for_each(Copy::reap);
+    /// Offer the writer the documents that changed since their last copy, and drop the copies of
+    /// documents that were saved or closed. The writer copies them in real time (Fix AI C-5), so no
+    /// frame is asked for them; returns how long until a copy kept from an earlier run needs a look
+    /// (`None`: an idle window can sleep). `_now` (the UI clock) no longer paces the copies.
+    pub fn tick(&mut self, s: &Session, _now: f64) -> Option<f64> {
+        self.reap();
         self.settle(s);
-        // A join on its way settles within its timeouts: look again soon. A copy waiting for this
-        // run's own is looked at again with the next copies.
-        let joining = self.waiting.iter().any(|w| matches!(w.until, Until::Session(_)));
-        let settling = if joining { Some(0.5) } else { (!self.waiting.is_empty()).then_some(INTERVAL) };
-        if now < self.next {
-            return self.pending(s).then_some(self.next - now).or(settling);
-        }
         self.write(s, false);
-        self.next = now + INTERVAL;
-        // A copy that failed is tried again at the next turn, without another edit.
-        settling.or(self.pending(s).then_some(INTERVAL))
+        // A join on its way settles within its timeouts: look again soon. A copy waiting for this
+        // run's own is looked at again once copies have been written.
+        let joining = self.waiting.iter().any(|w| matches!(w.until, Until::Session(_)));
+        if joining { Some(0.5) } else { (!self.waiting.is_empty()).then_some(INTERVAL) }
     }
 
-    /// Whether a document with unsaved changes has a revision that is neither copied nor being copied.
-    fn pending(&self, s: &Session) -> bool {
-        s.docs.iter().any(|d| needs_copy(s, d) && self.written.get(&d.uid).is_none_or(|w| w.pending(&stamp(s, d))))
+    /// Take in the copies the writer wrote: only one that succeeded counts.
+    fn reap(&mut self) {
+        for (uid, stamp, ok) in self.writer.results() {
+            let Some(w) = self.written.get_mut(&uid) else { continue };
+            if w.queued.as_ref() == Some(&stamp) {
+                w.queued = None;
+            }
+            if ok {
+                w.done = Some(stamp);
+            }
+        }
     }
 
     /// Remove earlier runs' copies once what they became is safe: copied here (the write
@@ -174,33 +165,36 @@ impl Recovery {
     /// Whether document `d`'s work is on disk: saved (or nothing to keep), or copied here (a write
     /// that succeeded) with no write in flight.
     fn safe(&self, s: &Session, d: &DocState) -> bool {
-        !needs_copy(s, d) || self.written.get(&d.uid).is_some_and(|w| w.done.is_some() && w.flight.is_none())
+        !needs_copy(s, d) || self.written.get(&d.uid).is_some_and(|w| w.done.is_some() && w.queued.is_none())
     }
 
     /// Copy every document with unsaved changes; `wait`: before returning (after a panic).
     pub fn write(&mut self, s: &Session, wait: bool) {
+        self.reap();
         for d in &s.docs {
             let path = self.dir.join(format!("{}.{}", d.uid, figcraft_format::EXTENSION));
             let note = path.with_extension(ONLINE);
             if !needs_copy(s, d) {
-                if let Some(mut w) = self.written.remove(&d.uid) {
+                if self.written.remove(&d.uid).is_some() {
                     // A write still running would bring the copy back after it was removed.
-                    w.join();
+                    self.writer.cancel(d.uid);
                     let _ = std::fs::remove_file(&path);
                     let _ = std::fs::remove_file(&note);
                 }
                 continue;
             }
-            let entry = self.written.entry(d.uid).or_default();
-            // An emergency save must copy the newest revision: let the write in flight finish first.
+            // An emergency save must copy the newest revision itself: the copy waiting is dropped,
+            // and a write of it in progress ends first.
             if wait {
-                entry.join();
-            } else {
-                entry.reap();
+                self.writer.cancel(d.uid);
             }
-            // A write still in flight (for any revision) is waited for; a failed one is tried again.
+            let entry = self.written.entry(d.uid).or_default();
+            if wait {
+                entry.queued = None;
+            }
+            // A copy written or waiting is enough; a failed one is offered again.
             let stamp = stamp(s, d);
-            if entry.done.as_ref() == Some(&stamp) || entry.flight.is_some() {
+            if !entry.pending(&stamp) {
                 continue;
             }
             let (doc, versions, branches) = figcraft_engine::branches::recovery_copy(s, d);
@@ -226,16 +220,17 @@ impl Recovery {
                     entry.done = Some(stamp);
                 }
             } else {
-                entry.flight = std::thread::Builder::new().name("recovery".into()).spawn(job).ok().map(|h| (stamp, h));
+                entry.queued = Some(stamp.clone());
+                self.writer.offer(d.uid, Job { stamp, run: Box::new(job) });
             }
         }
         // Closed documents.
         let open: Vec<u64> = s.docs.iter().map(|d| d.uid).collect();
-        let dir = &self.dir;
-        self.written.retain(|uid, w| {
+        let (dir, writer) = (&self.dir, &self.writer);
+        self.written.retain(|uid, _| {
             let keep = open.contains(uid);
             if !keep {
-                w.join();
+                writer.cancel(*uid);
                 let _ = std::fs::remove_file(dir.join(format!("{uid}.{}", figcraft_format::EXTENSION)));
                 let _ = std::fs::remove_file(dir.join(format!("{uid}.{ONLINE}")));
             }
@@ -243,10 +238,22 @@ impl Recovery {
         });
     }
 
-    /// Test hook: pretend a write of `uid` at `revision` is in flight in `writer`.
+    /// Test hook: copies every `secs` seconds instead of [`INTERVAL`].
     #[cfg(test)]
-    pub fn hold(&mut self, uid: u64, revision: u64, writer: JoinHandle<bool>) {
-        self.written.insert(uid, Copy { done: None, flight: Some((vec![revision], writer)) });
+    pub fn set_interval(&mut self, secs: f64) {
+        self.writer.set_interval(std::time::Duration::from_secs_f64(secs));
+    }
+
+    /// Test hook: a write of `uid` at `revision` in progress in the writer, which ends with
+    /// `slow` (returns once the writer has started it).
+    #[cfg(test)]
+    pub fn hold(&mut self, uid: u64, revision: u64, slow: std::thread::JoinHandle<bool>) {
+        self.written.insert(uid, Copy { done: None, queued: Some(vec![revision]) });
+        self.writer.offer(uid, Job { stamp: vec![revision], run: Box::new(move || slow.join().unwrap_or(false)) });
+        let start = std::time::Instant::now();
+        while !self.writer.writing(uid) && start.elapsed() < std::time::Duration::from_secs(5) {
+            std::thread::yield_now();
+        }
     }
 
     /// Quitting: a normal quit ([`finish`](Self::finish)) when the unsaved-changes question was
@@ -263,13 +270,11 @@ impl Recovery {
     /// A normal quit: the documents were saved or their changes discarded on purpose. (Earlier
     /// runs' copies still waiting for their outcome stay for the next start.)
     pub fn finish(self) {
-        let Self { dir, _lock, written, waiting, .. } = self;
+        let Self { dir, _lock, mut writer, waiting, .. } = self;
         // The documents earlier runs' copies became were saved or discarded too.
         waiting.into_iter().filter(|w| matches!(w.until, Until::Copied(_))).for_each(remove_kept);
-        // Windows removes a folder only once nothing in it is open: copies being written first.
-        for (_, h) in written.into_values().filter_map(|w| w.flight) {
-            let _ = h.join();
-        }
+        // Windows removes a folder only once nothing in it is open: the copy being written first.
+        writer.stop();
         drop(_lock);
         let _ = std::fs::remove_dir_all(dir);
     }
