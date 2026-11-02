@@ -82,6 +82,7 @@ fn conflicted(file: &std::path::Path, pick: Option<std::path::PathBuf>) -> (crat
     let mut app = crate::FigApp::new(s, Box::new(Picker(pick)));
     assert!(app.run("file.save", json!({})).is_none(), "the plain save is refused");
     assert_eq!(app.ui.save_conflict.as_deref(), Some("Doc"), "the three choices show");
+    assert!(app.ui.toast.is_none(), "the question says it, not a toast: {:?}", app.ui.toast);
     assert_eq!(app.inspect()["saveConflict"], "Doc", "and the control channel sees them");
     assert_eq!(std::fs::read(file).unwrap(), theirs);
     (app, theirs)

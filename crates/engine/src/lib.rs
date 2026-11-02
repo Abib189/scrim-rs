@@ -114,6 +114,10 @@ pub enum EngineError {
     /// which a file can't hold: refused and rolled back (Fix AI LW-2).
     #[error("`{cmd}` was refused: \"{layer}\" would get a number that isn't finite (too large, or not a number)")]
     NotFinite { cmd: String, layer: String },
+    /// Another app changed the file a save would write over (Fix AI LW-4): the window asks what to
+    /// do instead of saying this; scripts and agents get the message.
+    #[error("{0}")]
+    FileChangedOnDisk(String),
     /// A bug: the command panicked. The document was rolled back.
     #[error("internal error in `{cmd}`: {msg} (the document was left as it was before; please report this bug)")]
     Internal { cmd: String, msg: String },

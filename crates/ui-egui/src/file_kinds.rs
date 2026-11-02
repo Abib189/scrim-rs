@@ -26,6 +26,8 @@ pub fn closed(path: &Path) -> Option<&'static str> {
 pub(crate) fn show_error(app: &mut FigApp, e: &figcraft_engine::EngineError, msg: String) {
     match e {
         figcraft_engine::EngineError::Unreadable(figcraft_engine::importers::Unreadable::ClosedFormat(tool)) => app.ui.closed_format = Some(tool),
+        // The "File changed on disk" question says it (Fix AI LW-4).
+        figcraft_engine::EngineError::FileChangedOnDisk(_) => {}
         _ => app.toast(msg),
     }
 }

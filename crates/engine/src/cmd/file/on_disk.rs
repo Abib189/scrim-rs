@@ -39,10 +39,7 @@ pub(crate) fn changed(path: &str, was: &OnDisk) -> bool {
 
 /// What a save refused for a changed file says (the window shows its three choices instead).
 pub(crate) fn conflict(name: &str) -> crate::EngineError {
-    crate::EngineError::Disabled(
-        "file.save".into(),
-        format!(
-            "{name} changed on disk since it was opened or last saved here (another app wrote to it), and saving would replace those changes: save a copy under a new name, pass `overwrite: true` to replace them, or run file.revert to load the file from disk"
-        ),
-    )
+    crate::EngineError::FileChangedOnDisk(format!(
+        "`file.save` was refused: {name} changed on disk since it was opened or last saved here (another app wrote to it), and saving would replace those changes. Save a copy under a new name, pass `overwrite: true` to replace them, or run file.revert to load the file from disk"
+    ))
 }
