@@ -59,6 +59,8 @@ use crate::params::{get, num, req_string, string};
 use crate::tools::ToolId;
 use crate::{DocState, EngineError, Result, Session, TextEdit, ViewState, bad, spec};
 
+mod front;
+
 /// The server Share ▸ Online uses unless Preferences name another: **none** by default, so nothing
 /// is uploaded anywhere until the user enters a server. A build can name one when compiling:
 /// `SCRIM_DEFAULT_SERVER=wss://host/` (FigCraft's `FIGCRAFT_DEFAULT_SERVER` is still honoured).
@@ -722,16 +724,6 @@ impl Lives {
         self.sessions.values_mut().find(|l| l.doc_uid == Some(uid))
     }
 
-    /// Start a session on the link for command `cmd`: `start` gets the link and the new
-    /// session's id, which comes back with what it returned.
-    fn start<T>(&mut self, cmd: &str, start: impl FnOnce(&mut dyn LiveLink, SessionId) -> Result<T>) -> Result<(SessionId, T)> {
-        let link = self.link.as_deref_mut().ok_or_else(|| unavailable(cmd))?;
-        let id = self.last.saturating_add(1);
-        let out = start(link, id)?;
-        self.last = id;
-        Ok((id, out))
-    }
-
     /// Session `live` started on the link: it takes its tab over from what was there (a session
     /// that failed; for a document's own session, the one it was in). Joins on their way from
     /// that tab go on.
@@ -1195,7 +1187,7 @@ impl Session {
                 let ds = DocState::new(client.document().clone(), None);
                 self.message = Some(format!("Joined {}", ds.doc.name));
                 let opened = (ds.uid, Some(ds.doc.clone()));
-                self.active = self.docs.len();
+                self.active = if self.live.asked_last(id) { self.docs.len() } else { self.active };
                 self.docs.push(ds);
                 opened
             }

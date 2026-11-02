@@ -42,12 +42,23 @@ impl Ui {
     /// One frame of `raw` input (files dropped on or hovered over the window, say), on the test
     /// screen and clock.
     pub(crate) fn frame_raw(&mut self, raw: RawInput) -> egui::FullOutput {
+        self.settle_renders();
         self.time += 1.0 / 60.0;
         let input = RawInput { screen_rect: Some(Rect::from_min_size(Pos2::ZERO, vec2(1440.0, 900.0))), time: Some(self.time), ..raw };
         let app = &mut self.app;
         let mut out = self.ctx.run_ui(input, |ui| app.ui(ui));
         out.textures_delta.clear();
         out
+    }
+
+    /// Wait until the canvas render the window last started has finished (its thread has woken the
+    /// window for it), as it would have on an idle machine: what each frame of the test clock sees
+    /// then doesn't depend on how fast this machine is (Fix AI C-7). Bounded, in real time.
+    pub(crate) fn settle_renders(&self) {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+        while self.app.worker.as_ref().is_some_and(crate::render_worker::Worker::in_flight) && std::time::Instant::now() < deadline {
+            std::thread::yield_now();
+        }
     }
 
     /// The middle of `id`'s row in the layers panel (found by hovering down the panel).

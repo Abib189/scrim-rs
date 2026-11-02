@@ -507,3 +507,6 @@ fn hosting_commands_check_what_they_are_given() {
     assert!(e.contains("join a file"), "{e}");
     assert!(s.execute("collab.report", &json!({"reason": " \n "})).unwrap_err().to_string().contains("few words"));
 }
+
+#[path = "live_join_order_tests.rs"]
+mod join_order;
