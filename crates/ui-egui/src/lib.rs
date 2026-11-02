@@ -67,6 +67,7 @@ pub mod proto_editor;
 pub mod proto_panel;
 pub mod render_worker;
 pub mod right;
+pub mod save_conflict;
 pub mod scale_panel;
 pub mod section_panel;
 pub mod selection_colors;
@@ -573,6 +574,8 @@ pub struct UiState {
     pub online: online::OnlineUi,
     /// The window was asked to close with unsaved changes: the question shows.
     pub confirm_close: bool,
+    /// Save found the file changed on disk: the three choices show for this file (Fix AI LW-4).
+    pub save_conflict: Option<String>,
 }
 
 impl Default for UiState {
@@ -679,6 +682,7 @@ impl Default for UiState {
             live: live::LiveUi::default(),
             online: online::OnlineUi::default(),
             confirm_close: false,
+            save_conflict: None,
         }
     }
 }
@@ -866,16 +870,6 @@ impl FigApp {
 
     pub fn toast(&mut self, msg: impl Into<String>) {
         self.ui.toast = Some((msg.into(), ToastClock::Raised));
-    }
-
-    /// Set the widths asked for this window's side panels (within their limits); the main
-    /// window's are kept in the preferences.
-    pub fn set_panel_widths(&mut self, left: f32, right: f32) {
-        let within = |w: f32, range: std::ops::RangeInclusive<f32>| if w.is_finite() { w.clamp(*range.start(), *range.end()) } else { PANEL_DEFAULT };
-        (self.ui.left_width, self.ui.right_width) = (within(left, LEFT_PANEL), within(right, RIGHT_PANEL));
-        if self.windows.current == 0 {
-            self.session.prefs.panel_widths = (self.ui.left_width, self.ui.right_width);
-        }
     }
 
     /// The edge between a side panel and the canvas, at `x` down `rows`: dragging it sizes the
@@ -1134,7 +1128,12 @@ impl FigApp {
         let due = |d: &&figcraft_engine::DocState| {
             // Only a .scrim: a file opened from a .figcraft is never written (Fix AG).
             let scrim = d.path.as_deref().is_some_and(figcraft_engine::cmd::file::saves_in_place);
-            scrim && d.branch_of.is_none() && d.preview.is_none() && d.is_dirty() && !saving.iter().any(|(uid, _)| *uid == d.uid)
+            scrim
+                && d.branch_of.is_none()
+                && d.preview.is_none()
+                && d.is_dirty()
+                && !d.auto_save_paused()
+                && !saving.iter().any(|(uid, _)| *uid == d.uid)
         };
         let changes = if on { self.session.docs.iter().filter(due).map(|d| d.revision).reduce(u64::wrapping_add) } else { None };
         match changes {
@@ -1466,6 +1465,7 @@ impl FigApp {
             "devFocus": self.session.ds().ok().and_then(figcraft_engine::DocState::focused),
             "annotationFilter": self.ui.dev.categories.id(),
             "colorProfileDialog": self.ui.color_profile.map(|p| p.id()),
+            "saveConflict": self.ui.save_conflict,
             "stylePicker": self.ui.style_picker.as_ref().map(|p| p.slot().key()),
             "stylePickerView": if self.ui.style_grid { "grid" } else { "list" },
             "textPreview": figcraft_engine::textpreview::active(&self.session),

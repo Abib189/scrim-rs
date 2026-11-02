@@ -75,7 +75,17 @@ impl FileSnapshot {
         let Some(ds) = s.docs.iter_mut().find(|d| d.uid == self.uid && d.path == self.path && Arc::ptr_eq(&d.saved_doc, &self.saved)) else {
             return Ok(false);
         };
-        write(self.path.as_deref().ok_or(EngineError::NoDocument)?, bytes)?;
+        let path = self.path.as_deref().ok_or(EngineError::NoDocument)?;
+        // Another app changed the file: auto-save leaves it alone (recovery copies go on), and
+        // says so once (Fix AI LW-4).
+        if ds.on_disk.as_ref().is_some_and(|was| on_disk::changed(path, was)) {
+            if !std::mem::replace(&mut ds.auto_save_paused, true) {
+                s.request_ui("notice.autoSavePaused", json!({"name": file_stem(path)}));
+            }
+            return Ok(false);
+        }
+        write(path, bytes)?;
+        ds.note_on_disk(on_disk::stat(path), bytes);
         // The history or branches may have changed since: then they still count as unsaved.
         if ds.revision == self.revision {
             ds.versions_changed = false;
@@ -93,6 +103,17 @@ impl DocState {
     pub fn with_images_left_in_file(mut self, path: &str, hashes: std::collections::BTreeSet<String>) -> Self {
         self.images_left_in_file = (!hashes.is_empty()).then(|| figcraft_format::carry::LeftInFile { file: path.into(), hashes });
         self
+    }
+
+    /// Auto-save skips it: its file changed on disk, and a save or reload decides what to keep.
+    pub fn auto_save_paused(&self) -> bool {
+        self.auto_save_paused
+    }
+
+    /// Its file now holds `bytes`, as this tab read or wrote them.
+    pub(crate) fn note_on_disk(&mut self, meta: Option<(u64, Option<std::time::SystemTime>)>, bytes: &[u8]) {
+        self.on_disk = on_disk::stamp(meta, bytes);
+        self.auto_save_paused = false;
     }
 
     /// The images its file holds that weren't loaded are now in the file at `path` too; how many.

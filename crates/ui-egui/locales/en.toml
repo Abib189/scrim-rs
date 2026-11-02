@@ -8,7 +8,13 @@
 name = "English"
 
 [ui]
+"Another app changed {name} since you opened or last saved it here. Saving now would replace those changes." = "Another app changed {name} since you opened or last saved it here. Saving now would replace those changes."
+"Auto-save paused for {name}: another app changed the file. Save to choose what to keep." = "Auto-save paused for {name}: another app changed the file. Save to choose what to keep."
+"File changed on disk" = "File changed on disk"
 "No file is open. Open a file, or start a new design file from Home." = "No file is open. Open a file, or start a new design file from Home."
+"Overwrite" = "Overwrite"
+"Reload from disk" = "Reload from disk"
+"Save as a copy…" = "Save as a copy…"
 "Stopped after {n} s, this run's time limit." = "Stopped after {n} s, this run's time limit."
 "Describe a change in the AI tab" = "Describe a change in the AI tab"
 "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys." = "Runs Claude Code or Codex, already installed and signed in, on this canvas through Scrim's MCP server. Your agent's plan pays for it; Scrim keeps no keys."

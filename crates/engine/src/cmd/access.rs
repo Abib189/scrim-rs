@@ -151,6 +151,7 @@ pub const READ: &[&str] = &[
     "devResource.list",
     "diagnostics.events",
     "doc.list",
+    "file.diskStatus",
     "frame.presets",
     "history.changes",
     "image.presets",

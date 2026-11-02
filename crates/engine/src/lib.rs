@@ -405,6 +405,10 @@ pub struct DocState {
     pub untitled: u32,
     /// Images its file holds that weren't loaded (past the budget): a save copies them (Fix AI LW-3).
     pub(crate) images_left_in_file: Option<figcraft_format::carry::LeftInFile>,
+    /// Its file as this tab last read or wrote it: a save asks before replacing what another app
+    /// wrote since, and auto-save is paused then (Fix AI LW-4).
+    pub(crate) on_disk: Option<cmd::file::OnDisk>,
+    pub(crate) auto_save_paused: bool,
 }
 
 static NEXT_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
@@ -447,6 +451,8 @@ impl DocState {
             last_duplicate: None,
             untitled: 1,
             images_left_in_file: None,
+            on_disk: None,
+            auto_save_paused: false,
         };
         st.zoom_to_fit();
         st
@@ -1552,6 +1558,8 @@ mod rotated_guides_tests;
 mod rotated_select_tests;
 #[cfg(test)]
 mod rotation_origin_tests;
+#[cfg(test)]
+mod save_disk_changes_tests;
 #[cfg(test)]
 mod save_format_tests;
 #[cfg(test)]

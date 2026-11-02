@@ -3,6 +3,16 @@
 use super::*;
 
 impl FigApp {
+    /// Set the widths asked for this window's side panels (within their limits); the main
+    /// window's are kept in the preferences.
+    pub fn set_panel_widths(&mut self, left: f32, right: f32) {
+        let within = |w: f32, range: std::ops::RangeInclusive<f32>| if w.is_finite() { w.clamp(*range.start(), *range.end()) } else { PANEL_DEFAULT };
+        (self.ui.left_width, self.ui.right_width) = (within(left, LEFT_PANEL), within(right, RIGHT_PANEL));
+        if self.windows.current == 0 {
+            self.session.prefs.panel_widths = (self.ui.left_width, self.ui.right_width);
+        }
+    }
+
     /// Say that `n` documents left unsaved by a crash were opened again from recovery copies.
     pub fn note_recovered(&mut self, n: usize) {
         if n > 0 {
@@ -151,6 +161,16 @@ impl FigApp {
                     self.toast(i18n::trn(
                         "{name} was saved with every image: {n} that weren't loaded (together they pass what Scrim reads from one file) were copied over from the file.",
                         n,
+                        &[("name", &name)],
+                    ));
+                }
+                "dialog.saveConflict" => {
+                    self.ui.save_conflict = Some(r.data.get("name").and_then(Value::as_str).unwrap_or_default().to_string());
+                }
+                "notice.autoSavePaused" => {
+                    let name = r.data.get("name").and_then(Value::as_str).unwrap_or_default();
+                    self.toast(i18n::trf(
+                        "Auto-save paused for {name}: another app changed the file. Save to choose what to keep.",
                         &[("name", &name)],
                     ));
                 }

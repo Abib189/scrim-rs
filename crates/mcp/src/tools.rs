@@ -278,7 +278,11 @@ pub fn tool_definitions() -> Vec<Value> {
             "save_file",
             "Save file",
             "Save the active document as a .scrim file. `path` is required the first time (an untitled or imported document has no path, and one opened from a .figcraft file is never written over: pass a .scrim path); later saves reuse it. A `path` ending in .fig writes an experimental .fig export copy instead and leaves the document's own path and unsaved changes alone.",
-            obj(json!({"path": string("Output .scrim path, or a .fig path for an experimental export copy")}), &[]),
+            obj(
+                json!({"path": string("Output .scrim path, or a .fig path for an experimental export copy"),
+                       "force": boolean("Overwrite another app's changes")}),
+                &[],
+            ),
             false,
         ),
         tool("undo", "Undo", "Undo the last change (one command, batch or gesture). Returns {undone: bool}.", empty(), false),
@@ -858,10 +862,34 @@ fn open_file(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolResult, 
 }
 
 fn save_file(b: &mut dyn Backend, a: &Map<String, Value>) -> Result<ToolResult, String> {
-    let params = match s_arg(a, "path")? {
+    let force = match a.get("force") {
+        None | Some(Value::Null) => false,
+        Some(Value::Bool(f)) => *f,
+        Some(_) => return Err("`force` must be a boolean".into()),
+    };
+    let mut params = match s_arg(a, "path")? {
         Some(p) => json!({"path": p}),
         None => json!({}),
     };
+    // Another app changed the file (Fix AI LW-4): say so, with what to do, instead of saving.
+    let status = exec(b, "file.diskStatus", json!({}))?;
+    let own = params.get("path").is_none_or(|p| Some(p) == status.get("path"));
+    if !force && own && status["changedOnDisk"] == true {
+        let conflict = json!({
+            "error": "fileChangedOnDisk",
+            "path": status["path"],
+            "message": "Another app wrote to this file since it was opened or saved here; saving would replace those changes.",
+            "resolve": {
+                "overwrite": "call save_file again with force: true to replace them",
+                "saveCopy": "call save_file with a new .scrim path to keep both",
+                "reload": "run_command file.revert to load the file from disk (this discards the unsaved changes)"
+            }
+        });
+        return Ok(ToolResult::error(conflict.to_string()));
+    }
+    if force {
+        params["overwrite"] = json!(true);
+    }
     exec(b, "file.save", params).map(|v| ToolResult::json(&v))
 }
 

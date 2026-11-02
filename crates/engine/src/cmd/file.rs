@@ -44,7 +44,7 @@ pub fn specs() -> Vec<CommandSpec> {
         spec!(
             "file.save",
             "Save",
-            "{path?} (programmatic saves need a path the first time); a .fig path writes an experimental export copy of the shown document with `warnings`, keeping the native path, unsaved changes and version preview",
+            "{path?, overwrite? (replace what another app wrote to the file since it was opened or saved here: without it that save is refused)} (programmatic saves need a path the first time); a .fig path writes an experimental export copy of the shown document with `warnings`, keeping the native path, unsaved changes and version preview",
             false,
             save
         ),
@@ -122,9 +122,21 @@ pub fn specs() -> Vec<CommandSpec> {
             super::show_new_doc(s, DocState::new(d, None));
             Ok(json!({"index": s.active}))
         }),
+        spec!(
+            "file.diskStatus",
+            "File changed on disk?",
+            "{}  whether another app wrote to the open file since it was opened or saved here: {path, changedOnDisk}",
+            false,
+            |s, _| {
+                let ds = s.docs.get(crate::branches::file_tab(s)).ok_or(EngineError::NoDocument)?;
+                let changed = ds.path.as_deref().zip(ds.on_disk.as_ref()).is_some_and(|(p, was)| on_disk::changed(p, was));
+                Ok(json!({"path": ds.path, "changedOnDisk": changed}))
+            }
+        ),
         spec!("file.revert", "Revert to saved", "{}  leave the live session first, if any", false, |s, _| {
             let path = s.ds()?.path.clone().ok_or_else(|| EngineError::Disabled("file.revert".into(), "the file was never saved".into()))?;
-            let loaded = load_path(&path, None)?.0.loaded;
+            let (imported, _, disk) = load_path_stamped(&path, None)?;
+            let loaded = imported.loaded;
             let i = s.active;
             let uid = s.ds()?.uid;
             if let Some(slot) = s.docs.get_mut(i) {
@@ -132,6 +144,7 @@ pub fn specs() -> Vec<CommandSpec> {
                     .with_versions(loaded.versions)
                     .with_branches(loaded.branches)
                     .with_images_left_in_file(&path, loaded.images_past_budget);
+                slot.on_disk = disk;
             }
             // Edits on its branch tabs are reverted too.
             crate::branches::close_tabs(s, uid, None);
@@ -497,9 +510,16 @@ fn notes(i: crate::importers::Imported) -> (Document, Vec<String>) {
 /// [`load`] with the version history, also telling whether the file is a Scrim document. A REST
 /// import reads its variables from `variables`, else from a variables JSON next to the file.
 pub fn load_path(path: &str, variables: Option<&Value>) -> Result<(crate::importers::Imported, bool)> {
+    load_path_stamped(path, variables).map(|(i, native, _)| (i, native))
+}
+
+/// [`load_path`] that also stamps the file as it was read ([`on_disk`]).
+fn load_path_stamped(path: &str, variables: Option<&Value>) -> Result<(crate::importers::Imported, bool, Option<OnDisk>)> {
+    let meta = on_disk::stat(path);
     let bytes = read(path)?;
     let sibling = if variables.is_none() { sibling_variables(path) } else { None };
-    load_with(&bytes, path, variables.or(sibling.as_ref()), &rest_images(path))
+    let (imported, native) = load_with(&bytes, path, variables.or(sibling.as_ref()), &rest_images(path))?;
+    Ok((imported, native, on_disk::stamp(meta, &bytes)))
 }
 
 /// Load from bytes with the importer their contents call for ([`crate::importers`], never by the
@@ -670,7 +690,7 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
         remember(s, &path);
         return Ok(json!({"index": i}));
     }
-    let (imported, native) = load_path(&path, variables.as_ref())?;
+    let (imported, native, disk) = load_path_stamped(&path, variables.as_ref())?;
     remember(s, &path);
     let (loaded, warnings) = (imported.loaded, imported.warnings);
     if native {
@@ -679,6 +699,9 @@ fn open(s: &mut Session, p: &Value) -> Result<Value> {
     let left = if native { loaded.images_past_budget } else { Default::default() };
     let ds = DocState::new(loaded.doc, native.then(|| path.clone())).with_versions(loaded.versions).with_branches(loaded.branches);
     super::show_new_doc(s, ds.with_images_left_in_file(&path, left));
+    if native && let Ok(ds) = s.ds_mut() {
+        ds.on_disk = disk;
+    }
     let mut out = json!({"index": s.active, "summary": s.ds().map(|ds| import_summary(&ds.doc, ds.display_name()))?});
     out[if native { "repairs" } else { "warnings" }] = if native { json!(loaded.issues) } else { crate::importers::warnings_json(&warnings) };
     Ok(out)
@@ -727,7 +750,7 @@ pub(crate) fn save_ends_preview(s: &Session, cmd: &str, p: &Value) -> bool {
 
 /// Save the file of the active tab (the main file for a branch tab, with its branches), or export
 /// the active document as an experimental `.fig` copy without changing its native save state.
-fn save_to(s: &mut Session, path: String) -> Result<Value> {
+fn save_to(s: &mut Session, path: String, overwrite: bool) -> Result<Value> {
     if ext(&path) == "fig" {
         return export_fig(s, &json!({"path": path}));
     }
@@ -737,8 +760,16 @@ fn save_to(s: &mut Session, path: String) -> Result<Value> {
     }
     let i = crate::branches::file_tab(s);
     let ds = s.docs.get_mut(i).ok_or(EngineError::NoDocument)?;
+    // Another app wrote to this tab's own file since: ask, never replace it silently (Fix AI LW-4).
+    let own = ds.path.as_deref().is_some_and(|own| crate::file_access::same_file(own, &path));
+    if own && !overwrite && ds.on_disk.as_ref().is_some_and(|was| on_disk::changed(&path, was)) {
+        let name = file_stem(&path);
+        s.request_ui("dialog.saveConflict", json!({"name": name}));
+        return Err(on_disk::conflict(&name));
+    }
     let bytes = file_bytes(ds)?;
     write(&path, &bytes)?;
+    ds.note_on_disk(on_disk::stat(&path), &bytes);
     // Images the file held that weren't loaded were copied into this one: said so (Fix AI LW-3).
     let kept = ds.images_left_now_in(&path);
     ds.path = Some(path.clone());
@@ -754,8 +785,9 @@ fn save_to(s: &mut Session, path: String) -> Result<Value> {
 }
 
 fn save(s: &mut Session, p: &Value) -> Result<Value> {
+    let overwrite = p.get("overwrite").and_then(Value::as_bool) == Some(true);
     if let Some(path) = string(p, "path") {
-        return save_to(s, path);
+        return save_to(s, path, overwrite);
     }
     match s.docs.get(crate::branches::file_tab(s)).ok_or(EngineError::NoDocument)?.path.clone() {
         // A file opened from a .figcraft (or a .fig name, from earlier builds) is never written: Save
@@ -767,7 +799,7 @@ fn save(s: &mut Session, p: &Value) -> Result<Value> {
                 format!("{path} isn't a .scrim file and is never written: choose Save as or pass a .scrim `path`"),
             ))
         }
-        Some(path) => save_to(s, path),
+        Some(path) => save_to(s, path, overwrite),
         None => {
             s.request_ui("dialog.saveAs", json!({}));
             Err(EngineError::Disabled("file.save".into(), "the file has no path yet: pass `path`".into()))
@@ -782,7 +814,7 @@ fn save_as(s: &mut Session, p: &Value) -> Result<Value> {
             if !matches!(ext(&path).as_str(), "scrim" | "fig" | "figcraft" | "json") {
                 path.push_str(".scrim");
             }
-            save_to(s, path)
+            save_to(s, path, false)
         }
         None => {
             s.request_ui("dialog.saveAs", json!({}));
@@ -1301,9 +1333,11 @@ fn cycle_doc(s: &mut Session, dir: i64) -> Result<Value> {
     Ok(json!({"index": s.active}))
 }
 
+mod on_disk;
 mod open_notes;
 mod snapshot;
 
+pub use on_disk::OnDisk;
 pub use snapshot::{FileSnapshot, file_bytes, thumbnail};
 
 #[cfg(test)]

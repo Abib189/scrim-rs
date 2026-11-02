@@ -134,7 +134,7 @@ Every command that writes a saved setting or a persistent preference, with what 
 | `plugin.remove` | `plugins`, `plugin_settings` | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
 | `plugin.directory.install` | `plugins` (installs a plugin) | yes: MCP (`run_command`, `batch`), the CLI, the control channel, plugins |
 
-## Read (58)
+## Read (59)
 
 - **agent:** `agent.finish-working` (Finish working; Stage I.1: it changes nothing but what the window shows, so it runs with only read-only tools on)
 - **ai:** `ai.findings` (Design lint findings by rule), `ai.status` (Agent connection)
@@ -147,6 +147,7 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **devResource:** `devResource.list` (List dev resources)
 - **diagnostics:** `diagnostics.events` (Diagnostics)
 - **doc:** `doc.list` (List documents)
+- **file:** `file.diskStatus` (File changed on disk?; Fix AI LW-4: `save_file` asks it before saving)
 - **frame:** `frame.presets` (List frame presets)
 - **history:** `history.changes` (Changes since a revision)
 - **image:** `image.presets` (Image presets)
