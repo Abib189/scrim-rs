@@ -54,7 +54,7 @@ pub fn privacy(_app: &mut FigApp, ui: &mut Ui) {
     for line in [
         tr_noop("Scrim sends no telemetry. It has no usage statistics, crash reports or analytics, so there is nothing here to turn off."),
         tr_noop(
-            "It goes on the network only when you ask it to: sharing or joining a file online, publishing, using a team library or browsing plugins on a server you chose, and showing a file to people on your local network.",
+            "It goes on the network only for what you use: sharing or joining a file online, publishing, a team library or plugins on a server you chose, and showing a file to people on your local network. While the Assets panel shows a team library from a server, it checks that server for a newer version every 30 seconds (docs/release/network-audit.md).",
         ),
         tr_noop("The MCP server for agents listens on this computer only (127.0.0.1)."),
         tr_noop("Diagnostics stay on this computer. They hold no document content, prompts or tokens, and leave it only if you copy or save them."),

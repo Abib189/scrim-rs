@@ -57,7 +57,14 @@ claude mcp add scrim -- scrim mcp             # connect Claude Code (docs/mcp.md
 
 ## Privacy and online sharing
 
-The app works offline: no account, no telemetry, and no server is contacted until you share or join a file.
+The app works offline: no account, no telemetry, no update checks and no crash reports. It connects to another computer only for live sessions, files, team libraries and plugin directories you use, and for agents you run:
+- **Live sessions:** joining one, or hosting one (on this computer, or on your local network when you choose that).
+- **Files on a server:** Share ▸ Online, Publish to server, and Home ▸ Online, which asks those servers about your files when you open it.
+- **Team libraries from a server:** while the Assets panel shows one, Scrim checks its server for a newer version every 30 seconds and tells it which of the library's components the document uses.
+- **Plugin directories** you browse; plugins themselves get no network.
+- **Agents** you run with Describe a change talk to their own services.
+
+Its agent connection (MCP) and the bridge listen and connect on this computer only. Every connection, with the code behind it, is in [`docs/release/network-audit.md`](docs/release/network-audit.md).
 
 **Scrim builds in no share server**, so nothing is uploaded anywhere by default. **Share ▸ Online** asks for the address of a server you trust before it uploads anything; **Share ▸ Local network** needs no server. A server stores files unencrypted, and anyone with a link can open them, so use one you or someone you trust runs ([`docs/server.md`](docs/server.md)).
 

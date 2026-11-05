@@ -134,6 +134,13 @@ fn about_body(ui: &mut egui::Ui, t: &Tokens) {
     ui.label(tr("Interface design and prototyping, with AI agents as collaborators. A free, open-source design tool written in Rust."));
     ui.add_space(8.0);
     ui.hyperlink_to("github.com/Abib189/scrim-rs", "https://github.com/Abib189/scrim-rs");
+    // What the network audit shows (Fix R-7, docs/release/network-audit.md): claim no more.
+    ui.add_space(8.0);
+    ui.label(
+        RichText::new(tr("No telemetry and no update checks. Scrim goes on the network only for the live sessions, files, team libraries and plugin directories you use."))
+            .color(t.text_secondary)
+            .font(regular(11.0)),
+    );
     // The maintainers' address, from its one place (Fix R-6).
     let contact = figcraft_engine::project::MAINTAINER_CONTACT;
     ui.horizontal(|ui| {
