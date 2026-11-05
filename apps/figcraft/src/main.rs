@@ -15,11 +15,11 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 
-#[cfg(target_os = "macos")]
 mod agent_runs;
 #[cfg(target_os = "macos")]
 mod app_menu;
 mod app_nap;
+#[cfg(target_os = "macos")]
 mod apple_events;
 mod args;
 mod control_server;
@@ -48,6 +48,8 @@ mod follow_setting_tests;
 mod graphics_tests;
 #[cfg(test)]
 mod migrate_tests;
+#[cfg(test)]
+mod platform_gate_tests;
 #[cfg(test)]
 mod recovery_online_tests;
 #[cfg(test)]
