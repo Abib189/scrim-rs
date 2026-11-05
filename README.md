@@ -14,6 +14,39 @@ The specs and test cases for all of these are in [`docs/scrim-transfer/`](docs/s
 > [!IMPORTANT]
 > **Status: alpha.** The engine and editor are FigCraft v0.7.0's, with Scrim's ports on top (`docs/scrim-ports/`). The app icon is a placeholder.
 
+## Download and install
+
+**macOS** (Apple silicon and Intel, macOS 11 or later):
+1. Download `Scrim-<version>-universal.dmg` and `Scrim-<version>-universal.dmg.sha256` from the [Releases page](https://github.com/Abib189/scrim-rs/releases). No release is published yet; the first one will be listed there.
+2. Check the download (optional), in the folder you saved both files to:
+   ```sh
+   shasum -a 256 -c Scrim-<version>-universal.dmg.sha256   # prints "…dmg: OK"
+   ```
+3. Open the image and drag Scrim to Applications.
+4. Open Scrim. It is signed with a Developer ID and notarised by Apple, so macOS checks it once and asks "Scrim is an app downloaded from the internet. Are you sure you want to open it?": choose Open. The first launch needs the Mac to be online once (the app's ticket is looked up); after that it opens offline too.
+
+To check the app once it is installed: `spctl --assess --type execute -vv /Applications/Scrim.app` says `accepted, source=Notarized Developer ID`. If macOS refuses to open it, [`docs/release/macos.md`](docs/release/macos.md#gatekeeper-when-a-mac-wont-open-scrim) explains each message.
+
+Windows, Linux and FreeBSD: build from source, below.
+
+### What Scrim opens and saves
+
+<!-- formats: made from the import registry; xtask's readme_formats_tests checks it -->
+| Files | What Scrim does with them |
+|---|---|
+| `.scrim`, `.figcraft` | Scrim's own documents: opened and saved. A `.figcraft` file (FigCraft's) opens too and is never written over: Save asks for a `.scrim` beside it |
+| `.scrim` | The earlier Scrim's JSON documents: imported as a new document |
+| `.fig` | Figma files: imported as a new document (best effort) |
+| `.sketch` | Sketch files: imported as a new document |
+| `.penpot` | Penpot files: imported as a new document |
+| `.free` | Lunacy files: imported as a new document |
+| `.json` | Figma REST API file JSON, with its local variables: imported as a new document |
+| `.svg` | SVG: imported as editable vectors |
+| `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.tif`, `.tiff`, `.bmp` | Images: opened as an image layer, or placed in a document |
+<!-- formats end -->
+
+What a file is comes from its contents, not its name, so the two kinds of `.scrim` are told apart. Affinity and Adobe XD files are refused with a note: their formats are closed, so export SVG from them. Scrim saves documents as `.scrim`; File ▸ Export writes PNG, JPG, WebP, SVG and PDF, and an experimental `.fig` copy.
+
 ## Get started
 
 ```sh

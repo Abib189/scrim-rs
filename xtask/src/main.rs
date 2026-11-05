@@ -34,6 +34,8 @@ mod live_scripts;
 #[cfg(test)]
 mod packaging_tests;
 mod pii_scan;
+#[cfg(test)]
+mod readme_formats_tests;
 mod release_macos;
 mod size;
 
