@@ -21,7 +21,10 @@ fn the_plist_names_scrim_its_executable_version_and_minimum_macos() {
     ] {
         assert!(p.contains(want), "missing {want:?}");
     }
-    assert!(!p.contains('@'), "every placeholder replaced");
+    for placeholder in ["@VERSION@", "@SHORT_VERSION@", "@BUILD_SHA@", "@CONTACT@"] {
+        assert!(!p.contains(placeholder), "{placeholder} replaced");
+    }
+    assert!(p.contains(&format!("Contact: {}</string>", figcraft_engine::project::MAINTAINER_CONTACT)), "the maintainers' address (Fix R-6)");
 }
 
 #[test]

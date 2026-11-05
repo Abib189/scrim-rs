@@ -44,7 +44,7 @@ pub fn info_plist(template: &str, version: &str, sha: &str, exe: &str, min: &str
     let short = version.split(['-', '+']).next().unwrap_or(version);
     let exe_from = "<key>CFBundleExecutable</key>\n  <string>Scrim</string>";
     let min_from = "<key>LSMinimumSystemVersion</key>\n  <string>11.0</string>";
-    if !template.contains(exe_from) || !template.contains(min_from) || !template.contains("@SHORT_VERSION@") {
+    if !template.contains(exe_from) || !template.contains(min_from) || !template.contains("@SHORT_VERSION@") || !template.contains("@CONTACT@") {
         return None;
     }
     Some(
@@ -53,7 +53,8 @@ pub fn info_plist(template: &str, version: &str, sha: &str, exe: &str, min: &str
             .replace(min_from, &format!("<key>LSMinimumSystemVersion</key>\n  <string>{min}</string>"))
             .replace("@VERSION@", version)
             .replace("@SHORT_VERSION@", short)
-            .replace("@BUILD_SHA@", sha),
+            .replace("@BUILD_SHA@", sha)
+            .replace("@CONTACT@", figcraft_engine::project::MAINTAINER_CONTACT),
     )
 }
 

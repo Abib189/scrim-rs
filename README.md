@@ -74,5 +74,6 @@ Coming from FigCraft: the settings Scrim copies leave out FigCraft's built-in se
 Licensed under either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option, like FigCraft.
 - Copyright (c) 2026 ArtCraft Team and the FigCraft contributors, and the Scrim (scrim-rs) contributors.
 - The required notices are in [NOTICE](NOTICE). Asset provenance is in [ATTRIBUTION.md](ATTRIBUTION.md).
+- Contact the maintainers: hello@scrim.design
 
 Scrim is based on FigCraft by the ArtCraft team. The ArtCraft name and marks are their trademarks; they have been removed from this fork as FigCraft's brand terms require.

@@ -134,6 +134,12 @@ fn about_body(ui: &mut egui::Ui, t: &Tokens) {
     ui.label(tr("Interface design and prototyping, with AI agents as collaborators. A free, open-source design tool written in Rust."));
     ui.add_space(8.0);
     ui.hyperlink_to("github.com/Abib189/scrim-rs", "https://github.com/Abib189/scrim-rs");
+    // The maintainers' address, from its one place (Fix R-6).
+    let contact = figcraft_engine::project::MAINTAINER_CONTACT;
+    ui.horizontal(|ui| {
+        ui.label(RichText::new(tr("Contact")).color(t.text_secondary));
+        ui.hyperlink_to(contact, format!("mailto:{contact}"));
+    });
     ui.add_space(8.0);
     // FigCraft's brand terms (docs/FORK.md): a fork removes the brand's marks and may say, in plain
     // text, that it is based on FigCraft by the ArtCraft team.

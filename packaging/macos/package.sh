@@ -121,8 +121,11 @@ if [ -n "${CRAFT_FONTS_DIR:-}" ]; then
   mkdir -p "$APP/Contents/Resources/Licenses"
   copy_font_licences "$APP/Contents/Resources/Licenses"
 fi
+# The maintainers' address, from its one place (crates/engine/src/project.rs, Fix R-6).
+CONTACT="$(sed -n 's/^pub const MAINTAINER_CONTACT: &str = "\(.*\)";$/\1/p' "$ROOT/crates/engine/src/project.rs")"
+[ -n "$CONTACT" ] || { echo "error: no MAINTAINER_CONTACT in crates/engine/src/project.rs" >&2; exit 1; }
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
-  -e "s/@BUILD_SHA@/${FIGCRAFT_BUILD_SHA:-unknown}/g" \
+  -e "s/@BUILD_SHA@/${FIGCRAFT_BUILD_SHA:-unknown}/g" -e "s/@CONTACT@/$CONTACT/g" \
   "$HERE/Info.plist.in" >"$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist"
 printf 'APPL????' >"$APP/Contents/PkgInfo"

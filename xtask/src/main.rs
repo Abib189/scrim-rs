@@ -23,6 +23,8 @@
 
 mod brand;
 mod bundle_macos;
+#[cfg(test)]
+mod contact_tests;
 mod fidelity;
 mod icon;
 mod layers;

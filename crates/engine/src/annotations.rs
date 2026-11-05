@@ -469,3 +469,7 @@ fn category_color(cmd: &str, p: &Value) -> crate::Result<Option<figcraft_color::
         None => Ok(None),
     }
 }
+
+#[cfg(test)]
+#[path = "annotations_tests.rs"]
+mod tests;

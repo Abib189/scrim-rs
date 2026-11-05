@@ -297,3 +297,7 @@ pub fn props(arc: Arc) -> serde_json::Map<String, serde_json::Value> {
         ("arcInner".to_string(), serde_json::json!(arc.inner)),
     ])
 }
+
+#[cfg(test)]
+#[path = "arc_handles_tests.rs"]
+mod tests;

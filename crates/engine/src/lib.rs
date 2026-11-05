@@ -57,6 +57,7 @@ pub mod playground;
 pub mod plugin_directory;
 pub mod plugins;
 mod prefs;
+pub mod project;
 pub use prefs::{MAX_RECENT_ACTIONS, Prefs};
 pub mod proto_run;
 pub mod rename;
@@ -1341,11 +1342,7 @@ mod al_nesting_tests;
 #[cfg(test)]
 mod annotation_categories_tests;
 #[cfg(test)]
-mod annotations_tests;
-#[cfg(test)]
 mod arc_fields_tests;
-#[cfg(test)]
-mod arc_handles_tests;
 #[cfg(test)]
 mod autosave_tests;
 #[cfg(test)]
