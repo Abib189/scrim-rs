@@ -58,7 +58,7 @@ pub fn info_plist(template: &str, version: &str, sha: &str, exe: &str, min: &str
     )
 }
 
-fn target_dir(root: &Path) -> PathBuf {
+pub(crate) fn target_dir(root: &Path) -> PathBuf {
     std::env::var_os("CARGO_TARGET_DIR").map(PathBuf::from).unwrap_or_else(|| root.join("target"))
 }
 
@@ -92,6 +92,36 @@ pub fn version_has_commit(output: &str, sha: &str) -> bool {
     !sha.is_empty() && output.trim().starts_with("Scrim ") && output.contains(&format!("({sha})"))
 }
 
+/// `<work>/Scrim.app` from the binaries `exes` (name and built file; the first is the app's
+/// executable, `figcraft`): the Info.plist from the release template (the `.scrim` document type,
+/// `version`, commit `sha`, minimum macOS `min`, the maintainers' address), `PkgInfo` and the icon.
+/// Unsigned. Shared by `bundle-macos` and `release-macos`, so both make the same app.
+pub fn assemble(root: &Path, work: &Path, exes: &[(&str, PathBuf)], version: &str, sha: &str, min: &str) -> Result<PathBuf, String> {
+    let app = work.join("Scrim.app");
+    let (macos, resources) = (app.join("Contents/MacOS"), app.join("Contents/Resources"));
+    let _ = std::fs::remove_dir_all(&app);
+    std::fs::create_dir_all(&macos)
+        .and_then(|()| std::fs::create_dir_all(&resources))
+        .map_err(|e| format!("couldn't create {}: {e}", app.display()))?;
+    for (name, from) in exes {
+        std::fs::copy(from, macos.join(name)).map_err(|e| format!("copying {} into the app: {e}", from.display()))?;
+    }
+    let main = exes.first().map(|(n, _)| *n).ok_or("no executable for the app")?;
+    let template =
+        std::fs::read_to_string(root.join("packaging/macos/Info.plist.in")).map_err(|_| "packaging/macos/Info.plist.in is missing".to_string())?;
+    let plist = info_plist(&template, version, sha, main, min)
+        .ok_or("Info.plist.in no longer has the executable, minimum macOS, version or contact this replaces")?;
+    let info = app.join("Contents/Info.plist");
+    std::fs::write(&info, plist).and_then(|()| std::fs::write(app.join("Contents/PkgInfo"), "APPL????")).map_err(|e| e.to_string())?;
+    if !run(Command::new("plutil").arg("-lint").arg(&info)) {
+        return Err("the Info.plist doesn't pass plutil -lint".into());
+    }
+    if !icon(root, work, &resources) {
+        return Err("couldn't make the icon".into());
+    }
+    Ok(app)
+}
+
 pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
     if !cfg!(target_os = "macos") {
         eprintln!("bundle-macos: builds a macOS app, on macOS only");
@@ -113,35 +143,15 @@ pub fn bundle(root: &Path, cargo: &mut Command) -> bool {
         return false;
     }
     let target = target_dir(root);
-    let work = target.join("bundle");
-    let app = work.join("Scrim.app");
-    let (macos, resources) = (app.join("Contents/MacOS"), app.join("Contents/Resources"));
-    let _ = std::fs::remove_dir_all(&app);
-    if std::fs::create_dir_all(&macos).and_then(|()| std::fs::create_dir_all(&resources)).is_err() {
-        eprintln!("bundle-macos: couldn't create {}", app.display());
-        return false;
-    }
-    let exe = macos.join("figcraft");
-    if let Err(e) = std::fs::copy(target.join("release/figcraft"), &exe) {
-        eprintln!("bundle-macos: copying the app: {e}");
-        return false;
-    }
-    let Ok(template) = std::fs::read_to_string(root.join("packaging/macos/Info.plist.in")) else {
-        eprintln!("bundle-macos: packaging/macos/Info.plist.in is missing");
-        return false;
-    };
     let version = crate::workspace_version();
-    let Some(plist) = info_plist(&template, &version, &sha, "figcraft", &min) else {
-        eprintln!("bundle-macos: Info.plist.in no longer has the executable, minimum macOS or version this replaces");
-        return false;
+    let app = match assemble(root, &target.join("bundle"), &[("figcraft", target.join("release/figcraft"))], &version, &sha, &min) {
+        Ok(app) => app,
+        Err(e) => {
+            eprintln!("bundle-macos: {e}");
+            return false;
+        }
     };
-    let info = app.join("Contents/Info.plist");
-    if std::fs::write(&info, plist).and_then(|()| std::fs::write(app.join("Contents/PkgInfo"), "APPL????")).is_err() {
-        return false;
-    }
-    if !run(Command::new("plutil").arg("-lint").arg(&info)) || !icon(root, &work, &resources) {
-        return false;
-    }
+    let exe = app.join("Contents/MacOS/figcraft");
     // Ad hoc, inside out: the executable, then the bundle; then check the seal.
     let sign = |path: &Path| run(Command::new("codesign").args(["--force", "--sign", "-", "--timestamp=none"]).arg(path));
     if !sign(&exe) || !sign(&app) || !run(Command::new("codesign").args(["--verify", "--strict", "--verbose=2"]).arg(&app)) {

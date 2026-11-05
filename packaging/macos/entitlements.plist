@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Hardened-runtime entitlements for Scrim. Deliberately empty: the app is pure Rust,
-     loads no unsigned code, needs no JIT, and is not sandboxed (it opens files by path, from the
-     command line and drag-and-drop). Add exceptions here only with a reason in a comment. -->
+     loads no unsigned code, needs no JIT (plugins run in wasmi, an interpreter; wgpu draws
+     through Metal, part of macOS), and is not sandboxed (it opens files by path, from the
+     command line and drag-and-drop, and serves MCP on loopback). package.sh passes this file;
+     `cargo xtask release-macos` passes none, for the same reasons (Fix R-2). Add exceptions here
+     only with a reason in a comment, and pass the file in release_macos.rs too. -->
 <plist version="1.0">
 <dict>
 </dict>

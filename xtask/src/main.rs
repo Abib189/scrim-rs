@@ -18,6 +18,8 @@
 //!   module, ready for Plugins ▸ Development ▸ Import plugin from manifest…
 //! - `bundle-macos` a double-clickable target/bundle/Scrim.app for this Mac: the release build, the
 //!   placeholder icon, signed ad hoc (docs/design/macos-bundle.md)
+//! - `release-macos` the macOS release: universal, Developer ID signed with the hardened runtime, on a
+//!   signed .dmg, notarised and stapled, with a SHA-256 (`--dry-run`, `--skip-notarize`; docs/release/macos.md)
 //! - `bench`   release-build timings at 1k/10k/50k layers (`bench 1000,10000` for other sizes) and
 //!   with a synthetic design system used by 2,000 instances
 
@@ -32,6 +34,7 @@ mod live_scripts;
 #[cfg(test)]
 mod packaging_tests;
 mod pii_scan;
+mod release_macos;
 mod size;
 
 use std::process::{Command, ExitCode};
@@ -68,9 +71,10 @@ fn main() -> ExitCode {
         "plugins" => plugins(),
         "bench" => bench(args.get(1).map_or("1000,10000,50000", String::as_str)),
         "bundle-macos" => bundle_macos::bundle(&root(), &mut cargo()),
+        "release-macos" => release_macos::release(&root(), &args[1..]),
         _ => {
             eprintln!(
-                "tasks: ci, layers, assets, brand, size, live-scripts, pii-scan, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES], bundle-macos"
+                "tasks: ci, layers, assets, brand, size, live-scripts, pii-scan, fidelity, parity, version [set X.Y.Z], icon, wasm, plugins, bench [SIZES], bundle-macos, release-macos [--dry-run] [--skip-notarize] [--identity <name>] [--notary-profile <name>]"
             );
             task == "help"
         }
