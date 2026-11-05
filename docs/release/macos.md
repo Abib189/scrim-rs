@@ -3,7 +3,7 @@
 `cargo xtask release-macos` builds Scrim for macOS as people download it.
 - **The app:** universal (Apple silicon and Intel), signed with your Developer ID Application certificate, with the hardened runtime.
 - **The image:** a signed `.dmg` holding the app and an Applications link.
-- **Notarisation:** Apple notarises the image, and the ticket is stapled to it and to the app beside it.
+- **Notarisation, twice:** Apple notarises the app and its ticket is stapled to it; then the image is made from the stapled app, and Apple notarises the image, whose ticket is stapled to it. A copy of the app dragged out of the image carries its own ticket, so it opens offline too.
 - **The checksum:** a `.sha256` file beside the image.
 
 Nothing is uploaded: publishing the release on GitHub stays a separate step that you do.
@@ -71,9 +71,12 @@ It never picks one for you.
 | Universal | `lipo -create` for each, checked with `lipo -archs`; `figcraft --version` must name the commit | seconds |
 | Assemble | `Scrim.app` as `cargo xtask bundle-macos` makes it: the Info.plist (the `.scrim` document type and its UTI, the version, the commit, the maintainers' address), the icon, both binaries | seconds |
 | Sign | Inside out (`scrim`, `figcraft`, then the bundle), each with the hardened runtime and a secure timestamp, never `--deep`; then `codesign --verify --deep --strict` and `codesign -dvv` | 10 s (each signature asks Apple's timestamp server) |
-| Disk image | `Scrim.app` and an Applications link, built without attaching a device (`hdiutil makehybrid`, then compressed), and signed | 4 s |
-| Notarise | `xcrun notarytool submit … --keychain-profile scrim-notary --wait` | 57 s (Apple's queue decides: usually minutes, sometimes an hour) |
-| Staple and verify | `stapler staple` and `stapler validate` on the image and the app beside it, then `spctl` on both | seconds |
+| Notarise the app | The signed app zipped (`ditto -c -k --keepParent`), then `xcrun notarytool submit <zip> --keychain-profile scrim-notary --wait` | the first Apple wait (Apple's queue decides: usually a minute or a few, sometimes an hour) |
+| Staple the app | `stapler staple Scrim.app`, then `stapler validate Scrim.app` | seconds |
+| Disk image | The stapled `Scrim.app` and an Applications link, built without attaching a device (`hdiutil makehybrid`, then compressed), and signed. The image is never made from an app that isn't stapled: staging it needs the ticket stapling writes | 4 s |
+| Notarise the image | `xcrun notarytool submit <dmg> --keychain-profile scrim-notary --wait` | the second Apple wait |
+| Staple the image | `stapler staple`, then `stapler validate`, on the image | seconds |
+| Verify | `spctl` on the app (execute) and the image (open, primary signature); `stapler validate` on the app; the image mounted read-only, the app copied out of it with `ditto`, and that copy validated (`stapler validate`, `spctl`); `codesign --verify --deep --strict` | seconds |
 | Checksum | `<image>.sha256`, in the form `shasum -a 256 -c` reads | seconds |
 
 The output is in `~/.cache/scrim-target/release/` (with the target folder this repository uses), which is also cargo's own release folder:
@@ -94,15 +97,19 @@ The app is signed with the hardened runtime and no entitlements (`packaging/maco
 
 The release check launches the signed app to confirm this.
 
-### The app on the image is not stapled
+### Why the app is notarised on its own first
 
-Apple notarises the image and everything in it, but the ticket is stapled only to the image, and to the separate `Scrim.app` beside it in the output folder. The app inside the image isn't stapled, because changing it would break the image's signature:
+A ticket can't be stapled to an app inside an image without changing the image, which breaks the image's signature. So the app is notarised and stapled before the image is made from it, and the image is notarised after:
 - **When someone opens the image,** macOS checks the image's ticket.
-- **When they first open the app they copied from it,** macOS looks the app's ticket up online. Offline, that first launch says it "can't be checked for malicious software" until the Mac is online once.
+- **When they open the app they copied out of it,** the app carries its own ticket, so the check needs no connection, even on a Mac that is offline.
+
+The release checks the second point itself: it mounts the image, copies the app out as a person would, and validates the copy's ticket.
+
+That means two submissions and two waits for Apple instead of one; with `--skip-notarize`, neither.
 
 ## Reading a notarisation log
 
-When Apple doesn't accept the image, the command fetches the log and prints it, then stops (it doesn't try again). You can fetch it yourself with the submission id it prints:
+When Apple doesn't accept a submission (the app's zip or the image), the command fetches its log and prints it, then stops (it doesn't try again, and after a refused app no image is made). You can fetch it yourself with the submission id it prints:
 
 ```sh
 xcrun notarytool log <submission id> --keychain-profile scrim-notary
@@ -122,7 +129,7 @@ The log is JSON. Look at `issues`: each has a `path` (the file inside the image)
 
 | What macOS says | Why | What to do |
 |---|---|---|
-| "Scrim can't be opened because Apple cannot check it for malicious software" | The app isn't notarised (a `--skip-notarize` build, or one built from source), or the Mac is offline and the app isn't stapled. | For a build you trust: Control-click the app ▸ Open ▸ Open, or System Settings ▸ Privacy & Security ▸ Open Anyway. A notarised download only needs the Mac to be online once. |
+| "Scrim can't be opened because Apple cannot check it for malicious software" | The app isn't notarised (a `--skip-notarize` build, or one built from source). | For a build you trust: Control-click the app ▸ Open ▸ Open, or System Settings ▸ Privacy & Security ▸ Open Anyway. A release from this command carries its ticket, so it opens offline too. |
 | "Scrim is from an unidentified developer" | The app isn't signed with a Developer ID. | The same as above, for a build you trust. A release from this command is always signed. |
 | "Scrim is damaged and can't be opened. You should move it to the Trash." | The signature doesn't match the files: the app was changed after signing, or a download was cut short. On recent macOS it is also what an unsigned app shows when it carries the quarantine mark. | Download it again and check the checksum (below). Don't strip the quarantine mark with `xattr` to get past this on a release download: it would hide a real problem. For an unsigned build you made yourself, `xattr -d com.apple.quarantine /Applications/Scrim.app` removes the mark. |
 

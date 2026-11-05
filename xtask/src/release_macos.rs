@@ -14,12 +14,15 @@
 //!    hardened runtime (`--options runtime`) and a secure timestamp. No entitlements: see
 //!    `packaging/macos/entitlements.plist` for why none is needed (not sandboxed, no JIT, no
 //!    libraries loaded from outside the app).
-//! 5. **Disk image:** `Scrim.app` and an `Applications` link, made without attaching a device
-//!    (`hdiutil makehybrid`, then compressed), and signed.
-//! 6. **Notarise** the image (`notarytool submit --keychain-profile <profile> --wait`); when Apple
-//!    refuses it, the log says why and nothing goes on. Then **staple** the ticket to the image and
-//!    to the app beside it, and **verify** both (`stapler validate`, `spctl`, `codesign`).
-//! 7. A **SHA-256** file beside the image, in `shasum -c` form.
+//! 5. **Notarise the app** (zipped with `ditto -c -k --keepParent`, `notarytool submit
+//!    --keychain-profile <profile> --wait`) and **staple** its ticket to it (Fix R2-1), so the app
+//!    on the image carries it: a copy dragged out opens offline too. When Apple refuses a
+//!    submission, its log says why and nothing goes on.
+//! 6. **Disk image** of the stapled app and an `Applications` link, made without attaching a device
+//!    (`hdiutil makehybrid`, then compressed), signed, notarised and stapled in turn.
+//! 7. **Verify:** `spctl` on the app and the image, `stapler validate` on both, `codesign --verify
+//!    --deep --strict`, and the app copied out of the mounted image still validates.
+//! 8. A **SHA-256** file beside the image, in `shasum -c` form.
 //!
 //! The result is in `<target>/release/` (cargo's own release folder: the image, its checksum and
 //! the stapled app); the work in `<target>/release-macos/`. Nothing is uploaded.
@@ -32,7 +35,8 @@
 //! [`DEFAULT_PROFILE`]); this never sees, prints or writes them.
 //!
 //! **Flags:** `--dry-run` prints the plan and runs no step (it only reads the tree, the targets and
-//! the keychain's identity names); `--skip-notarize` signs and builds the image only.
+//! the keychain's identity names); `--skip-notarize` signs and builds the image only, with neither
+//! submission.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -160,6 +164,22 @@ impl Paths {
     pub fn shipped_app(&self) -> PathBuf {
         self.out.join("Scrim.app")
     }
+    /// The signed app, zipped for its own notarisation.
+    fn zip(&self) -> PathBuf {
+        self.work.join("Scrim-notarize.zip")
+    }
+    /// What stapling writes into the app: the ticket.
+    pub fn ticket(&self) -> PathBuf {
+        self.app().join("Contents/CodeResources")
+    }
+    /// Where the image is mounted (read-only) to copy the app out of it.
+    fn mount(&self) -> PathBuf {
+        self.work.join("mounted")
+    }
+    /// The app as copied out of the mounted image.
+    pub fn copied_out(&self) -> PathBuf {
+        self.work.join("from-image/Scrim.app")
+    }
 }
 
 /// What a step does.
@@ -175,6 +195,8 @@ pub enum Action {
     Stage,
     /// The `.sha256` file beside the image.
     Checksum,
+    /// Mount the image read-only, copy the app out of it as a person would, and detach.
+    FromImage,
 }
 
 /// What a step's output must show.
@@ -261,8 +283,29 @@ pub fn plan(args: &Args, p: &Paths, sha: &str, version: &str, identity: &str, mi
     for code in [&app, &inner_cli] {
         steps.push(Step { expect: Expect::Signed { identity: identity.into() }, ..run("sign", &["codesign", "-dvv", s(code)], &[code]) });
     }
+    let profile = args.profile.as_str();
+    let submit = |stage: &'static str, what: &Path| Step {
+        expect: Expect::Accepted { profile: profile.into() },
+        ..run(
+            stage,
+            &["xcrun", "notarytool", "submit", s(what), "--keychain-profile", profile, "--wait", "--timeout", "2h", "--output-format", "json"],
+            &[what],
+        )
+    };
+    // The app is notarised and stapled first, so the image holds an app that carries its own
+    // ticket: a copy dragged out of it opens offline too (Fix R2-1).
+    let ticket = p.ticket();
+    if !args.skip_notarize {
+        let zip = p.zip();
+        steps.push(run("notarize app", &["ditto", "-c", "-k", "--keepParent", s(&app), s(&zip)], &[&app]));
+        steps.push(submit("notarize app", &zip));
+        steps.push(run("staple app", &["xcrun", "stapler", "staple", s(&app)], &[&app]));
+        steps.push(run("staple app", &["xcrun", "stapler", "validate", s(&app)], &[&ticket]));
+    }
     let (stage, raw, dmg) = (p.stage(), p.raw(), p.dmg(version));
-    steps.push(Step { stage: "dmg", action: Action::Stage, needs: vec![app.clone()], expect: Expect::Nothing });
+    // Notarising, the image is staged only from the stapled app: the ticket is a file it needs.
+    let staged_from = if args.skip_notarize { vec![app.clone()] } else { vec![app.clone(), ticket.clone()] };
+    steps.push(Step { stage: "dmg", action: Action::Stage, needs: staged_from, expect: Expect::Nothing });
     steps.push(run(
         "dmg",
         &["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "Scrim", "-hfs-openfolder", s(&stage), "-o", s(&raw), s(&stage)],
@@ -271,24 +314,22 @@ pub fn plan(args: &Args, p: &Paths, sha: &str, version: &str, identity: &str, mi
     steps.push(run("dmg", &["hdiutil", "convert", s(&raw), "-format", "UDZO", "-imagekey", "zlib-level=9", "-o", s(&dmg)], &[&raw]));
     steps.push(run("dmg", &["codesign", "--force", "--timestamp", "--sign", identity, s(&dmg)], &[&dmg]));
     steps.push(run("dmg", &["codesign", "--verify", "--strict", "--verbose=2", s(&dmg)], &[&dmg]));
-    let shipped = p.shipped_app();
-    steps.push(run("dmg", &["ditto", s(&app), s(&shipped)], &[&app]));
     if !args.skip_notarize {
-        let profile = args.profile.as_str();
-        steps.push(Step {
-            expect: Expect::Accepted { profile: profile.into() },
-            ..run(
-                "notarize",
-                &["xcrun", "notarytool", "submit", s(&dmg), "--keychain-profile", profile, "--wait", "--timeout", "2h", "--output-format", "json"],
-                &[&dmg],
-            )
-        });
-        steps.push(run("staple", &["xcrun", "stapler", "staple", s(&dmg)], &[&dmg]));
-        steps.push(run("staple", &["xcrun", "stapler", "staple", s(&shipped)], &[&shipped]));
-        steps.push(run("staple", &["xcrun", "stapler", "validate", s(&dmg)], &[&dmg]));
-        steps.push(run("staple", &["xcrun", "stapler", "validate", s(&shipped)], &[&shipped]));
+        steps.push(submit("notarize dmg", &dmg));
+        steps.push(run("staple dmg", &["xcrun", "stapler", "staple", s(&dmg)], &[&dmg]));
+        steps.push(run("staple dmg", &["xcrun", "stapler", "validate", s(&dmg)], &[&dmg]));
+    }
+    let shipped = p.shipped_app();
+    steps.push(run("verify", &["ditto", s(&app), s(&shipped)], &[&app]));
+    if !args.skip_notarize {
+        let out = p.copied_out();
         steps.push(run("verify", &["spctl", "--assess", "--type", "execute", "-vv", s(&shipped)], &[&shipped]));
         steps.push(run("verify", &["spctl", "--assess", "--type", "open", "--context", "context:primary-signature", "-vv", s(&dmg)], &[&dmg]));
+        steps.push(run("verify", &["xcrun", "stapler", "validate", s(&shipped)], &[&shipped]));
+        // What a person gets: the app copied out of the mounted image keeps its ticket.
+        steps.push(Step { stage: "verify", action: Action::FromImage, needs: vec![dmg.clone()], expect: Expect::Nothing });
+        steps.push(run("verify", &["xcrun", "stapler", "validate", s(&out)], &[&out]));
+        steps.push(run("verify", &["spctl", "--assess", "--type", "execute", "-vv", s(&out)], &[&out]));
     }
     steps.push(run("verify", &["codesign", "--verify", "--deep", "--strict", "--verbose=2", s(&shipped)], &[&shipped]));
     steps.push(Step { stage: "checksum", action: Action::Checksum, needs: vec![dmg], expect: Expect::Nothing });
@@ -307,6 +348,7 @@ pub fn describe(step: &Step) -> String {
         Action::Assemble => "assemble Scrim.app (as bundle-macos: Info.plist, icon, figcraft and scrim)".into(),
         Action::Stage => "the image's folder: Scrim.app and an Applications link".into(),
         Action::Checksum => "write the image's SHA-256 beside it (shasum -a 256)".into(),
+        Action::FromImage => "mount the image read-only (hdiutil attach -nobrowse -readonly), copy Scrim.app out of it (ditto), detach".into(),
     };
     format!("[{}] {what}", step.stage)
 }
@@ -328,6 +370,7 @@ pub fn execute(plan: &[Step], x: &mut dyn Exec, log: &mut dyn FnMut(&str)) -> Re
             return Err(format!("step {n} ({}) needs {}, which an earlier step didn't make", describe(step), missing.display()));
         }
         log(&format!("{n}/{} {}", plan.len(), describe(step)));
+        let started = std::time::Instant::now();
         let out = match &step.action {
             // notarytool exits non-zero when Apple refuses: its answer still goes to the check,
             // which fetches the log.
@@ -339,6 +382,7 @@ pub fn execute(plan: &[Step], x: &mut dyn Exec, log: &mut dyn FnMut(&str)) -> Re
             }
         };
         check(&step.expect, &out, x).map_err(|e| format!("step {n} ({}): {e}", describe(step)))?;
+        log(&format!("{n}/{} [{}] done in {:.1} s", plan.len(), step.stage, started.elapsed().as_secs_f64()));
     }
     Ok(())
 }
@@ -452,6 +496,32 @@ impl Exec for Machine<'_> {
                 return std::os::unix::fs::symlink("/Applications", stage.join("Applications")).map_err(|e| e.to_string());
                 #[cfg(not(unix))]
                 return Err("the image is made on macOS only".into());
+            }
+            Action::FromImage => {
+                let (mount, out) = (p.mount(), p.copied_out());
+                let dmg = p.dmg(&self.version);
+                let _ = std::fs::remove_dir_all(out.parent().unwrap_or(&out));
+                std::fs::create_dir_all(&mount).map_err(|e| e.to_string())?;
+                let attach = Command::new("hdiutil")
+                    .args(["attach", "-nobrowse", "-readonly", "-noautoopen", "-mountpoint"])
+                    .arg(&mount)
+                    .arg(&dmg)
+                    .stdin(std::process::Stdio::null())
+                    .output()
+                    .map_err(|e| e.to_string())?;
+                if !attach.status.success() {
+                    return Err(format!("hdiutil attach: {}", String::from_utf8_lossy(&attach.stderr).trim()));
+                }
+                let copied = std::fs::create_dir_all(out.parent().unwrap_or(&out)).is_ok()
+                    && Command::new("ditto").arg(mount.join("Scrim.app")).arg(&out).status().is_ok_and(|s| s.success());
+                // Detached whatever the copy did.
+                let detached =
+                    Command::new("hdiutil").arg("detach").arg(&mount).stdin(std::process::Stdio::null()).output().is_ok_and(|o| o.status.success());
+                match (copied, detached) {
+                    (true, true) => Ok(()),
+                    (false, _) => Err("couldn't copy Scrim.app out of the mounted image".into()),
+                    (true, false) => Err(format!("couldn't detach {}", mount.display())),
+                }
             }
             Action::Checksum => {
                 let dmg = p.dmg(&self.version);

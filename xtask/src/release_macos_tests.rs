@@ -111,17 +111,12 @@ fn the_plan_builds_both_slices_signs_inside_out_and_notarises_with_the_profile()
         assert!(l[i].contains("--options runtime") && l[i].contains("--timestamp") && !l[i].contains("--deep"), "{}", l[i]);
     }
     assert!(!l.iter().any(|x| x.contains("--entitlements")), "no entitlements are needed");
-    let notarize = &l[position(&l, "notarytool submit")];
-    assert!(notarize.contains("--keychain-profile scrim-notary") && notarize.contains(&p.dmg("0.7.0").display().to_string()), "{notarize}");
-    assert!(position(&l, "codesign --force --timestamp --sign") < position(&l, "notarytool submit"), "the image is signed before it is sent");
-    for (a, b) in [
-        ("notarytool submit", "stapler staple"),
-        ("stapler staple", "stapler validate"),
-        ("stapler validate", "spctl --assess --type execute"),
-        ("spctl", "SHA-256"),
-    ] {
-        assert!(position(&l, a) < position(&l, b), "{a} before {b}");
-    }
+    let submits: Vec<&String> = l.iter().filter(|x| x.contains("notarytool submit")).collect();
+    assert_eq!(submits.len(), 2, "the app, then the image");
+    assert!(submits.iter().all(|x| x.contains("--keychain-profile scrim-notary") && x.contains("--wait")), "{submits:?}");
+    assert!(submits[0].contains("Scrim-notarize.zip") && submits[1].contains(&p.dmg("0.7.0").display().to_string()), "{submits:?}");
+    let dmg = p.dmg("0.7.0").display().to_string();
+    assert!(position(&l, "codesign --force --timestamp --sign") < position(&l, &format!("submit {dmg}")), "the image is signed before it is sent");
     assert!(l.iter().any(|x| x.contains("--type open --context context:primary-signature")));
     // Credentials come only from the profile.
     for never in ["--password", "--apple-id", "--team-id", "Maelig"] {
@@ -134,7 +129,7 @@ fn skip_notarize_signs_and_builds_the_image_only() {
     let (plan, _) = the_plan(true);
     let l = lines(&plan);
     assert!(l.iter().any(|x| x.contains("hdiutil convert")) && l.iter().any(|x| x.contains("codesign --force --timestamp --sign")));
-    for absent in ["notarytool", "stapler", "spctl"] {
+    for absent in ["notarytool", "stapler", "spctl", "ditto -c -k", "copy Scrim.app out of it"] {
         assert!(!l.iter().any(|x| x.contains(absent)), "{absent} with --skip-notarize");
     }
     assert!(l.last().unwrap().contains("SHA-256"));
@@ -171,6 +166,8 @@ impl Fake {
         makes.push(("hdiutil makehybrid".into(), p.work.join("raw.dmg")));
         makes.push(("hdiutil convert".into(), p.dmg("0.7.0")));
         makes.push(("ditto".into(), p.shipped_app()));
+        makes.push(("ditto -c -k --keepParent".into(), p.work.join("Scrim-notarize.zip")));
+        makes.push((format!("xcrun stapler staple {}", p.work.join("Scrim.app").display()), p.ticket()));
         let _ = plan;
         let answers = vec![
             ("lipo -archs", "x86_64 arm64".to_string()),
@@ -208,6 +205,9 @@ impl Exec for Fake {
             }
             Action::Stage => {
                 self.made.insert(p.work.join("dmg/Scrim.app"));
+            }
+            Action::FromImage => {
+                self.made.insert(p.copied_out());
             }
             _ => {}
         }
@@ -294,4 +294,61 @@ fn notarytool_answers_are_read() {
 #[test]
 fn the_checksum_file_sits_beside_the_image() {
     assert_eq!(sha_file(Path::new("/t/release/Scrim-0.7.0-universal.dmg")), PathBuf::from("/t/release/Scrim-0.7.0-universal.dmg.sha256"));
+}
+
+/// Fix R2-1: the app is zipped, notarised, stapled and validated before the image is made from it;
+/// then the image is signed, notarised, stapled and validated; then the app copied out of the
+/// mounted image is validated.
+#[test]
+fn the_app_is_notarised_and_stapled_before_the_image_is_made() {
+    let (plan, p) = the_plan(false);
+    let l = lines(&plan);
+    let app = p.work.join("Scrim.app").display().to_string();
+    let dmg = p.dmg("0.7.0").display().to_string();
+    let order = [
+        format!("--sign \"{DEV_ID}\" {app}"),
+        format!("ditto -c -k --keepParent {app}"),
+        "submit /t/release-macos/Scrim-notarize.zip".to_string(),
+        format!("stapler staple {app}"),
+        format!("stapler validate {app}"),
+        "the image's folder".to_string(),
+        "hdiutil makehybrid".to_string(),
+        "hdiutil convert".to_string(),
+        format!("codesign --force --timestamp --sign \"{DEV_ID}\" {dmg}"),
+        format!("submit {dmg}"),
+        format!("stapler staple {dmg}"),
+        format!("stapler validate {dmg}"),
+        "copy Scrim.app out of it".to_string(),
+        "stapler validate /t/release-macos/from-image/Scrim.app".to_string(),
+        "spctl --assess --type execute -vv /t/release-macos/from-image/Scrim.app".to_string(),
+        "SHA-256".to_string(),
+    ];
+    let at: Vec<usize> = order.iter().map(|o| position(&l, o)).collect();
+    assert!(at.windows(2).all(|w| w[0] < w[1]), "out of order: {:?}", order.iter().zip(&at).collect::<Vec<_>>());
+}
+
+#[test]
+fn the_image_is_never_made_from_an_app_that_isnt_stapled() {
+    let (plan, p) = the_plan(false);
+    // Stapling writes the ticket into the app; staging the image needs it, so the executor
+    // refuses to make the image from an app that wasn't stapled.
+    let staging = plan.iter().position(|s| s.action == Action::Stage).unwrap();
+    assert!(plan[staging].needs.contains(&p.ticket()), "{:?}", plan[staging].needs);
+    let mut fake = Fake::new(&plan, &p);
+    fake.makes.retain(|(_, path)| *path != p.ticket());
+    let e = execute(&plan, &mut fake, &mut |_| {}).unwrap_err();
+    assert!(e.contains("CodeResources") && e.contains("didn't make"), "{e}");
+    assert!(!fake.ran.iter().any(|l| l.contains("hdiutil") || l.contains("Stage")), "no image: {:?}", fake.ran);
+}
+
+#[test]
+fn a_refused_app_submission_stops_before_any_image() {
+    let (plan, p) = the_plan(false);
+    let mut fake = Fake::new(&plan, &p);
+    fake.answers.retain(|(a, _)| *a != "xcrun notarytool");
+    fake.answers.push(("xcrun notarytool", "{\"id\":\"sub-app\",\"status\":\"Invalid\"}".into()));
+    let e = execute(&plan, &mut fake, &mut |_| {}).unwrap_err();
+    assert!(e.contains("sub-app") && e.contains("Invalid"), "{e}");
+    assert!(fake.ran.iter().any(|l| l == "xcrun notarytool log sub-app --keychain-profile scrim-notary"), "the log is fetched");
+    assert!(!fake.ran.iter().any(|l| l.contains("stapler") || l.contains("hdiutil")), "nothing stapled, no image: {:?}", fake.ran);
 }

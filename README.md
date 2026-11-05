@@ -23,7 +23,7 @@ The specs and test cases for all of these are in [`docs/scrim-transfer/`](docs/s
    shasum -a 256 -c Scrim-<version>-universal.dmg.sha256   # prints "…dmg: OK"
    ```
 3. Open the image and drag Scrim to Applications.
-4. Open Scrim. It is signed with a Developer ID and notarised by Apple, so macOS checks it once and asks "Scrim is an app downloaded from the internet. Are you sure you want to open it?": choose Open. The first launch needs the Mac to be online once (the app's ticket is looked up); after that it opens offline too.
+4. Open Scrim. It is signed with a Developer ID and notarised by Apple, and carries its notarisation ticket, so macOS checks it once, without needing a connection, and asks "Scrim is an app downloaded from the internet. Are you sure you want to open it?": choose Open.
 
 To check the app once it is installed: `spctl --assess --type execute -vv /Applications/Scrim.app` says `accepted, source=Notarized Developer ID`. If macOS refuses to open it, [`docs/release/macos.md`](docs/release/macos.md#gatekeeper-when-a-mac-wont-open-scrim) explains each message.
 
