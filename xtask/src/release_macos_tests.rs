@@ -128,7 +128,7 @@ fn the_plan_builds_both_slices_signs_inside_out_and_notarises_with_the_profile()
 fn skip_notarize_signs_and_builds_the_image_only() {
     let (plan, _) = the_plan(true);
     let l = lines(&plan);
-    assert!(l.iter().any(|x| x.contains("hdiutil convert")) && l.iter().any(|x| x.contains("codesign --force --timestamp --sign")));
+    assert!(l.iter().any(|x| x.contains("hdiutil create")) && l.iter().any(|x| x.contains("codesign --force --timestamp --sign")));
     for absent in ["notarytool", "stapler", "spctl", "ditto -c -k", "copy Scrim.app out of it"] {
         assert!(!l.iter().any(|x| x.contains(absent)), "{absent} with --skip-notarize");
     }
@@ -163,8 +163,7 @@ impl Fake {
         for b in BINARIES {
             makes.push((format!("lipo -create -output {}", p.work.join("bin").join(b).display()), p.work.join("bin").join(b)));
         }
-        makes.push(("hdiutil makehybrid".into(), p.work.join("raw.dmg")));
-        makes.push(("hdiutil convert".into(), p.dmg("0.7.0")));
+        makes.push(("hdiutil create".into(), p.dmg("0.7.0")));
         makes.push(("ditto".into(), p.shipped_app()));
         makes.push(("ditto -c -k --keepParent".into(), p.work.join("Scrim-notarize.zip")));
         makes.push((format!("xcrun stapler staple {}", p.work.join("Scrim.app").display()), p.ticket()));
@@ -312,8 +311,7 @@ fn the_app_is_notarised_and_stapled_before_the_image_is_made() {
         format!("stapler staple {app}"),
         format!("stapler validate {app}"),
         "the image's folder".to_string(),
-        "hdiutil makehybrid".to_string(),
-        "hdiutil convert".to_string(),
+        "hdiutil create -volname Scrim -srcfolder".to_string(),
         format!("codesign --force --timestamp --sign \"{DEV_ID}\" {dmg}"),
         format!("submit {dmg}"),
         format!("stapler staple {dmg}"),
@@ -321,6 +319,7 @@ fn the_app_is_notarised_and_stapled_before_the_image_is_made() {
         "copy Scrim.app out of it".to_string(),
         "stapler validate /t/release-macos/from-image/Scrim.app".to_string(),
         "spctl --assess --type execute -vv /t/release-macos/from-image/Scrim.app".to_string(),
+        "codesign --verify --deep --strict --verbose=2 /t/release-macos/from-image/Scrim.app".to_string(),
         "SHA-256".to_string(),
     ];
     let at: Vec<usize> = order.iter().map(|o| position(&l, o)).collect();

@@ -18,10 +18,10 @@
 //!    --keychain-profile <profile> --wait`) and **staple** its ticket to it (Fix R2-1), so the app
 //!    on the image carries it: a copy dragged out opens offline too. When Apple refuses a
 //!    submission, its log says why and nothing goes on.
-//! 6. **Disk image** of the stapled app and an `Applications` link, made without attaching a device
-//!    (`hdiutil makehybrid`, then compressed), signed, notarised and stapled in turn.
+//! 6. **Disk image** of the stapled app and an `Applications` link (`hdiutil create -srcfolder`,
+//!    HFS+, compressed), signed, notarised and stapled in turn.
 //! 7. **Verify:** `spctl` on the app and the image, `stapler validate` on both, `codesign --verify
-//!    --deep --strict`, and the app copied out of the mounted image still validates.
+//!    --deep --strict`, and the app copied out of the mounted image still validates and verifies.
 //! 8. A **SHA-256** file beside the image, in `shasum -c` form.
 //!
 //! The result is in `<target>/release/` (cargo's own release folder: the image, its checksum and
@@ -154,9 +154,6 @@ impl Paths {
     }
     fn stage(&self) -> PathBuf {
         self.work.join("dmg")
-    }
-    fn raw(&self) -> PathBuf {
-        self.work.join("raw.dmg")
     }
     pub fn dmg(&self, version: &str) -> PathBuf {
         self.out.join(format!("Scrim-{version}-universal.dmg"))
@@ -302,16 +299,32 @@ pub fn plan(args: &Args, p: &Paths, sha: &str, version: &str, identity: &str, mi
         steps.push(run("staple app", &["xcrun", "stapler", "staple", s(&app)], &[&app]));
         steps.push(run("staple app", &["xcrun", "stapler", "validate", s(&app)], &[&ticket]));
     }
-    let (stage, raw, dmg) = (p.stage(), p.raw(), p.dmg(version));
+    let (stage, dmg) = (p.stage(), p.dmg(version));
     // Notarising, the image is staged only from the stapled app: the ticket is a file it needs.
     let staged_from = if args.skip_notarize { vec![app.clone()] } else { vec![app.clone(), ticket.clone()] };
     steps.push(Step { stage: "dmg", action: Action::Stage, needs: staged_from, expect: Expect::Nothing });
+    // HFS+ through `create -srcfolder`: an image made with `makehybrid -hfs` gave the binaries a
+    // Finder-info attribute when copied out of it, which `codesign --verify --strict` refuses.
     steps.push(run(
         "dmg",
-        &["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "Scrim", "-hfs-openfolder", s(&stage), "-o", s(&raw), s(&stage)],
+        &[
+            "hdiutil",
+            "create",
+            "-volname",
+            "Scrim",
+            "-srcfolder",
+            s(&stage),
+            "-fs",
+            "HFS+",
+            "-format",
+            "UDZO",
+            "-imagekey",
+            "zlib-level=9",
+            "-o",
+            s(&dmg),
+        ],
         &[&stage.join("Scrim.app")],
     ));
-    steps.push(run("dmg", &["hdiutil", "convert", s(&raw), "-format", "UDZO", "-imagekey", "zlib-level=9", "-o", s(&dmg)], &[&raw]));
     steps.push(run("dmg", &["codesign", "--force", "--timestamp", "--sign", identity, s(&dmg)], &[&dmg]));
     steps.push(run("dmg", &["codesign", "--verify", "--strict", "--verbose=2", s(&dmg)], &[&dmg]));
     if !args.skip_notarize {
@@ -330,6 +343,7 @@ pub fn plan(args: &Args, p: &Paths, sha: &str, version: &str, identity: &str, mi
         steps.push(Step { stage: "verify", action: Action::FromImage, needs: vec![dmg.clone()], expect: Expect::Nothing });
         steps.push(run("verify", &["xcrun", "stapler", "validate", s(&out)], &[&out]));
         steps.push(run("verify", &["spctl", "--assess", "--type", "execute", "-vv", s(&out)], &[&out]));
+        steps.push(run("verify", &["codesign", "--verify", "--deep", "--strict", "--verbose=2", s(&out)], &[&out]));
     }
     steps.push(run("verify", &["codesign", "--verify", "--deep", "--strict", "--verbose=2", s(&shipped)], &[&shipped]));
     steps.push(Step { stage: "checksum", action: Action::Checksum, needs: vec![dmg], expect: Expect::Nothing });

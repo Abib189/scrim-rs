@@ -71,13 +71,15 @@ It never picks one for you.
 | Universal | `lipo -create` for each, checked with `lipo -archs`; `figcraft --version` must name the commit | seconds |
 | Assemble | `Scrim.app` as `cargo xtask bundle-macos` makes it: the Info.plist (the `.scrim` document type and its UTI, the version, the commit, the maintainers' address), the icon, both binaries | seconds |
 | Sign | Inside out (`scrim`, `figcraft`, then the bundle), each with the hardened runtime and a secure timestamp, never `--deep`; then `codesign --verify --deep --strict` and `codesign -dvv` | 10 s (each signature asks Apple's timestamp server) |
-| Notarise the app | The signed app zipped (`ditto -c -k --keepParent`), then `xcrun notarytool submit <zip> --keychain-profile scrim-notary --wait` | the first Apple wait (Apple's queue decides: usually a minute or a few, sometimes an hour) |
+| Notarise the app | The signed app zipped (`ditto -c -k --keepParent`), then `xcrun notarytool submit <zip> --keychain-profile scrim-notary --wait` | the first Apple wait: 59 s on 6 Nov 2026 (Apple's queue decides: usually a minute or a few, sometimes an hour) |
 | Staple the app | `stapler staple Scrim.app`, then `stapler validate Scrim.app` | seconds |
-| Disk image | The stapled `Scrim.app` and an Applications link, built without attaching a device (`hdiutil makehybrid`, then compressed), and signed. The image is never made from an app that isn't stapled: staging it needs the ticket stapling writes | 4 s |
-| Notarise the image | `xcrun notarytool submit <dmg> --keychain-profile scrim-notary --wait` | the second Apple wait |
+| Disk image | The stapled `Scrim.app` and an Applications link (`hdiutil create -srcfolder`, HFS+, compressed), and signed. The image is never made from an app that isn't stapled: staging it needs the ticket stapling writes. (`hdiutil makehybrid`, used before, gave the binaries a Finder-info attribute when copied out of the image, which strict signature checks refuse.) | about 20 s |
+| Notarise the image | `xcrun notarytool submit <dmg> --keychain-profile scrim-notary --wait` | the second Apple wait: 68 s on 6 Nov 2026 |
 | Staple the image | `stapler staple`, then `stapler validate`, on the image | seconds |
-| Verify | `spctl` on the app (execute) and the image (open, primary signature); `stapler validate` on the app; the image mounted read-only, the app copied out of it with `ditto`, and that copy validated (`stapler validate`, `spctl`); `codesign --verify --deep --strict` | seconds |
+| Verify | `spctl` on the app (execute) and the image (open, primary signature); `stapler validate` on the app; the image mounted read-only, the app copied out of it with `ditto`, and that copy checked as a person's would be (`stapler validate`, `spctl`, `codesign --verify --deep --strict`); `codesign --verify --deep --strict` on the app | seconds |
 | Checksum | `<image>.sha256`, in the form `shasum -a 256 -c` reads | seconds |
+
+The whole run on 6 Nov 2026 took 592 s: the build for a new commit 451 s, the two Apple waits 127 s, the rest about 15 s. Allow 10 to 15 minutes, more when Apple's queue is busy.
 
 The output is in `~/.cache/scrim-target/release/` (with the target folder this repository uses), which is also cargo's own release folder:
 - `Scrim-<version>-universal.dmg`;
