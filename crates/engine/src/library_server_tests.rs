@@ -25,3 +25,13 @@ fn links_archives_and_junk() {
         s.execute("library.add", &serde_json::json!({"path": "ws://127.0.0.1:9/?file=f&token=t"})).unwrap_err().to_string().contains("desktop app")
     );
 }
+
+/// Fix R2-2: Libraries ▸ Check team libraries for updates is a command, saying how many team
+/// libraries it asks about (none here: a library file isn't one).
+#[test]
+fn checking_team_libraries_is_a_command() {
+    let mut s = crate::Session::new();
+    let r = s.execute("libraries.checkUpdates", &serde_json::json!({})).unwrap();
+    assert_eq!(r["checking"], 0);
+    assert!(crate::catalog::MENU.iter().any(|m| m.id == "libraries.checkUpdates" && m.menu == "Libraries"), "in the Libraries menu");
+}

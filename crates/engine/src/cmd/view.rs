@@ -509,6 +509,19 @@ pub fn specs() -> Vec<CommandSpec> {
             }
         ),
         spec!("libraries.open", "Libraries", "{}", false, |s, _| ui(s, "panel.libraries")),
+        // Fix R2-2: the Assets panel asks rarely on its own; this asks now.
+        spec!(
+            "libraries.checkUpdates",
+            "Check team libraries for updates",
+            "{}  ask the servers of the active document's team libraries (libraries linked from a server) for a newer version, in the background → {checking}: how many",
+            false,
+            |s, _| {
+                let checking =
+                    s.doc().map(|d| d.libraries.enabled.iter().filter(|l| crate::library_server::is_server_link(&l.path)).count()).unwrap_or(0);
+                s.refresh_server_libraries();
+                Ok(json!({"checking": checking}))
+            }
+        ),
         spec!(
             "tool.set",
             "Choose tool",

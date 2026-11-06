@@ -1,6 +1,6 @@
 # Network audit (Fix R-7)
 
-Every way the Scrim app (`apps/figcraft`, with the crates it links) reaches another computer, read from the code at commit `9a0f9f31`. The privacy statements in the README and the About dialog claim only what this page shows. Re-run the searches under [How this was checked](#how-this-was-checked) before changing either.
+Every way the Scrim app (`apps/figcraft`, with the crates it links) reaches another computer, read from the code at commit `9a0f9f31`, with the team-library rows updated for Fix R2-2. The privacy statements in the README and the About dialog claim only what this page shows. Re-run the searches under [How this was checked](#how-this-was-checked) before changing either.
 
 ## Summary
 
@@ -8,7 +8,7 @@ Every way the Scrim app (`apps/figcraft`, with the crates it links) reaches anot
   - The workspace has no HTTP client crate.
   - The only network stack is `collab-net`'s WebSocket transport, with TLS from rustls.
 - **Two things contact a server without a fresh request each time.** Both concern servers the person chose earlier. They are listed as decisions under [Flagged](#flagged).
-  1. A team library linked from a server is checked for updates every 30 seconds while the Assets panel shows a document that uses it. Each check reports which of its components the document uses.
+  1. A team library linked from a server is checked for updates while the Assets panel shows a document that uses it and the window is in front: once when the panel comes into view or the library is linked, then at most every 5 minutes, and when the window comes back to the front (at most every 30 seconds). Each check reports which of its components the document uses.
   2. Home ▸ Online asks the servers holding the person's online files about them each time that section is opened.
 - **Everything else is started by the person:**
   - joining or hosting a live session;
@@ -28,7 +28,7 @@ Every way the Scrim app (`apps/figcraft`, with the crates it links) reaches anot
 | 2 | Publish a file to a server; upload a copy | `guest.rs:93` (`publish`), `guest.rs:178-209` (`upload_file`); `link.rs:288` (`upload`) | The person: File ▸ Publish to server…, Share ▸ Online | The server address the person typed |
 | 3 | A file's hosting and sharing on a server (links, revoking, server info) | `link.rs:297-316` → `manage.rs:50` (`hosting`), `manage.rs:105` (`share`); asked from `crates/ui-egui/src/live.rs:1118` (`ask_server`) | The person: the Share popover and the Publish dialog (once an address is typed) | That server |
 | 4 | Home ▸ Online: what became of the files the person put online | `crates/ui-egui/src/online.rs:58-62` (`refresh`), called at `online.rs:90` and `online.rs:149` | Opening Home ▸ Online (see [Flagged](#flagged)) | The servers holding those files |
-| 5 | Team libraries: newer versions, with a usage report | `crates/engine/src/library_server.rs:161-178` (`refresh_server_libraries`); `crates/ui-egui/src/assets_panel.rs:272-290`, interval `SERVER_REFRESH` = 30 s at `assets_panel.rs:45`; `crates/collab-net/src/link.rs:228-245` (`library_background`) | **Automatic** while the Assets panel shows a document using a library linked from a server (see [Flagged](#flagged)); also when the person adds such a library (`assets_panel.rs:1079`) | That library's server |
+| 5 | Team libraries: newer versions, with a usage report | `crates/engine/src/library_server.rs:161-178` (`refresh_server_libraries`); `crates/ui-egui/src/assets_panel.rs:268-292`; the schedule in `crates/ui-egui/src/library_poll.rs:43` (`Poll::frame`), with `LIBRARY_POLL` = 5 min at `library_poll.rs:21` and `FOCUS_CHECK` = 30 s at `library_poll.rs:23`; `crates/collab-net/src/link.rs:228-245` (`library_background`) | **Automatic**, only while the Assets panel shows a document using a library linked from a server and the window is in front: on coming into view or linking, at most every 5 minutes, and on coming back to the front, at most every 30 s (see [Flagged](#flagged)). Also when the person adds such a library (`assets_panel.rs:1075`) or runs Libraries ▸ Check team libraries for updates (`libraries.checkUpdates`, `crates/engine/src/cmd/view.rs`) | That library's server |
 | 6 | Plugin directory: list, install | `crates/ui-egui/src/plugins_ui.rs:272`, `plugins_ui.rs:474` → `crates/collab-net/src/link.rs:319` (`plugins`) → `manage.rs:178` | The person: Plugins ▸ Browse, Install | The directory server the person entered |
 | 7 | Agent runs ("Describe a change") | `crates/mcp/src/agent_run.rs:78` | The person | The agent program the person chose (for example Claude Code). That program talks to its own service, and Scrim gives it only Scrim's loopback MCP address |
 | 8 | Registering Scrim with an agent client (Connect, Settings ▸ Agents) | `crates/ui-egui/src/connect_flow.rs:129`, `mcp_registration.rs:48`, `agent_clients_ui.rs:245` → `apps/figcraft/src/services.rs:318-330` (`run_program`) | The person | Runs the client's own CLI to add Scrim's loopback address to its config. Scrim sends nothing itself |
@@ -62,12 +62,10 @@ Every way the Scrim app (`apps/figcraft`, with the crates it links) reaches anot
 
 Each of these contacts a server without the person asking that time. Both are for the owner to decide.
 
-1. **Team-library refresh every 30 seconds, with usage reports** (row 5). While the Assets panel is open on a document that uses a library linked from a server, Scrim asks that server every 30 seconds for a newer version. Each request reports which of the library's components the document uses (`library_server.rs:161-178`).
+1. **Team-library checks, with usage reports** (row 5). While the Assets panel shows a document that uses a library linked from a server and the window is in front, Scrim asks that server for a newer version: when the panel comes into view or the library is linked, then at most every 5 minutes, and when the window comes back to the front (at most every 30 seconds). Nothing is asked while the panel is hidden or the window is behind others. Each request reports which of the library's components the document uses (`library_server.rs:161-178`).
    - The person chose the library link, so the server is theirs or one they trust.
-   - Options:
-     - check only when the panel opens and on request;
-     - drop the usage report, or make it a setting;
-     - leave it as is, and say so in the privacy statement (the statement does say so).
+   - Since Fix R2-2 (it was every 30 seconds, also with the window in the background). Libraries ▸ Check team libraries for updates asks at once.
+   - Still open: drop the usage report, or make it a setting.
 2. **Home ▸ Online refresh** (row 4). Opening Home ▸ Online asks the servers that hold the person's online files about those files. Opening the section is a choice, but nothing on screen asks first.
 
 ## How this was checked

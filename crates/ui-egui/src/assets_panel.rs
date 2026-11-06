@@ -39,10 +39,6 @@ const THUMBS_PER_FRAME: usize = 8;
 const MAX_COMPARED: usize = 20_000;
 /// Look for changed library files this often (seconds) while the panel shows.
 const LIBRARY_REFRESH: f64 = 2.0;
-/// Ask team libraries' servers for newer versions this often (seconds) while the panel shows.
-// shortcut: polled (a few bytes when nothing changed); a server push needs a connection per
-// library, worth it once libraries are used beyond the Assets panel.
-const SERVER_REFRESH: f64 = 30.0;
 /// Components listed in a team library's usage.
 const USAGE_ROWS: usize = 8;
 const PAD: f32 = 16.0;
@@ -283,15 +279,15 @@ fn refresh_libraries(app: &mut FigApp, ui: &Ui) {
             let _ = app.session.libraries.load(p);
         }
         ui.data_mut(|d| d.insert_temp(id, now));
-        // Team libraries: in the background, at once for one not fetched yet.
-        let sid = Id::new("asset_server_libraries_checked");
-        let fetched: Option<f64> = ui.data(|d| d.get_temp(sid));
-        let unread = paths.iter().any(|p| is_server_link(p) && app.session.libraries.cached(p).is_none());
-        if paths.iter().any(|p| is_server_link(p)) && (unread || fetched.is_none_or(|l| now - l >= SERVER_REFRESH)) {
-            app.session.refresh_server_libraries();
-            ui.data_mut(|d| d.insert_temp(sid, now));
-        }
     }
+    // Team libraries: on showing, on linking, every few minutes and on coming to the front, never
+    // hidden or behind other windows ([`library_poll`], Fix R2-2).
+    let (sid, team) = (Id::new("asset_server_libraries"), paths.into_iter().filter(|p| is_server_link(p)).collect::<Vec<_>>());
+    let mut poll: library_poll::Poll = ui.data(|d| d.get_temp(sid)).unwrap_or_default();
+    if poll.frame(std::time::Instant::now(), ui.ctx().cumulative_frame_nr(), ui.input(|i| i.focused), &team) {
+        app.session.refresh_server_libraries();
+    }
+    ui.data_mut(|d| d.insert_temp(sid, poll));
     ui.ctx().request_repaint_after(std::time::Duration::from_secs_f64(LIBRARY_REFRESH));
 }
 
@@ -1123,3 +1119,6 @@ pub(crate) fn cached_thumbnails(ctx: &egui::Context) -> Vec<NodeId> {
     out.sort();
     out
 }
+
+#[path = "library_poll.rs"]
+pub mod library_poll;

@@ -302,6 +302,7 @@ pub const WRITE: &[&str] = &[
     "help.shortcuts",
     "layers.collapse-all",
     "layers.restore-expansion",
+    "libraries.checkUpdates",
     "libraries.open",
     "libraries.publish",
     "library.publishToServer",

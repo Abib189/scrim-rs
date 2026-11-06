@@ -78,7 +78,7 @@ Ported by hand from the fixes upstream FigCraft made since the fork, each shown 
 ## Privacy
 
 - Scrim has no telemetry, no update check and no crash reporting.
-- It connects to another computer only for what you start: a live session, a file on a server, a team library from a server, or a plugin directory. One exception: while the Assets panel shows a team library from a server, Scrim checks it for updates every 30 seconds.
+- It connects to another computer only for what you start: a live session, a file on a server, a team library from a server, or a plugin directory. One exception: while the Assets panel shows a team library from a server and the window is in front, Scrim checks it for updates when the panel comes into view and then at most every 5 minutes.
 - Its agent connection (MCP) listens on this computer only.
 
 Details: [`network-audit.md`](network-audit.md).

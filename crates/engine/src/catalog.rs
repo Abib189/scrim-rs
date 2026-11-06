@@ -263,6 +263,7 @@ pub static MENU: &[MenuItem] = &[
     m!("Preferences", "Preferences…", "app.preferences"),
     // Libraries
     m!("Libraries", "Open libraries", "libraries.open"),
+    m!("Libraries", "Check team libraries for updates", "libraries.checkUpdates"),
     m!("Libraries", "Publish library…", "libraries.publish"),
     m!("Libraries", "Hide when publishing", "component.hideWhenPublishing"),
     // Help

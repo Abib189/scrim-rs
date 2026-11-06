@@ -93,7 +93,7 @@ claude mcp add scrim -- scrim mcp             # connect Claude Code (docs/mcp.md
 The app works offline: no account, no telemetry, no update checks and no crash reports. It connects to another computer only for live sessions, files, team libraries and plugin directories you use, and for agents you run:
 - **Live sessions:** joining one, or hosting one (on this computer, or on your local network when you choose that).
 - **Files on a server:** Share ▸ Online, Publish to server, and Home ▸ Online, which asks those servers about your files when you open it.
-- **Team libraries from a server:** while the Assets panel shows one, Scrim checks its server for a newer version every 30 seconds and tells it which of the library's components the document uses.
+- **Team libraries from a server:** while the Assets panel shows one and the window is in front, Scrim checks its server for a newer version when the panel comes into view, then at most every 5 minutes, and when you come back to the window (Libraries ▸ Check team libraries for updates checks at once). Each check tells the server which of the library's components the document uses.
 - **Plugin directories** you browse; plugins themselves get no network.
 - **Agents** you run with Describe a change talk to their own services.
 

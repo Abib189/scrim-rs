@@ -176,7 +176,7 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **view:** `view.get` (Get view)
 - **widget:** `widget.list` (List widgets)
 
-## Write, outside the undo history (300)
+## Write, outside the undo history (301)
 
 - **ai:** `ai.copyConnectCommand`, `ai.selectChange`, `ai.selectFinding`, `ai.undoChange`
 - **app:** `app.actions`, `app.preferences`, `app.quit`
@@ -198,7 +198,7 @@ Every command that writes a saved setting or a persistent preference, with what 
 - **guide:** `guide.select`
 - **help:** `help.about`, `help.gettingStarted`, `help.page`, `help.shortcuts`
 - **layers:** `layers.collapse-all`, `layers.restore-expansion`
-- **libraries:** `libraries.open`, `libraries.publish`
+- **libraries:** `libraries.checkUpdates`, `libraries.open`, `libraries.publish`
 - **library:** `library.publishToServer`
 - **mcp:** `mcp.connect-claude-code`, `mcp.connect-claude-desktop`, `mcp.connect-client`, `mcp.copy-address`, `mcp.copy-agent-snippet`, `mcp.copy-claude-desktop-entry`, `mcp.copy-client-entry`, `mcp.copy-command`, `mcp.remove-old-client-entry`, `mcp.remove-old-desktop-entry`, `mcp.remove-old-entry`, `mcp.reregister`, `mcp.reregister-claude-desktop`, `mcp.reregister-client`, `mcp.restart-server`, `mcp.restore-tools`, `mcp.run-connect`, `mcp.set-port`, `mcp.set-root-dir`, `mcp.set-tool`, `mcp.set-tool-group`, `mcp.toggle-auth`, `mcp.write-claude-desktop`, `mcp.write-client`
 - **page:** `page.select`
